@@ -1,3 +1,5 @@
 log/
 dist/
 temp/
+vendor/
+node_modules/
