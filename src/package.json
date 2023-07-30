@@ -1,6 +1,6 @@
 {
   "name": "splk",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Webová aplikace pro spolky (folklorní soubory atp.)",
   "main": "index.js",
   "scripts": {
