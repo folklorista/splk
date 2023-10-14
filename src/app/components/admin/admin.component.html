@@ -1,0 +1,42 @@
+<div class="admin-panel-container">
+  <h2>Administrativní panel</h2>
+  <form [formGroup]="memberForm" (ngSubmit)="addMember()">
+    <div class="form-group">
+      <label for="username">Uživatelské jméno</label>
+      <input type="text" id="username" formControlName="username" />
+      <div
+        *ngIf="
+          memberForm.get('username')?.hasError('required') &&
+          memberForm.get('username')?.touched
+        "
+        class="error-message"
+      >
+        Uživatelské jméno je povinné.
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="email">E-mail</label>
+      <input type="text" id="email" formControlName="email" />
+      <div
+        *ngIf="
+          memberForm.get('email')?.hasError('required') &&
+          memberForm.get('email')?.touched
+        "
+        class="error-message"
+      >
+        E-mail je povinný.
+      </div>
+      <div
+        *ngIf="
+          memberForm.get('email')?.hasError('email') &&
+          memberForm.get('email')?.touched
+        "
+        class="error-message"
+      >
+        Zadejte platný e-mail.
+      </div>
+    </div>
+    <!-- Další pole formuláře podle potřeby -->
+    <button type="submit" [disabled]="memberForm.invalid">Přidat člena</button>
+  </form>
+</div>

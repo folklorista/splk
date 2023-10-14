@@ -1,0 +1,19 @@
+<div class="app-container">
+  <h1>Vonica</h1>
+
+  <nav>
+    <!-- Odkaz na EventsComponent -->
+    <a routerLink="/dashboard">Přehled</a>
+
+    <!-- Odkaz na EventsComponent -->
+    <a routerLink="/events">Události</a>
+
+    <!-- Odkaz na AdminPanelComponent (pro administrátory) -->
+    <a *ngIf="isAdmin" routerLink="/admin">Administrace</a>
+
+    <!-- Odkaz na odhlášení -->
+    <a routerLink="/logout">Odhlásit se</a>
+  </nav>
+
+  <router-outlet></router-outlet>
+</div>

@@ -1,0 +1,20 @@
+<div class="dashboard-container">
+  <h2>Hlavní dashboard</h2>
+
+  <!-- Tabulka nejbližších tří událostí -->
+  <h3>Nejbližší tři události</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Název</th>
+        <th>Datum</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let event of upcomingEvents.slice(0, 3)">
+        <td>{{ event.name }}</td>
+        <td>{{ event.date }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

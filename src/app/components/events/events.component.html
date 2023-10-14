@@ -1,0 +1,25 @@
+<div class="events-container">
+  <h2>Události</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Název</th>
+        <th>Datum</th>
+        <th>Akce</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let event of events">
+        <td [ngClass]="{ highlighted: event.isRegistered }">
+          <a [routerLink]="['/event', event.id]">{{ event.name }}</a>
+        </td>
+        <td>{{ event.date }}</td>
+        <td>
+          <ng-container *ngIf="isAdmin">
+            <a [routerLink]="['/edit-event', event.id]">Upravit</a>
+          </ng-container>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

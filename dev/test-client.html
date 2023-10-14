@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Testovací klient</title>
+  </head>
+  <body>
+    <input type="text" id="messageInput" placeholder="Zpráva" />
+    <button id="sendButton">Odeslat</button>
+    <div id="output"></div>
+
+    <script>
+      const output = document.getElementById("output");
+      const messageInput = document.getElementById("messageInput");
+      const sendButton = document.getElementById("sendButton");
+      const ws = new WebSocket("wss://testsplk:test1234@ws1.weesko.cz:49156"); // Nahraďte za vaším serverem
+
+      ws.onopen = function (event) {
+        output.innerHTML += "Připojeno k serveru.\n";
+      };
+
+      ws.onmessage = function (event) {
+        output.innerHTML += "Přijato od serveru: " + event.data + "\n";
+      };
+
+      ws.onclose = function (event) {
+        output.innerHTML += "Odpojeno od serveru.\n";
+      };
+
+      sendButton.addEventListener("click", function () {
+        const message = messageInput.value;
+        ws.send(message);
+        output.innerHTML += "Odesláno na server: " + message + "\n";
+      });
+    </script>
+  </body>
+</html>
