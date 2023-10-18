@@ -4,26 +4,26 @@ require_once('vendor/autoload.php'); // Načtěte knihovnu pro JWT tokeny
 use Firebase\JWT\JWT;
 
 // Funkce pro ověření přihlašovacích údajů vůči databázi
-function authenticateUser($username, $password) {
-    $dbHost = 'your-database-host'; // Nahraďte skutečným hostname
-    $dbName = 'your-database-name'; // Nahraďte skutečným názvem databáze
-    $dbUsername = 'your-database-username'; // Nahraďte skutečným uživatelským jménem
-    $dbPassword = 'your-database-password'; // Nahraďte skutečným heslem
-  
+function authenticateUser($email, $password) {
+    $dbHost = 'localhost';
+    $dbName = 'splk';
+    $dbUsername = 'splk';
+    $dbPassword = 'splk';
+
     // Vytvoření připojení k databázi
     try {
       $pdo = new PDO("mysql:host=$dbHost;dbname=$dbName", $dbUsername, $dbPassword);
     } catch (PDOException $e) {
       die("Chyba připojení k databázi: " . $e->getMessage());
     }
-  
+
     // Dotaz na databázi pro ověření uživatele
-    $sql = "SELECT * FROM users WHERE username = :username";
+    $sql = "SELECT * FROM user WHERE email = :email";
     $stmt = $pdo->prepare($sql);
-    $stmt->bindParam(':username', $username, PDO::PARAM_STR);
+    $stmt->bindParam(':email', $email, PDO::PARAM_STR);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
-  
+
     // Kontrola, zda uživatel existuje a zda heslo odpovídá
     if ($user && password_verify($password, $user['password'])) {
       // Uživatel byl úspěšně ověřen
@@ -42,11 +42,11 @@ $algorithm = 'HS256';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $data = json_decode(file_get_contents('php://input'));
   if (isset($data->username) && isset($data->password)) {
-    $username = $data->username;
+    $email = $data->username;
     $password = $data->password;
 
     // Ověření přihlašovacích údajů
-    $user = authenticateUser($username, $password);
+    $user = authenticateUser($email, $password);
 
     if ($user) {
       $tokenId    = base64_encode(random_bytes(32)); // Náhodný token ID
@@ -78,5 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   } else {
     http_response_code(400); // Špatný požadavek
-    echo json_encode(['message' => 'Neplatný požadavek
+    echo json_encode(['message' => 'Neplatný požadavek']);
   }
+}

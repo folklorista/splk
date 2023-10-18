@@ -13,18 +13,23 @@ run(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), parse_url($_SERVER['REQUES
 function run($path, $query)
 {
   $uri = explode('/', $path);
-  $table = "$uri[1].$uri[2]";
-  $action = "$uri[3]Action";
+  $table = "$uri[1]";
+  $action = key_exists(2, $uri) ? "$uri[2]Action" : "listAction";
 
   switch ($table) {
-    case 'auth.user':
+    case 'user':
       require PROJECT_ROOT_PATH . "/Controller/UserController.php";
       $controller = new UserController();
       break;
 
-    case 'auth.role':
-      require PROJECT_ROOT_PATH . "/Controller/UserController.php";
-      $controller = new UserController();
+    case 'event':
+      require PROJECT_ROOT_PATH . "/Controller/EventController.php";
+      $controller = new EventController();
+      break;
+
+    case 'group':
+      require PROJECT_ROOT_PATH . "/Controller/GroupController.php";
+      $controller = new GroupController();
       break;
 
     default:
