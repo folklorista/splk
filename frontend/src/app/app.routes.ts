@@ -78,6 +78,50 @@ export const routes: Routes = [
             (m) => m.CostumesComponent,
           ),
       },
+      {
+        path: 'admin',
+        loadComponent: () =>
+          import('./admin/layout/admin-layout/admin-layout.component').then(
+            (m) => m.AdminLayoutComponent,
+          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./admin/pages/admin-dashboard/admin-dashboard.component').then(
+                (m) => m.AdminDashboardComponent,
+              ),
+          },
+          {
+            path: 'posts',
+            loadComponent: () =>
+              import('./admin/pages/admin-posts/admin-posts.component').then(
+                (m) => m.AdminPostsComponent,
+              ),
+          },
+          {
+            path: 'events',
+            loadComponent: () =>
+              import('./admin/pages/admin-events/admin-events.component').then(
+                (m) => m.AdminEventsComponent,
+              ),
+          },
+          {
+            path: 'members',
+            loadComponent: () =>
+              import('./admin/pages/admin-members/admin-members.component').then(
+                (m) => m.AdminMembersComponent,
+              ),
+          },
+          {
+            path: 'groups',
+            loadComponent: () =>
+              import('./admin/pages/admin-groups/admin-groups.component').then(
+                (m) => m.AdminGroupsComponent,
+              ),
+          },
+        ],
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

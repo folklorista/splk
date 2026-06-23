@@ -4,14 +4,19 @@
   </div>
 
   <nav class="sidebar__nav">
-    @for (item of navItems; track item.path) {
-      <a
-        class="sidebar__nav-item"
-        [routerLink]="item.path"
-        routerLinkActive="sidebar__nav-item--active"
-      >
-        {{ item.label }}
-      </a>
+    @for (section of navSections; track section.label) {
+      <div class="sidebar__nav-section">
+        <div class="sidebar__nav-section-label">{{ section.label }}</div>
+        @for (item of section.items; track item.path) {
+          <a
+            class="sidebar__nav-item"
+            [routerLink]="item.path"
+            routerLinkActive="sidebar__nav-item--active"
+          >
+            {{ item.label }}
+          </a>
+        }
+      </div>
     }
   </nav>
 

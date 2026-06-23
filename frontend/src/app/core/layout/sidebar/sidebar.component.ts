@@ -8,6 +8,11 @@ interface NavItem {
   label: string;
 }
 
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -15,13 +20,24 @@ interface NavItem {
   templateUrl: './sidebar.component.html',
 })
 export class SidebarComponent {
-  navItems: NavItem[] = [
-    { path: '/app/dashboard', label: 'Přehled' },
-    { path: '/app/posts', label: 'Nástěnka' },
-    { path: '/app/events', label: 'Akce' },
-    { path: '/app/attendance', label: 'Docházka' },
-    { path: '/app/members', label: 'Členové' },
-    { path: '/app/costumes', label: 'Krojová databáze' },
+  navSections: NavSection[] = [
+    {
+      label: 'Aplikace',
+      items: [
+        { path: '/app/dashboard', label: 'Přehled' },
+        { path: '/app/posts', label: 'Nástěnka' },
+        { path: '/app/events', label: 'Akce' },
+        { path: '/app/attendance', label: 'Docházka' },
+        { path: '/app/members', label: 'Členové' },
+        { path: '/app/costumes', label: 'Krojová databáze' },
+      ],
+    },
+    {
+      label: 'Správa',
+      items: [
+        { path: '/app/admin', label: 'Administrace' },
+      ],
+    },
   ];
 
   constructor(
