@@ -1,0 +1,58 @@
+<div class="page">
+  <h1 class="page__title">Přehled</h1>
+
+  @if (loading()) {
+    <p class="state-note">Načítání…</p>
+  } @else {
+    <div class="dashboard">
+
+      <section class="dashboard__section">
+        <h2 class="dashboard__section-title">Nejbližší akce</h2>
+        @if (nextEvent(); as event) {
+          <div class="item-list__item">
+            <span class="item-list__title">{{ event.title }}</span>
+            <div class="item-list__meta">
+              {{ event.startsAt | date: 'd. M. yyyy, HH:mm' }} · {{ event.location }}
+            </div>
+          </div>
+        } @else {
+          <p class="state-note">Žádné nadcházející akce.</p>
+        }
+      </section>
+
+      <section class="dashboard__section">
+        <h2 class="dashboard__section-title">Důležité oznámení</h2>
+        @if (pinnedPost(); as post) {
+          <div class="item-list__item">
+            <div class="item-list__row">
+              <span class="item-list__title">{{ post.title }}</span>
+              <span class="badge badge--pinned">Důležité</span>
+            </div>
+            <p class="item-list__body">{{ post.body }}</p>
+          </div>
+        } @else {
+          <p class="state-note">Žádná důležitá oznámení.</p>
+        }
+      </section>
+
+      <section class="dashboard__section">
+        <h2 class="dashboard__section-title">Nepotvrzená účast</h2>
+        @if (!pendingAttendance().length) {
+          <p class="state-note">Vše potvrzeno.</p>
+        } @else {
+          <ul class="item-list">
+            @for (item of pendingAttendance(); track item.event.id) {
+              <li class="item-list__item">
+                <span class="item-list__title">{{ item.event.title }}</span>
+                <div class="item-list__meta">
+                  {{ item.event.startsAt | date: 'd. M. yyyy, HH:mm' }}
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+    </div>
+  }
+</div>

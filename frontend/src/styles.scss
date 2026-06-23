@@ -459,6 +459,23 @@
   }
 }
 
+// Dashboard
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+
+  &__section-title {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 11px;
+    margin-bottom: var(--spacing-sm);
+  }
+}
+
 // Condition badges for costumes
 .badge {
   &--condition-good         { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
