@@ -26,6 +26,14 @@
 - Neimplementovat budoucí funkcionalitu bez výslovného zadání (WebSocket, push notifikace, platby, rodiče/zástupci, registrace, komplexní oprávnění apod.).
 - Projekt má být konkrétní aplikace pro jeden soubor, ne univerzální dynamický framework.
 
+## Git commit messages
+
+- Commit message má být krátký, ideálně jednořádkový.
+- Používat conventional commit prefixy: `feat:`, `fix:`, `test:`, `docs:`, `chore:`, `refactor:`.
+- Negenerovat tělo commitu (víceřádkový popis), pokud není výslovně vyžádáno.
+- Nikdy nepřidávat `Co-Authored-By`, Claude/AI attribution ani žádnou zmínku o způsobu generování.
+- Commit message popisuje změnu, ne to, kdo nebo co ji vytvořil.
+
 ## Testování
 
 - Testovací stack: Karma + Jasmine (výchozí Angular stack).
