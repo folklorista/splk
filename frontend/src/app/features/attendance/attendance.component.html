@@ -18,6 +18,7 @@
           <div class="item-list__meta">
             {{ item.event.startsAt | date: 'd. M. yyyy, HH:mm' }} · {{ item.event.location }}
           </div>
+
           <div class="attendance-actions">
             @for (status of statuses; track status) {
               <button
@@ -28,7 +29,41 @@
                 {{ statusLabels[status] }}
               </button>
             }
+            @if (item.record && item.record.status !== 'pending') {
+              <button class="attendance-btn attendance-btn--clear" (click)="clearStatus(item.event.id)">
+                Zrušit
+              </button>
+            }
           </div>
+
+          <div class="attendance-note">
+            @if (item.noteValue && !item.noteOpen) {
+              <div class="attendance-note__preview">
+                <span class="attendance-note__text">{{ item.noteValue }}</span>
+                <button class="attendance-note__edit" (click)="toggleNote(item.event.id)">Upravit</button>
+              </div>
+            } @else if (item.noteOpen) {
+              <div class="attendance-note__form">
+                <textarea
+                  class="attendance-note__input"
+                  rows="2"
+                  placeholder="Poznámka pro vedoucího…"
+                  [(ngModel)]="item.noteValue"
+                ></textarea>
+                <div class="attendance-note__actions">
+                  <button class="attendance-btn attendance-btn--active" (click)="saveNote(item.event.id, item.noteValue); toggleNote(item.event.id)">
+                    Uložit
+                  </button>
+                  <button class="attendance-btn" (click)="toggleNote(item.event.id)">Zrušit</button>
+                </div>
+              </div>
+            } @else {
+              <button class="attendance-note__add" (click)="toggleNote(item.event.id)">
+                + Přidat poznámku
+              </button>
+            }
+          </div>
+
         </li>
       }
     </ul>

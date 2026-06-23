@@ -412,6 +412,75 @@
   }
 }
 
+// Attendance – clear button variant
+.attendance-btn--clear {
+  color: var(--color-text-muted);
+  margin-left: auto;
+
+  &:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+}
+
+// Attendance – note
+.attendance-note {
+  margin-top: var(--spacing-sm);
+
+  &__add {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+
+    &:hover { color: var(--color-primary); text-decoration: underline; }
+  }
+
+  &__preview {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    background: var(--color-surface-alt);
+    border-radius: 6px;
+    padding: var(--spacing-sm);
+  }
+
+  &__text {
+    font-size: var(--font-size-sm);
+    flex: 1;
+    color: var(--color-text);
+  }
+
+  &__edit {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+
+    &:hover { color: var(--color-primary); text-decoration: underline; }
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  &__input {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: var(--font-size-sm);
+    resize: vertical;
+    outline: none;
+
+    &:focus { border-color: var(--color-primary); }
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--spacing-sm);
+  }
+}
+
 // Costume category accordion
 .costume-category {
   padding: 0;
