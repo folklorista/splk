@@ -1,7 +1,9 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { MembersService } from '../../../features/members/members.service';
+import { GroupsService } from '../../../features/groups/groups.service';
 import { Member } from '../../../core/models/member.model';
+import { Group } from '../../../core/models/group.model';
 
 @Component({
   selector: 'app-admin-members',
@@ -41,6 +43,15 @@ import { Member } from '../../../core/models/member.model';
                   <span>📱 {{ member.phone }}</span>
                 }
               </p>
+              <p class="admin-members__item-groups">
+                <strong>Skupiny:</strong>
+                @if (getMemberGroupNames(member.id).length === 0) {
+                  <span class="admin-members__item-empty">(žádné)</span>
+                }
+                @if (getMemberGroupNames(member.id).length > 0) {
+                  <span>{{ getMemberGroupNames(member.id).join(', ') }}</span>
+                }
+              </p>
               <div class="admin-members__item-actions">
                 <a [routerLink]="'/app/admin/members/' + member.id + '/edit'" class="admin-members__btn-edit">
                   Upravit
@@ -72,6 +83,8 @@ import { Member } from '../../../core/models/member.model';
     .admin-members__item-title { margin: 0; font-size: 1.05rem; font-weight: 600; flex: 1; }
     .admin-members__badge-inactive { padding: 0.25rem 0.75rem; background: #f0f0f0; color: #999; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
     .admin-members__item-contact { margin: 0.5rem 0; color: #666; font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.25rem; }
+    .admin-members__item-groups { margin: 0.75rem 0 0 0; color: #666; font-size: 0.9rem; }
+    .admin-members__item-empty { color: #999; font-style: italic; }
     .admin-members__item-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
     .admin-members__btn-edit, .admin-members__btn-delete { padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid #ccc; background: #fff; font-size: 0.85rem; cursor: pointer; }
     .admin-members__btn-edit { color: #0066cc; text-decoration: none; display: inline-block; }
@@ -82,25 +95,40 @@ import { Member } from '../../../core/models/member.model';
 })
 export class AdminMembersComponent implements OnInit {
   members = signal<Member[]>([]);
+  groups = signal<Group[]>([]);
   loading = signal(true);
 
   constructor(
     private membersService: MembersService,
+    private groupsService: GroupsService,
     private router: Router,
   ) {}
 
   ngOnInit(): void {
-    this.loadMembers();
+    this.loadData();
   }
 
-  private loadMembers(): void {
+  private loadData(): void {
     this.loading.set(true);
-    this.membersService.getMembers().subscribe({
-      next: (members) => {
-        this.members.set(members);
-        this.loading.set(false);
+    this.groupsService.getGroups().subscribe({
+      next: (groups) => {
+        this.groups.set(groups);
+        this.membersService.getMembers().subscribe({
+          next: (members) => {
+            this.members.set(members);
+            this.loading.set(false);
+          },
+        });
       },
     });
+  }
+
+  getMemberGroupNames(memberId: number): string[] {
+    const member = this.members().find((m) => m.id === memberId);
+    if (!member) return [];
+    return member.groupIds
+      .map((groupId) => this.groups().find((g) => g.id === groupId)?.name)
+      .filter((name): name is string => name !== undefined);
   }
 
   onDelete(id: number): void {
@@ -109,7 +137,7 @@ export class AdminMembersComponent implements OnInit {
     }
     this.membersService.deleteMember(id).subscribe({
       next: () => {
-        this.loadMembers();
+        this.loadData();
       },
     });
   }
