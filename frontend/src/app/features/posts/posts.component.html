@@ -1,0 +1,26 @@
+<div class="page">
+  <h1 class="page__title">Nástěnka</h1>
+
+  @if (loading()) {
+    <p class="state-note">Načítání…</p>
+  } @else if (!posts().length) {
+    <p class="state-note">Žádné příspěvky.</p>
+  } @else {
+    <ul class="item-list">
+      @for (post of posts(); track post.id) {
+        <li class="item-list__item">
+          <div class="item-list__row">
+            <span class="item-list__title">{{ post.title }}</span>
+            @if (post.isPinned) {
+              <span class="badge badge--pinned">Důležité</span>
+            }
+          </div>
+          <div class="item-list__meta">
+            {{ post.publishedAt | date: 'd. M. yyyy' }}
+          </div>
+          <p class="item-list__body">{{ post.body }}</p>
+        </li>
+      }
+    </ul>
+  }
+</div>

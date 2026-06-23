@@ -1,0 +1,53 @@
+<div class="page">
+  <h1 class="page__title">Krojová databáze</h1>
+
+  @if (loading()) {
+    <p class="state-note">Načítání…</p>
+  } @else if (!categories().length) {
+    <p class="state-note">Žádné kategorie.</p>
+  } @else {
+    <ul class="item-list">
+      @for (category of categories(); track category.id) {
+        <li class="item-list__item costume-category">
+          <button class="costume-category__header" (click)="toggleCategory(category.id)">
+            <span class="item-list__title">{{ category.name }}</span>
+            <span class="costume-category__toggle">
+              {{ expandedCategoryId() === category.id ? '▲' : '▼' }}
+            </span>
+          </button>
+
+          @if (expandedCategoryId() === category.id) {
+            @let items = itemsByCategory()[category.id];
+            @if (!items) {
+              <p class="state-note">Načítání…</p>
+            } @else if (!items.length) {
+              <p class="state-note">Žádné díly v této kategorii.</p>
+            } @else {
+              <ul class="costume-items">
+                @for (item of items; track item.id) {
+                  <li class="costume-items__item">
+                    <div class="item-list__row">
+                      <span class="costume-items__name">{{ item.name }}</span>
+                      <span class="badge badge--condition-{{ item.condition }}">
+                        {{ conditionLabel(item.condition) }}
+                      </span>
+                    </div>
+                    @if (item.size) {
+                      <div class="item-list__meta">Velikost: {{ item.size }}</div>
+                    }
+                    @if (item.assignedMemberId) {
+                      <div class="item-list__meta">Přiřazeno členu #{{ item.assignedMemberId }}</div>
+                    }
+                    @if (item.notes) {
+                      <p class="item-list__body">{{ item.notes }}</p>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>

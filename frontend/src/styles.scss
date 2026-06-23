@@ -282,3 +282,273 @@
     font-size: var(--font-size-sm);
   }
 }
+
+// Feature pages
+.page {
+  &__title {
+    font-size: var(--font-size-h1);
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+  }
+}
+
+.state-note {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-md) 0;
+}
+
+// Item list – shared across Posts, Events, Members
+.item-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+
+  &__item {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  &__row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+  }
+
+  &__title {
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    flex: 1;
+  }
+
+  &__meta {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__body {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    line-height: 1.5;
+    margin-top: var(--spacing-xs);
+  }
+}
+
+// Badges
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--color-surface-alt);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+
+  &--pinned {
+    background: #fff3e0;
+    color: #e65100;
+    border-color: #ffcc80;
+  }
+}
+
+// Attendance status indicator
+.attendance-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+  background: var(--color-surface-alt);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+
+  &--yes    { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+  &--no     { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+  &--maybe  { background: #fff8e1; color: #f57f17; border-color: #ffe082; }
+  &--pending { /* default gray */ }
+}
+
+// Attendance action buttons
+.attendance-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.attendance-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+
+  &:hover {
+    background: var(--color-surface-alt);
+    color: var(--color-text);
+  }
+
+  &--active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+
+    &:hover {
+      background: var(--color-primary-dark);
+      border-color: var(--color-primary-dark);
+      color: #fff;
+    }
+  }
+}
+
+// Attendance – clear button variant
+.attendance-btn--clear {
+  color: var(--color-text-muted);
+  margin-left: auto;
+
+  &:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+}
+
+// Attendance – note
+.attendance-note {
+  margin-top: var(--spacing-sm);
+
+  &__add {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+
+    &:hover { color: var(--color-primary); text-decoration: underline; }
+  }
+
+  &__preview {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    background: var(--color-surface-alt);
+    border-radius: 6px;
+    padding: var(--spacing-sm);
+  }
+
+  &__text {
+    font-size: var(--font-size-sm);
+    flex: 1;
+    color: var(--color-text);
+  }
+
+  &__edit {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+
+    &:hover { color: var(--color-primary); text-decoration: underline; }
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  &__input {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: var(--font-size-sm);
+    resize: vertical;
+    outline: none;
+
+    &:focus { border-color: var(--color-primary); }
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--spacing-sm);
+  }
+}
+
+// Costume category accordion
+.costume-category {
+  padding: 0;
+  overflow: hidden;
+
+  &__header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    text-align: left;
+    background: none;
+
+    &:hover {
+      background: var(--color-surface-alt);
+    }
+  }
+
+  &__toggle {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+}
+
+.costume-items {
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child { border-bottom: none; }
+  }
+
+  &__name {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    flex: 1;
+  }
+}
+
+// Dashboard
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+
+  &__section-title {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 11px;
+    margin-bottom: var(--spacing-sm);
+  }
+}
+
+// Condition badges for costumes
+.badge {
+  &--condition-good         { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+  &--condition-needs-repair { background: #fff8e1; color: #f57f17; border-color: #ffe082; }
+  &--condition-damaged      { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+  &--condition-retired      { background: var(--color-surface-alt); color: var(--color-text-muted); }
+}

@@ -1,0 +1,71 @@
+<div class="page">
+  <h1 class="page__title">Docházka</h1>
+
+  @if (loading()) {
+    <p class="state-note">Načítání…</p>
+  } @else if (!items().length) {
+    <p class="state-note">Žádné akce.</p>
+  } @else {
+    <ul class="item-list">
+      @for (item of items(); track item.event.id) {
+        <li class="item-list__item">
+          <div class="item-list__row">
+            <span class="item-list__title">{{ item.event.title }}</span>
+            <span class="attendance-status attendance-status--{{ item.record?.status ?? 'pending' }}">
+              {{ statusLabel(item.record?.status) }}
+            </span>
+          </div>
+          <div class="item-list__meta">
+            {{ item.event.startsAt | date: 'd. M. yyyy, HH:mm' }} · {{ item.event.location }}
+          </div>
+
+          <div class="attendance-actions">
+            @for (status of statuses; track status) {
+              <button
+                class="attendance-btn"
+                [class.attendance-btn--active]="item.record?.status === status"
+                (click)="setStatus(item.event.id, status)"
+              >
+                {{ statusLabels[status] }}
+              </button>
+            }
+            @if (item.record && item.record.status !== 'pending') {
+              <button class="attendance-btn attendance-btn--clear" (click)="clearStatus(item.event.id)">
+                Zrušit
+              </button>
+            }
+          </div>
+
+          <div class="attendance-note">
+            @if (item.noteValue && !item.noteOpen) {
+              <div class="attendance-note__preview">
+                <span class="attendance-note__text">{{ item.noteValue }}</span>
+                <button class="attendance-note__edit" (click)="toggleNote(item.event.id)">Upravit</button>
+              </div>
+            } @else if (item.noteOpen) {
+              <div class="attendance-note__form">
+                <textarea
+                  class="attendance-note__input"
+                  rows="2"
+                  placeholder="Poznámka pro vedoucího…"
+                  [(ngModel)]="item.noteValue"
+                ></textarea>
+                <div class="attendance-note__actions">
+                  <button class="attendance-btn attendance-btn--active" (click)="saveNote(item.event.id, item.noteValue); toggleNote(item.event.id)">
+                    Uložit
+                  </button>
+                  <button class="attendance-btn" (click)="toggleNote(item.event.id)">Zrušit</button>
+                </div>
+              </div>
+            } @else {
+              <button class="attendance-note__add" (click)="toggleNote(item.event.id)">
+                + Přidat poznámku
+              </button>
+            }
+          </div>
+
+        </li>
+      }
+    </ul>
+  }
+</div>

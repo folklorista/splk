@@ -1,0 +1,26 @@
+<div class="page">
+  <h1 class="page__title">Akce</h1>
+
+  @if (loading()) {
+    <p class="state-note">Načítání…</p>
+  } @else if (!events().length) {
+    <p class="state-note">Žádné akce.</p>
+  } @else {
+    <ul class="item-list">
+      @for (event of events(); track event.id) {
+        <li class="item-list__item">
+          <div class="item-list__row">
+            <span class="item-list__title">{{ event.title }}</span>
+            <span class="badge">{{ typeLabel(event.type) }}</span>
+          </div>
+          <div class="item-list__meta">
+            {{ event.startsAt | date: 'd. M. yyyy, HH:mm' }} · {{ event.location }}
+          </div>
+          @if (event.description) {
+            <p class="item-list__body">{{ event.description }}</p>
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>
