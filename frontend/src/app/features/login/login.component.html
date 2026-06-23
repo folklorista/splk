@@ -1,0 +1,42 @@
+<div class="login-page">
+  <div class="login-card">
+    <h1 class="login-title">Folklorní soubor</h1>
+    <p class="login-subtitle">Přihlaste se do aplikace</p>
+
+    <form class="login-form" (ngSubmit)="onSubmit()">
+      @if (error()) {
+        <p class="login-error">{{ error() }}</p>
+      }
+
+      <div class="form-field">
+        <label for="email">E-mail</label>
+        <input
+          id="email"
+          type="email"
+          autocomplete="email"
+          placeholder="vas@email.cz"
+          [(ngModel)]="email"
+          name="email"
+          required
+        />
+      </div>
+
+      <div class="form-field">
+        <label for="password">Heslo</label>
+        <input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="••••••••"
+          [(ngModel)]="password"
+          name="password"
+          required
+        />
+      </div>
+
+      <button class="btn-primary" type="submit" [disabled]="loading()">
+        {{ loading() ? 'Přihlašování…' : 'Přihlásit se' }}
+      </button>
+    </form>
+  </div>
+</div>

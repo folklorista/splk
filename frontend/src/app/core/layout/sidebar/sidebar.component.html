@@ -1,0 +1,24 @@
+<aside class="sidebar">
+  <div class="sidebar__header">
+    <span class="sidebar__logo">Folklorní soubor</span>
+  </div>
+
+  <nav class="sidebar__nav">
+    @for (item of navItems; track item.path) {
+      <a
+        class="sidebar__nav-item"
+        [routerLink]="item.path"
+        routerLinkActive="sidebar__nav-item--active"
+      >
+        {{ item.label }}
+      </a>
+    }
+  </nav>
+
+  <div class="sidebar__footer">
+    @if (auth.currentUser(); as user) {
+      <span class="sidebar__user">{{ user.name }}</span>
+    }
+    <button class="sidebar__logout" (click)="logout()">Odhlásit se</button>
+  </div>
+</aside>

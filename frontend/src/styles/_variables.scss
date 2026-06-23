@@ -1,0 +1,36 @@
+:root {
+  // Colors
+  --color-primary: #c0392b;
+  --color-primary-dark: #96281b;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f5f5f5;
+  --color-border: #e0e0e0;
+  --color-text: #1a1a1a;
+  --color-text-muted: #757575;
+  --color-nav-active: var(--color-primary);
+
+  // Spacing
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  // Layout
+  --sidebar-width: 240px;
+  --bottom-nav-height: 56px;
+  --header-height: 56px;
+
+  // Typography
+  --font-family: system-ui, -apple-system, sans-serif;
+  --font-size-sm: 13px;
+  --font-size-base: 15px;
+  --font-size-lg: 18px;
+  --font-size-h1: 22px;
+
+  // Breakpoints (used as reference – media queries use raw values)
+  // Mobile: < 768px → bottom nav
+  // Desktop: >= 768px → sidebar
+}
+
+$bp-desktop: 768px;

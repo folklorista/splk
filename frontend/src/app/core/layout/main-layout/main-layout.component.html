@@ -1,0 +1,15 @@
+<div class="app-shell">
+  <app-sidebar class="app-shell__sidebar" />
+  <div class="app-shell__main">
+    <header class="mobile-header">
+      @if (auth.currentUser(); as user) {
+        <span class="mobile-header__user">{{ user.name }}</span>
+      }
+      <button class="mobile-header__logout" (click)="logout()">Odhlásit se</button>
+    </header>
+    <main class="app-shell__content">
+      <router-outlet />
+    </main>
+  </div>
+  <app-bottom-nav class="app-shell__bottom-nav" />
+</div>
