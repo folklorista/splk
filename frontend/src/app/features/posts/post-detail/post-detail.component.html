@@ -1,0 +1,28 @@
+<div class="page">
+  <a class="back-link" routerLink="/app/posts">← Zpět na nástěnku</a>
+
+  @if (loading()) {
+    <p class="state-note">Načítání…</p>
+  } @else if (notFound()) {
+    <p class="state-note">Příspěvek nebyl nalezen.</p>
+  } @else {
+    @let p = post();
+    @if (p) {
+      <div class="detail">
+        <div class="detail__header">
+          <h1 class="detail__title">{{ p.title }}</h1>
+          @if (p.isPinned) {
+            <span class="badge badge--pinned">Důležité</span>
+          }
+        </div>
+
+        <dl class="detail__meta">
+          <dt>Datum</dt>
+          <dd>{{ p.publishedAt | date: 'd. M. yyyy' }}</dd>
+        </dl>
+
+        <p class="detail__body">{{ p.body }}</p>
+      </div>
+    }
+  }
+</div>

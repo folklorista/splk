@@ -30,10 +30,31 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'posts/:id',
+        loadComponent: () =>
+          import('./features/posts/post-detail/post-detail.component').then(
+            (m) => m.PostDetailComponent,
+          ),
+      },
+      {
         path: 'events',
         loadComponent: () =>
           import('./features/events/events.component').then(
             (m) => m.EventsComponent,
+          ),
+      },
+      {
+        path: 'events/:id',
+        loadComponent: () =>
+          import('./features/events/event-detail/event-detail.component').then(
+            (m) => m.EventDetailComponent,
+          ),
+      },
+      {
+        path: 'members/:id',
+        loadComponent: () =>
+          import('./features/members/member-detail/member-detail.component').then(
+            (m) => m.MemberDetailComponent,
           ),
       },
       {

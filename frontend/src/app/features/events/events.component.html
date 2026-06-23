@@ -8,7 +8,7 @@
   } @else {
     <ul class="item-list">
       @for (event of events(); track event.id) {
-        <li class="item-list__item">
+        <li class="item-list__item item-list__item--link" [routerLink]="['/app/events', event.id]">
           <div class="item-list__row">
             <span class="item-list__title">{{ event.title }}</span>
             <span class="badge">{{ typeLabel(event.type) }}</span>

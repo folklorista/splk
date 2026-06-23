@@ -1,0 +1,38 @@
+<div class="page">
+  <a class="back-link" routerLink="/app/members">← Zpět na členy</a>
+
+  @if (loading()) {
+    <p class="state-note">Načítání…</p>
+  } @else if (notFound()) {
+    <p class="state-note">Člen nebyl nalezen.</p>
+  } @else {
+    @let m = member();
+    @if (m) {
+      <div class="detail">
+        <div class="detail__header">
+          <h1 class="detail__title">{{ m.name }}</h1>
+          @if (!m.isActive) {
+            <span class="badge">Neaktivní</span>
+          }
+        </div>
+
+        <dl class="detail__meta">
+          <dt>E-mail</dt>
+          <dd>{{ m.email }}</dd>
+          @if (m.phone) {
+            <dt>Telefon</dt>
+            <dd>{{ m.phone }}</dd>
+          }
+          <dt>Skupiny</dt>
+          <dd>
+            @if (m.groupIds.length) {
+              Skupina {{ m.groupIds.join(', ') }}
+            } @else {
+              Bez skupiny
+            }
+          </dd>
+        </dl>
+      </div>
+    }
+  }
+</div>

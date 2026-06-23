@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { AppEvent } from './models/event.model';
 import { EventsService } from './events.service';
 
@@ -14,7 +15,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-events',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink],
   templateUrl: './events.component.html',
 })
 export class EventsComponent implements OnInit {

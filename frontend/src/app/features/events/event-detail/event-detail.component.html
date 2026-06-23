@@ -1,0 +1,75 @@
+<div class="page">
+  <a class="back-link" routerLink="/app/events">← Zpět na akce</a>
+
+  @if (loading()) {
+    <p class="state-note">Načítání…</p>
+  } @else if (notFound()) {
+    <p class="state-note">Akce nebyla nalezena.</p>
+  } @else {
+    @let ev = event();
+    @if (ev) {
+      <div class="detail">
+        <div class="detail__header">
+          <h1 class="detail__title">{{ ev.title }}</h1>
+          <span class="badge">{{ typeLabel(ev.type) }}</span>
+        </div>
+
+        <dl class="detail__meta">
+          <dt>Začátek</dt>
+          <dd>{{ ev.startsAt | date: 'd. M. yyyy, HH:mm' }}</dd>
+          <dt>Konec</dt>
+          <dd>{{ ev.endsAt | date: 'd. M. yyyy, HH:mm' }}</dd>
+          <dt>Místo</dt>
+          <dd>{{ ev.location }}</dd>
+        </dl>
+
+        @if (ev.description) {
+          <p class="detail__body">{{ ev.description }}</p>
+        }
+
+        <section class="detail__section">
+          <h2 class="detail__section-title">Moje účast</h2>
+          <div class="attendance-actions">
+            @for (status of statuses; track status) {
+              <button
+                class="attendance-btn"
+                [class.attendance-btn--active]="record()?.status === status"
+                (click)="setStatus(status)"
+              >
+                {{ statusLabels[status] }}
+              </button>
+            }
+            @if (record() && record()!.status !== 'pending') {
+              <button class="attendance-btn attendance-btn--clear" (click)="clearStatus()">Zrušit</button>
+            }
+          </div>
+
+          <div class="attendance-note">
+            @if (noteValue() && !noteOpen()) {
+              <div class="attendance-note__preview">
+                <span class="attendance-note__text">{{ noteValue() }}</span>
+                <button class="attendance-note__edit" (click)="noteOpen.set(true)">Upravit</button>
+              </div>
+            } @else if (noteOpen()) {
+              <div class="attendance-note__form">
+                <textarea
+                  class="attendance-note__input"
+                  rows="2"
+                  placeholder="Poznámka pro vedoucího…"
+                  [value]="noteValue()"
+                  (input)="noteValue.set($any($event.target).value)"
+                ></textarea>
+                <div class="attendance-note__actions">
+                  <button class="attendance-btn attendance-btn--active" (click)="saveNote(noteValue())">Uložit</button>
+                  <button class="attendance-btn" (click)="noteOpen.set(false)">Zrušit</button>
+                </div>
+              </div>
+            } @else {
+              <button class="attendance-note__add" (click)="noteOpen.set(true)">+ Přidat poznámku</button>
+            }
+          </div>
+        </section>
+      </div>
+    }
+  }
+</div>
