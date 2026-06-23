@@ -359,3 +359,55 @@
     border-color: #ffcc80;
   }
 }
+
+// Attendance status indicator
+.attendance-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+  background: var(--color-surface-alt);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+
+  &--yes    { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+  &--no     { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+  &--maybe  { background: #fff8e1; color: #f57f17; border-color: #ffe082; }
+  &--pending { /* default gray */ }
+}
+
+// Attendance action buttons
+.attendance-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.attendance-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+
+  &:hover {
+    background: var(--color-surface-alt);
+    color: var(--color-text);
+  }
+
+  &--active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+
+    &:hover {
+      background: var(--color-primary-dark);
+      border-color: var(--color-primary-dark);
+      color: #fff;
+    }
+  }
+}

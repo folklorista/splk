@@ -1,0 +1,36 @@
+<div class="page">
+  <h1 class="page__title">Docházka</h1>
+
+  @if (loading()) {
+    <p class="state-note">Načítání…</p>
+  } @else if (!items().length) {
+    <p class="state-note">Žádné akce.</p>
+  } @else {
+    <ul class="item-list">
+      @for (item of items(); track item.event.id) {
+        <li class="item-list__item">
+          <div class="item-list__row">
+            <span class="item-list__title">{{ item.event.title }}</span>
+            <span class="attendance-status attendance-status--{{ item.record?.status ?? 'pending' }}">
+              {{ statusLabel(item.record?.status) }}
+            </span>
+          </div>
+          <div class="item-list__meta">
+            {{ item.event.startsAt | date: 'd. M. yyyy, HH:mm' }} · {{ item.event.location }}
+          </div>
+          <div class="attendance-actions">
+            @for (status of statuses; track status) {
+              <button
+                class="attendance-btn"
+                [class.attendance-btn--active]="item.record?.status === status"
+                (click)="setStatus(item.event.id, status)"
+              >
+                {{ statusLabels[status] }}
+              </button>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>
