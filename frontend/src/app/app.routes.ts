@@ -94,10 +94,29 @@ export const routes: Routes = [
           },
           {
             path: 'posts',
-            loadComponent: () =>
-              import('./admin/pages/admin-posts/admin-posts.component').then(
-                (m) => m.AdminPostsComponent,
-              ),
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('./admin/pages/admin-posts/admin-posts.component').then(
+                    (m) => m.AdminPostsComponent,
+                  ),
+              },
+              {
+                path: 'new',
+                loadComponent: () =>
+                  import('./admin/pages/admin-posts/admin-post-form/admin-post-form.component').then(
+                    (m) => m.AdminPostFormComponent,
+                  ),
+              },
+              {
+                path: ':id/edit',
+                loadComponent: () =>
+                  import('./admin/pages/admin-posts/admin-post-form/admin-post-form.component').then(
+                    (m) => m.AdminPostFormComponent,
+                  ),
+              },
+            ],
           },
           {
             path: 'events',
