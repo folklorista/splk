@@ -1,13 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
+import { Member } from '../../core/models/member.model';
+import { MembersService } from './members.service';
 
 @Component({
   selector: 'app-members',
   standalone: true,
-  template: `
-    <div class="placeholder-page">
-      <h1>Členové</h1>
-      <p class="placeholder-page__note">Přehled členů souboru – připravuje se.</p>
-    </div>
-  `,
+  templateUrl: './members.component.html',
 })
-export class MembersComponent {}
+export class MembersComponent implements OnInit {
+  members = signal<Member[]>([]);
+  loading = signal(true);
+
+  constructor(private membersService: MembersService) {}
+
+  ngOnInit(): void {
+    this.membersService.getActiveMembers().subscribe((members) => {
+      this.members.set(members);
+      this.loading.set(false);
+    });
+  }
+}

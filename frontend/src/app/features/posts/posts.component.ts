@@ -1,13 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Post } from './models/post.model';
+import { PostsService } from './posts.service';
 
 @Component({
   selector: 'app-posts',
   standalone: true,
-  template: `
-    <div class="placeholder-page">
-      <h1>Nástěnka</h1>
-      <p class="placeholder-page__note">Oznámení a příspěvky – připravuje se.</p>
-    </div>
-  `,
+  imports: [DatePipe],
+  templateUrl: './posts.component.html',
 })
-export class PostsComponent {}
+export class PostsComponent implements OnInit {
+  posts = signal<Post[]>([]);
+  loading = signal(true);
+
+  constructor(private postsService: PostsService) {}
+
+  ngOnInit(): void {
+    this.postsService.getPosts().subscribe((posts) => {
+      this.posts.set(posts);
+      this.loading.set(false);
+    });
+  }
+}

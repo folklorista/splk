@@ -282,3 +282,80 @@
     font-size: var(--font-size-sm);
   }
 }
+
+// Feature pages
+.page {
+  &__title {
+    font-size: var(--font-size-h1);
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+  }
+}
+
+.state-note {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-md) 0;
+}
+
+// Item list – shared across Posts, Events, Members
+.item-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+
+  &__item {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  &__row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+  }
+
+  &__title {
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    flex: 1;
+  }
+
+  &__meta {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__body {
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    line-height: 1.5;
+    margin-top: var(--spacing-xs);
+  }
+}
+
+// Badges
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--color-surface-alt);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+
+  &--pinned {
+    background: #fff3e0;
+    color: #e65100;
+    border-color: #ffcc80;
+  }
+}

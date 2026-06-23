@@ -1,0 +1,18 @@
+<div class="page">
+  <h1 class="page__title">Členové</h1>
+
+  @if (loading()) {
+    <p class="state-note">Načítání…</p>
+  } @else if (!members().length) {
+    <p class="state-note">Žádní aktivní členové.</p>
+  } @else {
+    <ul class="item-list">
+      @for (member of members(); track member.id) {
+        <li class="item-list__item">
+          <span class="item-list__title">{{ member.name }}</span>
+          <div class="item-list__meta">{{ member.email }}</div>
+        </li>
+      }
+    </ul>
+  }
+</div>
