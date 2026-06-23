@@ -25,8 +25,8 @@
           }
           <dt>Skupiny</dt>
           <dd>
-            @if (m.groupIds.length) {
-              Skupina {{ m.groupIds.join(', ') }}
+            @if (groups().length) {
+              {{ groupNames() }}
             } @else {
               Bez skupiny
             }

@@ -1,7 +1,9 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Member } from '../../../core/models/member.model';
+import { Group } from '../../../core/models/group.model';
 import { MembersService } from '../members.service';
+import { GroupsService } from '../../../core/services/groups.service';
 
 @Component({
   selector: 'app-member-detail',
@@ -11,12 +13,15 @@ import { MembersService } from '../members.service';
 })
 export class MemberDetailComponent implements OnInit {
   member = signal<Member | null>(null);
+  groups = signal<Group[]>([]);
+  groupNames = () => this.groups().map((g) => g.name).join(', ');
   loading = signal(true);
   notFound = signal(false);
 
   constructor(
     private route: ActivatedRoute,
     private membersService: MembersService,
+    private groupsService: GroupsService,
   ) {}
 
   ngOnInit(): void {
@@ -24,7 +29,10 @@ export class MemberDetailComponent implements OnInit {
     this.membersService.getMember(id).subscribe((member) => {
       if (!member) { this.notFound.set(true); this.loading.set(false); return; }
       this.member.set(member);
-      this.loading.set(false);
+      this.groupsService.getGroupsByIds(member.groupIds).subscribe((groups) => {
+        this.groups.set(groups);
+        this.loading.set(false);
+      });
     });
   }
 }
