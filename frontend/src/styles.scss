@@ -411,3 +411,58 @@
     }
   }
 }
+
+// Costume category accordion
+.costume-category {
+  padding: 0;
+  overflow: hidden;
+
+  &__header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    text-align: left;
+    background: none;
+
+    &:hover {
+      background: var(--color-surface-alt);
+    }
+  }
+
+  &__toggle {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+}
+
+.costume-items {
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child { border-bottom: none; }
+  }
+
+  &__name {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    flex: 1;
+  }
+}
+
+// Condition badges for costumes
+.badge {
+  &--condition-good         { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+  &--condition-needs-repair { background: #fff8e1; color: #f57f17; border-color: #ffe082; }
+  &--condition-damaged      { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+  &--condition-retired      { background: var(--color-surface-alt); color: var(--color-text-muted); }
+}
