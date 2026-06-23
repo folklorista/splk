@@ -120,24 +120,81 @@ export const routes: Routes = [
           },
           {
             path: 'events',
-            loadComponent: () =>
-              import('./admin/pages/admin-events/admin-events.component').then(
-                (m) => m.AdminEventsComponent,
-              ),
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('./admin/pages/admin-events/admin-events.component').then(
+                    (m) => m.AdminEventsComponent,
+                  ),
+              },
+              {
+                path: 'new',
+                loadComponent: () =>
+                  import('./admin/pages/admin-events/admin-event-form/admin-event-form.component').then(
+                    (m) => m.AdminEventFormComponent,
+                  ),
+              },
+              {
+                path: ':id/edit',
+                loadComponent: () =>
+                  import('./admin/pages/admin-events/admin-event-form/admin-event-form.component').then(
+                    (m) => m.AdminEventFormComponent,
+                  ),
+              },
+            ],
           },
           {
             path: 'members',
-            loadComponent: () =>
-              import('./admin/pages/admin-members/admin-members.component').then(
-                (m) => m.AdminMembersComponent,
-              ),
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('./admin/pages/admin-members/admin-members.component').then(
+                    (m) => m.AdminMembersComponent,
+                  ),
+              },
+              {
+                path: 'new',
+                loadComponent: () =>
+                  import('./admin/pages/admin-members/admin-member-form/admin-member-form.component').then(
+                    (m) => m.AdminMemberFormComponent,
+                  ),
+              },
+              {
+                path: ':id/edit',
+                loadComponent: () =>
+                  import('./admin/pages/admin-members/admin-member-form/admin-member-form.component').then(
+                    (m) => m.AdminMemberFormComponent,
+                  ),
+              },
+            ],
           },
           {
             path: 'groups',
-            loadComponent: () =>
-              import('./admin/pages/admin-groups/admin-groups.component').then(
-                (m) => m.AdminGroupsComponent,
-              ),
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('./admin/pages/admin-groups/admin-groups.component').then(
+                    (m) => m.AdminGroupsComponent,
+                  ),
+              },
+              {
+                path: 'new',
+                loadComponent: () =>
+                  import('./admin/pages/admin-groups/admin-group-form/admin-group-form.component').then(
+                    (m) => m.AdminGroupFormComponent,
+                  ),
+              },
+              {
+                path: ':id/edit',
+                loadComponent: () =>
+                  import('./admin/pages/admin-groups/admin-group-form/admin-group-form.component').then(
+                    (m) => m.AdminGroupFormComponent,
+                  ),
+              },
+            ],
           },
         ],
       },
