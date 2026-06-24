@@ -1,5 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { Component, OnInit, signal, computed } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AppEvent } from '../models/event.model';
@@ -8,6 +8,7 @@ import { EventsService } from '../events.service';
 import { AttendanceService } from '../../attendance/attendance.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MembersService } from '../../members/members.service';
+import { GroupsService } from '../../../core/services/groups.service';
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   rehearsal: 'Zkouška',
@@ -27,20 +28,32 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [DatePipe, RouterLink, FormsModule],
+  imports: [CommonModule, DatePipe, RouterLink, FormsModule],
   templateUrl: './event-detail.component.html',
 })
 export class EventDetailComponent implements OnInit {
   event = signal<AppEvent | null>(null);
   record = signal<AttendanceRecord | undefined>(undefined);
+  allRecords = signal<AttendanceRecord[]>([]);
   noteOpen = signal(false);
   noteValue = signal('');
   loading = signal(true);
   notFound = signal(false);
   currentMemberId = signal<number | null>(null);
+  targetGroupNames = signal<string>('');
 
   readonly statuses: AttendanceStatus[] = ['yes', 'no', 'maybe'];
   readonly statusLabels = STATUS_LABELS;
+
+  readonly attendanceSummary = computed(() => {
+    const records = this.allRecords();
+    return {
+      yes: records.filter((r) => r.status === 'yes').length,
+      no: records.filter((r) => r.status === 'no').length,
+      maybe: records.filter((r) => r.status === 'maybe').length,
+      pending: records.filter((r) => r.status === 'pending').length,
+    };
+  });
 
   constructor(
     private route: ActivatedRoute,
@@ -48,7 +61,16 @@ export class EventDetailComponent implements OnInit {
     private attendanceService: AttendanceService,
     private auth: AuthService,
     private membersService: MembersService,
+    private groupsService: GroupsService,
   ) {}
+
+  get isLeader(): boolean {
+    return this.auth.currentUser()?.roles.includes('leader') ?? false;
+  }
+
+  get isAdmin(): boolean {
+    return this.auth.currentUser()?.roles.includes('admin') ?? false;
+  }
 
   ngOnInit(): void {
     const user = this.auth.currentUser();
@@ -75,13 +97,27 @@ export class EventDetailComponent implements OnInit {
           return;
         }
         this.event.set(event);
-        this.attendanceService.getMemberAttendance(member.id).subscribe((records) => {
-          const r = records.find((r) => r.eventId === id);
+
+        this.loadTargetGroupNames(event.targetGroupIds);
+        this.attendanceService.getMemberAttendance(member.id).subscribe((allRecords) => {
+          const r = allRecords.find((r) => r.eventId === id);
           this.record.set(r);
           this.noteValue.set(r?.note ?? '');
+
+          const eventRecords = allRecords.filter((r) => r.eventId === id);
+          this.allRecords.set(eventRecords);
           this.loading.set(false);
         });
       });
+    });
+  }
+
+  private loadTargetGroupNames(groupIds: number[]): void {
+    if (!groupIds || groupIds.length === 0) return;
+
+    this.groupsService.getGroupsByIds(groupIds).subscribe((groups) => {
+      const names = groups.map((g) => g.name).join(', ');
+      this.targetGroupNames.set(names);
     });
   }
 
