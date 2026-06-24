@@ -371,6 +371,12 @@
   }
 }
 
+// Items requiring action
+.item-list .item-list__item--requires-action {
+  border-left: 4px solid var(--color-primary);
+  background: linear-gradient(to right, rgba(192, 61, 54, 0.03), transparent);
+}
+
 .state-note {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
@@ -407,6 +413,13 @@
     flex: 1;
   }
 
+  &__badges {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
   &__meta {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
@@ -436,6 +449,12 @@
     background: #fff3e0;
     color: #e65100;
     border-color: #ffcc80;
+  }
+
+  &--requires-action {
+    background: #ffebee;
+    color: #c62828;
+    border-color: #ef9a9a;
   }
 }
 

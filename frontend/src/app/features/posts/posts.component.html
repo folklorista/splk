@@ -8,10 +8,16 @@
   } @else {
     <ul class="item-list">
       @for (post of posts(); track post.id) {
-        <li class="item-list__item item-list__item--link" [routerLink]="['/app/posts', post.id]">
+        <li
+          class="item-list__item item-list__item--link"
+          [class.item-list__item--requires-action]="post.requiresAction"
+          [routerLink]="['/app/posts', post.id]"
+        >
           <div class="item-list__row">
             <span class="item-list__title">{{ post.title }}</span>
-            @if (post.isPinned) {
+            @if (post.requiresAction) {
+              <span class="badge badge--requires-action">Čeká na vás</span>
+            } @else if (post.isPinned) {
               <span class="badge badge--pinned">Důležité</span>
             }
           </div>

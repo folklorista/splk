@@ -8,10 +8,19 @@
   } @else {
     <ul class="item-list">
       @for (event of events(); track event.id) {
-        <li class="item-list__item item-list__item--link" [routerLink]="['/app/events', event.id]">
+        <li
+          class="item-list__item item-list__item--link"
+          [class.item-list__item--requires-action]="event.requiresAction"
+          [routerLink]="['/app/events', event.id]"
+        >
           <div class="item-list__row">
             <span class="item-list__title">{{ event.title }}</span>
-            <span class="badge">{{ typeLabel(event.type) }}</span>
+            <div class="item-list__badges">
+              @if (event.requiresAction) {
+                <span class="badge badge--requires-action">Čeká na vás</span>
+              }
+              <span class="badge">{{ typeLabel(event.type) }}</span>
+            </div>
           </div>
           <div class="item-list__meta">
             {{ event.startsAt | date: 'd. M. yyyy, HH:mm' }} · {{ event.location }}
