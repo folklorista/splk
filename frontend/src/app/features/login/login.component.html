@@ -38,5 +38,21 @@
         {{ loading() ? 'Přihlašování…' : 'Přihlásit se' }}
       </button>
     </form>
+
+    <div class="demo-section">
+      <p class="demo-label">Demo profily:</p>
+      <div class="demo-buttons">
+        @for (user of demoUsers; track user.id) {
+          <button
+            class="btn-demo"
+            type="button"
+            (click)="quickLogin(user.email)"
+            [disabled]="loading()"
+          >
+            {{ user.name }}
+          </button>
+        }
+      </div>
+    </div>
   </div>
 </div>

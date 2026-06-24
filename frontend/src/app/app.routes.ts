@@ -58,17 +58,17 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'attendance',
-        loadComponent: () =>
-          import('./features/attendance/attendance.component').then(
-            (m) => m.AttendanceComponent,
-          ),
-      },
-      {
         path: 'members',
         loadComponent: () =>
           import('./features/members/members.component').then(
             (m) => m.MembersComponent,
+          ),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/profile/profile.component').then(
+            (m) => m.ProfileComponent,
           ),
       },
       {

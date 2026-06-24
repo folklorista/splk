@@ -1,6 +1,9 @@
+export type UserRole = 'member' | 'leader' | 'admin';
+
 export interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
-  role: 'admin' | 'leader' | 'member';
+  groups: string[];
+  roles: UserRole[];
 }

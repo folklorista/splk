@@ -18,6 +18,6 @@ export class BottomNavComponent {
     { path: '/app/posts', label: 'Nástěnka' },
     { path: '/app/events', label: 'Akce' },
     { path: '/app/members', label: 'Členové' },
-    { path: '/app/costumes', label: 'Kroje' },
+    { path: '/app/profile', label: 'Profil' },
   ];
 }

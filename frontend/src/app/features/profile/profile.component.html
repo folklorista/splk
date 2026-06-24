@@ -1,0 +1,66 @@
+<div class="profile-page">
+  <div class="profile-header">
+    <h1>Můj profil</h1>
+  </div>
+
+  @if (currentUser()) {
+    <div class="profile-section">
+      <h2>Osobní údaje</h2>
+
+      <div class="profile-field">
+        <div class="profile-field-label">Jméno</div>
+        <div class="profile-field-value">{{ currentUser()!.name }}</div>
+      </div>
+
+      <div class="profile-field">
+        <div class="profile-field-label">E-mail</div>
+        <div class="profile-field-value">{{ currentUser()!.email }}</div>
+      </div>
+
+      <div class="profile-field">
+        <div class="profile-field-label">Telefon</div>
+        <div class="profile-field-value">{{ memberPhone }}</div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <h2>Příslušnost</h2>
+
+      <div class="profile-field">
+        <div class="profile-field-label">Skupiny</div>
+        <div class="profile-field-value">
+          @for (group of currentUser()!.groups; track group) {
+            <span class="group-badge">{{ group }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="profile-field">
+        <div class="profile-field-label">Role a oprávnění</div>
+        <div class="profile-field-value">
+          @for (role of currentUser()!.roles; track role) {
+            <span class="role-badge" [ngClass]="getRoleBadgeClass(role)">
+              {{ getRoleLabel(role) }}
+            </span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <h2>Nepotvrzené akce</h2>
+      @if (pendingEventCount === 0) {
+        <div class="no-pending">
+          ✓ Všechny akce jsou potvrzeny
+        </div>
+      } @else {
+        <div class="pending-events">
+          <span class="pending-events-count">{{ pendingEventCount }} akcí</span>
+          čeká na tvoji odpověď
+        </div>
+      }
+    </div>
+
+    <button class="logout-btn" (click)="logout()">Odhlásit se</button>
+  }
+</div>

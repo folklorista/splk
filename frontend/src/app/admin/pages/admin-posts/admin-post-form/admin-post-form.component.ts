@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PostsService } from '../../../../features/posts/posts.service';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { MembersService } from '../../../../features/members/members.service';
 import { Post } from '../../../../features/posts/models/post.model';
 
 @Component({
@@ -210,6 +211,7 @@ export class AdminPostFormComponent implements OnInit {
     private router: Router,
     private postsService: PostsService,
     private authService: AuthService,
+    private membersService: MembersService,
   ) {
     this.form = this.fb.group({
       title: ['', Validators.required],
@@ -255,36 +257,57 @@ export class AdminPostFormComponent implements OnInit {
     const formValue = this.form.value;
     const user = this.authService.currentUser();
 
-    const postData: Omit<Post, 'id'> = {
-      ensembleId: 1,
-      title: formValue.title,
-      body: formValue.body,
-      authorId: user?.id ?? 0,
-      targetGroupIds: [],
-      publishedAt: new Date().toISOString(),
-      isPinned: formValue.isPinned,
-    };
-
-    if (this.isEditMode && this.postId !== null) {
-      this.postsService.updatePost(this.postId, postData).subscribe({
-        next: () => {
-          this.router.navigate(['/app/admin/posts']);
-        },
-        error: () => {
-          this.isSubmitting = false;
-          this.submitError = 'Nepodařilo se uložit příspěvek';
-        },
-      });
-    } else {
-      this.postsService.createPost(postData).subscribe({
-        next: () => {
-          this.router.navigate(['/app/admin/posts']);
-        },
-        error: () => {
-          this.isSubmitting = false;
-          this.submitError = 'Nepodařilo se vytvořit příspěvek';
-        },
-      });
+    if (!user) {
+      this.isSubmitting = false;
+      this.submitError = 'Uživatel není přihlášen';
+      return;
     }
+
+    this.membersService.getMembers().subscribe({
+      next: (members) => {
+        const member = members.find((m) => m.email === user.email);
+        if (!member) {
+          this.isSubmitting = false;
+          this.submitError = 'Člen nebyl nalezen';
+          return;
+        }
+
+        const postData: Omit<Post, 'id'> = {
+          ensembleId: 1,
+          title: formValue.title,
+          body: formValue.body,
+          authorId: member.id,
+          targetGroupIds: [],
+          publishedAt: new Date().toISOString(),
+          isPinned: formValue.isPinned,
+        };
+
+        if (this.isEditMode && this.postId !== null) {
+          this.postsService.updatePost(this.postId, postData).subscribe({
+            next: () => {
+              this.router.navigate(['/app/admin/posts']);
+            },
+            error: () => {
+              this.isSubmitting = false;
+              this.submitError = 'Nepodařilo se uložit příspěvek';
+            },
+          });
+        } else {
+          this.postsService.createPost(postData).subscribe({
+            next: () => {
+              this.router.navigate(['/app/admin/posts']);
+            },
+            error: () => {
+              this.isSubmitting = false;
+              this.submitError = 'Nepodařilo se vytvořit příspěvek';
+            },
+          });
+        }
+      },
+      error: () => {
+        this.isSubmitting = false;
+        this.submitError = 'Nepodařilo se načíst členy';
+      },
+    });
   }
 }
