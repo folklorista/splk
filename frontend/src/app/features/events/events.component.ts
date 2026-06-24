@@ -31,14 +31,16 @@ export class EventsComponent implements OnInit {
   });
 
   getUserAttendanceStatus = (event: AppEvent): string | null => {
-    const user = this.auth.currentUser();
-    if (!user) return null;
-    const attendance = event.attendance?.find(a => a.userId === user.id);
-    return attendance?.status ?? null;
+    if (!event.attendance || event.attendance.length === 0) return null;
+    const pending = event.attendance.find(a => a.status === 'pending');
+    const confirmed = event.attendance.find(a => a.status !== 'pending');
+    return confirmed?.status ?? null;
   };
 
   isWaitingForResponse = (event: AppEvent): boolean => {
-    return this.getUserAttendanceStatus(event) === null;
+    if (!event.attendance || event.attendance.length === 0) return true;
+    const confirmed = event.attendance.find(a => a.status !== 'pending');
+    return !confirmed;
   };
 
   getAttendanceLabel = (status: string | null): string => {

@@ -1,11 +1,6 @@
 export type EventType = 'rehearsal' | 'performance' | 'camp' | 'meeting' | 'other';
 
-export type AttendanceStatus = 'yes' | 'no' | 'maybe';
-
-export interface AttendanceRecord {
-  userId: string;
-  status: AttendanceStatus;
-}
+import { AttendanceRecord } from '../../attendance/models/attendance.model';
 
 export interface AppEvent {
   id: number;
