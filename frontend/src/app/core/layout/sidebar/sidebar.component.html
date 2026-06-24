@@ -14,6 +14,9 @@
             routerLinkActive="sidebar__nav-item--active"
           >
             {{ item.label }}
+            @if (item.badge) {
+              <span class="sidebar__badge">{{ item.badge }}</span>
+            }
           </a>
         }
       </div>
