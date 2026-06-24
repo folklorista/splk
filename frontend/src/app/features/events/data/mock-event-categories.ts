@@ -1,0 +1,58 @@
+import { EventCategory } from '../models/event-category.model';
+
+export const MOCK_EVENT_CATEGORIES: EventCategory[] = [
+  {
+    id: 1,
+    ensembleId: 1,
+    name: 'Úterní nácvik',
+    slug: 'uterny-nacvik',
+    color: '#4caf50',
+    defaultLocation: 'Kulturní dům, sál č. 2',
+    defaultTime: '19:30',
+    targetGroupIds: [1],
+    requiresConfirmation: true,
+  },
+  {
+    id: 2,
+    ensembleId: 1,
+    name: 'Páteční nácvik',
+    slug: 'patek-nacvik',
+    color: '#2196f3',
+    defaultLocation: 'Kulturní dům, sál č. 2',
+    defaultTime: '19:00',
+    targetGroupIds: [1],
+    requiresConfirmation: true,
+  },
+  {
+    id: 3,
+    ensembleId: 1,
+    name: 'Vystoupení',
+    slug: 'vystoupeni',
+    color: '#ff9800',
+    requiresConfirmation: true,
+  },
+  {
+    id: 4,
+    ensembleId: 1,
+    name: 'Soustředění',
+    slug: 'soustredeni',
+    color: '#9c27b0',
+    requiresConfirmation: true,
+  },
+  {
+    id: 5,
+    ensembleId: 1,
+    name: 'Schůzka',
+    slug: 'schuzka',
+    color: '#f44336',
+    requiresConfirmation: false,
+  },
+  {
+    id: 6,
+    ensembleId: 1,
+    name: 'Ostatní',
+    slug: 'ostatni',
+    color: '#9e9e9e',
+    requiresConfirmation: false,
+  },
+];

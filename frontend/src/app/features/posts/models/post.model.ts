@@ -7,4 +7,6 @@ export interface Post {
   targetGroupIds: number[];
   publishedAt: string;
   isPinned: boolean;
+  isImportant?: boolean;
+  requiresAction?: boolean;
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { Group } from '../../core/models/group.model';
-import { MOCK_GROUPS } from './data/mock-groups';
+import { MOCK_GROUPS } from '../../core/data/mock-groups';
 
 let groupsCache = [...MOCK_GROUPS];
 

@@ -10,7 +10,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     endsAt: '2026-06-25T21:30:00',
     location: 'Kulturní dům, sál č. 2',
     description: 'Pravidelná týdenní zkouška. Nacvičujeme program na festival.',
-    targetGroupIds: [],
+    targetGroupIds: [1],
   },
   {
     id: 2,
@@ -21,7 +21,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     endsAt: '2026-07-05T16:00:00',
     location: 'Strážnice, hlavní pódium',
     description: 'Výjezdní vystoupení na mezinárodním folklorním festivalu.',
-    targetGroupIds: [],
+    targetGroupIds: [1, 2],
   },
   {
     id: 3,
@@ -31,6 +31,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     startsAt: '2026-07-01T18:00:00',
     endsAt: '2026-07-01T20:00:00',
     location: 'Kulturní dům, zkušebna',
+    description: 'Intenzivní nácvik choreografie.',
     targetGroupIds: [2],
   },
   {
@@ -42,7 +43,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     endsAt: '2026-07-16T17:00:00',
     location: 'Luhačovice, Zálesí',
     description: 'Pětidenní soustředění s intenzivními zkouškami a společným programem.',
-    targetGroupIds: [],
+    targetGroupIds: [1],
   },
   {
     id: 5,
@@ -52,6 +53,18 @@ export const MOCK_EVENTS: AppEvent[] = [
     startsAt: '2026-07-08T17:00:00',
     endsAt: '2026-07-08T18:30:00',
     location: 'Kulturní dům, zasedací místnost',
+    description: 'Schůzka vedení souboru – program, finance, plánování.',
     targetGroupIds: [3],
+  },
+  {
+    id: 6,
+    ensembleId: 1,
+    title: 'Zkouška – hudebníci',
+    type: 'rehearsal',
+    startsAt: '2026-06-30T20:00:00',
+    endsAt: '2026-06-30T22:00:00',
+    location: 'Kulturní dům, malý sál',
+    description: 'Nácvik hudebního doprovodu.',
+    targetGroupIds: [4],
   },
 ];
