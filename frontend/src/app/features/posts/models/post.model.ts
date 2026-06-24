@@ -9,4 +9,5 @@ export interface Post {
   isPinned: boolean;
   isImportant?: boolean;
   requiresAction?: boolean;
+  readers?: string[];
 }

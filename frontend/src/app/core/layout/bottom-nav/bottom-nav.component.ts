@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { PostsService } from '../../../features/posts/posts.service';
 import { EventsService } from '../../../features/events/events.service';
+import { AuthService } from '../../auth/auth.service';
+import { getUnreadPostsCount, getUnconfirmedEventsCount } from '../../utils/visibility.utils';
 
 interface NavItem {
   path: string;
@@ -48,23 +50,24 @@ export class BottomNavComponent implements OnInit {
 
   constructor(
     private postsService: PostsService,
-    private eventsService: EventsService
+    private eventsService: EventsService,
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
     this.postsService.getPosts().subscribe((posts) => {
-      const requiresActionCount = posts.filter((p) => p.requiresAction).length;
+      const count = getUnreadPostsCount(posts, this.auth.currentUser());
       const postsItem = this.navItems.find((item) => item.path === '/app/posts');
       if (postsItem) {
-        postsItem.badge = requiresActionCount > 0 ? requiresActionCount : undefined;
+        postsItem.badge = count > 0 ? count : undefined;
       }
     });
 
     this.eventsService.getEvents().subscribe((events) => {
-      const requiresActionCount = events.filter((e) => e.requiresAction).length;
+      const count = getUnconfirmedEventsCount(events, this.auth.currentUser());
       const eventsItem = this.navItems.find((item) => item.path === '/app/events');
       if (eventsItem) {
-        eventsItem.badge = requiresActionCount > 0 ? requiresActionCount : undefined;
+        eventsItem.badge = count > 0 ? count : undefined;
       }
     });
   }

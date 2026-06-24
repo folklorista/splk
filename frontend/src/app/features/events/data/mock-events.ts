@@ -12,6 +12,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     description: 'Pravidelná týdenní zkouška. Nacvičujeme program na festival.',
     targetGroupIds: [1],
     requiresAction: true,
+    attendance: [{ userId: 'jana', status: 'yes' }],
   },
   {
     id: 2,
@@ -35,6 +36,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     description: 'Intenzivní nácvik choreografie.',
     targetGroupIds: [2],
     requiresAction: true,
+    attendance: [{ userId: 'vedouci', status: 'maybe' }],
   },
   {
     id: 4,

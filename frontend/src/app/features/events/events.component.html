@@ -7,17 +7,22 @@
     <p class="state-note">Žádné akce.</p>
   } @else {
     <ul class="item-list">
-      @for (event of events(); track event.id) {
+      @for (event of visibleEvents(); track event.id) {
         <li
           class="item-list__item item-list__item--link"
-          [class.item-list__item--requires-action]="event.requiresAction"
+          [class.item-list__item--requires-action]="isWaitingForResponse(event)"
           [routerLink]="['/app/events', event.id]"
         >
           <div class="item-list__row">
             <span class="item-list__title">{{ event.title }}</span>
             <div class="item-list__badges">
-              @if (event.requiresAction) {
+              @if (isWaitingForResponse(event)) {
                 <span class="badge badge--requires-action">Čeká na vás</span>
+              }
+              @if (getUserAttendanceStatus(event)) {
+                <span class="badge badge--attendance" [attr.data-status]="getUserAttendanceStatus(event)">
+                  {{ getAttendanceLabel(getUserAttendanceStatus(event)) }}
+                </span>
               }
               <span class="badge">{{ typeLabel(event.type) }}</span>
             </div>

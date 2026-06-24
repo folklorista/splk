@@ -4,6 +4,7 @@ import { AuthService } from '../../auth/auth.service';
 import { Router } from '@angular/router';
 import { PostsService } from '../../../features/posts/posts.service';
 import { EventsService } from '../../../features/events/events.service';
+import { getUnreadPostsCount, getUnconfirmedEventsCount } from '../../utils/visibility.utils';
 
 interface NavItem {
   path: string;
@@ -75,18 +76,18 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit(): void {
     this.postsService.getPosts().subscribe((posts) => {
-      const requiresActionCount = posts.filter((p) => p.requiresAction).length;
+      const count = getUnreadPostsCount(posts, this.auth.currentUser());
       const postsItem = this.navSections[0].items.find((item) => item.path === '/app/posts');
       if (postsItem) {
-        postsItem.badge = requiresActionCount > 0 ? requiresActionCount : undefined;
+        postsItem.badge = count > 0 ? count : undefined;
       }
     });
 
     this.eventsService.getEvents().subscribe((events) => {
-      const requiresActionCount = events.filter((e) => e.requiresAction).length;
+      const count = getUnconfirmedEventsCount(events, this.auth.currentUser());
       const eventsItem = this.navSections[0].items.find((item) => item.path === '/app/events');
       if (eventsItem) {
-        eventsItem.badge = requiresActionCount > 0 ? requiresActionCount : undefined;
+        eventsItem.badge = count > 0 ? count : undefined;
       }
     });
   }

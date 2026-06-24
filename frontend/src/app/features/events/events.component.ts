@@ -1,8 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AppEvent } from './models/event.model';
 import { EventsService } from './events.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { isItemVisibleToUser } from '../../core/utils/visibility.utils';
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   rehearsal: 'Zkouška',
@@ -22,7 +24,37 @@ export class EventsComponent implements OnInit {
   events = signal<AppEvent[]>([]);
   loading = signal(true);
 
-  constructor(private eventsService: EventsService) {}
+  visibleEvents = computed(() => {
+    const user = this.auth.currentUser();
+    if (!user) return [];
+    return this.events().filter(e => isItemVisibleToUser(e.targetGroupIds, user.groups));
+  });
+
+  getUserAttendanceStatus = (event: AppEvent): string | null => {
+    const user = this.auth.currentUser();
+    if (!user) return null;
+    const attendance = event.attendance?.find(a => a.userId === user.id);
+    return attendance?.status ?? null;
+  };
+
+  isWaitingForResponse = (event: AppEvent): boolean => {
+    return this.getUserAttendanceStatus(event) === null;
+  };
+
+  getAttendanceLabel = (status: string | null): string => {
+    if (!status) return '';
+    const labels: Record<string, string> = {
+      yes: 'ANO',
+      no: 'NE',
+      maybe: 'MOŽNÁ',
+    };
+    return labels[status] ?? '';
+  };
+
+  constructor(
+    private eventsService: EventsService,
+    private auth: AuthService
+  ) {}
 
   ngOnInit(): void {
     this.eventsService.getEvents().subscribe((events) => {

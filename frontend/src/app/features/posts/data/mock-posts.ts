@@ -12,6 +12,7 @@ export const MOCK_POSTS: Post[] = [
     isPinned: true,
     isImportant: true,
     requiresAction: true,
+    readers: [],
   },
   {
     id: 2,
@@ -24,6 +25,7 @@ export const MOCK_POSTS: Post[] = [
     isPinned: false,
     isImportant: true,
     requiresAction: false,
+    readers: ['vedouci', 'jana'],
   },
   {
     id: 3,
@@ -48,6 +50,7 @@ export const MOCK_POSTS: Post[] = [
     isPinned: false,
     isImportant: false,
     requiresAction: true,
+    readers: ['jana'],
   },
   {
     id: 5,
