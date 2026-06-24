@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 
 const rootDir = process.cwd();
 
@@ -87,9 +87,9 @@ const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 packageJson.version = nextVersion.replace(/^v/, '');
 fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
 
-execSync(['git', 'add', 'public/changelog.json', 'package.json']);
-execSync(['git', 'commit', '-m', commitMessage]);
-execSync(['git', 'tag', tagName]);
+spawnSync('git', ['add', 'public/changelog.json', 'package.json'], { stdio: 'inherit' });
+spawnSync('git', ['commit', '-m', commitMessage], { stdio: 'inherit' });
+spawnSync('git', ['tag', tagName], { stdio: 'inherit' });
 
 console.log(`\n✨ Created release ${nextVersion} ${nextDance.codename}`);
 console.log(`Git tag: ${tagName}`);
