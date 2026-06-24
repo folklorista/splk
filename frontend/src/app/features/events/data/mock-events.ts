@@ -11,6 +11,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     location: 'Kulturní dům, sál č. 2',
     description: 'Pravidelná týdenní zkouška. Nacvičujeme program na festival.',
     targetGroupIds: [1],
+    requiresAction: true,
   },
   {
     id: 2,
@@ -33,6 +34,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     location: 'Kulturní dům, zkušebna',
     description: 'Intenzivní nácvik choreografie.',
     targetGroupIds: [2],
+    requiresAction: true,
   },
   {
     id: 4,

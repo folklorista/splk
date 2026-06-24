@@ -10,4 +10,5 @@ export interface AppEvent {
   location: string;
   description?: string;
   targetGroupIds: number[];
+  requiresAction?: boolean;
 }

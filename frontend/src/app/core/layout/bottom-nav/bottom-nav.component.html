@@ -6,6 +6,9 @@
       routerLinkActive="bottom-nav__item--active"
     >
       <span class="bottom-nav__label">{{ item.label }}</span>
+      @if (item.badge) {
+        <span class="bottom-nav__badge">{{ item.badge }}</span>
+      }
     </a>
   }
 </nav>
