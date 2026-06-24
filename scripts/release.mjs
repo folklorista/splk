@@ -9,31 +9,51 @@ const dancesPath = path.join(rootDir, 'data', 'release-dances.json');
 const changelogPath = path.join(rootDir, 'public', 'changelog.json');
 
 let dryRun = false;
-let versionIndex = 2;
+let changeIndex = 2;
 
 if (process.argv[2] === '--dry-run') {
   dryRun = true;
-  versionIndex = 3;
+  changeIndex = 3;
 }
 
-const nextVersion = process.argv[versionIndex];
-
-if (!nextVersion) {
-  console.error('Usage: npm run release -- [--dry-run] v2026.6.1 "Added admin CRUD" "Fixed mobile layout"');
-  process.exit(1);
-}
-
-if (!/^v\d{4}\.\d+\.\d+$/.test(nextVersion)) {
-  console.error('Version must have format vYYYY.MAJOR.MINOR, for example v2026.6.1');
-  process.exit(1);
-}
-
-const changes = process.argv.slice(versionIndex + 1);
+const changes = process.argv.slice(changeIndex);
 
 if (changes.length === 0) {
-  console.error('Add at least one changelog item.');
+  console.error('Usage: npm run release -- [--dry-run] "Added admin CRUD" "Fixed mobile layout"');
   process.exit(1);
 }
+
+function calculateNextVersion() {
+  const changelog = JSON.parse(fs.readFileSync(changelogPath, 'utf8'));
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+  const currentYearMonth = `${currentYear}.${currentMonth}`;
+
+  if (changelog.length === 0) {
+    return `v${currentYear}.${currentMonth}.0`;
+  }
+
+  const lastVersion = changelog[0].version;
+  const match = lastVersion.match(/^v(\d{4})\.(\d{1,2})\.(\d+)$/);
+
+  if (!match) {
+    console.error(`Invalid version format in changelog: ${lastVersion}`);
+    process.exit(1);
+  }
+
+  const [, lastYear, lastMonth, lastVersionNum] = match;
+  const lastYearMonth = `${lastYear}.${lastMonth}`;
+
+  if (lastYearMonth === currentYearMonth) {
+    const nextVersionNum = parseInt(lastVersionNum, 10) + 1;
+    return `v${currentYear}.${currentMonth}.${nextVersionNum}`;
+  } else {
+    return `v${currentYear}.${currentMonth}.0`;
+  }
+}
+
+const nextVersion = calculateNextVersion();
 
 const dances = JSON.parse(fs.readFileSync(dancesPath, 'utf8'));
 const changelog = JSON.parse(fs.readFileSync(changelogPath, 'utf8'));
