@@ -1,0 +1,14 @@
+{
+  "name": "splk",
+  "description": "A web application for folk ensembles",
+  "private": true,
+  "version": "2026.6.0",
+  "scripts": {
+    "sync-public": "node scripts/sync-public.mjs",
+    "release": "node scripts/release.mjs",
+    "frontend:install": "npm --prefix frontend install",
+    "frontend:start": "npm --prefix frontend start",
+    "frontend:build": "npm run sync-public && npm --prefix frontend run build",
+    "build": "npm run frontend:build"
+  }
+}
