@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { forkJoin, of, Observable } from 'rxjs';
 import { GroupsService } from '../../../../features/groups/groups.service';
+import { MembersService } from '../../../../features/members/members.service';
 import { Group } from '../../../../core/models/group.model';
+import { Member } from '../../../../core/models/member.model';
 import { IconComponent, IconName, GROUP_ICON_OPTIONS } from '../../../../shared/icon/icon.component';
 
 @Component({
@@ -59,6 +62,47 @@ import { IconComponent, IconName, GROUP_ICON_OPTIONS } from '../../../../shared/
           </div>
         </div>
 
+        @if (isEditMode) {
+          <div class="admin-group-form__field">
+            <label>Členové skupiny</label>
+            <p class="admin-group-form__hint">Změny se uloží až po kliknutí na „Uložit“.</p>
+            @if (groupMembers().length === 0) {
+              <p class="admin-group-form__empty">Skupina zatím nemá žádné členy.</p>
+            } @else {
+              <ul class="admin-group-form__member-list">
+                @for (member of groupMembers(); track member.id) {
+                  <li class="admin-group-form__member-row">
+                    <span>{{ member.name }} <span class="admin-group-form__member-email">({{ member.email }})</span></span>
+                    <button
+                      type="button"
+                      class="admin-group-form__member-remove"
+                      (click)="removeMember(member.id)"
+                      title="Odebrat ze skupiny"
+                    >
+                      <app-icon name="close" [size]="14" />
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+
+            @if (availableMembers().length > 0) {
+              <div class="admin-group-form__add-member">
+                <select #memberSelect class="admin-group-form__member-select">
+                  @for (member of availableMembers(); track member.id) {
+                    <option [value]="member.id">{{ member.name }}</option>
+                  }
+                </select>
+                <button type="button" class="admin-group-form__btn-secondary" (click)="addMember(+memberSelect.value)">
+                  + Přidat člena
+                </button>
+              </div>
+            } @else {
+              <p class="admin-group-form__empty">Všichni členové už jsou ve skupině.</p>
+            }
+          </div>
+        }
+
         <div class="admin-group-form__actions">
           <button type="submit" class="admin-group-form__btn-primary" [disabled]="form.invalid || isSubmitting">
             {{ isSubmitting ? 'Ukládám...' : (isEditMode ? 'Uložit' : 'Vytvořit') }}
@@ -96,6 +140,15 @@ import { IconComponent, IconName, GROUP_ICON_OPTIONS } from '../../../../shared/
     .admin-group-form__icon-option { display: flex; align-items: center; justify-content: center; height: 44px; border: 1px solid #ccc; border-radius: 4px; background: #fff; color: #555; cursor: pointer; }
     .admin-group-form__icon-option:hover { border-color: #0066cc; color: #0066cc; }
     .admin-group-form__icon-option--active { border-color: #0066cc; background: #e3f2fd; color: #0066cc; }
+    .admin-group-form__hint { color: #999; font-size: 0.85rem; margin: 0; }
+    .admin-group-form__empty { color: #999; font-style: italic; margin: 0; }
+    .admin-group-form__member-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+    .admin-group-form__member-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .admin-group-form__member-email { color: #999; font-size: 0.85rem; }
+    .admin-group-form__member-remove { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: none; background: none; color: #999; cursor: pointer; border-radius: 50%; }
+    .admin-group-form__member-remove:hover { color: #d32f2f; background: #ffebee; }
+    .admin-group-form__add-member { display: flex; gap: 0.75rem; margin-top: 0.75rem; }
+    .admin-group-form__member-select { padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; }
   `],
 })
 export class AdminGroupFormComponent implements OnInit {
@@ -104,6 +157,11 @@ export class AdminGroupFormComponent implements OnInit {
   isSubmitting = false;
   submitError = '';
   readonly iconOptions = GROUP_ICON_OPTIONS;
+  private allMembers = signal<Member[]>([]);
+  private pendingMemberIds = signal<Set<number>>(new Set());
+  private originalMemberIds = new Set<number>();
+  readonly groupMembers = computed(() => this.allMembers().filter((m) => this.pendingMemberIds().has(m.id)));
+  readonly availableMembers = computed(() => this.allMembers().filter((m) => !this.pendingMemberIds().has(m.id)));
   private groupId: number | null = null;
 
   constructor(
@@ -111,6 +169,7 @@ export class AdminGroupFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private groupsService: GroupsService,
+    private membersService: MembersService,
   ) {
     this.form = this.fb.group({
       name: ['', Validators.required],
@@ -125,11 +184,56 @@ export class AdminGroupFormComponent implements OnInit {
       this.isEditMode = true;
       this.groupId = parseInt(idParam, 10);
       this.loadGroup(this.groupId);
+      this.loadMembers();
     }
   }
 
   selectIcon(icon: IconName | null): void {
     this.form.patchValue({ icon });
+  }
+
+  private loadMembers(): void {
+    this.membersService.getMembers().subscribe((members) => {
+      const groupId = this.groupId!;
+      this.allMembers.set(members);
+      const currentIds = new Set(members.filter((m) => m.groupIds.includes(groupId)).map((m) => m.id));
+      this.originalMemberIds = currentIds;
+      this.pendingMemberIds.set(new Set(currentIds));
+    });
+  }
+
+  addMember(memberId: number): void {
+    if (!memberId) return;
+    this.pendingMemberIds.update((ids) => new Set(ids).add(memberId));
+  }
+
+  removeMember(memberId: number): void {
+    this.pendingMemberIds.update((ids) => {
+      const next = new Set(ids);
+      next.delete(memberId);
+      return next;
+    });
+  }
+
+  private saveMembershipChanges(): Observable<unknown> {
+    if (this.groupId === null) return of(null);
+    const groupId = this.groupId;
+    const pending = this.pendingMemberIds();
+
+    const added = [...pending].filter((id) => !this.originalMemberIds.has(id));
+    const removed = [...this.originalMemberIds].filter((id) => !pending.has(id));
+    if (added.length === 0 && removed.length === 0) return of(null);
+
+    const members = this.allMembers();
+    const updates = [...added, ...removed].map((memberId) => {
+      const member = members.find((m) => m.id === memberId)!;
+      const { id, ...rest } = member;
+      const groupIds = added.includes(memberId)
+        ? [...member.groupIds, groupId]
+        : member.groupIds.filter((g) => g !== groupId);
+      return this.membersService.updateMember(memberId, { ...rest, groupIds });
+    });
+    return forkJoin(updates);
   }
 
   private loadGroup(id: number): void {
@@ -165,7 +269,13 @@ export class AdminGroupFormComponent implements OnInit {
     if (this.isEditMode && this.groupId !== null) {
       this.groupsService.updateGroup(this.groupId, groupData).subscribe({
         next: () => {
-          this.router.navigate(['/app/admin/groups']);
+          this.saveMembershipChanges().subscribe({
+            next: () => this.router.navigate(['/app/admin/groups']),
+            error: () => {
+              this.isSubmitting = false;
+              this.submitError = 'Skupina byla uložena, ale nepodařilo se uložit členy';
+            },
+          });
         },
         error: () => {
           this.isSubmitting = false;

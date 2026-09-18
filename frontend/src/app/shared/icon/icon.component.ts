@@ -28,7 +28,8 @@ export type IconName =
   | 'tent'
   | 'compass'
   | 'drum'
-  | 'mask';
+  | 'mask'
+  | 'close';
 
 // Sada ikon nabízených při výběru ikony skupiny (app/admin/groups)
 export const GROUP_ICON_OPTIONS: IconName[] = [
@@ -194,6 +195,10 @@ export const GROUP_ICON_OPTIONS: IconName[] = [
           <circle cx="9" cy="10" r="1.3" />
           <circle cx="15" cy="10" r="1.3" />
           <path d="M9 15c1 1 5 1 6 0" />
+        }
+        @case ('close') {
+          <line x1="5" y1="5" x2="19" y2="19" />
+          <line x1="19" y1="5" x2="5" y2="19" />
         }
       }
     </svg>
