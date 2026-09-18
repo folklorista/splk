@@ -17,10 +17,10 @@
         </div>
 
         <dl class="detail__meta">
-          <dt><app-icon class="detail__meta-icon" name="calendar" /> Vytvořeno</dt>
+          <dt><app-icon class="detail__meta-icon" name="plus-circle" /> Vytvořeno</dt>
           <dd>{{ p.publishedAt | date: 'd. M. yyyy, HH:mm' }} <span class="detail__meta-relative">({{ p.publishedAt | relativeTime }})</span></dd>
           @if (p.updatedAt !== p.publishedAt) {
-            <dt><app-icon class="detail__meta-icon" name="clock" /> Aktualizováno</dt>
+            <dt><app-icon class="detail__meta-icon" name="save" /> Aktualizováno</dt>
             <dd>{{ p.updatedAt | date: 'd. M. yyyy, HH:mm' }} <span class="detail__meta-relative">({{ p.updatedAt | relativeTime }})</span></dd>
           }
         </dl>

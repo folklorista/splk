@@ -30,7 +30,12 @@
         <div class="profile-field-label">Skupiny</div>
         <div class="profile-field-value">
           @for (groupId of currentUser()!.groupIds; track groupId) {
-            <span class="group-badge">{{ getGroupLabel(groupId) }}</span>
+            <span class="group-badge">
+              @if (getGroupIcon(groupId); as icon) {
+                <app-icon [name]="icon" [size]="12" />
+              }
+              {{ getGroupLabel(groupId) }}
+            </span>
           }
         </div>
       </div>

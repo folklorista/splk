@@ -4,11 +4,12 @@ import { GroupsService } from '../../../features/groups/groups.service';
 import { MembersService } from '../../../features/members/members.service';
 import { Group } from '../../../core/models/group.model';
 import { Member } from '../../../core/models/member.model';
+import { IconComponent } from '../../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-admin-groups',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, IconComponent],
   template: `
     <div class="admin-groups">
       <div class="admin-groups__header">
@@ -32,6 +33,9 @@ import { Member } from '../../../core/models/member.model';
           @for (group of groups(); track group.id) {
             <div class="admin-groups__item">
               <div class="admin-groups__item-header">
+                @if (group.icon) {
+                  <app-icon [name]="group.icon" [size]="20" />
+                }
                 <h3 class="admin-groups__item-title">{{ group.name }}</h3>
               </div>
               <p class="admin-groups__item-slug">{{ group.slug }}</p>
@@ -71,7 +75,7 @@ import { Member } from '../../../core/models/member.model';
     .admin-groups__empty a { color: #0066cc; text-decoration: none; }
     .admin-groups__list { display: flex; flex-direction: column; gap: 1rem; }
     .admin-groups__item { background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 1.5rem; }
-    .admin-groups__item-header { margin-bottom: 0.75rem; }
+    .admin-groups__item-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; color: #555; }
     .admin-groups__item-title { margin: 0; font-size: 1.05rem; font-weight: 600; }
     .admin-groups__item-slug { margin: 0.5rem 0 0 0; color: #999; font-size: 0.85rem; font-family: monospace; }
     .admin-groups__item-members { margin: 0.75rem 0 0 0; color: #666; font-size: 0.9rem; }

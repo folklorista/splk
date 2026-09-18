@@ -9,6 +9,7 @@ import { AttendanceService } from '../../attendance/attendance.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MembersService } from '../../members/members.service';
 import { GroupsService } from '../../../core/services/groups.service';
+import { Group } from '../../../core/models/group.model';
 import { IconComponent } from '../../../shared/icon/icon.component';
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -41,7 +42,7 @@ export class EventDetailComponent implements OnInit {
   loading = signal(true);
   notFound = signal(false);
   currentMemberId = signal<number | null>(null);
-  targetGroupNames = signal<string>('');
+  targetGroups = signal<Group[]>([]);
 
   readonly statuses: AttendanceStatus[] = ['yes', 'no', 'maybe'];
   readonly statusLabels = STATUS_LABELS;
@@ -99,7 +100,7 @@ export class EventDetailComponent implements OnInit {
         }
         this.event.set(event);
 
-        this.loadTargetGroupNames(event.targetGroupIds);
+        this.loadTargetGroups(event.targetGroupIds);
         this.attendanceService.getMemberAttendance(member.id).subscribe((allRecords) => {
           const r = allRecords.find((r) => r.eventId === id);
           this.record.set(r);
@@ -113,12 +114,11 @@ export class EventDetailComponent implements OnInit {
     });
   }
 
-  private loadTargetGroupNames(groupIds: number[]): void {
+  private loadTargetGroups(groupIds: number[]): void {
     if (!groupIds || groupIds.length === 0) return;
 
     this.groupsService.getGroupsByIds(groupIds).subscribe((groups) => {
-      const names = groups.map((g) => g.name).join(', ');
-      this.targetGroupNames.set(names);
+      this.targetGroups.set(groups);
     });
   }
 

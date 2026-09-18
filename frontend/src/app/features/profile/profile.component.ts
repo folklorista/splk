@@ -6,11 +6,13 @@ import { MembersService } from '../members/members.service';
 import { GroupsService } from '../groups/groups.service';
 import { EventsService } from '../events/events.service';
 import { getUnconfirmedEventsCount } from '../../core/utils/visibility.utils';
+import { Group } from '../../core/models/group.model';
+import { IconComponent, IconName } from '../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, IconComponent],
   templateUrl: './profile.component.html',
   styles: [`
     .profile-page {
@@ -153,7 +155,7 @@ export class ProfileComponent {
   memberName = '';
   memberPhone = '';
   pendingEventCount = 0;
-  private groupNamesById = new Map<number, string>();
+  private groupsById = new Map<number, Group>();
 
   constructor(
     private auth: AuthService,
@@ -189,12 +191,16 @@ export class ProfileComponent {
 
   private loadGroups(): void {
     this.groups.getGroups().subscribe((groups) => {
-      this.groupNamesById = new Map(groups.map((group) => [group.id, group.name]));
+      this.groupsById = new Map(groups.map((group) => [group.id, group]));
     });
   }
 
   getGroupLabel(groupId: number): string {
-    return this.groupNamesById.get(groupId) || `Neznámá skupina (ID: ${groupId})`;
+    return this.groupsById.get(groupId)?.name || `Neznámá skupina (ID: ${groupId})`;
+  }
+
+  getGroupIcon(groupId: number): IconName | undefined {
+    return this.groupsById.get(groupId)?.icon;
   }
 
   getRoleLabel(role: string): string {

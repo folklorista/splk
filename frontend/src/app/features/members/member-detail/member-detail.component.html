@@ -26,7 +26,14 @@
           <dt><app-icon class="detail__meta-icon" name="users" /> Skupiny</dt>
           <dd>
             @if (groups().length) {
-              {{ groupNames() }}
+              @for (group of groups(); track group.id) {
+                <span class="badge">
+                  @if (group.icon) {
+                    <app-icon [name]="group.icon" [size]="12" />
+                  }
+                  {{ group.name }}
+                </span>
+              }
             } @else {
               Bez skupiny
             }

@@ -3,11 +3,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { GroupsService } from '../../../../features/groups/groups.service';
 import { Group } from '../../../../core/models/group.model';
+import { IconComponent, IconName, GROUP_ICON_OPTIONS } from '../../../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-admin-group-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, IconComponent],
   template: `
     <div class="admin-group-form">
       <div class="admin-group-form__header">
@@ -30,6 +31,32 @@ import { Group } from '../../../../core/models/group.model';
           @if (form.get('slug')?.invalid && form.get('slug')?.touched) {
             <span class="admin-group-form__error">Slug je povinný</span>
           }
+        </div>
+
+        <div class="admin-group-form__field">
+          <label>Ikona</label>
+          <div class="admin-group-form__icon-grid">
+            <button
+              type="button"
+              class="admin-group-form__icon-option"
+              [class.admin-group-form__icon-option--active]="!form.value.icon"
+              (click)="selectIcon(null)"
+              title="Bez ikony"
+            >
+              —
+            </button>
+            @for (option of iconOptions; track option) {
+              <button
+                type="button"
+                class="admin-group-form__icon-option"
+                [class.admin-group-form__icon-option--active]="form.value.icon === option"
+                (click)="selectIcon(option)"
+                [title]="option"
+              >
+                <app-icon [name]="option" [size]="20" />
+              </button>
+            }
+          </div>
         </div>
 
         <div class="admin-group-form__actions">
@@ -65,6 +92,10 @@ import { Group } from '../../../../core/models/group.model';
     .admin-group-form__btn-secondary { background: #f0f0f0; color: #333; text-decoration: none; display: inline-block; text-align: center; }
     .admin-group-form__btn-secondary:hover { background: #e0e0e0; }
     .admin-group-form__error-message { padding: 0.75rem; background: #ffebee; color: #d32f2f; border-radius: 4px; border-left: 4px solid #d32f2f; }
+    .admin-group-form__icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 0.5rem; max-width: 420px; }
+    .admin-group-form__icon-option { display: flex; align-items: center; justify-content: center; height: 44px; border: 1px solid #ccc; border-radius: 4px; background: #fff; color: #555; cursor: pointer; }
+    .admin-group-form__icon-option:hover { border-color: #0066cc; color: #0066cc; }
+    .admin-group-form__icon-option--active { border-color: #0066cc; background: #e3f2fd; color: #0066cc; }
   `],
 })
 export class AdminGroupFormComponent implements OnInit {
@@ -72,6 +103,7 @@ export class AdminGroupFormComponent implements OnInit {
   isEditMode = false;
   isSubmitting = false;
   submitError = '';
+  readonly iconOptions = GROUP_ICON_OPTIONS;
   private groupId: number | null = null;
 
   constructor(
@@ -83,6 +115,7 @@ export class AdminGroupFormComponent implements OnInit {
     this.form = this.fb.group({
       name: ['', Validators.required],
       slug: ['', Validators.required],
+      icon: [null as IconName | null],
     });
   }
 
@@ -95,6 +128,10 @@ export class AdminGroupFormComponent implements OnInit {
     }
   }
 
+  selectIcon(icon: IconName | null): void {
+    this.form.patchValue({ icon });
+  }
+
   private loadGroup(id: number): void {
     this.groupsService.getGroup(id).subscribe({
       next: (group) => {
@@ -102,6 +139,7 @@ export class AdminGroupFormComponent implements OnInit {
           this.form.patchValue({
             name: group.name,
             slug: group.slug,
+            icon: group.icon ?? null,
           });
         }
       },
@@ -121,6 +159,7 @@ export class AdminGroupFormComponent implements OnInit {
       ensembleId: 1,
       name: formValue.name,
       slug: formValue.slug,
+      icon: formValue.icon ?? undefined,
     };
 
     if (this.isEditMode && this.groupId !== null) {

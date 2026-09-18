@@ -15,15 +15,24 @@
         </div>
 
         <dl class="detail__meta">
-          <dt><app-icon class="detail__meta-icon" name="calendar" /> Začátek</dt>
+          <dt><app-icon class="detail__meta-icon" name="arrow-start" /> Začátek</dt>
           <dd>{{ ev.startsAt | date: 'd. M. yyyy, HH:mm' }}</dd>
-          <dt><app-icon class="detail__meta-icon" name="clock" /> Konec</dt>
+          <dt><app-icon class="detail__meta-icon" name="arrow-end" /> Konec</dt>
           <dd>{{ ev.endsAt | date: 'd. M. yyyy, HH:mm' }}</dd>
           <dt><app-icon class="detail__meta-icon" name="location" /> Místo</dt>
           <dd>{{ ev.location }}</dd>
-          @if (targetGroupNames()) {
+          @if (targetGroups().length) {
             <dt><app-icon class="detail__meta-icon" name="users" /> Pro skupiny</dt>
-            <dd>{{ targetGroupNames() }}</dd>
+            <dd>
+              @for (group of targetGroups(); track group.id) {
+                <span class="badge">
+                  @if (group.icon) {
+                    <app-icon [name]="group.icon" [size]="12" />
+                  }
+                  {{ group.name }}
+                </span>
+              }
+            </dd>
           }
         </dl>
 

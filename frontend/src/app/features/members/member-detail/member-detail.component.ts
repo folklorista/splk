@@ -15,7 +15,6 @@ import { IconComponent } from '../../../shared/icon/icon.component';
 export class MemberDetailComponent implements OnInit {
   member = signal<Member | null>(null);
   groups = signal<Group[]>([]);
-  groupNames = () => this.groups().map((g) => g.name).join(', ');
   loading = signal(true);
   notFound = signal(false);
 

@@ -36,7 +36,7 @@ describe('ProfileComponent', () => {
   };
 
   const mockGroups: Group[] = [
-    { id: 1, ensembleId: 1, name: 'Mladší soubor', slug: 'mladsi-soubor' },
+    { id: 1, ensembleId: 1, name: 'Mladší soubor', slug: 'mladsi-soubor', icon: 'person-child' },
     { id: 2, ensembleId: 1, name: 'Kapela', slug: 'kapela' },
   ];
 
@@ -75,6 +75,14 @@ describe('ProfileComponent', () => {
     const component = fixture.componentInstance;
 
     expect(component.getGroupLabel(99)).toBe('Neznámá skupina (ID: 99)');
+  });
+
+  it('getGroupIcon vrátí ikonu skupiny, pokud je nastavená', () => {
+    const fixture = TestBed.createComponent(ProfileComponent);
+    const component = fixture.componentInstance;
+
+    expect(component.getGroupIcon(1)).toBe('person-child');
+    expect(component.getGroupIcon(2)).toBeUndefined();
   });
 
   it('pendingEventCount napočítá nepotvrzené akce podle ID člena, ne uživatele', () => {
