@@ -2,13 +2,16 @@ import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { EventsService } from './events.service';
 import { MOCK_EVENTS } from './data/mock-events';
 import { AppEvent } from './models/event.model';
+import { AttendanceService } from '../attendance/attendance.service';
 
 describe('EventsService', () => {
   let service: EventsService;
+  let attendanceService: AttendanceService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(EventsService);
+    attendanceService = TestBed.inject(AttendanceService);
     service.resetCache();
   });
 
@@ -124,5 +127,20 @@ describe('EventsService', () => {
     service.deleteEvent(9999).subscribe((success) => (deleted = success));
     tick(300);
     expect(deleted).toBeFalse();
+  }));
+
+  it('getEvent odráží aktuální stav účasti z AttendanceService', fakeAsync(() => {
+    let before: AppEvent | undefined;
+    service.getEvent(1).subscribe((e) => (before = e));
+    tick(300);
+    expect(before?.attendance?.find((a) => a.memberId === 1)?.status).toBe('yes');
+
+    attendanceService.updateAttendance({ eventId: 1, memberId: 1, status: 'pending' }).subscribe();
+    tick(300);
+
+    let after: AppEvent | undefined;
+    service.getEvent(1).subscribe((e) => (after = e));
+    tick(300);
+    expect(after?.attendance?.find((a) => a.memberId === 1)?.status).toBe('pending');
   }));
 });

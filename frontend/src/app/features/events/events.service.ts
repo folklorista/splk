@@ -1,26 +1,37 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, of } from 'rxjs';
+import { Observable, BehaviorSubject, combineLatest, of } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { AppEvent } from './models/event.model';
 import { MOCK_EVENTS } from './data/mock-events';
-import { MOCK_ATTENDANCE } from '../attendance/data/mock-attendance';
+import { AttendanceService } from '../attendance/attendance.service';
 
-const createInitialCache = (): AppEvent[] =>
-  MOCK_EVENTS.map(event => ({
-    ...event,
-    attendance: MOCK_ATTENDANCE.filter(a => a.eventId === event.id).map(a => ({ eventId: a.eventId, memberId: a.memberId, status: a.status, note: a.note })),
-  }));
+const createInitialCache = (): AppEvent[] => MOCK_EVENTS.map(event => ({ ...event }));
 
 @Injectable({ providedIn: 'root' })
 export class EventsService {
   private eventsSubject = new BehaviorSubject<AppEvent[]>(createInitialCache());
+  private readonly eventsWithAttendance$: Observable<AppEvent[]>;
+
+  constructor(private attendanceService: AttendanceService) {
+    this.eventsWithAttendance$ = combineLatest([
+      this.eventsSubject,
+      this.attendanceService.records$,
+    ]).pipe(
+      map(([events, records]) =>
+        events.map(event => ({
+          ...event,
+          attendance: records.filter(r => r.eventId === event.id),
+        })),
+      ),
+    );
+  }
 
   getEvents(): Observable<AppEvent[]> {
-    return this.eventsSubject.asObservable().pipe(delay(300));
+    return this.eventsWithAttendance$.pipe(delay(300));
   }
 
   getEvent(id: number): Observable<AppEvent | undefined> {
-    return this.eventsSubject.pipe(
+    return this.eventsWithAttendance$.pipe(
       delay(300),
       map(events => events.find(e => e.id === id)),
     );

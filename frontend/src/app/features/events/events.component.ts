@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { AppEvent } from './models/event.model';
 import { EventsService } from './events.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { MembersService } from '../members/members.service';
 import { isItemVisibleToUser } from '../../core/utils/visibility.utils';
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -23,6 +24,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 export class EventsComponent implements OnInit {
   events = signal<AppEvent[]>([]);
   loading = signal(true);
+  currentMemberId = signal<number | null>(null);
 
   visibleEvents = computed(() => {
     const user = this.auth.currentUser();
@@ -31,16 +33,17 @@ export class EventsComponent implements OnInit {
   });
 
   getUserAttendanceStatus = (event: AppEvent): string | null => {
-    const user = this.auth.currentUser();
-    if (!event.attendance || event.attendance.length === 0) return null;
-    const attendance = event.attendance.find(a => a.memberId === user?.id);
+    const memberId = this.currentMemberId();
+    if (!event.attendance || event.attendance.length === 0 || memberId === null) return null;
+    const attendance = event.attendance.find(a => a.memberId === memberId);
     return attendance?.status || null;
   };
 
   isWaitingForResponse = (event: AppEvent): boolean => {
-    if (!event.attendance || event.attendance.length === 0) return true;
-    const confirmed = event.attendance.find(a => a.status !== 'pending');
-    return !confirmed;
+    const memberId = this.currentMemberId();
+    if (memberId === null) return false;
+    const own = event.attendance?.find(a => a.memberId === memberId);
+    return !own || own.status === 'pending';
   };
 
   getAttendanceLabel = (status: string | null): string => {
@@ -55,10 +58,19 @@ export class EventsComponent implements OnInit {
 
   constructor(
     private eventsService: EventsService,
-    private auth: AuthService
+    private auth: AuthService,
+    private membersService: MembersService,
   ) {}
 
   ngOnInit(): void {
+    const user = this.auth.currentUser();
+    if (user) {
+      this.membersService.getMembers().subscribe((members) => {
+        const member = members.find((m) => m.email === user.email);
+        this.currentMemberId.set(member?.id ?? null);
+      });
+    }
+
     this.eventsService.getEvents().subscribe((events) => {
       this.events.set(events);
       this.loading.set(false);
