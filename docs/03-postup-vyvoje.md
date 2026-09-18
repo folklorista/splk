@@ -159,13 +159,13 @@ První použitelné MVP by mohlo obsahovat:
 
 Pozdější rozšíření:
 
-- komentáře,
 - dokumenty,
-- notifikace,
+- push notifikace (in-app notifikace u zmínek v komentářích už existují),
 - pokročilá půjčovna krojů,
 - dětský soubor,
 - rodiče/zástupci,
 - platby,
 - mobilní aplikace přes Capacitor,
 - WebSocket realtime backend,
-- univerzální komponenta pro výpis seznamu členů (filtrování podle skupin, řazení podle atributů) – nahradila by ad-hoc seznamy v administraci (účast na akci, členové skupiny apod.).
+- univerzální komponenta pro výpis seznamu členů (filtrování podle skupin, řazení podle atributů) – nahradila by ad-hoc seznamy v administraci (účast na akci, členové skupiny apod.),
+- **skupinové nástěnky**: každá skupina by mohla mít vlastní nástěnku, v navigaci zvlášť pro každou skupinu přihlášeného člena, stávající nástěnka zůstává společná pro všechny. Pokud se zavede, cílení příspěvků na konkrétní jednotlivce (viz `TargetingEditorComponent`) by v takovém modelu pravděpodobně ztratilo smysl – navrhováno řešit jako konfigurovatelný přepínač (skrytí sekce "Konkrétní lidé"), ne odstraněním datového pole.
