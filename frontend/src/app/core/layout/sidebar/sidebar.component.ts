@@ -97,7 +97,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         });
 
         this.eventsService.getEvents().subscribe((events) => {
-          const count = getUnconfirmedEventsCount(events, user);
+          const count = getUnconfirmedEventsCount(events, user, member.id);
           const eventsItem = this.navSections[0].items.find((item) => item.path === '/app/events');
           if (eventsItem) {
             eventsItem.badge = count > 0 ? count : undefined;

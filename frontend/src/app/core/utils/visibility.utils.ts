@@ -16,13 +16,13 @@ export function getUnreadPostsCount(posts: any[], user: User | null, currentMemb
     .length;
 }
 
-export function getUnconfirmedEventsCount(events: any[], user: User | null): number {
-  if (!user) return 0;
+export function getUnconfirmedEventsCount(events: any[], user: User | null, currentMemberId: number | null): number {
+  if (!user || !currentMemberId) return 0;
   return events
     .filter(e => isItemVisibleToUser(e.targetGroupIds, user.groupIds))
     .filter(e => {
-      const userAttendance = e.attendance?.find((a: any) => a.userId === user.id);
-      return !userAttendance;
+      const memberAttendance = e.attendance?.find((a: any) => a.memberId === currentMemberId);
+      return !memberAttendance || memberAttendance.status === 'pending';
     })
     .length;
 }
