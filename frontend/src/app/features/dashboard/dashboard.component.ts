@@ -9,9 +9,7 @@ import { AttendanceService } from '../attendance/attendance.service';
 import { MembersService } from '../members/members.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
-
-// Temporary mock binding – will be replaced with auth→member mapping in a later phase
-const CURRENT_MEMBER_ID = 1;
+import { isItemVisibleToUser } from '../../core/utils/visibility.utils';
 
 @Component({
   selector: 'app-dashboard',
@@ -52,46 +50,50 @@ export class DashboardComponent implements OnInit {
 
     this.membersService.getMembers().subscribe((members) => {
       const member = members.find((m) => m.email === user.email);
-      if (member) {
-        this.currentMemberId.set(member.id);
+      if (!member) {
+        done();
+        done();
+        return;
       }
+      this.currentMemberId.set(member.id);
 
       this.postsService.getPosts().subscribe((posts) => {
-        this.pinnedPosts.set(posts.filter((p) => p.isPinned).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)));
+        this.pinnedPosts.set(
+          posts
+            .filter((p) => isItemVisibleToUser(p.targetGroupIds, user.groupIds))
+            .filter((p) => p.isPinned)
+            .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)),
+        );
         done();
       });
 
+      this.eventsService.getEvents().subscribe((events) => {
+        this.attendanceService.getMemberAttendance(member.id).subscribe((records) => {
+          const pending = events
+            .filter((e) => isItemVisibleToUser(e.targetGroupIds, user.groupIds))
+            .filter((e) => e.startsAt >= now)
+            .map((event) => ({
+              event,
+              record: records.find((r) => r.eventId === event.id),
+            }))
+            .filter((item) => !item.record || item.record.status === 'pending')
+            .map((item) => ({
+              event: item.event,
+              record: item.record ?? { eventId: item.event.id, memberId: member.id, status: 'pending' as const },
+            }));
+          this.pendingAttendance.set(pending);
+          done();
+        });
+      });
     });
 
     this.eventsService.getEvents().subscribe((events) => {
       const upcoming = events
+        .filter((e) => isItemVisibleToUser(e.targetGroupIds, user.groupIds))
         .filter((e) => e.startsAt >= now)
         .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
       this.nextEvent.set(upcoming[0] ?? null);
       done();
-    });
-
-    this.postsService.getPosts().subscribe((posts) => {
-      this.pinnedPosts.set(posts.filter((p) => p.isPinned).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)));
-      done();
-    });
-
-    this.eventsService.getEvents().subscribe((events) => {
-      this.attendanceService.getMemberAttendance(CURRENT_MEMBER_ID).subscribe((records) => {
-        const pending = events
-          .filter((e) => e.startsAt >= now)
-          .map((event) => ({
-            event,
-            record: records.find((r) => r.eventId === event.id),
-          }))
-          .filter((item) => !item.record || item.record.status === 'pending')
-          .map((item) => ({
-            event: item.event,
-            record: item.record ?? { eventId: item.event.id, memberId: CURRENT_MEMBER_ID, status: 'pending' as const },
-          }));
-        this.pendingAttendance.set(pending);
-        done();
-      });
     });
   }
 }

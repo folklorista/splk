@@ -53,7 +53,7 @@
       } @else {
       <ul class="item-list">
         @for (item of pendingAttendance(); track item.event.id) {
-        <li class="item-list__item">
+        <li class="item-list__item item-list__item--link" [routerLink]="['/app/events', item.event.id]">
           <span class="item-list__title">{{ item.event.title }}</span>
           <div class="item-list__meta">
             {{ item.event.startsAt | date: 'd. M. yyyy, HH:mm' }}
