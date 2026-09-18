@@ -144,6 +144,7 @@ export class ProfileComponent {
   memberName = '';
   memberPhone = '';
   pendingEventCount = 0;
+  private groupNamesById = new Map<number, string>();
 
   constructor(
     private auth: AuthService,
@@ -152,6 +153,7 @@ export class ProfileComponent {
     private router: Router,
   ) {
     this.loadMemberData();
+    this.loadGroups();
   }
 
   get currentUser() {
@@ -171,15 +173,14 @@ export class ProfileComponent {
     });
   }
 
-  async getGroupLabel(groupId: number): Promise<string> {
-    this.groups.getGroup(groupId).subscribe((group) => {
-      if (group) {
-        return group.name;
-      } else {
-        return `Neznámá skupina (ID: ${groupId}) [subscribe]`;
-      }
+  private loadGroups(): void {
+    this.groups.getGroups().subscribe((groups) => {
+      this.groupNamesById = new Map(groups.map((group) => [group.id, group.name]));
     });
-    return `Neznámá skupina (ID: ${groupId}) [no-subscribe]`;
+  }
+
+  getGroupLabel(groupId: number): string {
+    return this.groupNamesById.get(groupId) || `Neznámá skupina (ID: ${groupId})`;
   }
 
   getRoleLabel(role: string): string {
