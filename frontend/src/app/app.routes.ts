@@ -30,6 +30,20 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'posts/new',
+        loadComponent: () =>
+          import('./features/posts/post-form/post-form.component').then(
+            (m) => m.PostFormComponent,
+          ),
+      },
+      {
+        path: 'posts/:id/edit',
+        loadComponent: () =>
+          import('./features/posts/post-form/post-form.component').then(
+            (m) => m.PostFormComponent,
+          ),
+      },
+      {
         path: 'posts/:id',
         loadComponent: () =>
           import('./features/posts/post-detail/post-detail.component').then(

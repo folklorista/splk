@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { AdminPostFormComponent } from './admin-post-form.component';
 import { PostsService } from '../../../../features/posts/posts.service';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { Router } from '@angular/router';
-import { RouterTestingModule } from '@angular/router/testing';
+import { MembersService } from '../../../../features/members/members.service';
+import { Router, ActivatedRoute, provideRouter } from '@angular/router';
 import { of, Observable } from 'rxjs';
 import { Post } from '../../../../features/posts/models/post.model';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -13,7 +13,7 @@ describe('AdminPostFormComponent', () => {
   let fixture: ComponentFixture<AdminPostFormComponent>;
   let postsService: jasmine.SpyObj<PostsService>;
   let authService: jasmine.SpyObj<AuthService>;
-  let router: jasmine.SpyObj<Router>;
+  let router: Router;
 
   beforeEach(async () => {
     const postServiceSpy = jasmine.createSpyObj('PostsService', [
@@ -25,20 +25,26 @@ describe('AdminPostFormComponent', () => {
       'resetCache',
     ]);
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['currentUser']);
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    const membersServiceSpy = jasmine.createSpyObj('MembersService', ['getMembers']);
+    membersServiceSpy.getMembers.and.returnValue(of([
+      { id: 1, ensembleId: 1, userId: 1, name: 'Test User', email: 'test@test.cz', groupIds: [1], isActive: true },
+    ]));
 
     await TestBed.configureTestingModule({
-      imports: [AdminPostFormComponent, ReactiveFormsModule, RouterTestingModule],
+      imports: [AdminPostFormComponent, ReactiveFormsModule],
       providers: [
+        provideRouter([]),
         { provide: PostsService, useValue: postServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy },
+        { provide: MembersService, useValue: membersServiceSpy },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => null } } } },
       ],
     }).compileComponents();
 
     postsService = TestBed.inject(PostsService) as jasmine.SpyObj<PostsService>;
     authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
-    router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    router = TestBed.inject(Router);
+    spyOn(router, 'navigate');
 
     authService.currentUser.and.returnValue({
       id: 1,
@@ -130,5 +136,58 @@ describe('AdminPostFormComponent', () => {
     tick(300);
 
     expect(component.submitError).toBeTruthy();
+  }));
+});
+
+describe('AdminPostFormComponent v edit módu', () => {
+  const existingPost: Post = {
+    id: 1, ensembleId: 1, title: 'Původní název', body: 'Původní text', authorId: 99, targetGroupIds: [5],
+    publishedAt: '2026-01-01T00:00:00', updatedAt: '2026-01-01T00:00:00', isPinned: true, readers: [4],
+  };
+
+  let component: AdminPostFormComponent;
+  let fixture: ComponentFixture<AdminPostFormComponent>;
+  let postsService: jasmine.SpyObj<PostsService>;
+
+  beforeEach(async () => {
+    const postServiceSpy = jasmine.createSpyObj('PostsService', ['getPost', 'updatePost']);
+    postServiceSpy.getPost.and.returnValue(of(existingPost));
+    postServiceSpy.updatePost.and.returnValue(of(existingPost));
+
+    const membersServiceSpy = jasmine.createSpyObj('MembersService', ['getMembers']);
+    membersServiceSpy.getMembers.and.returnValue(of([
+      { id: 1, ensembleId: 1, userId: 1, name: 'Editor', email: 'editor@test.cz', groupIds: [1], isActive: true },
+    ]));
+
+    await TestBed.configureTestingModule({
+      imports: [AdminPostFormComponent, ReactiveFormsModule],
+      providers: [
+        provideRouter([]),
+        { provide: PostsService, useValue: postServiceSpy },
+        { provide: AuthService, useValue: { currentUser: () => ({ id: 1, name: 'Editor', email: 'editor@test.cz', groupIds: [1], roles: ['admin'] }) } },
+        { provide: MembersService, useValue: membersServiceSpy },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '1' } } } },
+      ],
+    }).compileComponents();
+
+    postsService = TestBed.inject(PostsService) as jasmine.SpyObj<PostsService>;
+    spyOn(TestBed.inject(Router), 'navigate');
+    fixture = TestBed.createComponent(AdminPostFormComponent);
+    component = fixture.componentInstance;
+  });
+
+  it('zachová authorId a targetGroupIds původního příspěvku při úpravě', fakeAsync(() => {
+    fixture.detectChanges();
+    tick(300);
+
+    component.form.patchValue({ title: 'Upravený název' });
+    component.onSubmit();
+    tick(300);
+
+    expect(postsService.updatePost).toHaveBeenCalledWith(1, jasmine.objectContaining({
+      title: 'Upravený název',
+      authorId: 99,
+      targetGroupIds: [5],
+    }));
   }));
 });

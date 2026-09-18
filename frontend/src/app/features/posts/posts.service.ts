@@ -53,6 +53,17 @@ export class PostsService {
     return of(undefined).pipe(delay(300));
   }
 
+  // Archivace je vratná (na rozdíl od trvalého smazání, které je jen v administraci)
+  archivePost(id: number): Observable<Post | undefined> {
+    const index = postsCache.findIndex((p) => p.id === id);
+    if (index === -1) {
+      return of(undefined).pipe(delay(300));
+    }
+    postsCache = [...postsCache];
+    postsCache[index] = { ...postsCache[index], archivedAt: new Date().toISOString() };
+    return of(postsCache[index]).pipe(delay(300));
+  }
+
   deletePost(id: number): Observable<boolean> {
     const index = postsCache.findIndex((p) => p.id === id);
     if (index === -1) {

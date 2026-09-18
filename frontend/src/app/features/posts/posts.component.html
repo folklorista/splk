@@ -1,5 +1,8 @@
 <div class="page">
-  <h1 class="page__title">Nástěnka</h1>
+  <div class="page__header">
+    <h1 class="page__title">Nástěnka</h1>
+    <a class="btn-primary btn-primary--sm" [routerLink]="['/app/posts/new']">+ Nový příspěvek</a>
+  </div>
 
   @if (loading()) {
     <p class="state-note">Načítání…</p>
@@ -25,7 +28,7 @@
             </div>
           </div>
           <div class="item-list__meta">
-            {{ post.publishedAt | date: 'd. M. yyyy' }}
+            {{ post.publishedAt | date: 'd. M. yyyy' }} · {{ authorName(post) }}
             @if (isLeader || isAdmin) {
               · {{ readCountLabel(post) }}
             }

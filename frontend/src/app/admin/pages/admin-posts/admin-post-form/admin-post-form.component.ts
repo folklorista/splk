@@ -204,6 +204,7 @@ export class AdminPostFormComponent implements OnInit {
   isSubmitting = false;
   submitError = '';
   private postId: number | null = null;
+  private originalPost: Post | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -233,6 +234,7 @@ export class AdminPostFormComponent implements OnInit {
     this.postsService.getPost(id).subscribe({
       next: (post) => {
         if (post) {
+          this.originalPost = post;
           this.form.patchValue({
             title: post.title,
             body: post.body,
@@ -273,18 +275,15 @@ export class AdminPostFormComponent implements OnInit {
         }
 
         const now = new Date().toISOString();
-        const postData: Omit<Post, 'id'> = {
-          ensembleId: 1,
-          title: formValue.title,
-          body: formValue.body,
-          authorId: member.id,
-          targetGroupIds: [],
-          publishedAt: now,
-          updatedAt: now,
-          isPinned: formValue.isPinned,
-        };
 
-        if (this.isEditMode && this.postId !== null) {
+        if (this.isEditMode && this.postId !== null && this.originalPost) {
+          const { id, ...rest } = this.originalPost;
+          const postData: Omit<Post, 'id'> = {
+            ...rest,
+            title: formValue.title,
+            body: formValue.body,
+            isPinned: formValue.isPinned,
+          };
           this.postsService.updatePost(this.postId, postData).subscribe({
             next: () => {
               this.router.navigate(['/app/admin/posts']);
@@ -295,6 +294,16 @@ export class AdminPostFormComponent implements OnInit {
             },
           });
         } else {
+          const postData: Omit<Post, 'id'> = {
+            ensembleId: 1,
+            title: formValue.title,
+            body: formValue.body,
+            authorId: member.id,
+            targetGroupIds: [],
+            publishedAt: now,
+            updatedAt: now,
+            isPinned: formValue.isPinned,
+          };
           this.postsService.createPost(postData).subscribe({
             next: () => {
               this.router.navigate(['/app/admin/posts']);

@@ -51,4 +51,22 @@ describe('PostsComponent', () => {
 
     expect(fixture.componentInstance.readCountLabel(post)).toBe('Přečteno 1 z 2');
   });
+
+  it('authorName vrátí jméno autora podle authorId', () => {
+    configure();
+    const fixture = TestBed.createComponent(PostsComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.authorName(post)).toBe('Jana Nováková');
+  });
+
+  it('visiblePosts vynechá archivované příspěvky', () => {
+    configure();
+    postsSpy.getPosts.and.returnValue(of([post, { ...post, id: 2, archivedAt: '2026-02-01T00:00:00' }]));
+    const fixture = TestBed.createComponent(PostsComponent);
+    fixture.detectChanges();
+
+    const ids = fixture.componentInstance.visiblePosts().map((p) => p.id);
+    expect(ids).toEqual([1]);
+  });
 });

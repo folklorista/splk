@@ -10,4 +10,5 @@ export interface Post {
   isPinned: boolean;
   requiresAction?: boolean;
   readers?: number[];
+  archivedAt?: string;
 }

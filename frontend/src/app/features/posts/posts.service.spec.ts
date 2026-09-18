@@ -171,4 +171,22 @@ describe('PostsService', () => {
 
     expect(result?.readers?.filter((id) => id === 99).length).toBe(1);
   }));
+
+  it('archivePost nastaví archivedAt a zachová ostatní pole', fakeAsync(() => {
+    const original = MOCK_POSTS.find((p) => p.id === 1)!;
+    let result: Post | undefined;
+    service.archivePost(1).subscribe((p) => (result = p));
+    tick(300);
+
+    expect(result?.archivedAt).toBeTruthy();
+    expect(result?.title).toBe(original.title);
+    expect(result?.authorId).toBe(original.authorId);
+  }));
+
+  it('archivePost vrátí undefined pro neexistující id', fakeAsync(() => {
+    let result: Post | undefined = {} as Post;
+    service.archivePost(9999).subscribe((p) => (result = p));
+    tick(300);
+    expect(result).toBeUndefined();
+  }));
 });
