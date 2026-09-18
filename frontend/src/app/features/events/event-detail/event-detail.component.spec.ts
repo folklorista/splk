@@ -82,13 +82,23 @@ describe('EventDetailComponent', () => {
     expect(names.length).toBe(3);
   });
 
-  it('memberNamesForStatus vrátí jména členů v daném stavu', () => {
+  it('membersByStatus rozdělí členy podle stavu', () => {
     configure([{ eventId: 10, memberId: 2, status: 'no' }]);
     const fixture = TestBed.createComponent(EventDetailComponent);
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.memberNamesForStatus('no')).toBe('Petr Novák');
-    expect(fixture.componentInstance.memberNamesForStatus('yes')).toBe('Nikdo');
+    expect(fixture.componentInstance.membersByStatus().no.map((m) => m.name)).toEqual(['Petr Novák']);
+    expect(fixture.componentInstance.membersByStatus().yes).toEqual([]);
+  });
+
+  it('viewedStatus rozdělí členy na ty, co akci zobrazili, a ty, co ne', () => {
+    configure([{ eventId: 10, memberId: 2, status: 'pending', firstViewedAt: '2026-01-01T10:00:00' }]);
+    const fixture = TestBed.createComponent(EventDetailComponent);
+    fixture.detectChanges();
+
+    const status = fixture.componentInstance.viewedStatus();
+    expect(status.viewed.map((m) => m.name)).toEqual(['Petr Novák']);
+    expect(status.notViewed.map((m) => m.name)).toContain('Jana Nováková');
   });
 
   it('dotáže se na účast pro celou akci, ne jen pro přihlášeného člena', () => {

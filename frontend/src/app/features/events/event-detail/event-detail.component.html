@@ -40,30 +40,6 @@
           <p class="detail__body">{{ ev.description }}</p>
         }
 
-        @if ((isLeader || isAdmin) && visibleMembers().length > 0) {
-          <section class="detail__section">
-            <h2 class="detail__section-title">Souhrn účasti</h2>
-            <div class="attendance-summary">
-              <div class="summary-item" [title]="memberNamesForStatus('yes')">
-                <span class="summary-label">Zúčastní se</span>
-                <span class="summary-count">{{ attendanceSummary().yes }}</span>
-              </div>
-              <div class="summary-item" [title]="memberNamesForStatus('maybe')">
-                <span class="summary-label">Možná</span>
-                <span class="summary-count">{{ attendanceSummary().maybe }}</span>
-              </div>
-              <div class="summary-item" [title]="memberNamesForStatus('no')">
-                <span class="summary-label">Nezúčastní se</span>
-                <span class="summary-count">{{ attendanceSummary().no }}</span>
-              </div>
-              <div class="summary-item" [title]="memberNamesForStatus('pending')">
-                <span class="summary-label">Neodpovědělo</span>
-                <span class="summary-count">{{ attendanceSummary().pending }}</span>
-              </div>
-            </div>
-          </section>
-        }
-
         <section class="detail__section">
           <h2 class="detail__section-title">Moje účast</h2>
           <div class="attendance-actions">
@@ -106,6 +82,72 @@
             }
           </div>
         </section>
+
+        @if (visibleMembers().length > 0) {
+          <section class="detail__section">
+            <h2 class="detail__section-title">Účast</h2>
+            <div class="member-columns">
+              @for (status of statuses; track status) {
+                <div class="member-column">
+                  <div class="member-column__header">{{ statusLabels[status] }} ({{ membersByStatus()[status].length }})</div>
+                  @if (membersByStatus()[status].length) {
+                    <ul class="member-column__list">
+                      @for (m of membersByStatus()[status]; track m.id) {
+                        <li>{{ m.name }}</li>
+                      }
+                    </ul>
+                  } @else {
+                    <p class="member-column__empty">Nikdo</p>
+                  }
+                </div>
+              }
+              <div class="member-column">
+                <div class="member-column__header">Neodpovědělo ({{ membersByStatus().pending.length }})</div>
+                @if (membersByStatus().pending.length) {
+                  <ul class="member-column__list">
+                    @for (m of membersByStatus().pending; track m.id) {
+                      <li>{{ m.name }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="member-column__empty">Nikdo</p>
+                }
+              </div>
+            </div>
+          </section>
+        }
+
+        @if (isAdmin && visibleMembers().length > 0) {
+          <section class="detail__section">
+            <h2 class="detail__section-title">Zobrazení</h2>
+            <div class="member-columns">
+              <div class="member-column">
+                <div class="member-column__header">Zobrazili ({{ viewedStatus().viewed.length }})</div>
+                @if (viewedStatus().viewed.length) {
+                  <ul class="member-column__list">
+                    @for (m of viewedStatus().viewed; track m.id) {
+                      <li>{{ m.name }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="member-column__empty">Nikdo</p>
+                }
+              </div>
+              <div class="member-column">
+                <div class="member-column__header">Nezobrazili ({{ viewedStatus().notViewed.length }})</div>
+                @if (viewedStatus().notViewed.length) {
+                  <ul class="member-column__list">
+                    @for (m of viewedStatus().notViewed; track m.id) {
+                      <li>{{ m.name }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="member-column__empty">Nikdo</p>
+                }
+              </div>
+            </div>
+          </section>
+        }
       </div>
     }
   }

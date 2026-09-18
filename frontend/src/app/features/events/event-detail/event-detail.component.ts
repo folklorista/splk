@@ -78,6 +78,18 @@ export class EventDetailComponent implements OnInit {
     };
   });
 
+  // Kdo si akci alespoň zobrazil (bez ohledu na to, jestli už vyjádřil účast) – jen pro admina
+  readonly viewedStatus = computed(() => {
+    const records = this.eventRecords();
+    const viewed: Member[] = [];
+    const notViewed: Member[] = [];
+    for (const member of this.visibleMembers()) {
+      const record = records.find((r) => r.memberId === member.id);
+      (record?.firstViewedAt ? viewed : notViewed).push(member);
+    }
+    return { viewed, notViewed };
+  });
+
   constructor(
     private route: ActivatedRoute,
     private eventsService: EventsService,
@@ -157,11 +169,6 @@ export class EventDetailComponent implements OnInit {
 
   statusLabel(status: AttendanceStatus | undefined): string {
     return status ? STATUS_LABELS[status] : STATUS_LABELS['pending'];
-  }
-
-  memberNamesForStatus(status: AttendanceStatus): string {
-    const members = this.membersByStatus()[status];
-    return members.length ? members.map((m) => m.name).join('\n') : 'Nikdo';
   }
 
   setStatus(status: AttendanceStatus): void {

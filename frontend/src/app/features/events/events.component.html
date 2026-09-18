@@ -30,6 +30,10 @@
           <div class="item-list__meta">
             {{ event.startsAt | date: 'd. M. yyyy, HH:mm' }} · {{ event.location }}
           </div>
+          <div class="item-list__meta">
+            ANO: {{ attendanceSummary(event).yes }}, Možná: {{ attendanceSummary(event).maybe }},
+            Ne: {{ attendanceSummary(event).no }}, Neodpovědělo: {{ attendanceSummary(event).pending }}
+          </div>
           @if (event.description) {
             <p class="item-list__body">{{ event.description }}</p>
           }
