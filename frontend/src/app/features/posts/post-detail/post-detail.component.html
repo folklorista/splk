@@ -17,6 +17,8 @@
         </div>
 
         <dl class="detail__meta">
+          <dt><app-icon class="detail__meta-icon" name="user" /> Autor</dt>
+          <dd>{{ authorName(p) }}</dd>
           <dt><app-icon class="detail__meta-icon" name="plus-circle" /> Vytvořeno</dt>
           <dd>{{ p.publishedAt | date: 'd. M. yyyy, HH:mm' }} <span class="detail__meta-relative">({{ p.publishedAt | relativeTime }})</span></dd>
           @if (p.updatedAt !== p.publishedAt) {
@@ -26,6 +28,13 @@
         </dl>
 
         <p class="detail__body">{{ p.body }}</p>
+
+        @if (canManage) {
+          <div class="attendance-actions">
+            <a class="attendance-btn" [routerLink]="['/app/posts', p.id, 'edit']">Upravit</a>
+            <button type="button" class="attendance-btn attendance-btn--clear" (click)="archivePost()">Archivovat</button>
+          </div>
+        }
 
         @if ((isLeader || isAdmin) && visibleMembers().length > 0) {
           <section class="detail__section">
@@ -58,6 +67,69 @@
             </div>
           </section>
         }
+
+        <section class="detail__section">
+          <h2 class="detail__section-title">Komentáře ({{ comments().length }})</h2>
+
+          @if (comments().length) {
+            <ul class="comment-list">
+              @for (comment of comments(); track comment.id) {
+                <li class="comment-list__item">
+                  <div class="comment-list__meta">
+                    <strong>{{ commentAuthorName(comment) }}</strong>
+                    <span class="detail__meta-relative">{{ comment.createdAt | relativeTime }}</span>
+                  </div>
+                  <p class="comment-list__body">{{ comment.body }}</p>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="member-column__empty">Zatím žádné komentáře.</p>
+          }
+
+          <div class="comment-form">
+            <textarea
+              class="comment-form__input"
+              rows="2"
+              placeholder="Napište komentář…"
+              [value]="newCommentBody()"
+              (input)="newCommentBody.set($any($event.target).value)"
+            ></textarea>
+
+            @if (mentionedMembers().length) {
+              <div class="comment-form__mentions">
+                @for (m of mentionedMembers(); track m.id) {
+                  <span class="badge">
+                    &#64;{{ m.name }}
+                    <button type="button" class="comment-form__mention-remove" (click)="removeMention(m.id)" title="Odebrat zmínku">
+                      <app-icon name="close" [size]="10" />
+                    </button>
+                  </span>
+                }
+              </div>
+            }
+
+            @if (mentionCandidates().length) {
+              <div class="comment-form__add-mention">
+                <select #mentionSelect>
+                  @for (m of mentionCandidates(); track m.id) {
+                    <option [value]="m.id">{{ m.name }}</option>
+                  }
+                </select>
+                <button type="button" class="attendance-btn" (click)="addMention(+mentionSelect.value)">&#64; Zmínit</button>
+              </div>
+            }
+
+            <button
+              type="button"
+              class="attendance-btn attendance-btn--active"
+              [disabled]="!newCommentBody().trim()"
+              (click)="submitComment()"
+            >
+              Přidat komentář
+            </button>
+          </div>
+        </section>
       </div>
     }
   }

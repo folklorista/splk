@@ -1,4 +1,4 @@
-import { getUnconfirmedEventsCount, getUnreadPostsCount, isItemVisibleToUser } from './visibility.utils';
+import { getUnconfirmedEventsCount, getUnreadPostsCount, getUnseenMentionsCount, isItemVisibleToUser } from './visibility.utils';
 import { User } from '../auth/models/user.model';
 
 describe('visibility.utils', () => {
@@ -70,6 +70,22 @@ describe('visibility.utils', () => {
     it('nezapočítá akci, která není určena pro skupiny uživatele', () => {
       const events = [{ targetGroupIds: [99], attendance: [] }];
       expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(0);
+    });
+  });
+
+  describe('getUnseenMentionsCount', () => {
+    it('vrátí 0 bez ID člena', () => {
+      const comments = [{ mentionedMemberIds: [currentMemberId], seenByMemberIds: [] }];
+      expect(getUnseenMentionsCount(comments, null)).toBe(0);
+    });
+
+    it('započítá jen zmínky daného člena, které ještě neviděl', () => {
+      const comments = [
+        { mentionedMemberIds: [currentMemberId], seenByMemberIds: [] },
+        { mentionedMemberIds: [currentMemberId], seenByMemberIds: [currentMemberId] },
+        { mentionedMemberIds: [999], seenByMemberIds: [] },
+      ];
+      expect(getUnseenMentionsCount(comments, currentMemberId)).toBe(1);
     });
   });
 });

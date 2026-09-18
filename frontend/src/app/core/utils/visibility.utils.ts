@@ -26,3 +26,12 @@ export function getUnconfirmedEventsCount(events: any[], user: User | null, curr
     })
     .length;
 }
+
+// Počet zmínek (@Jméno v komentáři), které daný člen ještě neviděl
+export function getUnseenMentionsCount(comments: any[], currentMemberId: number | null): number {
+  if (!currentMemberId) return 0;
+  return comments
+    .filter(c => c.mentionedMemberIds?.includes(currentMemberId))
+    .filter(c => !c.seenByMemberIds?.includes(currentMemberId))
+    .length;
+}

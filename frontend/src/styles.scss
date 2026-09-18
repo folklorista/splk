@@ -317,11 +317,25 @@
 
 // Feature pages
 .page {
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+  }
+
   &__title {
     font-size: var(--font-size-h1);
     font-weight: 700;
     margin-bottom: var(--spacing-md);
   }
+}
+
+.btn-primary--sm {
+  display: inline-block;
+  padding: 8px 14px;
+  font-size: var(--font-size-sm);
 }
 
 .back-link {
@@ -609,6 +623,82 @@
   gap: var(--spacing-sm);
   margin-top: var(--spacing-sm);
   flex-wrap: wrap;
+}
+
+// Comment thread under a post
+.comment-list {
+  list-style: none;
+  margin: 0 0 var(--spacing-md);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+
+  &__item {
+    padding: var(--spacing-sm);
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-xs);
+    margin-bottom: 2px;
+    font-size: var(--font-size-sm);
+  }
+
+  &__body {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    white-space: pre-wrap;
+  }
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+
+  &__input {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: var(--font-size-sm);
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+  }
+
+  &__mentions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+  }
+
+  &__mention-remove {
+    display: inline-flex;
+    margin-left: 4px;
+    color: inherit;
+    vertical-align: middle;
+  }
+
+  &__add-mention {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+
+    select {
+      padding: 6px var(--spacing-sm);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      font-size: var(--font-size-sm);
+      font-family: inherit;
+    }
+  }
 }
 
 .attendance-btn {

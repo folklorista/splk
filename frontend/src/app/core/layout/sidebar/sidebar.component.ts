@@ -4,8 +4,9 @@ import { AuthService } from '../../auth/auth.service';
 import { Router } from '@angular/router';
 import { PostsService } from '../../../features/posts/posts.service';
 import { EventsService } from '../../../features/events/events.service';
+import { CommentsService } from '../../../features/posts/comments.service';
 import { MembersService } from '../../../features/members/members.service';
-import { getUnreadPostsCount, getUnconfirmedEventsCount } from '../../utils/visibility.utils';
+import { getUnreadPostsCount, getUnconfirmedEventsCount, getUnseenMentionsCount } from '../../utils/visibility.utils';
 import { interval, Subscription } from 'rxjs';
 import { IconComponent, IconName } from '../../../shared/icon/icon.component';
 
@@ -78,6 +79,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     private router: Router,
     private postsService: PostsService,
     private eventsService: EventsService,
+    private commentsService: CommentsService,
     private membersService: MembersService,
   ) {}
 
@@ -91,11 +93,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
       const updateBadges = () => {
         this.postsService.getPosts().subscribe((posts) => {
-          const count = getUnreadPostsCount(posts, user, member.id);
-          const postsItem = this.navSections[0].items.find((item) => item.path === '/app/posts');
-          if (postsItem) {
-            postsItem.badge = count > 0 ? count : undefined;
-          }
+          this.commentsService.getAllComments().subscribe((comments) => {
+            const count = getUnreadPostsCount(posts, user, member.id) + getUnseenMentionsCount(comments, member.id);
+            const postsItem = this.navSections[0].items.find((item) => item.path === '/app/posts');
+            if (postsItem) {
+              postsItem.badge = count > 0 ? count : undefined;
+            }
+          });
         });
 
         this.eventsService.getEvents().subscribe((events) => {

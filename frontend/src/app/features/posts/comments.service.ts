@@ -1,0 +1,54 @@
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { delay, map } from 'rxjs/operators';
+import { PostComment } from './models/comment.model';
+import { MOCK_COMMENTS } from './data/mock-comments';
+
+@Injectable({ providedIn: 'root' })
+export class CommentsService {
+  private commentsSubject = new BehaviorSubject<PostComment[]>([...MOCK_COMMENTS]);
+
+  readonly comments$ = this.commentsSubject.asObservable();
+
+  getComments(postId: number): Observable<PostComment[]> {
+    return this.comments$.pipe(
+      delay(300),
+      map((comments) => comments.filter((c) => c.postId === postId)),
+    );
+  }
+
+  getAllComments(): Observable<PostComment[]> {
+    return this.comments$.pipe(delay(300));
+  }
+
+  addComment(postId: number, authorId: number, body: string, mentionedMemberIds: number[]): Observable<PostComment> {
+    const comments = this.commentsSubject.value;
+    const newComment: PostComment = {
+      id: Math.max(0, ...comments.map((c) => c.id)) + 1,
+      postId,
+      authorId,
+      body,
+      createdAt: new Date().toISOString(),
+      mentionedMemberIds,
+      seenByMemberIds: [],
+    };
+    this.commentsSubject.next([...comments, newComment]);
+    return of(newComment).pipe(delay(300));
+  }
+
+  // Označí, že daný člen komentář (a tedy i zmínku v něm) viděl
+  markSeen(commentId: number, memberId: number): Observable<void> {
+    const comments = this.commentsSubject.value;
+    const index = comments.findIndex((c) => c.id === commentId);
+    if (index !== -1 && !comments[index].seenByMemberIds.includes(memberId)) {
+      const updated = [...comments];
+      updated[index] = { ...updated[index], seenByMemberIds: [...updated[index].seenByMemberIds, memberId] };
+      this.commentsSubject.next(updated);
+    }
+    return of(undefined).pipe(delay(300));
+  }
+
+  resetCache(): void {
+    this.commentsSubject.next([...MOCK_COMMENTS]);
+  }
+}

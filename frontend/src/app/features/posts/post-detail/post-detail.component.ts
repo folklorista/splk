@@ -1,8 +1,10 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Post } from '../models/post.model';
+import { PostComment } from '../models/comment.model';
 import { PostsService } from '../posts.service';
+import { CommentsService } from '../comments.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MembersService } from '../../members/members.service';
 import { Member } from '../../../core/models/member.model';
@@ -21,6 +23,15 @@ export class PostDetailComponent implements OnInit {
   loading = signal(true);
   notFound = signal(false);
   allMembers = signal<Member[]>([]);
+  currentMemberId = signal<number | null>(null);
+  comments = signal<PostComment[]>([]);
+  newCommentBody = signal('');
+  mentionedMembers = signal<Member[]>([]);
+
+  readonly mentionCandidates = computed(() => {
+    const mentionedIds = new Set(this.mentionedMembers().map((m) => m.id));
+    return this.visibleMembers().filter((m) => m.id !== this.currentMemberId() && !mentionedIds.has(m.id));
+  });
 
   readonly visibleMembers = computed(() => {
     const post = this.post();
@@ -41,7 +52,9 @@ export class PostDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private postsService: PostsService,
+    private commentsService: CommentsService,
     private auth: AuthService,
     private membersService: MembersService,
   ) {}
@@ -52,6 +65,20 @@ export class PostDetailComponent implements OnInit {
 
   get isAdmin(): boolean {
     return this.auth.currentUser()?.roles.includes('admin') ?? false;
+  }
+
+  get canManage(): boolean {
+    const post = this.post();
+    if (!post) return false;
+    return post.authorId === this.currentMemberId() || this.isLeader || this.isAdmin;
+  }
+
+  authorName(post: Post): string {
+    return this.allMembers().find((m) => m.id === post.authorId)?.name ?? 'Neznámý autor';
+  }
+
+  commentAuthorName(comment: PostComment): string {
+    return this.allMembers().find((m) => m.id === comment.authorId)?.name ?? 'Neznámý autor';
   }
 
   ngOnInit(): void {
@@ -72,6 +99,7 @@ export class PostDetailComponent implements OnInit {
         this.loading.set(false);
         return;
       }
+      this.currentMemberId.set(member.id);
 
       this.postsService.getPost(id).subscribe((post) => {
         if (!post) {
@@ -79,6 +107,8 @@ export class PostDetailComponent implements OnInit {
           this.loading.set(false);
           return;
         }
+
+        this.loadComments(post.id, member.id);
 
         const alreadyRead = post.readers?.includes(member.id) ?? false;
         if (alreadyRead) {
@@ -92,6 +122,51 @@ export class PostDetailComponent implements OnInit {
           this.loading.set(false);
         });
       });
+    });
+  }
+
+  private loadComments(postId: number, memberId: number): void {
+    this.commentsService.getComments(postId).subscribe((comments) => {
+      this.comments.set(comments);
+      comments
+        .filter((c) => c.mentionedMemberIds.includes(memberId) && !c.seenByMemberIds.includes(memberId))
+        .forEach((c) => this.commentsService.markSeen(c.id, memberId).subscribe());
+    });
+  }
+
+  addMention(memberId: number): void {
+    const member = this.mentionCandidates().find((m) => m.id === memberId);
+    if (!member) return;
+    this.mentionedMembers.update((members) => [...members, member]);
+    this.newCommentBody.update((body) => `${body}${body.endsWith(' ') || !body ? '' : ' '}@${member.name} `);
+  }
+
+  removeMention(memberId: number): void {
+    this.mentionedMembers.update((members) => members.filter((m) => m.id !== memberId));
+  }
+
+  submitComment(): void {
+    const post = this.post();
+    const memberId = this.currentMemberId();
+    const body = this.newCommentBody().trim();
+    if (!post || !memberId || !body) return;
+
+    const mentionedMemberIds = this.mentionedMembers().map((m) => m.id);
+    this.commentsService.addComment(post.id, memberId, body, mentionedMemberIds).subscribe((comment) => {
+      // getComments() je živý stream, takže tuto změnu doručí i sám – zápis proto musí být idempotentní
+      this.comments.update((comments) => [...comments.filter((c) => c.id !== comment.id), comment]);
+      this.newCommentBody.set('');
+      this.mentionedMembers.set([]);
+    });
+  }
+
+  archivePost(): void {
+    const post = this.post();
+    if (!post || !this.canManage) return;
+    if (!confirm('Opravdu chcete tento příspěvek archivovat?')) return;
+
+    this.postsService.archivePost(post.id).subscribe(() => {
+      this.router.navigate(['/app/posts']);
     });
   }
 }
