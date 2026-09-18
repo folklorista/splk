@@ -54,10 +54,10 @@
           ✓ Všechny akce jsou potvrzeny
         </div>
       } @else {
-        <div class="pending-events">
+        <a class="pending-events" routerLink="/app/events">
           <span class="pending-events-count">{{ pendingEventCount }} akcí</span>
           čeká na tvoji odpověď
-        </div>
+        </a>
       }
     </div>
 

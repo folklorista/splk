@@ -1,14 +1,16 @@
 import { Component, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
 import { GroupsService } from '../groups/groups.service';
+import { EventsService } from '../events/events.service';
+import { getUnconfirmedEventsCount } from '../../core/utils/visibility.utils';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './profile.component.html',
   styles: [`
     .profile-page {
@@ -99,11 +101,18 @@ import { GroupsService } from '../groups/groups.service';
     }
 
     .pending-events {
+      display: block;
       padding: 1rem;
       background: #fff3cd;
       border: 1px solid #ffc107;
       border-radius: 4px;
       margin-bottom: 1rem;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .pending-events:hover {
+      border-color: #856404;
     }
 
     .pending-events-count {
@@ -150,6 +159,7 @@ export class ProfileComponent {
     private auth: AuthService,
     private members: MembersService,
     private groups: GroupsService,
+    private events: EventsService,
     private router: Router,
   ) {
     this.loadMemberData();
@@ -166,10 +176,14 @@ export class ProfileComponent {
 
     this.members.getMembers().subscribe((members) => {
       const member = members.find((m) => m.email === user.email);
-      if (member) {
-        this.memberName = member.name;
-        this.memberPhone = member.phone || '—';
-      }
+      if (!member) return;
+
+      this.memberName = member.name;
+      this.memberPhone = member.phone || '—';
+
+      this.events.getEvents().subscribe((events) => {
+        this.pendingEventCount = getUnconfirmedEventsCount(events, user, member.id);
+      });
     });
   }
 
