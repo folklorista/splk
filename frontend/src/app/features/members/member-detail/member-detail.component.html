@@ -17,13 +17,13 @@
         </div>
 
         <dl class="detail__meta">
-          <dt>E-mail</dt>
+          <dt><app-icon class="detail__meta-icon" name="mail" /> E-mail</dt>
           <dd>{{ m.email }}</dd>
           @if (m.phone) {
-            <dt>Telefon</dt>
+            <dt><app-icon class="detail__meta-icon" name="phone" /> Telefon</dt>
             <dd>{{ m.phone }}</dd>
           }
-          <dt>Skupiny</dt>
+          <dt><app-icon class="detail__meta-icon" name="users" /> Skupiny</dt>
           <dd>
             @if (groups().length) {
               {{ groupNames() }}

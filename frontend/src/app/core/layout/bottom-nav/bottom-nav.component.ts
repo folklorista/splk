@@ -6,17 +6,19 @@ import { AuthService } from '../../auth/auth.service';
 import { MembersService } from '../../../features/members/members.service';
 import { getUnreadPostsCount, getUnconfirmedEventsCount } from '../../utils/visibility.utils';
 import { interval, Subscription } from 'rxjs';
+import { IconComponent, IconName } from '../../../shared/icon/icon.component';
 
 interface NavItem {
   path: string;
   label: string;
+  icon: IconName;
   badge?: number | string;
 }
 
 @Component({
   selector: 'app-bottom-nav',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, IconComponent],
   templateUrl: './bottom-nav.component.html',
   styles: [`
     .bottom-nav__item {
@@ -43,11 +45,11 @@ interface NavItem {
 })
 export class BottomNavComponent implements OnInit, OnDestroy {
   navItems: NavItem[] = [
-    { path: '/app/dashboard', label: 'Přehled' },
-    { path: '/app/posts', label: 'Nástěnka' },
-    { path: '/app/events', label: 'Akce' },
-    { path: '/app/members', label: 'Členové' },
-    { path: '/app/profile', label: 'Profil' },
+    { path: '/app/dashboard', label: 'Přehled', icon: 'home' },
+    { path: '/app/posts', label: 'Nástěnka', icon: 'megaphone' },
+    { path: '/app/events', label: 'Akce', icon: 'calendar' },
+    { path: '/app/members', label: 'Členové', icon: 'users' },
+    { path: '/app/profile', label: 'Profil', icon: 'user' },
   ];
 
   currentMemberId = signal<number | null>(null);

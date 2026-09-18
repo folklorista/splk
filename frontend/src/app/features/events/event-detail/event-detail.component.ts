@@ -9,6 +9,7 @@ import { AttendanceService } from '../../attendance/attendance.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MembersService } from '../../members/members.service';
 import { GroupsService } from '../../../core/services/groups.service';
+import { IconComponent } from '../../../shared/icon/icon.component';
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   rehearsal: 'Zkouška',
@@ -28,7 +29,7 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, DatePipe, RouterLink, FormsModule],
+  imports: [CommonModule, DatePipe, RouterLink, FormsModule, IconComponent],
   templateUrl: './event-detail.component.html',
 })
 export class EventDetailComponent implements OnInit {

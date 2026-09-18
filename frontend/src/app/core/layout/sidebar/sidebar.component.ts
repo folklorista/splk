@@ -7,10 +7,12 @@ import { EventsService } from '../../../features/events/events.service';
 import { MembersService } from '../../../features/members/members.service';
 import { getUnreadPostsCount, getUnconfirmedEventsCount } from '../../utils/visibility.utils';
 import { interval, Subscription } from 'rxjs';
+import { IconComponent, IconName } from '../../../shared/icon/icon.component';
 
 interface NavItem {
   path: string;
   label: string;
+  icon: IconName;
   badge?: number | string;
 }
 
@@ -22,7 +24,7 @@ interface NavSection {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, IconComponent],
   templateUrl: './sidebar.component.html',
   styles: [`
     .sidebar__nav-item {
@@ -53,18 +55,18 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'Aplikace',
       items: [
-        { path: '/app/dashboard', label: 'Přehled' },
-        { path: '/app/posts', label: 'Nástěnka' },
-        { path: '/app/events', label: 'Akce' },
-        { path: '/app/members', label: 'Členové' },
-        { path: '/app/costumes', label: 'Krojová databáze' },
-        { path: '/app/profile', label: 'Můj profil' },
+        { path: '/app/dashboard', label: 'Přehled', icon: 'home' },
+        { path: '/app/posts', label: 'Nástěnka', icon: 'megaphone' },
+        { path: '/app/events', label: 'Akce', icon: 'calendar' },
+        { path: '/app/members', label: 'Členové', icon: 'users' },
+        { path: '/app/costumes', label: 'Krojová databáze', icon: 'shirt' },
+        { path: '/app/profile', label: 'Můj profil', icon: 'user' },
       ],
     },
     {
       label: 'Správa',
       items: [
-        { path: '/app/admin', label: 'Administrace' },
+        { path: '/app/admin', label: 'Administrace', icon: 'settings' },
       ],
     },
   ];

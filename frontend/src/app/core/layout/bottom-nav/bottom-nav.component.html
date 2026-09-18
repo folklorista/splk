@@ -5,6 +5,7 @@
       [routerLink]="item.path"
       routerLinkActive="bottom-nav__item--active"
     >
+      <app-icon [name]="item.icon" [size]="20" />
       <span class="bottom-nav__label">{{ item.label }}</span>
       @if (item.badge) {
         <span class="bottom-nav__badge">{{ item.badge }}</span>

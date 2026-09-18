@@ -4,11 +4,12 @@ import { Member } from '../../../core/models/member.model';
 import { Group } from '../../../core/models/group.model';
 import { MembersService } from '../members.service';
 import { GroupsService } from '../../../core/services/groups.service';
+import { IconComponent } from '../../../shared/icon/icon.component';
 
 @Component({
   selector: 'app-member-detail',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, IconComponent],
   templateUrl: './member-detail.component.html',
 })
 export class MemberDetailComponent implements OnInit {
