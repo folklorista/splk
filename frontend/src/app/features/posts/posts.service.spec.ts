@@ -56,6 +56,7 @@ describe('PostsService', () => {
       authorId: 1,
       targetGroupIds: [],
       publishedAt: '2026-06-23T10:00:00',
+      updatedAt: '2026-06-23T10:00:00',
       isPinned: false,
     };
     let created: Post | undefined;
@@ -79,6 +80,7 @@ describe('PostsService', () => {
       authorId: 1,
       targetGroupIds: [],
       publishedAt: '2026-06-23T10:00:00',
+      updatedAt: '2026-06-23T10:00:00',
       isPinned: true,
     };
     let result: Post | undefined;
@@ -89,6 +91,25 @@ describe('PostsService', () => {
     expect(result?.isPinned).toBeTrue();
   }));
 
+  it('updatePost nezmění původní publishedAt, i když je v datech jiné', fakeAsync(() => {
+    const original = MOCK_POSTS.find((p) => p.id === 1)!;
+    const updated: Omit<Post, 'id'> = {
+      ensembleId: 1,
+      title: 'Upravený nadpis',
+      body: 'Upravený obsah',
+      authorId: 1,
+      targetGroupIds: [],
+      publishedAt: '2099-01-01T00:00:00',
+      updatedAt: '2099-01-01T00:00:00',
+      isPinned: true,
+    };
+    let result: Post | undefined;
+    service.updatePost(1, updated).subscribe((p) => (result = p));
+    tick(300);
+    expect(result?.publishedAt).toBe(original.publishedAt);
+    expect(result?.updatedAt).not.toBe(original.updatedAt);
+  }));
+
   it('updatePost vrátí undefined pro neexistující id', fakeAsync(() => {
     const updated: Omit<Post, 'id'> = {
       ensembleId: 1,
@@ -97,6 +118,7 @@ describe('PostsService', () => {
       authorId: 1,
       targetGroupIds: [],
       publishedAt: '2026-06-23T10:00:00',
+      updatedAt: '2026-06-23T10:00:00',
       isPinned: false,
     };
     let result: Post | undefined = {} as Post;

@@ -272,13 +272,15 @@ export class AdminPostFormComponent implements OnInit {
           return;
         }
 
+        const now = new Date().toISOString();
         const postData: Omit<Post, 'id'> = {
           ensembleId: 1,
           title: formValue.title,
           body: formValue.body,
           authorId: member.id,
           targetGroupIds: [],
-          publishedAt: new Date().toISOString(),
+          publishedAt: now,
+          updatedAt: now,
           isPinned: formValue.isPinned,
         };
 

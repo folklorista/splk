@@ -23,6 +23,7 @@ describe('AdminPostsComponent', () => {
         authorId: 1,
         targetGroupIds: [],
         publishedAt: '2026-06-20T10:00:00',
+        updatedAt: '2026-06-20T10:00:00',
         isPinned: false,
       },
       {
@@ -33,6 +34,7 @@ describe('AdminPostsComponent', () => {
         authorId: 1,
         targetGroupIds: [],
         publishedAt: '2026-06-21T10:00:00',
+        updatedAt: '2026-06-21T10:00:00',
         isPinned: true,
       },
     ];

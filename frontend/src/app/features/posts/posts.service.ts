@@ -18,7 +18,8 @@ export class PostsService {
 
   createPost(post: Omit<Post, 'id'>): Observable<Post> {
     const newId = Math.max(...postsCache.map((p) => p.id), 0) + 1;
-    const newPost: Post = { ...post, id: newId };
+    const now = new Date().toISOString();
+    const newPost: Post = { ...post, id: newId, publishedAt: now, updatedAt: now };
     postsCache.push(newPost);
     return of(newPost).pipe(delay(300));
   }
@@ -28,7 +29,13 @@ export class PostsService {
     if (index === -1) {
       return of(undefined).pipe(delay(300));
     }
-    const updated: Post = { ...post, id };
+    // publishedAt se editací nemění – to by muselo jít přes samostatnou akci "znovu publikovat"
+    const updated: Post = {
+      ...post,
+      id,
+      publishedAt: postsCache[index].publishedAt,
+      updatedAt: new Date().toISOString(),
+    };
     postsCache[index] = updated;
     return of(updated).pipe(delay(300));
   }

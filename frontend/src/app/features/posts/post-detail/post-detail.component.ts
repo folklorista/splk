@@ -5,11 +5,13 @@ import { Post } from '../models/post.model';
 import { PostsService } from '../posts.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MembersService } from '../../members/members.service';
+import { IconComponent } from '../../../shared/icon/icon.component';
+import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
 
 @Component({
   selector: 'app-post-detail',
   standalone: true,
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, IconComponent, RelativeTimePipe],
   templateUrl: './post-detail.component.html',
 })
 export class PostDetailComponent implements OnInit {
