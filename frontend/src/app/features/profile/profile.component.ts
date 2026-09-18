@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
+import { GroupsService } from '../groups/groups.service';
 
 @Component({
   selector: 'app-profile',
@@ -147,6 +148,7 @@ export class ProfileComponent {
   constructor(
     private auth: AuthService,
     private members: MembersService,
+    private groups: GroupsService,
     private router: Router,
   ) {
     this.loadMemberData();
@@ -167,6 +169,17 @@ export class ProfileComponent {
         this.memberPhone = member.phone || '—';
       }
     });
+  }
+
+  async getGroupLabel(groupId: number): Promise<string> {
+    this.groups.getGroup(groupId).subscribe((group) => {
+      if (group) {
+        return group.name;
+      } else {
+        return `Neznámá skupina (ID: ${groupId}) [subscribe]`;
+      }
+    });
+    return `Neznámá skupina (ID: ${groupId}) [no-subscribe]`;
   }
 
   getRoleLabel(role: string): string {

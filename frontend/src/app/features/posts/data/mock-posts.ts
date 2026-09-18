@@ -10,7 +10,6 @@ export const MOCK_POSTS: Post[] = [
     targetGroupIds: [1],
     publishedAt: '2026-06-10T09:00:00',
     isPinned: true,
-    isImportant: true,
     requiresAction: true,
     readers: [],
   },
@@ -23,9 +22,8 @@ export const MOCK_POSTS: Post[] = [
     targetGroupIds: [1],
     publishedAt: '2026-06-15T14:30:00',
     isPinned: false,
-    isImportant: true,
     requiresAction: false,
-    readers: ['vedouci', 'jana'],
+    readers: [1, 2],
   },
   {
     id: 3,
@@ -36,8 +34,8 @@ export const MOCK_POSTS: Post[] = [
     targetGroupIds: [1],
     publishedAt: '2026-06-18T11:00:00',
     isPinned: false,
-    isImportant: false,
     requiresAction: false,
+    readers: [],
   },
   {
     id: 4,
@@ -48,9 +46,8 @@ export const MOCK_POSTS: Post[] = [
     targetGroupIds: [1],
     publishedAt: '2026-06-20T08:00:00',
     isPinned: false,
-    isImportant: false,
     requiresAction: true,
-    readers: ['jana'],
+    readers: [],
   },
   {
     id: 5,
@@ -61,8 +58,8 @@ export const MOCK_POSTS: Post[] = [
     targetGroupIds: [2],
     publishedAt: '2026-06-22T10:00:00',
     isPinned: false,
-    isImportant: false,
     requiresAction: false,
+    readers: [],
   },
   {
     id: 6,
@@ -73,7 +70,7 @@ export const MOCK_POSTS: Post[] = [
     targetGroupIds: [3],
     publishedAt: '2026-06-23T14:00:00',
     isPinned: false,
-    isImportant: true,
     requiresAction: false,
+    readers: [],
   },
 ];

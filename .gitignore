@@ -62,3 +62,6 @@ baseline.json
 /frontend/public/changelog.json
 .filetreeignore
 file-structure.txt
+
+# Claude files
+.claude

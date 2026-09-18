@@ -27,14 +27,14 @@ export class EventsComponent implements OnInit {
   visibleEvents = computed(() => {
     const user = this.auth.currentUser();
     if (!user) return [];
-    return this.events().filter(e => isItemVisibleToUser(e.targetGroupIds, user.groups));
+    return this.events().filter(e => isItemVisibleToUser(e.targetGroupIds, user.groupIds));
   });
 
   getUserAttendanceStatus = (event: AppEvent): string | null => {
+    const user = this.auth.currentUser();
     if (!event.attendance || event.attendance.length === 0) return null;
-    const pending = event.attendance.find(a => a.status === 'pending');
-    const confirmed = event.attendance.find(a => a.status !== 'pending');
-    return confirmed?.status ?? null;
+    const attendance = event.attendance.find(a => a.memberId === user?.id);
+    return attendance?.status || null;
   };
 
   isWaitingForResponse = (event: AppEvent): boolean => {

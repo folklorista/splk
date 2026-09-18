@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { PostsService } from '../../../features/posts/posts.service';
 import { EventsService } from '../../../features/events/events.service';
 import { AuthService } from '../../auth/auth.service';
+import { MembersService } from '../../../features/members/members.service';
 import { getUnreadPostsCount, getUnconfirmedEventsCount } from '../../utils/visibility.utils';
+import { interval, Subscription } from 'rxjs';
 
 interface NavItem {
   path: string;
@@ -39,7 +41,7 @@ interface NavItem {
     }
   `],
 })
-export class BottomNavComponent implements OnInit {
+export class BottomNavComponent implements OnInit, OnDestroy {
   navItems: NavItem[] = [
     { path: '/app/dashboard', label: 'Přehled' },
     { path: '/app/posts', label: 'Nástěnka' },
@@ -48,27 +50,52 @@ export class BottomNavComponent implements OnInit {
     { path: '/app/profile', label: 'Profil' },
   ];
 
+  currentMemberId = signal<number | null>(null);
+  private refreshSubscription: Subscription | null = null;
+
   constructor(
     private postsService: PostsService,
     private eventsService: EventsService,
-    private auth: AuthService
+    private auth: AuthService,
+    private membersService: MembersService
   ) {}
 
   ngOnInit(): void {
-    this.postsService.getPosts().subscribe((posts) => {
-      const count = getUnreadPostsCount(posts, this.auth.currentUser());
-      const postsItem = this.navItems.find((item) => item.path === '/app/posts');
-      if (postsItem) {
-        postsItem.badge = count > 0 ? count : undefined;
-      }
-    });
+    const user = this.auth.currentUser();
+    if (!user) return;
 
-    this.eventsService.getEvents().subscribe((events) => {
-      const count = getUnconfirmedEventsCount(events, this.auth.currentUser());
-      const eventsItem = this.navItems.find((item) => item.path === '/app/events');
-      if (eventsItem) {
-        eventsItem.badge = count > 0 ? count : undefined;
+    this.membersService.getMembers().subscribe((members) => {
+      const member = members.find((m) => m.email === user.email);
+      if (member) {
+        this.currentMemberId.set(member.id);
+
+        const updateBadges = () => {
+          this.postsService.getPosts().subscribe((posts) => {
+            const count = getUnreadPostsCount(posts, user, member.id);
+            const postsItem = this.navItems.find((item) => item.path === '/app/posts');
+            if (postsItem) {
+              postsItem.badge = count > 0 ? count : undefined;
+            }
+          });
+
+          this.eventsService.getEvents().subscribe((events) => {
+            const count = getUnconfirmedEventsCount(events, user);
+            const eventsItem = this.navItems.find((item) => item.path === '/app/events');
+            if (eventsItem) {
+              eventsItem.badge = count > 0 ? count : undefined;
+            }
+          });
+        };
+
+        updateBadges();
+        this.refreshSubscription = interval(2000).subscribe(() => updateBadges());
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
   }
 }

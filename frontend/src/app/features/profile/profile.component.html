@@ -29,8 +29,8 @@
       <div class="profile-field">
         <div class="profile-field-label">Skupiny</div>
         <div class="profile-field-value">
-          @for (group of currentUser()!.groups; track group) {
-            <span class="group-badge">{{ group }}</span>
+          @for (groupId of currentUser()!.groupIds; track groupId) {
+            <span class="group-badge">{{ getGroupLabel(groupId) }}</span>
           }
         </div>
       </div>

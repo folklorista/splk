@@ -5,24 +5,24 @@ import { User } from './models/user.model';
 
 const MOCK_USERS: Record<string, User> = {
   'jana@soubor.cz': {
-    id: 'jana',
+    id: 1,
     name: 'Jana Nováková',
     email: 'jana@soubor.cz',
-    groups: ['dospeli', 'tanecni-skupina'],
+    groupIds: [1, 2],
     roles: ['member'],
   },
   'vedouci@soubor.cz': {
-    id: 'vedouci',
+    id: 2,
     name: 'Vedoucí Souboru',
     email: 'vedouci@soubor.cz',
-    groups: ['dospeli', 'vedeni'],
+    groupIds: [1, 3],
     roles: ['member', 'leader'],
   },
   'admin@soubor.cz': {
-    id: 'admin',
+    id: 3,
     name: 'Administrátor',
     email: 'admin@soubor.cz',
-    groups: ['dospeli', 'vedeni'],
+    groupIds: [1, 3],
     roles: ['member', 'leader', 'admin'],
   },
 };

@@ -15,11 +15,14 @@
         >
           <div class="item-list__row">
             <span class="item-list__title">{{ post.title }}</span>
-            @if (isUnread(post)) {
-              <span class="badge badge--requires-action">Nepřečteno</span>
-            } @else if (post.isPinned) {
-              <span class="badge badge--pinned">Důležité</span>
-            }
+            <div class="item-list__badges">
+              @if (isUnread(post)) {
+                <span class="badge badge--requires-action">Nepřečteno</span>
+              }
+              @if (post.isPinned) {
+                <span class="badge badge--pinned">Připnuto</span>
+              }
+            </div>
           </div>
           <div class="item-list__meta">
             {{ post.publishedAt | date: 'd. M. yyyy' }}

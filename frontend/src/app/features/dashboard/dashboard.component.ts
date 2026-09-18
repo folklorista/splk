@@ -6,6 +6,9 @@ import { AttendanceRecord } from '../attendance/models/attendance.model';
 import { EventsService } from '../events/events.service';
 import { PostsService } from '../posts/posts.service';
 import { AttendanceService } from '../attendance/attendance.service';
+import { MembersService } from '../members/members.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { RouterLink } from '@angular/router';
 
 // Temporary mock binding – will be replaced with auth→member mapping in a later phase
 const CURRENT_MEMBER_ID = 1;
@@ -13,25 +16,52 @@ const CURRENT_MEMBER_ID = 1;
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
   nextEvent = signal<AppEvent | null>(null);
-  pinnedPost = signal<Post | null>(null);
+  pinnedPosts = signal<Post[] | null>(null);
   pendingAttendance = signal<{ event: AppEvent; record: AttendanceRecord }[]>([]);
   loading = signal(true);
+  currentMemberId = signal<number | null>(null);
+
+  isUnread = (post: Post): boolean => {
+    const memberId = this.currentMemberId();
+    return memberId ? !post.readers || !post.readers.includes(memberId) : false;
+  };
 
   constructor(
+    private auth: AuthService,
     private eventsService: EventsService,
     private postsService: PostsService,
     private attendanceService: AttendanceService,
-  ) {}
+    private membersService: MembersService
+  ) { }
 
   ngOnInit(): void {
     const now = new Date().toISOString();
     let loaded = 0;
     const done = () => { if (++loaded === 3) this.loading.set(false); };
+
+    const user = this.auth.currentUser();
+    if (!user) {
+      this.loading.set(false);
+      return;
+    }
+
+    this.membersService.getMembers().subscribe((members) => {
+      const member = members.find((m) => m.email === user.email);
+      if (member) {
+        this.currentMemberId.set(member.id);
+      }
+
+      this.postsService.getPosts().subscribe((posts) => {
+        this.pinnedPosts.set(posts.filter((p) => p.isPinned).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)));
+        done();
+      });
+
+    });
 
     this.eventsService.getEvents().subscribe((events) => {
       const upcoming = events
@@ -42,7 +72,7 @@ export class DashboardComponent implements OnInit {
     });
 
     this.postsService.getPosts().subscribe((posts) => {
-      this.pinnedPost.set(posts.find((p) => p.isPinned) ?? null);
+      this.pinnedPosts.set(posts.filter((p) => p.isPinned).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)));
       done();
     });
 

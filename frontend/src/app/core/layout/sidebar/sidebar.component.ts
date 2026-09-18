@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { Router } from '@angular/router';
 import { PostsService } from '../../../features/posts/posts.service';
 import { EventsService } from '../../../features/events/events.service';
+import { MembersService } from '../../../features/members/members.service';
 import { getUnreadPostsCount, getUnconfirmedEventsCount } from '../../utils/visibility.utils';
+import { interval, Subscription } from 'rxjs';
 
 interface NavItem {
   path: string;
@@ -46,7 +48,7 @@ interface NavSection {
     }
   `],
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent implements OnInit, OnDestroy {
   navSections: NavSection[] = [
     {
       label: 'Aplikace',
@@ -54,9 +56,9 @@ export class SidebarComponent implements OnInit {
         { path: '/app/dashboard', label: 'Přehled' },
         { path: '/app/posts', label: 'Nástěnka' },
         { path: '/app/events', label: 'Akce' },
-        { path: '/app/attendance', label: 'Docházka' },
         { path: '/app/members', label: 'Členové' },
         { path: '/app/costumes', label: 'Krojová databáze' },
+        { path: '/app/profile', label: 'Můj profil' },
       ],
     },
     {
@@ -67,29 +69,51 @@ export class SidebarComponent implements OnInit {
     },
   ];
 
+  private refreshSubscription: Subscription | null = null;
+
   constructor(
     public auth: AuthService,
     private router: Router,
     private postsService: PostsService,
     private eventsService: EventsService,
+    private membersService: MembersService,
   ) {}
 
   ngOnInit(): void {
-    this.postsService.getPosts().subscribe((posts) => {
-      const count = getUnreadPostsCount(posts, this.auth.currentUser());
-      const postsItem = this.navSections[0].items.find((item) => item.path === '/app/posts');
-      if (postsItem) {
-        postsItem.badge = count > 0 ? count : undefined;
-      }
-    });
+    const user = this.auth.currentUser();
+    if (!user) return;
 
-    this.eventsService.getEvents().subscribe((events) => {
-      const count = getUnconfirmedEventsCount(events, this.auth.currentUser());
-      const eventsItem = this.navSections[0].items.find((item) => item.path === '/app/events');
-      if (eventsItem) {
-        eventsItem.badge = count > 0 ? count : undefined;
-      }
+    this.membersService.getMembers().subscribe((members) => {
+      const member = members.find((m) => m.email === user.email);
+      if (!member) return;
+
+      const updateBadges = () => {
+        this.postsService.getPosts().subscribe((posts) => {
+          const count = getUnreadPostsCount(posts, user, member.id);
+          const postsItem = this.navSections[0].items.find((item) => item.path === '/app/posts');
+          if (postsItem) {
+            postsItem.badge = count > 0 ? count : undefined;
+          }
+        });
+
+        this.eventsService.getEvents().subscribe((events) => {
+          const count = getUnconfirmedEventsCount(events, user);
+          const eventsItem = this.navSections[0].items.find((item) => item.path === '/app/events');
+          if (eventsItem) {
+            eventsItem.badge = count > 0 ? count : undefined;
+          }
+        });
+      };
+
+      updateBadges();
+      this.refreshSubscription = interval(2000).subscribe(() => updateBadges());
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
   }
 
   logout(): void {

@@ -2,7 +2,7 @@ import { AttendanceRecord } from '../models/attendance.model';
 
 export const MOCK_ATTENDANCE: AttendanceRecord[] = [
   // Event 1 – zkouška celý soubor
-  { eventId: 1, memberId: 1, status: 'yes' },
+  { eventId: 1, memberId: 1, status: 'yes', note: 'Přijedu autem' },
   { eventId: 1, memberId: 2, status: 'yes' },
   { eventId: 1, memberId: 3, status: 'no', note: 'Pracovní povinnost' },
   { eventId: 1, memberId: 4, status: 'maybe' },
@@ -13,7 +13,7 @@ export const MOCK_ATTENDANCE: AttendanceRecord[] = [
   { eventId: 1, memberId: 10, status: 'yes' },
 
   // Event 2 – vystoupení Strážnice
-  { eventId: 2, memberId: 1, status: 'yes' },
+  { eventId: 2, memberId: 1, status: 'no', note: 'Nemůžu se zúčastnit' },
   { eventId: 2, memberId: 2, status: 'yes' },
   { eventId: 2, memberId: 3, status: 'yes' },
   { eventId: 2, memberId: 4, status: 'no', note: 'Dovolená' },
@@ -24,7 +24,6 @@ export const MOCK_ATTENDANCE: AttendanceRecord[] = [
   { eventId: 2, memberId: 10, status: 'yes' },
 
   // Event 3 – zkouška taneční skupina
-  { eventId: 3, memberId: 1, status: 'yes' },
   { eventId: 3, memberId: 3, status: 'yes' },
   { eventId: 3, memberId: 5, status: 'maybe', note: 'Možná později' },
   { eventId: 3, memberId: 7, status: 'yes' },
