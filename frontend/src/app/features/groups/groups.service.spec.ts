@@ -1,7 +1,7 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { GroupsService } from './groups.service';
 import { Group } from '../../core/models/group.model';
-import { MOCK_GROUPS } from './data/mock-groups';
+import { MOCK_GROUPS } from '../../core/data/mock-groups';
 
 describe('GroupsService', () => {
   let service: GroupsService;

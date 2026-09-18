@@ -44,7 +44,8 @@ describe('AdminPostFormComponent', () => {
       id: 1,
       name: 'Test User',
       email: 'test@test.cz',
-      role: 'member',
+      groupIds: [1],
+      roles: ['member'],
     });
     postsService.createPost.and.returnValue(of({ id: 5 } as Post));
     postsService.updatePost.and.returnValue(of({ id: 1 } as Post));

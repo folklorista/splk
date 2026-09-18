@@ -40,7 +40,7 @@ describe('LoginComponent', () => {
   }));
 
   it('vyplněný formulář zavolá login a naviguje na /app/dashboard', fakeAsync(() => {
-    const mockUser = { id: 1, name: 'Jana', email: 'jana@test.cz', role: 'member' as const };
+    const mockUser = { id: 1, name: 'Jana', email: 'jana@test.cz', groupIds: [1], roles: ['member' as const] };
     authSpy.login.and.returnValue(of(mockUser));
 
     const fixture = TestBed.createComponent(LoginComponent);
