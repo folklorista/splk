@@ -4,14 +4,18 @@ Webová aplikace pro interní organizaci folklorního souboru. Mobilní-first p�
 
 ## Aktuální stav
 
-**Fáze 1 – Angular shell** (dokončeno)
+Podrobný stav a další kroky viz [`docs/03-postup-vyvoje.md`](docs/03-postup-vyvoje.md).
+
+**Fáze 1–3** (dokončeno)
 
 - přihlašovací obrazovka s mock AuthService
 - layout po přihlášení: mobilní spodní navigace + desktopový sidebar
-- placeholder routes pro všechny hlavní moduly
-- základní jednotkové testy (auth, guard, login)
+- Dashboard, Nástěnka, Akce (s potvrzením účasti), Členové, Skupiny, hrubý placeholder Krojové databáze
+- mock feature services pro všechny moduly (komponenty na ně přistupují výhradně přes services, ne přímo na mock data)
+- rozpracovaná administrace (CRUD pro příspěvky, akce, členy, skupiny)
+- jednotkové testy (auth, routing, services, klíčová logika viditelnosti/účasti)
 
-Další krok: **Fáze 2 – TypeScript modely, mock data a feature services**
+Další krok: **Fáze 4 – konzultace s vedoucím souboru**, poté **Fáze 5 – první vertikální řez s PHP/MySQL backendem**
 
 ## Stack
 

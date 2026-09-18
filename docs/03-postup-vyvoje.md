@@ -1,5 +1,21 @@
 # Postup vývoje
 
+## Aktuální stav (2026-09-18)
+
+Hotovo:
+
+- **Fáze 1 (Angular shell)** – kompletní.
+- **Fáze 2 (mock modely a API services)** – kompletní, včetně feature services pro všechny níže uvedené moduly.
+- **Fáze 3 (klikací prototyp)** – obrazovky Login, Dashboard, Nástěnka + detail, Akce + detail s potvrzením účasti, Členové + detail, Skupiny, hrubý placeholder Krojové databáze jsou hotové a proklikatelné s mock daty.
+- Navíc oproti původnímu plánu: rozpracovaná administrace (CRUD obrazovky pro příspěvky, akce, členy a skupiny) – nad rámec Fáze 3, ale využívá stejné feature services jako běžné obrazovky.
+
+Zatím neproběhlo:
+
+- **Fáze 4** – konzultace s vedoucím souboru.
+- **Fáze 5 a 6** – reálný PHP/MySQL backend, nahrazování mock dat.
+
+Poznatek z ladění mock vrstvy: pokud stejná data (např. účast na akci) potřebuje víc feature services, musí mít **jeden sdílený zdroj pravdy** (reaktivní stav, ne kopie pole při startu), jinak se snadno rozjedou do nekonzistence. Mock data s pevně zapsaným datem/časem navíc časem zestárnou (přestanou být „v budoucnu“) – kde na tom závisí logika (např. nadcházející akce), je lepší počítat data relativně k aktuálnímu datu.
+
 ## Základní strategie
 
 Vývoj má probíhat iterativně a po malých celcích.
