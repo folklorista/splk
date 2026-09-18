@@ -145,4 +145,30 @@ describe('PostsService', () => {
     tick(300);
     expect(deleted).toBeFalse();
   }));
+
+  it('markAsRead přidá člena mezi readers, beze změny updatedAt', fakeAsync(() => {
+    const original = MOCK_POSTS.find((p) => p.id === 3)!;
+    service.markAsRead(3, 99).subscribe();
+    tick(300);
+
+    let result: Post | undefined;
+    service.getPost(3).subscribe((p) => (result = p));
+    tick(300);
+
+    expect(result?.readers).toContain(99);
+    expect(result?.updatedAt).toBe(original.updatedAt);
+  }));
+
+  it('markAsRead nepřidá člena podruhé', fakeAsync(() => {
+    service.markAsRead(3, 99).subscribe();
+    tick(300);
+    service.markAsRead(3, 99).subscribe();
+    tick(300);
+
+    let result: Post | undefined;
+    service.getPost(3).subscribe((p) => (result = p));
+    tick(300);
+
+    expect(result?.readers?.filter((id) => id === 99).length).toBe(1);
+  }));
 });

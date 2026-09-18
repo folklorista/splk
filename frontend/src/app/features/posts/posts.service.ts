@@ -40,6 +40,19 @@ export class PostsService {
     return of(updated).pipe(delay(300));
   }
 
+  // Označí příspěvek za přečtený daným členem, beze změny updatedAt
+  markAsRead(postId: number, memberId: number): Observable<void> {
+    const index = postsCache.findIndex((p) => p.id === postId);
+    if (index !== -1) {
+      const readers = postsCache[index].readers ?? [];
+      if (!readers.includes(memberId)) {
+        postsCache = [...postsCache];
+        postsCache[index] = { ...postsCache[index], readers: [...readers, memberId] };
+      }
+    }
+    return of(undefined).pipe(delay(300));
+  }
+
   deletePost(id: number): Observable<boolean> {
     const index = postsCache.findIndex((p) => p.id === id);
     if (index === -1) {

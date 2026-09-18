@@ -26,6 +26,38 @@
         </dl>
 
         <p class="detail__body">{{ p.body }}</p>
+
+        @if ((isLeader || isAdmin) && visibleMembers().length > 0) {
+          <section class="detail__section">
+            <h2 class="detail__section-title">Přečteno</h2>
+            <div class="member-columns">
+              <div class="member-column">
+                <div class="member-column__header">Přečetlo ({{ readStatus().read.length }})</div>
+                @if (readStatus().read.length) {
+                  <ul class="member-column__list">
+                    @for (m of readStatus().read; track m.id) {
+                      <li>{{ m.name }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="member-column__empty">Nikdo</p>
+                }
+              </div>
+              <div class="member-column">
+                <div class="member-column__header">Nepřečetlo ({{ readStatus().unread.length }})</div>
+                @if (readStatus().unread.length) {
+                  <ul class="member-column__list">
+                    @for (m of readStatus().unread; track m.id) {
+                      <li>{{ m.name }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="member-column__empty">Nikdo</p>
+                }
+              </div>
+            </div>
+          </section>
+        }
       </div>
     }
   }
