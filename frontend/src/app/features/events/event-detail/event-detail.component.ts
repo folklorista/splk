@@ -53,7 +53,7 @@ export class EventDetailComponent implements OnInit {
   readonly visibleMembers = computed(() => {
     const event = this.event();
     if (!event) return [];
-    return this.allMembers().filter((m) => isItemVisibleToUser(event.targetGroupIds, m.groupIds));
+    return this.allMembers().filter((m) => isItemVisibleToUser(event.targetGroupIds, m.groupIds, event.targetMemberIds, m.id));
   });
 
   // Členové rozdělení podle stavu účasti – chybějící záznam se počítá jako "pending"

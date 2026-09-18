@@ -53,6 +53,7 @@ export class DashboardComponent implements OnInit {
       if (!member) {
         done();
         done();
+        done();
         return;
       }
       this.currentMemberId.set(member.id);
@@ -60,7 +61,7 @@ export class DashboardComponent implements OnInit {
       this.postsService.getPosts().subscribe((posts) => {
         this.pinnedPosts.set(
           posts
-            .filter((p) => isItemVisibleToUser(p.targetGroupIds, user.groupIds))
+            .filter((p) => isItemVisibleToUser(p.targetGroupIds, user.groupIds, p.targetMemberIds, member.id))
             .filter((p) => p.isPinned)
             .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)),
         );
@@ -68,10 +69,16 @@ export class DashboardComponent implements OnInit {
       });
 
       this.eventsService.getEvents().subscribe((events) => {
+        const visibleEvents = events.filter((e) => isItemVisibleToUser(e.targetGroupIds, user.groupIds, e.targetMemberIds, member.id));
+
+        const upcoming = visibleEvents
+          .filter((e) => e.startsAt >= now)
+          .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+        this.nextEvent.set(upcoming[0] ?? null);
+        done();
+
         this.attendanceService.getMemberAttendance(member.id).subscribe((records) => {
-          const pending = events
-            .filter((e) => isItemVisibleToUser(e.targetGroupIds, user.groupIds))
-            .filter((e) => e.startsAt >= now)
+          const pending = upcoming
             .map((event) => ({
               event,
               record: records.find((r) => r.eventId === event.id),
@@ -85,15 +92,6 @@ export class DashboardComponent implements OnInit {
           done();
         });
       });
-    });
-
-    this.eventsService.getEvents().subscribe((events) => {
-      const upcoming = events
-        .filter((e) => isItemVisibleToUser(e.targetGroupIds, user.groupIds))
-        .filter((e) => e.startsAt >= now)
-        .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-      this.nextEvent.set(upcoming[0] ?? null);
-      done();
     });
   }
 }

@@ -12,6 +12,7 @@ export interface AppEvent {
   location: string;
   description?: string;
   targetGroupIds: number[];
+  targetMemberIds?: number[];
   requiresAction?: boolean;
   attendance?: AttendanceRecord[];
 }

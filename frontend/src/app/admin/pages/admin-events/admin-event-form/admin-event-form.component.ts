@@ -11,6 +11,7 @@ import { AttendanceRecord, AttendanceStatus } from '../../../../features/attenda
 import { Member } from '../../../../core/models/member.model';
 import { isItemVisibleToUser } from '../../../../core/utils/visibility.utils';
 import { RelativeTimePipe } from '../../../../shared/pipes/relative-time.pipe';
+import { TargetingEditorComponent } from '../../../../shared/targeting/targeting-editor.component';
 
 const STATUS_LABELS: Record<AttendanceStatus, string> = {
   yes: 'Přijde',
@@ -22,7 +23,7 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
 @Component({
   selector: 'app-admin-event-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, RelativeTimePipe],
+  imports: [ReactiveFormsModule, RouterLink, RelativeTimePipe, TargetingEditorComponent],
   template: `
     <div class="admin-event-form">
       <div class="admin-event-form__header">
@@ -81,6 +82,16 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
         <div class="admin-event-form__field">
           <label for="description">Popis</label>
           <textarea id="description" formControlName="description" placeholder="Popis akce" rows="4"></textarea>
+        </div>
+
+        <div class="admin-event-form__field">
+          <label>Cílení (nepovinné)</label>
+          <app-targeting-editor
+            [selectedGroupIds]="targetGroupIds()"
+            [selectedMemberIds]="targetMemberIds()"
+            (selectedGroupIdsChange)="targetGroupIds.set($event)"
+            (selectedMemberIdsChange)="targetMemberIds.set($event)"
+          />
         </div>
 
         @if (isEditMode) {
@@ -190,6 +201,8 @@ export class AdminEventFormComponent implements OnInit {
   readonly statuses: AttendanceStatus[] = ['pending', 'yes', 'no', 'maybe'];
   readonly statusLabels = STATUS_LABELS;
   private allEventMembers = signal<Member[]>([]);
+  targetGroupIds = signal<number[]>([]);
+  targetMemberIds = signal<number[]>([]);
   pendingStatuses = signal<Map<number, AttendanceStatus>>(new Map());
   viewedAtByMember = signal<Map<number, string | undefined>>(new Map());
   noteByMember = signal<Map<number, string | undefined>>(new Map());
@@ -246,15 +259,17 @@ export class AdminEventFormComponent implements OnInit {
             location: event.location,
             description: event.description || '',
           });
-          this.loadAttendance(id, event.targetGroupIds);
+          this.targetGroupIds.set(event.targetGroupIds ?? []);
+          this.targetMemberIds.set(event.targetMemberIds ?? []);
+          this.loadAttendance(id, event.targetGroupIds, event.targetMemberIds);
         }
       },
     });
   }
 
-  private loadAttendance(eventId: number, targetGroupIds: number[]): void {
+  private loadAttendance(eventId: number, targetGroupIds: number[], targetMemberIds?: number[]): void {
     this.membersService.getMembers().subscribe((members) => {
-      const visible = members.filter((m) => isItemVisibleToUser(targetGroupIds, m.groupIds));
+      const visible = members.filter((m) => isItemVisibleToUser(targetGroupIds, m.groupIds, targetMemberIds, m.id));
       this.allEventMembers.set(visible);
 
       this.attendanceService.getAttendance(eventId).subscribe((records) => {
@@ -321,7 +336,8 @@ export class AdminEventFormComponent implements OnInit {
       endsAt: formValue.endsAt,
       location: formValue.location,
       description: formValue.description || undefined,
-      targetGroupIds: [],
+      targetGroupIds: this.targetGroupIds(),
+      targetMemberIds: this.targetMemberIds(),
     };
 
     if (this.isEditMode && this.eventId !== null) {

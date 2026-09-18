@@ -1,15 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PostsService } from '../../../../features/posts/posts.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { MembersService } from '../../../../features/members/members.service';
 import { Post } from '../../../../features/posts/models/post.model';
+import { TargetingEditorComponent } from '../../../../shared/targeting/targeting-editor.component';
 
 @Component({
   selector: 'app-admin-post-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, TargetingEditorComponent],
   template: `
     <div class="admin-post-form">
       <div class="admin-post-form__header">
@@ -55,6 +56,16 @@ import { Post } from '../../../../features/posts/models/post.model';
             />
             Připnout na nástěnku
           </label>
+        </div>
+
+        <div class="admin-post-form__field">
+          <label>Cílení (nepovinné)</label>
+          <app-targeting-editor
+            [selectedGroupIds]="targetGroupIds()"
+            [selectedMemberIds]="targetMemberIds()"
+            (selectedGroupIdsChange)="targetGroupIds.set($event)"
+            (selectedMemberIdsChange)="targetMemberIds.set($event)"
+          />
         </div>
 
         <div class="admin-post-form__actions">
@@ -205,6 +216,8 @@ export class AdminPostFormComponent implements OnInit {
   submitError = '';
   private postId: number | null = null;
   private originalPost: Post | null = null;
+  targetGroupIds = signal<number[]>([]);
+  targetMemberIds = signal<number[]>([]);
 
   constructor(
     private fb: FormBuilder,
@@ -240,6 +253,8 @@ export class AdminPostFormComponent implements OnInit {
             body: post.body,
             isPinned: post.isPinned,
           });
+          this.targetGroupIds.set(post.targetGroupIds ?? []);
+          this.targetMemberIds.set(post.targetMemberIds ?? []);
         }
       },
       error: () => {
@@ -283,6 +298,8 @@ export class AdminPostFormComponent implements OnInit {
             title: formValue.title,
             body: formValue.body,
             isPinned: formValue.isPinned,
+            targetGroupIds: this.targetGroupIds(),
+            targetMemberIds: this.targetMemberIds(),
           };
           this.postsService.updatePost(this.postId, postData).subscribe({
             next: () => {
@@ -299,7 +316,8 @@ export class AdminPostFormComponent implements OnInit {
             title: formValue.title,
             body: formValue.body,
             authorId: member.id,
-            targetGroupIds: [],
+            targetGroupIds: this.targetGroupIds(),
+            targetMemberIds: this.targetMemberIds(),
             publishedAt: now,
             updatedAt: now,
             isPinned: formValue.isPinned,

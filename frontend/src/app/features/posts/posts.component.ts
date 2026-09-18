@@ -23,9 +23,10 @@ export class PostsComponent implements OnInit {
   visiblePosts = computed(() => {
     const user = this.auth.currentUser();
     if (!user) return [];
+    const memberId = this.currentMemberId();
     return this.posts()
       .filter(p => !p.archivedAt)
-      .filter(p => isItemVisibleToUser(p.targetGroupIds, user.groupIds));
+      .filter(p => isItemVisibleToUser(p.targetGroupIds, user.groupIds, p.targetMemberIds, memberId));
   });
 
   isUnread = (post: Post): boolean => {
@@ -42,7 +43,7 @@ export class PostsComponent implements OnInit {
   }
 
   readCountLabel(post: Post): string {
-    const visibleMembers = this.allMembers().filter((m) => isItemVisibleToUser(post.targetGroupIds, m.groupIds));
+    const visibleMembers = this.allMembers().filter((m) => isItemVisibleToUser(post.targetGroupIds, m.groupIds, post.targetMemberIds, m.id));
     const readCount = visibleMembers.filter((m) => post.readers?.includes(m.id)).length;
     return `Přečteno ${readCount} z ${visibleMembers.length}`;
   }

@@ -23,6 +23,22 @@ describe('visibility.utils', () => {
     it('vrátí false, když se skupiny neprotínají', () => {
       expect(isItemVisibleToUser([3, 4], user.groupIds)).toBeFalse();
     });
+
+    it('vrátí true, když je uživatel v seznamu konkrétně cílených lidí, i mimo cílové skupiny', () => {
+      expect(isItemVisibleToUser([3, 4], user.groupIds, [currentMemberId], currentMemberId)).toBeTrue();
+    });
+
+    it('vrátí false, když nesedí ani skupina, ani konkrétní cílení', () => {
+      expect(isItemVisibleToUser([3, 4], user.groupIds, [999], currentMemberId)).toBeFalse();
+    });
+
+    it('vrátí true jen na základě shody skupiny, i bez memberId', () => {
+      expect(isItemVisibleToUser([2, 3], user.groupIds, [999])).toBeTrue();
+    });
+
+    it('vrátí true, pokud jsou cílové skupiny prázdné, ale je konkrétně cílen', () => {
+      expect(isItemVisibleToUser([], user.groupIds, [currentMemberId], currentMemberId)).toBeTrue();
+    });
   });
 
   describe('getUnreadPostsCount', () => {
@@ -38,6 +54,11 @@ describe('visibility.utils', () => {
         { targetGroupIds: [], readers: [] },
         { targetGroupIds: [99], readers: [] },
       ];
+      expect(getUnreadPostsCount(posts, user, currentMemberId)).toBe(1);
+    });
+
+    it('započítá i příspěvek cílený konkrétně na člena mimo jeho skupiny', () => {
+      const posts = [{ targetGroupIds: [99], targetMemberIds: [currentMemberId], readers: [] }];
       expect(getUnreadPostsCount(posts, user, currentMemberId)).toBe(1);
     });
   });
@@ -70,6 +91,11 @@ describe('visibility.utils', () => {
     it('nezapočítá akci, která není určena pro skupiny uživatele', () => {
       const events = [{ targetGroupIds: [99], attendance: [] }];
       expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(0);
+    });
+
+    it('započítá i akci cílenou konkrétně na člena mimo jeho skupiny', () => {
+      const events = [{ targetGroupIds: [99], targetMemberIds: [currentMemberId], attendance: [] }];
+      expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(1);
     });
   });
 

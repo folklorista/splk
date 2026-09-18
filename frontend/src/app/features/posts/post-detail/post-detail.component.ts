@@ -36,7 +36,7 @@ export class PostDetailComponent implements OnInit {
   readonly visibleMembers = computed(() => {
     const post = this.post();
     if (!post) return [];
-    return this.allMembers().filter((m) => isItemVisibleToUser(post.targetGroupIds, m.groupIds));
+    return this.allMembers().filter((m) => isItemVisibleToUser(post.targetGroupIds, m.groupIds, post.targetMemberIds, m.id));
   });
 
   readonly readStatus = computed(() => {

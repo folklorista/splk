@@ -119,4 +119,22 @@ describe('AdminEventFormComponent', () => {
     expect(eventsSpy.updateEvent).toHaveBeenCalled();
     expect(attendanceSpy.updateAttendance).not.toHaveBeenCalled();
   });
+
+  it('načte cílení akce a odešle ho při uložení', () => {
+    configure([], { id: '1' });
+    eventsSpy.getEvent.and.returnValue(of({ ...event, targetGroupIds: [1], targetMemberIds: [3] }));
+    const fixture = TestBed.createComponent(AdminEventFormComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.targetGroupIds()).toEqual([1]);
+    expect(fixture.componentInstance.targetMemberIds()).toEqual([3]);
+
+    fixture.componentInstance.targetMemberIds.set([3, 2]);
+    fixture.componentInstance.onSubmit();
+
+    expect(eventsSpy.updateEvent).toHaveBeenCalledWith(1, jasmine.objectContaining({
+      targetGroupIds: [1],
+      targetMemberIds: [3, 2],
+    }));
+  });
 });

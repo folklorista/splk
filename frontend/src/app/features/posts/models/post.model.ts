@@ -5,6 +5,7 @@ export interface Post {
   body: string;
   authorId: number;
   targetGroupIds: number[];
+  targetMemberIds?: number[];
   publishedAt: string;
   updatedAt: string;
   isPinned: boolean;

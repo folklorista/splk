@@ -132,6 +132,18 @@ describe('DashboardComponent', () => {
     expect(fixture.componentInstance.nextEvent()?.id).toBe(futureEvent.id);
   });
 
+  it('zahrne akci cílenou konkrétně na člena, i mimo jeho skupiny', () => {
+    configure();
+    const targetedEvent: AppEvent = { ...foreignEvent, id: 102, targetMemberIds: [member.id] };
+    eventsSpy.getEvents.and.returnValue(of([targetedEvent]));
+    attendanceSpy.getMemberAttendance.and.returnValue(of([]));
+
+    const fixture = TestBed.createComponent(DashboardComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.nextEvent()?.id).toBe(102);
+  });
+
   it('nezahrne do připnutých oznámení příspěvek mimo skupiny uživatele', () => {
     configure();
     postsSpy.getPosts.and.returnValue(

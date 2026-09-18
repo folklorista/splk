@@ -190,4 +190,19 @@ describe('AdminPostFormComponent v edit módu', () => {
       targetGroupIds: [5],
     }));
   }));
+
+  it('odešle změněné cílení, pokud ho admin upraví', fakeAsync(() => {
+    fixture.detectChanges();
+    tick(300);
+
+    component.targetGroupIds.set([5, 6]);
+    component.targetMemberIds.set([42]);
+    component.onSubmit();
+    tick(300);
+
+    expect(postsService.updatePost).toHaveBeenCalledWith(1, jasmine.objectContaining({
+      targetGroupIds: [5, 6],
+      targetMemberIds: [42],
+    }));
+  }));
 });
