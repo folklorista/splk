@@ -40,24 +40,24 @@
           <p class="detail__body">{{ ev.description }}</p>
         }
 
-        @if ((isLeader || isAdmin) && (attendanceSummary().yes + attendanceSummary().no + attendanceSummary().maybe + attendanceSummary().pending > 0)) {
+        @if ((isLeader || isAdmin) && visibleMembers().length > 0) {
           <section class="detail__section">
             <h2 class="detail__section-title">Souhrn účasti</h2>
             <div class="attendance-summary">
-              <div class="summary-item">
-                <span class="summary-label">Přijde</span>
+              <div class="summary-item" [title]="memberNamesForStatus('yes')">
+                <span class="summary-label">Zúčastní se</span>
                 <span class="summary-count">{{ attendanceSummary().yes }}</span>
               </div>
-              <div class="summary-item">
-                <span class="summary-label">Nepřijde</span>
-                <span class="summary-count">{{ attendanceSummary().no }}</span>
-              </div>
-              <div class="summary-item">
+              <div class="summary-item" [title]="memberNamesForStatus('maybe')">
                 <span class="summary-label">Možná</span>
                 <span class="summary-count">{{ attendanceSummary().maybe }}</span>
               </div>
-              <div class="summary-item">
-                <span class="summary-label">Bez odpovědi</span>
+              <div class="summary-item" [title]="memberNamesForStatus('no')">
+                <span class="summary-label">Nezúčastní se</span>
+                <span class="summary-count">{{ attendanceSummary().no }}</span>
+              </div>
+              <div class="summary-item" [title]="memberNamesForStatus('pending')">
+                <span class="summary-label">Neodpovědělo</span>
                 <span class="summary-count">{{ attendanceSummary().pending }}</span>
               </div>
             </div>

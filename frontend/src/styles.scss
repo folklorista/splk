@@ -534,6 +534,36 @@
   &--pending { /* default gray */ }
 }
 
+// Attendance summary (counts by status, names on hover)
+.attendance-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: var(--spacing-sm);
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--spacing-sm);
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  cursor: help;
+}
+
+.summary-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.summary-count {
+  font-size: var(--font-size-h1);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
 // Attendance action buttons
 .attendance-actions {
   display: flex;

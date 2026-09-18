@@ -10,7 +10,9 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { MembersService } from '../../members/members.service';
 import { GroupsService } from '../../../core/services/groups.service';
 import { Group } from '../../../core/models/group.model';
+import { Member } from '../../../core/models/member.model';
 import { IconComponent } from '../../../shared/icon/icon.component';
+import { isItemVisibleToUser } from '../../../core/utils/visibility.utils';
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   rehearsal: 'Zkouška',
@@ -36,7 +38,8 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
 export class EventDetailComponent implements OnInit {
   event = signal<AppEvent | null>(null);
   record = signal<AttendanceRecord | undefined>(undefined);
-  allRecords = signal<AttendanceRecord[]>([]);
+  eventRecords = signal<AttendanceRecord[]>([]);
+  allMembers = signal<Member[]>([]);
   noteOpen = signal(false);
   noteValue = signal('');
   loading = signal(true);
@@ -47,13 +50,31 @@ export class EventDetailComponent implements OnInit {
   readonly statuses: AttendanceStatus[] = ['yes', 'no', 'maybe'];
   readonly statusLabels = STATUS_LABELS;
 
+  readonly visibleMembers = computed(() => {
+    const event = this.event();
+    if (!event) return [];
+    return this.allMembers().filter((m) => isItemVisibleToUser(event.targetGroupIds, m.groupIds));
+  });
+
+  // Členové rozdělení podle stavu účasti – chybějící záznam se počítá jako "pending"
+  readonly membersByStatus = computed(() => {
+    const records = this.eventRecords();
+    const byStatus: Record<AttendanceStatus, Member[]> = { yes: [], no: [], maybe: [], pending: [] };
+    for (const member of this.visibleMembers()) {
+      const record = records.find((r) => r.memberId === member.id);
+      const status: AttendanceStatus = record?.status ?? 'pending';
+      byStatus[status].push(member);
+    }
+    return byStatus;
+  });
+
   readonly attendanceSummary = computed(() => {
-    const records = this.allRecords();
+    const byStatus = this.membersByStatus();
     return {
-      yes: records.filter((r) => r.status === 'yes').length,
-      no: records.filter((r) => r.status === 'no').length,
-      maybe: records.filter((r) => r.status === 'maybe').length,
-      pending: records.filter((r) => r.status === 'pending').length,
+      yes: byStatus.yes.length,
+      no: byStatus.no.length,
+      maybe: byStatus.maybe.length,
+      pending: byStatus.pending.length,
     };
   });
 
@@ -83,6 +104,7 @@ export class EventDetailComponent implements OnInit {
     }
 
     this.membersService.getMembers().subscribe((members) => {
+      this.allMembers.set(members);
       const member = members.find((m) => m.email === user.email);
       if (!member) {
         this.notFound.set(true);
@@ -101,17 +123,24 @@ export class EventDetailComponent implements OnInit {
         this.event.set(event);
 
         this.loadTargetGroups(event.targetGroupIds);
-        this.attendanceService.getMemberAttendance(member.id).subscribe((allRecords) => {
-          const r = allRecords.find((r) => r.eventId === id);
+        this.attendanceService.markViewed(id, member.id).subscribe();
+        this.attendanceService.getAttendance(id).subscribe((records) => {
+          this.eventRecords.set(records);
+          const r = records.find((r) => r.memberId === member.id);
           this.record.set(r);
           this.noteValue.set(r?.note ?? '');
-
-          const eventRecords = allRecords.filter((r) => r.eventId === id);
-          this.allRecords.set(eventRecords);
           this.loading.set(false);
         });
       });
     });
+  }
+
+  private patchOwnRecord(record: AttendanceRecord): void {
+    this.record.set(record);
+    this.eventRecords.update((records) => [
+      ...records.filter((r) => r.memberId !== record.memberId),
+      record,
+    ]);
   }
 
   private loadTargetGroups(groupIds: number[]): void {
@@ -130,6 +159,11 @@ export class EventDetailComponent implements OnInit {
     return status ? STATUS_LABELS[status] : STATUS_LABELS['pending'];
   }
 
+  memberNamesForStatus(status: AttendanceStatus): string {
+    const members = this.membersByStatus()[status];
+    return members.length ? members.map((m) => m.name).join('\n') : 'Nikdo';
+  }
+
   setStatus(status: AttendanceStatus): void {
     const event = this.event();
     const memberId = this.currentMemberId();
@@ -140,7 +174,7 @@ export class EventDetailComponent implements OnInit {
       status,
       note: this.noteValue() || undefined,
     };
-    this.attendanceService.updateAttendance(updated).subscribe(() => this.record.set(updated));
+    this.attendanceService.updateAttendance(updated).subscribe(() => this.patchOwnRecord(updated));
   }
 
   clearStatus(): void {
@@ -149,7 +183,7 @@ export class EventDetailComponent implements OnInit {
     if (!event || !memberId) return;
     const cleared: AttendanceRecord = { eventId: event.id, memberId, status: 'pending' };
     this.attendanceService.updateAttendance(cleared).subscribe(() => {
-      this.record.set(cleared);
+      this.patchOwnRecord(cleared);
       this.noteValue.set('');
       this.noteOpen.set(false);
     });
@@ -166,7 +200,7 @@ export class EventDetailComponent implements OnInit {
       note: note.trim() || undefined,
     };
     this.attendanceService.updateAttendance(updated).subscribe(() => {
-      this.record.set(updated);
+      this.patchOwnRecord(updated);
       this.noteValue.set(note.trim());
       this.noteOpen.set(false);
     });

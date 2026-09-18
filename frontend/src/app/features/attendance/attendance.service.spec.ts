@@ -66,4 +66,52 @@ describe('AttendanceService', () => {
     tick(300);
     expect(returned?.status).toBe('maybe');
   }));
+
+  it('markViewed vytvoří pending záznam s firstViewedAt, pokud neexistuje', fakeAsync(() => {
+    service.markViewed(3, 8).subscribe();
+    tick(300);
+
+    let result: AttendanceRecord[] = [];
+    service.getAttendance(3).subscribe((records) => (result = records));
+    tick(300);
+
+    const record = result.find((r) => r.memberId === 8);
+    expect(record?.status).toBe('pending');
+    expect(record?.firstViewedAt).toBeTruthy();
+  }));
+
+  it('markViewed doplní firstViewedAt k existujícímu záznamu beze změny stavu', fakeAsync(() => {
+    service.updateAttendance({ eventId: 1, memberId: 1, status: 'yes' }).subscribe();
+    tick(300);
+
+    service.markViewed(1, 1).subscribe();
+    tick(300);
+
+    let result: AttendanceRecord[] = [];
+    service.getAttendance(1).subscribe((records) => (result = records));
+    tick(300);
+
+    const record = result.find((r) => r.memberId === 1);
+    expect(record?.status).toBe('yes');
+    expect(record?.firstViewedAt).toBeTruthy();
+  }));
+
+  it('markViewed podruhé nepřepíše už nastavený firstViewedAt', fakeAsync(() => {
+    service.markViewed(5, 9).subscribe();
+    tick(300);
+
+    let firstResult: AttendanceRecord[] = [];
+    service.getAttendance(5).subscribe((records) => (firstResult = records));
+    tick(300);
+    const firstViewedAt = firstResult.find((r) => r.memberId === 9)?.firstViewedAt;
+
+    service.markViewed(5, 9).subscribe();
+    tick(300);
+
+    let secondResult: AttendanceRecord[] = [];
+    service.getAttendance(5).subscribe((records) => (secondResult = records));
+    tick(300);
+
+    expect(secondResult.find((r) => r.memberId === 9)?.firstViewedAt).toBe(firstViewedAt);
+  }));
 });

@@ -24,6 +24,24 @@ export class AttendanceService {
     );
   }
 
+  // Zaznamená první otevření detailu akce daným členem, beze změny stavu účasti
+  markViewed(eventId: number, memberId: number): Observable<void> {
+    const records = this.recordsSubject.value;
+    const index = records.findIndex((r) => r.eventId === eventId && r.memberId === memberId);
+    if (index !== -1 && records[index].firstViewedAt) {
+      return of(undefined).pipe(delay(300));
+    }
+
+    const updated = [...records];
+    if (index !== -1) {
+      updated[index] = { ...updated[index], firstViewedAt: new Date().toISOString() };
+    } else {
+      updated.push({ eventId, memberId, status: 'pending', firstViewedAt: new Date().toISOString() });
+    }
+    this.recordsSubject.next(updated);
+    return of(undefined).pipe(delay(300));
+  }
+
   updateAttendance(record: AttendanceRecord): Observable<AttendanceRecord> {
     const records = this.recordsSubject.value;
     const index = records.findIndex(

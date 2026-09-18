@@ -1,0 +1,101 @@
+import { TestBed } from '@angular/core/testing';
+import { provideRouter, ActivatedRoute } from '@angular/router';
+import { of } from 'rxjs';
+import { EventDetailComponent } from './event-detail.component';
+import { EventsService } from '../events.service';
+import { AttendanceService } from '../../attendance/attendance.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { MembersService } from '../../members/members.service';
+import { GroupsService } from '../../../core/services/groups.service';
+import { User } from '../../../core/auth/models/user.model';
+import { Member } from '../../../core/models/member.model';
+import { AppEvent } from '../models/event.model';
+import { AttendanceRecord } from '../../attendance/models/attendance.model';
+
+describe('EventDetailComponent', () => {
+  let eventsSpy: jasmine.SpyObj<EventsService>;
+  let attendanceSpy: jasmine.SpyObj<AttendanceService>;
+  let membersSpy: jasmine.SpyObj<MembersService>;
+  let groupsSpy: jasmine.SpyObj<GroupsService>;
+
+  const user: User = { id: 1, name: 'Jana', email: 'jana@soubor.cz', groupIds: [1], roles: ['leader'] };
+
+  const members: Member[] = [
+    { id: 1, ensembleId: 1, userId: 1, name: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isActive: true },
+    { id: 2, ensembleId: 1, userId: 2, name: 'Petr Novák', email: 'petr@soubor.cz', groupIds: [1], isActive: true },
+    { id: 3, ensembleId: 1, userId: 3, name: 'Eva Svobodová', email: 'eva@soubor.cz', groupIds: [1], isActive: true },
+    // Cizí skupina – neměl by se počítat do souhrnu
+    { id: 4, ensembleId: 1, userId: 4, name: 'Karel Mimo', email: 'karel@soubor.cz', groupIds: [99], isActive: true },
+  ];
+
+  const event: AppEvent = {
+    id: 10, ensembleId: 1, title: 'Zkouška', type: 'rehearsal',
+    startsAt: '2026-01-01T18:00:00', endsAt: '2026-01-01T20:00:00',
+    location: 'Sál', targetGroupIds: [1],
+  };
+
+  function configure(records: AttendanceRecord[]): void {
+    eventsSpy = jasmine.createSpyObj('EventsService', ['getEvent']);
+    eventsSpy.getEvent.and.returnValue(of(event));
+
+    attendanceSpy = jasmine.createSpyObj('AttendanceService', ['getAttendance', 'updateAttendance', 'markViewed']);
+    attendanceSpy.getAttendance.and.returnValue(of(records));
+    attendanceSpy.markViewed.and.returnValue(of(undefined));
+
+    membersSpy = jasmine.createSpyObj('MembersService', ['getMembers']);
+    membersSpy.getMembers.and.returnValue(of(members));
+
+    groupsSpy = jasmine.createSpyObj('GroupsService', ['getGroupsByIds']);
+    groupsSpy.getGroupsByIds.and.returnValue(of([]));
+
+    TestBed.configureTestingModule({
+      imports: [EventDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: { currentUser: () => user } },
+        { provide: EventsService, useValue: eventsSpy },
+        { provide: AttendanceService, useValue: attendanceSpy },
+        { provide: MembersService, useValue: membersSpy },
+        { provide: GroupsService, useValue: groupsSpy },
+        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '10' } } } },
+      ],
+    });
+  }
+
+  it('započítá do souhrnu i členy bez záznamu jako "pending"', () => {
+    configure([{ eventId: 10, memberId: 2, status: 'yes' }]);
+    const fixture = TestBed.createComponent(EventDetailComponent);
+    fixture.detectChanges();
+
+    const summary = fixture.componentInstance.attendanceSummary();
+    expect(summary.yes).toBe(1);
+    expect(summary.pending).toBe(2);
+  });
+
+  it('nezahrne do souhrnu člena mimo cílovou skupinu akce', () => {
+    configure([]);
+    const fixture = TestBed.createComponent(EventDetailComponent);
+    fixture.detectChanges();
+
+    const names = fixture.componentInstance.visibleMembers().map((m) => m.name);
+    expect(names).not.toContain('Karel Mimo');
+    expect(names.length).toBe(3);
+  });
+
+  it('memberNamesForStatus vrátí jména členů v daném stavu', () => {
+    configure([{ eventId: 10, memberId: 2, status: 'no' }]);
+    const fixture = TestBed.createComponent(EventDetailComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.memberNamesForStatus('no')).toBe('Petr Novák');
+    expect(fixture.componentInstance.memberNamesForStatus('yes')).toBe('Nikdo');
+  });
+
+  it('dotáže se na účast pro celou akci, ne jen pro přihlášeného člena', () => {
+    configure([]);
+    const fixture = TestBed.createComponent(EventDetailComponent);
+    fixture.detectChanges();
+
+    expect(attendanceSpy.getAttendance).toHaveBeenCalledWith(10);
+  });
+});

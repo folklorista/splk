@@ -5,4 +5,5 @@ export interface AttendanceRecord {
   memberId: number;
   status: AttendanceStatus;
   note?: string;
+  firstViewedAt?: string;
 }

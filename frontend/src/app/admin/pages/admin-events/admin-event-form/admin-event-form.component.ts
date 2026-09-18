@@ -1,14 +1,28 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { forkJoin, of, Observable } from 'rxjs';
 import { EventsService } from '../../../../features/events/events.service';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { MembersService } from '../../../../features/members/members.service';
+import { AttendanceService } from '../../../../features/attendance/attendance.service';
 import { AppEvent, EventType } from '../../../../features/events/models/event.model';
+import { AttendanceRecord, AttendanceStatus } from '../../../../features/attendance/models/attendance.model';
+import { Member } from '../../../../core/models/member.model';
+import { isItemVisibleToUser } from '../../../../core/utils/visibility.utils';
+import { RelativeTimePipe } from '../../../../shared/pipes/relative-time.pipe';
+
+const STATUS_LABELS: Record<AttendanceStatus, string> = {
+  yes: 'Přijde',
+  no: 'Nepřijde',
+  maybe: 'Možná',
+  pending: 'Nezadáno',
+};
 
 @Component({
   selector: 'app-admin-event-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, RelativeTimePipe],
   template: `
     <div class="admin-event-form">
       <div class="admin-event-form__header">
@@ -69,6 +83,58 @@ import { AppEvent, EventType } from '../../../../features/events/models/event.mo
           <textarea id="description" formControlName="description" placeholder="Popis akce" rows="4"></textarea>
         </div>
 
+        @if (isEditMode) {
+          <div class="admin-event-form__field">
+            <label>Účast</label>
+            <p class="admin-event-form__hint">Změny stavu se uloží až po kliknutí na „Uložit“.</p>
+            @if (attendanceMembers().length === 0) {
+              <p class="admin-event-form__empty">Žádní členové nemají na tuto akci přístup.</p>
+            } @else {
+              <table class="admin-event-form__attendance-table">
+                <thead>
+                  <tr>
+                    <th>Člen</th>
+                    <th>Stav účasti</th>
+                    <th>Poznámka</th>
+                    <th>Poprvé zobrazeno</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (member of attendanceMembers(); track member.id) {
+                    <tr>
+                      <td>{{ member.name }}</td>
+                      <td>
+                        <select
+                          [value]="pendingStatuses().get(member.id)"
+                          (change)="setMemberStatus(member.id, $any($event.target).value)"
+                        >
+                          @for (status of statuses; track status) {
+                            <option [value]="status">{{ statusLabels[status] }}</option>
+                          }
+                        </select>
+                      </td>
+                      <td>
+                        @if (noteByMember().get(member.id); as note) {
+                          {{ note }}
+                        } @else {
+                          <span class="admin-event-form__empty">—</span>
+                        }
+                      </td>
+                      <td>
+                        @if (viewedAtByMember().get(member.id); as viewedAt) {
+                          {{ viewedAt | relativeTime }}
+                        } @else {
+                          <span class="admin-event-form__empty">Nezobrazeno</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        }
+
         <div class="admin-event-form__actions">
           <button type="submit" class="admin-event-form__btn-primary" [disabled]="form.invalid || isSubmitting">
             {{ isSubmitting ? 'Ukládám...' : (isEditMode ? 'Uložit' : 'Vytvořit') }}
@@ -108,6 +174,12 @@ import { AppEvent, EventType } from '../../../../features/events/models/event.mo
     .admin-event-form__btn-secondary { background: #f0f0f0; color: #333; text-decoration: none; display: inline-block; text-align: center; }
     .admin-event-form__btn-secondary:hover { background: #e0e0e0; }
     .admin-event-form__error-message { padding: 0.75rem; background: #ffebee; color: #d32f2f; border-radius: 4px; border-left: 4px solid #d32f2f; }
+    .admin-event-form__hint { color: #999; font-size: 0.85rem; margin: 0; }
+    .admin-event-form__empty { color: #999; font-style: italic; margin: 0; }
+    .admin-event-form__attendance-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .admin-event-form__attendance-table th { text-align: left; padding: 0.5rem; border-bottom: 2px solid #ddd; color: #666; font-weight: 600; }
+    .admin-event-form__attendance-table td { padding: 0.5rem; border-bottom: 1px solid #eee; }
+    .admin-event-form__attendance-table select { padding: 0.4rem; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; }
   `],
 })
 export class AdminEventFormComponent implements OnInit {
@@ -115,6 +187,15 @@ export class AdminEventFormComponent implements OnInit {
   isEditMode = false;
   isSubmitting = false;
   submitError = '';
+  readonly statuses: AttendanceStatus[] = ['pending', 'yes', 'no', 'maybe'];
+  readonly statusLabels = STATUS_LABELS;
+  private allEventMembers = signal<Member[]>([]);
+  pendingStatuses = signal<Map<number, AttendanceStatus>>(new Map());
+  viewedAtByMember = signal<Map<number, string | undefined>>(new Map());
+  noteByMember = signal<Map<number, string | undefined>>(new Map());
+  readonly attendanceMembers = () => this.allEventMembers();
+  private originalStatuses = new Map<number, AttendanceStatus>();
+  private originalRecords = new Map<number, AttendanceRecord>();
   private eventId: number | null = null;
 
   constructor(
@@ -123,6 +204,8 @@ export class AdminEventFormComponent implements OnInit {
     private router: Router,
     private eventsService: EventsService,
     private authService: AuthService,
+    private membersService: MembersService,
+    private attendanceService: AttendanceService,
   ) {
     this.form = this.fb.group({
       title: ['', Validators.required],
@@ -143,6 +226,14 @@ export class AdminEventFormComponent implements OnInit {
     }
   }
 
+  setMemberStatus(memberId: number, status: AttendanceStatus): void {
+    this.pendingStatuses.update((map) => {
+      const next = new Map(map);
+      next.set(memberId, status);
+      return next;
+    });
+  }
+
   private loadEvent(id: number): void {
     this.eventsService.getEvent(id).subscribe({
       next: (event) => {
@@ -155,9 +246,62 @@ export class AdminEventFormComponent implements OnInit {
             location: event.location,
             description: event.description || '',
           });
+          this.loadAttendance(id, event.targetGroupIds);
         }
       },
     });
+  }
+
+  private loadAttendance(eventId: number, targetGroupIds: number[]): void {
+    this.membersService.getMembers().subscribe((members) => {
+      const visible = members.filter((m) => isItemVisibleToUser(targetGroupIds, m.groupIds));
+      this.allEventMembers.set(visible);
+
+      this.attendanceService.getAttendance(eventId).subscribe((records) => {
+        const statuses = new Map<number, AttendanceStatus>();
+        const viewedAt = new Map<number, string | undefined>();
+        const notes = new Map<number, string | undefined>();
+        const recordsByMember = new Map<number, AttendanceRecord>();
+
+        for (const member of visible) {
+          const record = records.find((r) => r.memberId === member.id);
+          statuses.set(member.id, record?.status ?? 'pending');
+          viewedAt.set(member.id, record?.firstViewedAt);
+          notes.set(member.id, record?.note);
+          if (record) recordsByMember.set(member.id, record);
+        }
+
+        this.originalStatuses = new Map(statuses);
+        this.originalRecords = recordsByMember;
+        this.pendingStatuses.set(statuses);
+        this.viewedAtByMember.set(viewedAt);
+        this.noteByMember.set(notes);
+      });
+    });
+  }
+
+  private saveAttendanceChanges(): Observable<unknown> {
+    if (this.eventId === null) return of(null);
+    const eventId = this.eventId;
+    const pending = this.pendingStatuses();
+
+    const changedMemberIds = [...pending.entries()]
+      .filter(([memberId, status]) => this.originalStatuses.get(memberId) !== status)
+      .map(([memberId]) => memberId);
+    if (changedMemberIds.length === 0) return of(null);
+
+    const updates = changedMemberIds.map((memberId) => {
+      const existing = this.originalRecords.get(memberId);
+      const record: AttendanceRecord = {
+        eventId,
+        memberId,
+        status: pending.get(memberId)!,
+        note: existing?.note,
+        firstViewedAt: existing?.firstViewedAt,
+      };
+      return this.attendanceService.updateAttendance(record);
+    });
+    return forkJoin(updates);
   }
 
   onSubmit(): void {
@@ -183,7 +327,13 @@ export class AdminEventFormComponent implements OnInit {
     if (this.isEditMode && this.eventId !== null) {
       this.eventsService.updateEvent(this.eventId, eventData).subscribe({
         next: () => {
-          this.router.navigate(['/app/admin/events']);
+          this.saveAttendanceChanges().subscribe({
+            next: () => this.router.navigate(['/app/admin/events']),
+            error: () => {
+              this.isSubmitting = false;
+              this.submitError = 'Akce byla uložena, ale nepodařilo se uložit účast';
+            },
+          });
         },
         error: () => {
           this.isSubmitting = false;
