@@ -167,4 +167,5 @@ Pozdější rozšíření:
 - rodiče/zástupci,
 - platby,
 - mobilní aplikace přes Capacitor,
-- WebSocket realtime backend.
+- WebSocket realtime backend,
+- univerzální komponenta pro výpis seznamu členů (filtrování podle skupin, řazení podle atributů) – nahradila by ad-hoc seznamy v administraci (účast na akci, členové skupiny apod.).
