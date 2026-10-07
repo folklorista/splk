@@ -243,6 +243,10 @@ describe('PostDetailComponent s reálnou CommentsService (živý stream)', () =>
       ],
     });
 
+    // Reálná CommentsService teď perzistuje do localStorage sdíleného napříč
+    // celou testovací sadou – bez resetu by test mohl vidět pozůstatky z jiných testů.
+    TestBed.inject(CommentsService).resetCache();
+
     const fixture = TestBed.createComponent(PostDetailComponent);
     fixture.detectChanges();
     tick(300);

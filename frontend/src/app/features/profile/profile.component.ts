@@ -8,6 +8,7 @@ import { EventsService } from '../events/events.service';
 import { getUnconfirmedEventsCount } from '../../core/utils/visibility.utils';
 import { Group } from '../../core/models/group.model';
 import { IconComponent, IconName } from '../../shared/icon/icon.component';
+import { NotificationService } from '../../core/notifications/notification.service';
 
 @Component({
   selector: 'app-profile',
@@ -163,9 +164,22 @@ export class ProfileComponent {
     private groups: GroupsService,
     private events: EventsService,
     private router: Router,
+    private notificationService: NotificationService,
   ) {
     this.loadMemberData();
     this.loadGroups();
+  }
+
+  get notificationsSupported(): boolean {
+    return this.notificationService.isSupported;
+  }
+
+  get notificationPermission() {
+    return this.notificationService.permission;
+  }
+
+  enableNotifications(): void {
+    this.notificationService.requestPermission();
   }
 
   get currentUser() {

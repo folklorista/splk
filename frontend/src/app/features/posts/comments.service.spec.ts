@@ -71,4 +71,44 @@ describe('CommentsService', () => {
     tick(300);
     expect(comments.find((c) => c.id === created!.id)?.seenByMemberIds.filter((id) => id === 8).length).toBe(1);
   }));
+
+  it('addComment uloží stav do localStorage, aby ho viděly i jiné záložky', fakeAsync(() => {
+    service.addComment(4, 1, 'Persistovaný komentář', []).subscribe();
+    tick(300);
+
+    const stored: PostComment[] = JSON.parse(localStorage.getItem('splk_comments')!);
+    expect(stored.some((c) => c.body === 'Persistovaný komentář')).toBeTrue();
+  }));
+
+  it('promítne změnu z jiné záložky doručenou přes "storage" event', fakeAsync(() => {
+    const fromOtherTab: PostComment[] = [
+      { id: 999, postId: 7, authorId: 1, body: 'Z jiné záložky', createdAt: '2026-01-01T00:00:00', mentionedMemberIds: [], seenByMemberIds: [] },
+    ];
+
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'splk_comments',
+      newValue: JSON.stringify(fromOtherTab),
+    }));
+
+    let comments: PostComment[] = [];
+    service.getComments(7).subscribe((c) => (comments = c));
+    tick(300);
+    expect(comments.some((c) => c.id === 999)).toBeTrue();
+  }));
+
+  it('ignoruje "storage" event pro jiný klíč', fakeAsync(() => {
+    let comments: PostComment[] = [];
+    service.getComments(1).subscribe((c) => (comments = c));
+    tick(300);
+    const before = comments.length;
+
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'nejaky-jiny-klic',
+      newValue: JSON.stringify([]),
+    }));
+
+    service.getComments(1).subscribe((c) => (comments = c));
+    tick(300);
+    expect(comments.length).toBe(before);
+  }));
 });

@@ -1,0 +1,20 @@
+# Angular SPA fallback – neznámé cesty (např. /app/events/5) se mají obsloužit
+# přes index.html a routing dořeší Angular na klientovi. Bez tohoto pravidla
+# vrátí Apache 404 při reloadu stránky nebo přímém vstupu na URL.
+RewriteEngine On
+
+# Existující soubory a složky (JS, CSS, obrázky, ikony...) obsluhovat přímo
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Vše ostatní na index.html
+RewriteRule ^ index.html [L]
+
+# Service worker a manifest se nesmí agresivně cachovat, jinak se aktualizace
+# aplikace k uživatelům nedostane
+<IfModule mod_headers.c>
+  <FilesMatch "^(ngsw-worker\.js|ngsw\.json|manifest\.webmanifest)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

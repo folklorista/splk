@@ -66,6 +66,21 @@
       }
     </div>
 
+    <div class="profile-section">
+      <h2>Upozornění</h2>
+      @if (!notificationsSupported) {
+        <p class="state-note">Tento prohlížeč upozornění nepodporuje.</p>
+      } @else if (notificationPermission() === 'granted') {
+        <div class="no-pending">✓ Upozornění na zmínky v komentářích jsou povolená</div>
+      } @else if (notificationPermission() === 'denied') {
+        <p class="state-note">Upozornění jsou zablokovaná — povol je v nastavení prohlížeče.</p>
+      } @else {
+        <button class="attendance-btn attendance-btn--active" (click)="enableNotifications()">
+          Povolit upozornění na zmínky
+        </button>
+      }
+    </div>
+
     <button class="logout-btn" (click)="logout()">Odhlásit se</button>
   }
 </div>

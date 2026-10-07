@@ -4,11 +4,40 @@ import { delay, map } from 'rxjs/operators';
 import { PostComment } from './models/comment.model';
 import { MOCK_COMMENTS } from './data/mock-comments';
 
+// Bez backendu je jediný způsob, jak si dvě záložky/přihlášení na stejném
+// zařízení mohou "poslat" nový komentář (a tedy i zmínku), sdílet stav přes
+// localStorage – "storage" event se vyvolá jen v OSTATNÍCH záložkách, což se
+// tu hodí jako jednoduchá náhrada reálné synchronizace.
+const STORAGE_KEY = 'splk_comments';
+
 @Injectable({ providedIn: 'root' })
 export class CommentsService {
-  private commentsSubject = new BehaviorSubject<PostComment[]>([...MOCK_COMMENTS]);
+  private commentsSubject = new BehaviorSubject<PostComment[]>(this.loadFromStorage());
 
   readonly comments$ = this.commentsSubject.asObservable();
+
+  constructor() {
+    window.addEventListener('storage', (event) => {
+      if (event.key !== STORAGE_KEY || !event.newValue) return;
+      this.commentsSubject.next(JSON.parse(event.newValue));
+    });
+  }
+
+  private loadFromStorage(): PostComment[] {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        // poškozená data v localStorage – spadneme zpátky na mock data
+      }
+    }
+    return [...MOCK_COMMENTS];
+  }
+
+  private persist(comments: PostComment[]): void {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  }
 
   getComments(postId: number): Observable<PostComment[]> {
     return this.comments$.pipe(
@@ -32,7 +61,9 @@ export class CommentsService {
       mentionedMemberIds,
       seenByMemberIds: [],
     };
-    this.commentsSubject.next([...comments, newComment]);
+    const updated = [...comments, newComment];
+    this.commentsSubject.next(updated);
+    this.persist(updated);
     return of(newComment).pipe(delay(300));
   }
 
@@ -44,11 +75,14 @@ export class CommentsService {
       const updated = [...comments];
       updated[index] = { ...updated[index], seenByMemberIds: [...updated[index].seenByMemberIds, memberId] };
       this.commentsSubject.next(updated);
+      this.persist(updated);
     }
     return of(undefined).pipe(delay(300));
   }
 
   resetCache(): void {
-    this.commentsSubject.next([...MOCK_COMMENTS]);
+    const initial = [...MOCK_COMMENTS];
+    this.commentsSubject.next(initial);
+    this.persist(initial);
   }
 }
