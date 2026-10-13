@@ -1,26 +1,33 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { AppEvent } from '../events/models/event.model';
 import { Post } from '../posts/models/post.model';
-import { AttendanceRecord } from '../attendance/models/attendance.model';
+import { AttendanceStatus } from '../attendance/models/attendance.model';
 import { EventsService } from '../events/events.service';
 import { PostsService } from '../posts/posts.service';
 import { AttendanceService } from '../attendance/attendance.service';
 import { MembersService } from '../members/members.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
+import { EventRsvpRowComponent } from '../events/event-rsvp-row/event-rsvp-row.component';
 import { canAccessBoard, isAdmin, isItemVisibleToUser } from '../../core/utils/visibility.utils';
+
+// Kolik nejbližších akcí se na přehledu zobrazí s rychlým potvrzením účasti
+export const DASHBOARD_EVENT_LIMIT = 5;
+
+export interface UpcomingEventRow {
+  event: AppEvent;
+  status: AttendanceStatus;
+}
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [DatePipe, RouterLink],
+  imports: [RouterLink, EventRsvpRowComponent],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
-  nextEvent = signal<AppEvent | null>(null);
+  upcomingEvents = signal<UpcomingEventRow[]>([]);
   pinnedPosts = signal<Post[] | null>(null);
-  pendingAttendance = signal<{ event: AppEvent; record: AttendanceRecord }[]>([]);
   loading = signal(true);
   currentMemberId = signal<number | null>(null);
 
@@ -38,9 +45,9 @@ export class DashboardComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    const now = new Date().toISOString();
-    let loaded = 0;
-    const done = () => { if (++loaded === 3) this.loading.set(false); };
+    let postsLoaded = false;
+    let eventsLoaded = false;
+    const done = () => { if (postsLoaded && eventsLoaded) this.loading.set(false); };
 
     const user = this.auth.currentUser();
     if (!user) {
@@ -51,9 +58,7 @@ export class DashboardComponent implements OnInit {
     this.membersService.getMembers().subscribe((members) => {
       const member = members.find((m) => m.userId === user.id);
       if (!member) {
-        done();
-        done();
-        done();
+        this.loading.set(false);
         return;
       }
       this.currentMemberId.set(member.id);
@@ -65,33 +70,34 @@ export class DashboardComponent implements OnInit {
             .filter((p) => p.isPinned)
             .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)),
         );
+        postsLoaded = true;
         done();
       });
 
+      // Stream akcí obsahuje i účast, takže se po rychlém potvrzení řádky samy aktualizují
       this.eventsService.getEvents().subscribe((events) => {
-        const visibleEvents = events.filter((e) => isItemVisibleToUser(e.targetGroupIds, user.groupIds));
-
-        const upcoming = visibleEvents
-          .filter((e) => e.startsAt >= now)
-          .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-        this.nextEvent.set(upcoming[0] ?? null);
-        done();
-
-        this.attendanceService.getMemberAttendance(member.id).subscribe((records) => {
-          const pending = upcoming
+        const now = new Date();
+        this.upcomingEvents.set(
+          events
+            .filter((e) => isItemVisibleToUser(e.targetGroupIds, user.groupIds))
+            .filter((e) => new Date(e.startsAt) >= now)
+            .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
+            .slice(0, DASHBOARD_EVENT_LIMIT)
             .map((event) => ({
               event,
-              record: records.find((r) => r.eventId === event.id),
-            }))
-            .filter((item) => !item.record || item.record.status === 'pending')
-            .map((item) => ({
-              event: item.event,
-              record: item.record ?? { eventId: item.event.id, memberId: member.id, status: 'pending' as const },
-            }));
-          this.pendingAttendance.set(pending);
-          done();
-        });
+              status: event.attendance?.find((r) => r.memberId === member.id)?.status ?? 'pending',
+            })),
+        );
+        eventsLoaded = true;
+        done();
       });
     });
+  }
+
+  setStatus(eventId: number, status: AttendanceStatus): void {
+    const memberId = this.currentMemberId();
+    if (!memberId) return;
+    this.upcomingEvents.update((rows) => rows.map((row) => (row.event.id === eventId ? { ...row, status } : row)));
+    this.attendanceService.setStatus(eventId, memberId, status).subscribe();
   }
 }

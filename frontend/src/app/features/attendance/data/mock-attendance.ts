@@ -1,6 +1,9 @@
-import { AttendanceRecord } from '../models/attendance.model';
+import { AttendanceRecord, AttendanceStatus } from '../models/attendance.model';
+import { FIRST_REHEARSAL_ID, MOCK_EVENTS } from '../../events/data/mock-events';
+import { MOCK_MEMBERS } from '../../members/data/mock-members';
+import { isItemVisibleToUser } from '../../../core/utils/visibility.utils';
 
-export const MOCK_ATTENDANCE: AttendanceRecord[] = [
+const BASE_ATTENDANCE: AttendanceRecord[] = [
   // Event 1 – zkouška celý soubor
   { eventId: 1, memberId: 1, status: 'yes', note: 'Přijedu autem' },
   { eventId: 1, memberId: 2, status: 'yes' },
@@ -51,3 +54,26 @@ export const MOCK_ATTENDANCE: AttendanceRecord[] = [
   { eventId: 6, memberId: 2, status: 'yes' },
   { eventId: 6, memberId: 4, status: 'yes' },
 ];
+
+// Deterministicky „náhodné“ odpovědi na pravidelné nácviky: proběhlé mají odpověď od všech,
+// nadcházející jen od části členů (zbytek čeká na odpověď)
+function generateRehearsalAttendance(): AttendanceRecord[] {
+  const now = new Date().toISOString();
+  const records: AttendanceRecord[] = [];
+  for (const event of MOCK_EVENTS.filter((e) => e.id >= FIRST_REHEARSAL_ID)) {
+    const isPast = event.startsAt < now;
+    const members = MOCK_MEMBERS.filter((m) => m.isActive && isItemVisibleToUser(event.targetGroupIds, m.groupIds));
+    for (const member of members) {
+      const roll = (event.id * 7 + member.id * 13) % 10;
+      const status: AttendanceStatus | null = isPast
+        ? roll === 7 ? 'no' : roll === 8 ? 'maybe' : 'yes'
+        : roll <= 3 ? 'yes' : roll === 4 ? 'maybe' : roll === 5 ? 'no' : null;
+      if (status) {
+        records.push({ eventId: event.id, memberId: member.id, status });
+      }
+    }
+  }
+  return records;
+}
+
+export const MOCK_ATTENDANCE: AttendanceRecord[] = [...BASE_ATTENDANCE, ...generateRehearsalAttendance()];

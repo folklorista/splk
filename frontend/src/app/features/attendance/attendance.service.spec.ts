@@ -114,4 +114,30 @@ describe('AttendanceService', () => {
 
     expect(secondResult.find((r) => r.memberId === 9)?.firstViewedAt).toBe(firstViewedAt);
   }));
+
+  it('setStatus změní stav a zachová poznámku i firstViewedAt', fakeAsync(() => {
+    service.updateAttendance({ eventId: 1, memberId: 1, status: 'yes', note: 'Přijedu autem', firstViewedAt: '2026-01-01T10:00:00' }).subscribe();
+    tick(300);
+
+    service.setStatus(1, 1, 'no').subscribe();
+    tick(300);
+
+    let result: AttendanceRecord[] = [];
+    service.getAttendance(1).subscribe((records) => (result = records));
+    tick(300);
+
+    const record = result.find((r) => r.memberId === 1);
+    expect(record).toEqual({ eventId: 1, memberId: 1, status: 'no', note: 'Přijedu autem', firstViewedAt: '2026-01-01T10:00:00' });
+  }));
+
+  it('setStatus vytvoří záznam, pokud ještě neexistuje', fakeAsync(() => {
+    service.setStatus(9999, 1, 'maybe').subscribe();
+    tick(300);
+
+    let result: AttendanceRecord[] = [];
+    service.getAttendance(9999).subscribe((records) => (result = records));
+    tick(300);
+
+    expect(result).toEqual([{ eventId: 9999, memberId: 1, status: 'maybe' }]);
+  }));
 });

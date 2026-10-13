@@ -53,8 +53,8 @@ describe('ProfileComponent', () => {
 
   it('pendingEventCount napočítá nepotvrzené akce podle ID člena, ne uživatele', () => {
     const events: AppEvent[] = [
-      { id: 1, ensembleId: 1, title: 'Bez odpovědi', type: 'rehearsal', startsAt: '', endsAt: '', location: '', targetGroupIds: [], attendance: [] },
-      { id: 2, ensembleId: 1, title: 'Potvrzeno', type: 'rehearsal', startsAt: '', endsAt: '', location: '', targetGroupIds: [], attendance: [{ eventId: 2, memberId: mockMember.id, status: 'yes' }] },
+      { id: 1, ensembleId: 1, title: 'Bez odpovědi', type: 'rehearsal', startsAt: '2099-01-01T18:00:00', endsAt: '2099-01-01T20:00:00', location: '', targetGroupIds: [], attendance: [] },
+      { id: 2, ensembleId: 1, title: 'Potvrzeno', type: 'rehearsal', startsAt: '2099-01-01T18:00:00', endsAt: '2099-01-01T20:00:00', location: '', targetGroupIds: [], attendance: [{ eventId: 2, memberId: mockMember.id, status: 'yes' }] },
     ];
     eventsSpy.getEvents.and.returnValue(of(events));
 
@@ -67,7 +67,7 @@ describe('ProfileComponent', () => {
 
   it('pendingEventCount zůstane 0, když jsou všechny akce potvrzené', () => {
     const events: AppEvent[] = [
-      { id: 1, ensembleId: 1, title: 'Potvrzeno', type: 'rehearsal', startsAt: '', endsAt: '', location: '', targetGroupIds: [], attendance: [{ eventId: 1, memberId: mockMember.id, status: 'no' }] },
+      { id: 1, ensembleId: 1, title: 'Potvrzeno', type: 'rehearsal', startsAt: '2099-01-01T18:00:00', endsAt: '2099-01-01T20:00:00', location: '', targetGroupIds: [], attendance: [{ eventId: 1, memberId: mockMember.id, status: 'no' }] },
     ];
     eventsSpy.getEvents.and.returnValue(of(events));
 

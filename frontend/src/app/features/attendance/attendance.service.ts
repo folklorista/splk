@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
-import { AttendanceRecord } from './models/attendance.model';
+import { AttendanceRecord, AttendanceStatus } from './models/attendance.model';
 import { MOCK_ATTENDANCE } from './data/mock-attendance';
 
 @Injectable({ providedIn: 'root' })
@@ -40,6 +40,12 @@ export class AttendanceService {
     }
     this.recordsSubject.next(updated);
     return of(undefined).pipe(delay(300));
+  }
+
+  // Rychlá změna stavu (přehled, kalendář) – poznámka a firstViewedAt zůstávají zachované
+  setStatus(eventId: number, memberId: number, status: AttendanceStatus): Observable<AttendanceRecord> {
+    const existing = this.recordsSubject.value.find((r) => r.eventId === eventId && r.memberId === memberId);
+    return this.updateAttendance({ ...(existing ?? { eventId, memberId }), status });
   }
 
   updateAttendance(record: AttendanceRecord): Observable<AttendanceRecord> {

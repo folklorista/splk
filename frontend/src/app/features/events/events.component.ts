@@ -1,12 +1,18 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AppEvent } from './models/event.model';
 import { EventsService } from './events.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
 import { Member } from '../../core/models/member.model';
 import { isItemVisibleToUser } from '../../core/utils/visibility.utils';
+import { AttendanceService } from '../attendance/attendance.service';
+import { AttendanceStatus } from '../attendance/models/attendance.model';
+import { EventRsvpRowComponent } from './event-rsvp-row/event-rsvp-row.component';
+import { MONTH_LABELS, WEEKDAY_LABELS, buildMonthGrid, eventsOnDay, toDateKey, weekdayLabel } from './utils/calendar.utils';
+
+export type EventsView = 'list' | 'calendar';
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   rehearsal: 'Zkouška',
@@ -19,7 +25,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-events',
   standalone: true,
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, EventRsvpRowComponent],
   templateUrl: './events.component.html',
 })
 export class EventsComponent implements OnInit {
@@ -27,12 +33,46 @@ export class EventsComponent implements OnInit {
   loading = signal(true);
   currentMemberId = signal<number | null>(null);
   allMembers = signal<Member[]>([]);
+  view = signal<EventsView>('list');
+
+  readonly weekdayLabels = WEEKDAY_LABELS;
+  readonly todayKey = toDateKey(new Date());
+  visibleMonth = signal({ year: new Date().getFullYear(), month: new Date().getMonth() });
+  selectedDateKey = signal(this.todayKey);
 
   visibleEvents = computed(() => {
     const user = this.auth.currentUser();
     if (!user) return [];
     return this.events().filter(e => isItemVisibleToUser(e.targetGroupIds, user.groupIds));
   });
+
+  // Seznam ukazuje jen nadcházející akce chronologicky – historie je dostupná v kalendáři
+  upcomingEvents = computed(() => {
+    const now = new Date();
+    return this.visibleEvents()
+      .filter(e => new Date(e.endsAt) >= now)
+      .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  });
+
+  monthTitle = computed(() => {
+    const { year, month } = this.visibleMonth();
+    return `${MONTH_LABELS[month]} ${year}`;
+  });
+
+  calendarWeeks = computed(() => {
+    const { year, month } = this.visibleMonth();
+    const events = this.visibleEvents();
+    return buildMonthGrid(year, month).map(week =>
+      week.map(day => ({ ...day, events: eventsOnDay(events, day.dateKey) })),
+    );
+  });
+
+  selectedDayEvents = computed(() => eventsOnDay(this.visibleEvents(), this.selectedDateKey()));
+
+  ownStatus = (event: AppEvent): AttendanceStatus => {
+    const memberId = this.currentMemberId();
+    return event.attendance?.find(a => a.memberId === memberId)?.status ?? 'pending';
+  };
 
   getUserAttendanceStatus = (event: AppEvent): string | null => {
     const memberId = this.currentMemberId();
@@ -73,11 +113,16 @@ export class EventsComponent implements OnInit {
 
   constructor(
     private eventsService: EventsService,
+    private attendanceService: AttendanceService,
     private auth: AuthService,
     private membersService: MembersService,
+    private route: ActivatedRoute,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
+    this.view.set(this.route.snapshot.queryParamMap.get('view') === 'calendar' ? 'calendar' : 'list');
+
     const user = this.auth.currentUser();
     if (user) {
       this.membersService.getMembers().subscribe((members) => {
@@ -95,5 +140,58 @@ export class EventsComponent implements OnInit {
 
   typeLabel(type: string): string {
     return EVENT_TYPE_LABELS[type] ?? type;
+  }
+
+  setView(view: EventsView): void {
+    this.view.set(view);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { view: view === 'calendar' ? 'calendar' : null },
+      replaceUrl: true,
+    });
+  }
+
+  shiftMonth(delta: number): void {
+    const { year, month } = this.visibleMonth();
+    const target = new Date(year, month + delta, 1);
+    this.visibleMonth.set({ year: target.getFullYear(), month: target.getMonth() });
+    this.selectedDateKey.set(this.isTodayInVisibleMonth() ? this.todayKey : toDateKey(target));
+  }
+
+  goToToday(): void {
+    const today = new Date();
+    this.visibleMonth.set({ year: today.getFullYear(), month: today.getMonth() });
+    this.selectedDateKey.set(this.todayKey);
+  }
+
+  selectDay(dateKey: string): void {
+    this.selectedDateKey.set(dateKey);
+    const [year, month] = dateKey.split('-').map(Number);
+    this.visibleMonth.set({ year, month: month - 1 });
+  }
+
+  selectedDayLabel(): string {
+    const [year, month, day] = this.selectedDateKey().split('-').map(Number);
+    return `${weekdayLabel(this.selectedDateKey())} ${day}. ${month}. ${year}`;
+  }
+
+  setStatus(eventId: number, status: AttendanceStatus): void {
+    const memberId = this.currentMemberId();
+    if (!memberId) return;
+    // Okamžitá odezva v UI, stream akcí po uložení stav potvrdí
+    this.events.update(events => events.map(e => e.id !== eventId ? e : {
+      ...e,
+      attendance: [
+        ...(e.attendance ?? []).filter(a => a.memberId !== memberId),
+        { ...(e.attendance?.find(a => a.memberId === memberId) ?? { eventId, memberId }), status },
+      ],
+    }));
+    this.attendanceService.setStatus(eventId, memberId, status).subscribe();
+  }
+
+  private isTodayInVisibleMonth(): boolean {
+    const { year, month } = this.visibleMonth();
+    const today = new Date();
+    return today.getFullYear() === year && today.getMonth() === month;
   }
 }

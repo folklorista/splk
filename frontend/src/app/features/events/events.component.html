@@ -1,13 +1,79 @@
 <div class="page">
-  <h1 class="page__title">Akce</h1>
+  <div class="page__header">
+    <h1 class="page__title">Akce</h1>
+    <div class="view-toggle" role="group" aria-label="Zobrazení">
+      <button type="button" class="view-toggle__btn" [class.view-toggle__btn--active]="view() === 'list'"
+        [attr.aria-pressed]="view() === 'list'" (click)="setView('list')">Seznam</button>
+      <button type="button" class="view-toggle__btn" [class.view-toggle__btn--active]="view() === 'calendar'"
+        [attr.aria-pressed]="view() === 'calendar'" (click)="setView('calendar')">Kalendář</button>
+    </div>
+  </div>
 
   @if (loading()) {
     <p class="state-note">Načítání…</p>
-  } @else if (!events().length) {
-    <p class="state-note">Žádné akce.</p>
+  } @else if (view() === 'calendar') {
+    <div class="calendar">
+      <div class="calendar__nav">
+        <button type="button" class="calendar__nav-btn" aria-label="Předchozí měsíc" (click)="shiftMonth(-1)">‹</button>
+        <span class="calendar__title">{{ monthTitle() }}</span>
+        <button type="button" class="calendar__nav-btn" aria-label="Další měsíc" (click)="shiftMonth(1)">›</button>
+        <button type="button" class="calendar__today-btn" (click)="goToToday()">Dnes</button>
+      </div>
+
+      <div class="calendar__grid">
+        @for (label of weekdayLabels; track label) {
+          <span class="calendar__weekday">{{ label }}</span>
+        }
+        @for (week of calendarWeeks(); track week[0].dateKey) {
+          @for (day of week; track day.dateKey) {
+            <button
+              type="button"
+              class="calendar__day"
+              [class.calendar__day--outside]="!day.inMonth"
+              [class.calendar__day--today]="day.dateKey === todayKey"
+              [class.calendar__day--selected]="day.dateKey === selectedDateKey()"
+              [attr.aria-label]="day.day + '. ' + (day.events.length ? '– akcí: ' + day.events.length : '')"
+              (click)="selectDay(day.dateKey)"
+            >
+              <span class="calendar__day-number">{{ day.day }}</span>
+              <span class="calendar__dots">
+                @for (event of day.events; track event.id) {
+                  <span class="calendar__dot" [attr.data-status]="ownStatus(event)"></span>
+                }
+              </span>
+            </button>
+          }
+        }
+      </div>
+
+      <div class="calendar__legend">
+        <span><span class="calendar__dot" data-status="yes"></span> Ano</span>
+        <span><span class="calendar__dot" data-status="maybe"></span> Možná</span>
+        <span><span class="calendar__dot" data-status="no"></span> Ne</span>
+        <span><span class="calendar__dot" data-status="pending"></span> Nezadáno</span>
+      </div>
+
+      <section class="calendar__day-detail">
+        <h2 class="dashboard__section-title">{{ selectedDayLabel() }}</h2>
+        @if (selectedDayEvents().length) {
+          <ul class="rsvp-list">
+            @for (event of selectedDayEvents(); track event.id) {
+              <li>
+                <app-event-rsvp-row [event]="event" [status]="ownStatus(event)" [showDate]="false"
+                  (statusChange)="setStatus(event.id, $event)" />
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="state-note">V tento den žádná akce.</p>
+        }
+      </section>
+    </div>
+  } @else if (!upcomingEvents().length) {
+    <p class="state-note">Žádné nadcházející akce.</p>
   } @else {
     <ul class="item-list">
-      @for (event of visibleEvents(); track event.id) {
+      @for (event of upcomingEvents(); track event.id) {
         <li
           class="item-list__item item-list__item--link"
           [class.item-list__item--requires-action]="isWaitingForResponse(event)"

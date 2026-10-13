@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { DashboardComponent } from './dashboard.component';
+import { DASHBOARD_EVENT_LIMIT, DashboardComponent } from './dashboard.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { EventsService } from '../events/events.service';
 import { PostsService } from '../posts/posts.service';
@@ -69,7 +69,8 @@ describe('DashboardComponent', () => {
     eventsSpy = jasmine.createSpyObj('EventsService', ['getEvents']);
     eventsSpy.getEvents.and.returnValue(of([futureEvent]));
 
-    attendanceSpy = jasmine.createSpyObj('AttendanceService', ['getMemberAttendance']);
+    attendanceSpy = jasmine.createSpyObj('AttendanceService', ['setStatus']);
+    attendanceSpy.setStatus.and.returnValue(of({ eventId: 0, memberId: 0, status: 'yes' }));
 
     TestBed.configureTestingModule({
       imports: [DashboardComponent],
@@ -84,52 +85,68 @@ describe('DashboardComponent', () => {
     });
   }
 
-  it('dotáže se na účast podle ID přihlášeného člena, ne podle ID uživatele', () => {
+  const pastEvent: AppEvent = {
+    ...futureEvent,
+    id: 102,
+    title: 'Proběhlá zkouška',
+    startsAt: '2000-01-01T18:00:00',
+    endsAt: '2000-01-01T20:00:00',
+  };
+
+  it('zobrazí jen nadcházející akce viditelné pro skupiny uživatele', () => {
     configure();
-    attendanceSpy.getMemberAttendance.and.returnValue(of([]));
+    eventsSpy.getEvents.and.returnValue(of([futureEvent, foreignEvent, pastEvent]));
 
     const fixture = TestBed.createComponent(DashboardComponent);
     fixture.detectChanges();
 
-    expect(attendanceSpy.getMemberAttendance).toHaveBeenCalledWith(member.id);
-    expect(attendanceSpy.getMemberAttendance).not.toHaveBeenCalledWith(user.id);
+    expect(fixture.componentInstance.upcomingEvents().map((r) => r.event.id)).toEqual([futureEvent.id]);
   });
 
-  it('nezahrne akci, na kterou už člen odpověděl', () => {
+  it('zobrazí nejvýš pevný počet nejbližších akcí seřazených podle začátku', () => {
     configure();
-    attendanceSpy.getMemberAttendance.and.returnValue(
-      of([{ eventId: futureEvent.id, memberId: member.id, status: 'yes' }]),
-    );
+    const events = Array.from({ length: DASHBOARD_EVENT_LIMIT + 3 }, (_, i) => ({
+      ...futureEvent,
+      id: 200 + i,
+      startsAt: `2099-02-${String(28 - i).padStart(2, '0')}T18:00:00`,
+    }));
+    eventsSpy.getEvents.and.returnValue(of(events));
 
     const fixture = TestBed.createComponent(DashboardComponent);
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.pendingAttendance()).toEqual([]);
+    const rows = fixture.componentInstance.upcomingEvents();
+    expect(rows.length).toBe(DASHBOARD_EVENT_LIMIT);
+    expect(rows[0].event.id).toBe(200 + DASHBOARD_EVENT_LIMIT + 2);
   });
 
-  it('zahrne budoucí akci bez odpovědi mezi nepotvrzenou účast', () => {
+  it('převezme stav účasti přihlášeného člena (podle ID člena), jinak pending', () => {
     configure();
-    attendanceSpy.getMemberAttendance.and.returnValue(of([]));
+    const answered: AppEvent = {
+      ...futureEvent,
+      attendance: [
+        { eventId: futureEvent.id, memberId: user.id, status: 'no' },
+        { eventId: futureEvent.id, memberId: member.id, status: 'yes' },
+      ],
+    };
+    const unanswered: AppEvent = { ...futureEvent, id: 103, startsAt: '2099-01-03T18:00:00' };
+    eventsSpy.getEvents.and.returnValue(of([answered, unanswered]));
 
     const fixture = TestBed.createComponent(DashboardComponent);
     fixture.detectChanges();
 
-    const pending = fixture.componentInstance.pendingAttendance();
-    expect(pending.length).toBe(1);
-    expect(pending[0].event.id).toBe(futureEvent.id);
+    expect(fixture.componentInstance.upcomingEvents().map((r) => r.status)).toEqual(['yes', 'pending']);
   });
 
-  it('nezahrne do nepotvrzené účasti ani do nejbližší akce událost mimo skupiny uživatele', () => {
+  it('rychlé potvrzení uloží stav přes službu pod ID člena a hned ho zobrazí', () => {
     configure();
-    eventsSpy.getEvents.and.returnValue(of([futureEvent, foreignEvent]));
-    attendanceSpy.getMemberAttendance.and.returnValue(of([]));
 
     const fixture = TestBed.createComponent(DashboardComponent);
     fixture.detectChanges();
+    fixture.componentInstance.setStatus(futureEvent.id, 'maybe');
 
-    const pending = fixture.componentInstance.pendingAttendance();
-    expect(pending.some((p) => p.event.id === foreignEvent.id)).toBeFalse();
-    expect(fixture.componentInstance.nextEvent()?.id).toBe(futureEvent.id);
+    expect(attendanceSpy.setStatus).toHaveBeenCalledWith(futureEvent.id, member.id, 'maybe');
+    expect(fixture.componentInstance.upcomingEvents()[0].status).toBe('maybe');
   });
 
   it('nezahrne do připnutých oznámení příspěvek z nástěnky cizí skupiny', () => {
@@ -140,7 +157,6 @@ describe('DashboardComponent', () => {
         { id: 2, title: 'Pro cizí skupinu', body: '', publishedAt: '2026-01-01T00:00:00', isPinned: true, groupId: 99 } as any,
       ]),
     );
-    attendanceSpy.getMemberAttendance.and.returnValue(of([]));
 
     const fixture = TestBed.createComponent(DashboardComponent);
     fixture.detectChanges();
@@ -159,7 +175,6 @@ describe('DashboardComponent', () => {
         { id: 3, title: 'Archiv', body: '', publishedAt: '2026-01-01T00:00:00', isPinned: true, groupId: 1, archivedAt: '2026-02-01T00:00:00' } as any,
       ]),
     );
-    attendanceSpy.getMemberAttendance.and.returnValue(of([]));
 
     const fixture = TestBed.createComponent(DashboardComponent);
     fixture.detectChanges();

@@ -1,0 +1,29 @@
+<div class="rsvp-row" [class.rsvp-row--pending]="status === 'pending' && !isPast" [class.rsvp-row--past]="isPast">
+  <a class="rsvp-row__main" [routerLink]="['/app/events', event.id]">
+    @if (showDate) {
+      <span class="rsvp-row__date">
+        <span class="rsvp-row__weekday">{{ weekday }}</span>
+        {{ event.startsAt | date: 'd. M.' }}
+      </span>
+    }
+    <span class="rsvp-row__info">
+      <span class="rsvp-row__title">{{ event.title }}</span>
+      <span class="rsvp-row__meta">{{ event.startsAt | date: 'HH:mm' }} · {{ event.location }}</span>
+    </span>
+  </a>
+  <div class="rsvp-row__actions" role="group" aria-label="Moje účast">
+    @for (quick of quickStatuses; track quick) {
+      <button
+        type="button"
+        class="rsvp-btn"
+        [attr.data-status]="quick"
+        [class.rsvp-btn--active]="status === quick"
+        [attr.aria-pressed]="status === quick"
+        [disabled]="isPast"
+        (click)="select(quick)"
+      >
+        {{ quickLabels[quick] }}
+      </button>
+    }
+  </div>
+</div>

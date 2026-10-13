@@ -69,32 +69,39 @@ describe('visibility.utils', () => {
   });
 
   describe('getUnconfirmedEventsCount', () => {
+    const FUTURE = '2099-01-01T18:00:00';
+
     it('vrátí 0 bez uživatele nebo bez ID člena', () => {
-      const events = [{ targetGroupIds: [], attendance: [] }];
+      const events = [{ startsAt: FUTURE, targetGroupIds: [], attendance: [] }];
       expect(getUnconfirmedEventsCount(events, null, currentMemberId)).toBe(0);
       expect(getUnconfirmedEventsCount(events, user, null)).toBe(0);
     });
 
     it('nezapočítá akci, kde už člen vyjádřil účast', () => {
       const events = [
-        { targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'yes' }] },
-        { targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'no' }] },
-        { targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'maybe' }] },
+        { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'yes' }] },
+        { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'no' }] },
+        { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'maybe' }] },
       ];
       expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(0);
     });
 
     it('započítá akci bez záznamu účasti nebo se stavem pending', () => {
       const events = [
-        { targetGroupIds: [], attendance: [] },
-        { targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'pending' }] },
-        { targetGroupIds: [], attendance: [{ memberId: 999, status: 'yes' }] },
+        { startsAt: FUTURE, targetGroupIds: [], attendance: [] },
+        { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'pending' }] },
+        { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: 999, status: 'yes' }] },
       ];
       expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(3);
     });
 
     it('nezapočítá akci, která není určena pro skupiny uživatele', () => {
-      const events = [{ targetGroupIds: [99], attendance: [] }];
+      const events = [{ startsAt: FUTURE, targetGroupIds: [99], attendance: [] }];
+      expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(0);
+    });
+
+    it('nezapočítá proběhlou akci bez odpovědi', () => {
+      const events = [{ startsAt: '2000-01-01T18:00:00', targetGroupIds: [], attendance: [] }];
       expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(0);
     });
   });

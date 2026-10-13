@@ -8,16 +8,18 @@
 
     <section class="dashboard__section">
       <h2 class="dashboard__section-title">Nejbližší akce</h2>
-      @if (nextEvent(); as event) {
-      <div class="item-list__item">
-        <span class="item-list__title">{{ event.title }}</span>
-        <div class="item-list__meta">
-          {{ event.startsAt | date: 'd. M. yyyy, HH:mm' }} · {{ event.location }}
-        </div>
-      </div>
+      @if (upcomingEvents().length) {
+      <ul class="rsvp-list">
+        @for (row of upcomingEvents(); track row.event.id) {
+        <li>
+          <app-event-rsvp-row [event]="row.event" [status]="row.status" (statusChange)="setStatus(row.event.id, $event)" />
+        </li>
+        }
+      </ul>
       } @else {
       <p class="state-note">Žádné nadcházející akce.</p>
       }
+      <a class="dashboard__more" routerLink="/app/events" [queryParams]="{ view: 'calendar' }">Všechny akce v kalendáři →</a>
     </section>
 
     <section class="dashboard__section">
@@ -43,24 +45,6 @@
       </ul>
       } @else {
       <p class="state-note">Žádná důležitá oznámení.</p>
-      }
-    </section>
-
-    <section class="dashboard__section">
-      <h2 class="dashboard__section-title">Nepotvrzená účast</h2>
-      @if (!pendingAttendance().length) {
-      <p class="state-note">Vše potvrzeno.</p>
-      } @else {
-      <ul class="item-list">
-        @for (item of pendingAttendance(); track item.event.id) {
-        <li class="item-list__item item-list__item--link" [routerLink]="['/app/events', item.event.id]">
-          <span class="item-list__title">{{ item.event.title }}</span>
-          <div class="item-list__meta">
-            {{ item.event.startsAt | date: 'd. M. yyyy, HH:mm' }}
-          </div>
-        </li>
-        }
-      </ul>
       }
     </section>
 

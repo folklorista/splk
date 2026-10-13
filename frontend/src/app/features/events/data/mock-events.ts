@@ -7,6 +7,50 @@ function relativeDate(daysOffset: number, hour: number, minute: number): string 
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(hour)}:${pad(minute)}:00`;
 }
 
+// Počet dní od dneška do nejbližšího daného dne v týdnu (0 = neděle … 6 = sobota), dnešek včetně
+function daysUntilWeekday(weekday: number): number {
+  return (weekday - new Date().getDay() + 7) % 7;
+}
+
+const TUESDAY = 2;
+const FRIDAY = 5;
+const REHEARSAL_WEEKS_AROUND = 8;
+export const FIRST_REHEARSAL_ID = 100;
+
+// Pravidelné nácviky každé úterý (tanečníci) a pátek (celý soubor), ±8 týdnů kolem dneška
+function generateRehearsals(): AppEvent[] {
+  const rehearsals: AppEvent[] = [];
+  let id = FIRST_REHEARSAL_ID;
+  for (let week = -REHEARSAL_WEEKS_AROUND; week <= REHEARSAL_WEEKS_AROUND; week++) {
+    const tuesday = daysUntilWeekday(TUESDAY) + week * 7;
+    rehearsals.push({
+      id: id++,
+      ensembleId: 1,
+      title: 'Nácvik – tanečníci',
+      type: 'rehearsal',
+      startsAt: relativeDate(tuesday, 18, 0),
+      endsAt: relativeDate(tuesday, 20, 0),
+      location: 'Kulturní dům, zkušebna',
+      description: 'Pravidelný úterní nácvik tanečníků.',
+      targetGroupIds: [2],
+    });
+
+    const friday = daysUntilWeekday(FRIDAY) + week * 7;
+    rehearsals.push({
+      id: id++,
+      ensembleId: 1,
+      title: 'Nácvik – celý soubor',
+      type: 'rehearsal',
+      startsAt: relativeDate(friday, 19, 0),
+      endsAt: relativeDate(friday, 21, 30),
+      location: 'Kulturní dům, sál č. 2',
+      description: 'Pravidelný páteční nácvik celého souboru.',
+      targetGroupIds: [1, 2],
+    });
+  }
+  return rehearsals;
+}
+
 export const MOCK_EVENTS: AppEvent[] = [
   {
     id: 1,
@@ -76,4 +120,17 @@ export const MOCK_EVENTS: AppEvent[] = [
     description: 'Nácvik hudebního doprovodu.',
     targetGroupIds: [4],
   },
+  {
+    // Záměrně ve stejný den jako páteční nácvik
+    id: 7,
+    ensembleId: 1,
+    title: 'Vystoupení – Hody',
+    type: 'performance',
+    startsAt: relativeDate(daysUntilWeekday(FRIDAY) + 7, 14, 0),
+    endsAt: relativeDate(daysUntilWeekday(FRIDAY) + 7, 16, 0),
+    location: 'Náves, pódium u kostela',
+    description: 'Vystoupení na hodech, sraz ve 13:15 v krojích.',
+    targetGroupIds: [1, 2],
+  },
+  ...generateRehearsals(),
 ];

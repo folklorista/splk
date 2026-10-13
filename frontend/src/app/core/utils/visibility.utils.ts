@@ -31,9 +31,11 @@ export function getBoardBadgeCount(posts: any[], comments: any[], groupId: numbe
   return unreadPosts + unseenMentions;
 }
 
-export function getUnconfirmedEventsCount(events: any[], user: User | null, currentMemberId: number | null): number {
+// Počítají se jen nadcházející akce – na proběhlé už účast potvrzovat nejde
+export function getUnconfirmedEventsCount(events: any[], user: User | null, currentMemberId: number | null, now = new Date()): number {
   if (!user || !currentMemberId) return 0;
   return events
+    .filter(e => new Date(e.startsAt) >= now)
     .filter(e => isItemVisibleToUser(e.targetGroupIds, user.groupIds))
     .filter(e => {
       const memberAttendance = e.attendance?.find((a: any) => a.memberId === currentMemberId);
