@@ -10,10 +10,13 @@ import { Member } from '../../core/models/member.model';
 import { Post } from './models/post.model';
 import { BoardsService } from '../boards/boards.service';
 import { Group } from '../../core/models/group.model';
+import { CommentsService } from './comments.service';
+import { PostComment } from './models/comment.model';
 
 describe('PostsComponent', () => {
   let postsSpy: jasmine.SpyObj<PostsService>;
   let membersSpy: jasmine.SpyObj<MembersService>;
+  let comments$: BehaviorSubject<PostComment[]>;
   let paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   const boards: Group[] = [
@@ -41,6 +44,7 @@ describe('PostsComponent', () => {
     membersSpy = jasmine.createSpyObj('MembersService', ['getMembers']);
     membersSpy.getMembers.and.returnValue(of(members));
 
+    comments$ = new BehaviorSubject<PostComment[]>([]);
     paramMap$ = new BehaviorSubject(convertToParamMap({ slug: 'dospeli' }));
 
     TestBed.configureTestingModule({
@@ -52,6 +56,7 @@ describe('PostsComponent', () => {
         { provide: MembersService, useValue: membersSpy },
         { provide: BoardsService, useValue: { getBoardBySlug: (slug: string) => of(boards.find((b) => b.slug === slug)) } },
         { provide: ActivatedRoute, useValue: { paramMap: paramMap$ } },
+        { provide: CommentsService, useValue: { getAllComments: () => comments$ } },
       ],
     });
   }
@@ -93,5 +98,35 @@ describe('PostsComponent', () => {
     paramMap$.next(convertToParamMap({ slug: 'kluci' }));
     expect(fixture.componentInstance.board()?.name).toBe('Kluci');
     expect(fixture.componentInstance.visiblePosts().map((p) => p.id)).toEqual([2]);
+  });
+
+  it('newCommentsCount reaguje na živý stream komentářů a počítá jen komentáře po poslední návštěvě', () => {
+    configure();
+    const visited: Post = { ...post, lastVisitedAt: { 1: '2026-01-02T00:00:00Z' } };
+    postsSpy.getPosts.and.returnValue(of([visited]));
+    const fixture = TestBed.createComponent(PostsComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.newCommentsCount(visited)).toBe(0);
+
+    const comment = (id: number, createdAt: string, authorId = 2): PostComment => ({
+      id, postId: 1, authorId, body: 'x', createdAt, mentionedMemberIds: [], seenByMemberIds: [],
+    });
+    comments$.next([
+      comment(1, '2026-01-01T10:00:00Z'),
+      comment(2, '2026-01-03T10:00:00Z'),
+      comment(3, '2026-01-04T10:00:00Z', 1),
+    ]);
+
+    expect(fixture.componentInstance.newCommentsCount(visited)).toBe(1);
+  });
+
+  it('newCommentsLabel skloňuje počet komentářů', () => {
+    configure();
+    const component = TestBed.createComponent(PostsComponent).componentInstance;
+
+    expect(component.newCommentsLabel(1)).toBe('1 nový komentář');
+    expect(component.newCommentsLabel(3)).toBe('3 nové komentáře');
+    expect(component.newCommentsLabel(5)).toBe('5 nových komentářů');
   });
 });

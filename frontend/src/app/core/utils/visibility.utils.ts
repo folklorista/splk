@@ -42,6 +42,18 @@ export function getUnconfirmedEventsCount(events: any[], user: User | null, curr
     .length;
 }
 
+// Počet komentářů k příspěvku od poslední návštěvy člena (bez jeho vlastních).
+// Pokud příspěvek ještě nenavštívil, jsou nové všechny komentáře.
+export function getNewCommentsCount(comments: any[], post: any, currentMemberId: number | null): number {
+  if (!currentMemberId) return 0;
+  const lastVisit: string | undefined = post.lastVisitedAt?.[currentMemberId];
+  return comments
+    .filter(c => c.postId === post.id)
+    .filter(c => c.authorId !== currentMemberId)
+    .filter(c => !lastVisit || Date.parse(c.createdAt) > Date.parse(lastVisit))
+    .length;
+}
+
 // Počet zmínek (@Jméno v komentáři), které daný člen ještě neviděl
 export function getUnseenMentionsCount(comments: any[], currentMemberId: number | null): number {
   if (!currentMemberId) return 0;

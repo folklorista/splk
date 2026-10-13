@@ -26,6 +26,9 @@
               @if (isUnread(post)) {
                 <span class="badge badge--requires-action">Nepřečteno</span>
               }
+              @if (newCommentsCount(post); as count) {
+                <span class="badge">{{ newCommentsLabel(count) }}</span>
+              }
               @if (post.isPinned) {
                 <span class="badge badge--pinned">Připnuto</span>
               }

@@ -172,6 +172,20 @@ describe('PostsService', () => {
     expect(result?.readers?.filter((id) => id === 99).length).toBe(1);
   }));
 
+  it('markVisited zaznamená čas návštěvy člena a zachová návštěvy ostatních', fakeAsync(() => {
+    service.markVisited(3, 99).subscribe();
+    tick(300);
+    service.markVisited(3, 98).subscribe();
+    tick(300);
+
+    let result: Post | undefined;
+    service.getPost(3).subscribe((p) => (result = p));
+    tick(300);
+
+    expect(Object.keys(result?.lastVisitedAt ?? {}).sort()).toEqual(['98', '99']);
+    expect(Date.parse(result!.lastVisitedAt![99])).not.toBeNaN();
+  }));
+
   it('archivePost nastaví archivedAt a zachová ostatní pole', fakeAsync(() => {
     const original = MOCK_POSTS.find((p) => p.id === 1)!;
     let result: Post | undefined;

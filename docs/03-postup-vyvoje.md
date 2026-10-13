@@ -177,9 +177,9 @@ Pozdější rozšíření:
 - Menu: Přehled – Akce – nástěnky skupin přihlášeného – Kroje; sekce Správa: Můj profil, Administrace (jen admin, chráněno `adminGuard`). Na mobilu místo jednotlivých nástěnek položka „Nástěnky“ (rozcestník `/app/boards`).
 - Stránka **Členové** byla zrušena.
 - **Můj profil** umožňuje upravit e-mail a telefon; příslušnost ke skupinám a role se nezobrazují.
+- Ve výpisu nástěnky se u příspěvku zobrazuje počet nových komentářů od poslední návštěvy (`Post.lastVisitedAt`, zapisuje se při otevření i opuštění detailu). Do badge v menu se nepočítají – ten zahrnuje jen nepřečtené příspěvky a zmínky přihlášeného.
 - Cílení na konkrétní jednotlivce bylo zrušeno (příspěvky i akce). Pro jednorázovou příležitost se založí vlastní skupina (např. „Velikonoce 2027 – kluci“) a po skončení se zruší nebo skryje.
 
 ## Naplánované úpravy (zatím neimplementovat)
 
 - **Označení příspěvku s novou zmínkou**: příspěvek, ve kterém byl přihlášený člen nově zmíněn (@mention v komentáři), označit ve výpisu nástěnky obdobně jako „Nepřečteno“ (např. štítek „Zmínka“). Badge nástěnky v menu už neviděné zmínky započítává (`getBoardBadgeCount`), chybí jen vyznačení u samotného příspěvku.
-- **Počet nových komentářů**: u příspěvků ve výpisu uvádět počet komentářů přibylých od poslední návštěvy (nepřečtených). Vyžaduje evidovat, kdy člen příspěvek naposledy viděl (dnes se ukládá jen, že ho jednou přečetl – `Post.readers`).

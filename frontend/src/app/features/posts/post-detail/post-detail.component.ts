@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Post } from '../models/post.model';
@@ -19,7 +19,7 @@ import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
   imports: [DatePipe, RouterLink, IconComponent, RelativeTimePipe],
   templateUrl: './post-detail.component.html',
 })
-export class PostDetailComponent implements OnInit {
+export class PostDetailComponent implements OnInit, OnDestroy {
   post = signal<Post | null>(null);
   board = signal<Group | null>(null);
   loading = signal(true);
@@ -125,8 +125,18 @@ export class PostDetailComponent implements OnInit {
     });
   }
 
+  // Návštěva se zapíše při otevření i odchodu, aby komentáře přibylé během čtení nebyly potom "nové"
+  ngOnDestroy(): void {
+    const post = this.post();
+    const memberId = this.currentMemberId();
+    if (post && memberId) {
+      this.postsService.markVisited(post.id, memberId).subscribe();
+    }
+  }
+
   private showPost(post: Post, member: Member): void {
     this.loadComments(post.id, member.id);
+    this.postsService.markVisited(post.id, member.id).subscribe();
 
     const alreadyRead = post.readers?.includes(member.id) ?? false;
     if (alreadyRead) {

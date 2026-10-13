@@ -1,4 +1,4 @@
-import { canAccessBoard, getBoardBadgeCount, getUnconfirmedEventsCount, getUnseenMentionsCount, isAdmin, isItemVisibleToUser } from './visibility.utils';
+import { canAccessBoard, getBoardBadgeCount, getNewCommentsCount, getUnconfirmedEventsCount, getUnseenMentionsCount, isAdmin, isItemVisibleToUser } from './visibility.utils';
 import { User } from '../auth/models/user.model';
 
 describe('visibility.utils', () => {
@@ -96,6 +96,33 @@ describe('visibility.utils', () => {
     it('nezapočítá akci, která není určena pro skupiny uživatele', () => {
       const events = [{ targetGroupIds: [99], attendance: [] }];
       expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(0);
+    });
+  });
+
+  describe('getNewCommentsCount', () => {
+    const comments = [
+      { postId: 1, authorId: 2, createdAt: '2026-01-01T10:00:00Z' },
+      { postId: 1, authorId: 2, createdAt: '2026-01-03T10:00:00Z' },
+      { postId: 1, authorId: currentMemberId, createdAt: '2026-01-04T10:00:00Z' },
+      { postId: 2, authorId: 2, createdAt: '2026-01-05T10:00:00Z' },
+    ];
+
+    it('vrátí 0 bez ID člena', () => {
+      expect(getNewCommentsCount(comments, { id: 1 }, null)).toBe(0);
+    });
+
+    it('u nenavštíveného příspěvku započítá všechny cizí komentáře', () => {
+      expect(getNewCommentsCount(comments, { id: 1 }, currentMemberId)).toBe(2);
+    });
+
+    it('započítá jen cizí komentáře po poslední návštěvě', () => {
+      const post = { id: 1, lastVisitedAt: { [currentMemberId]: '2026-01-02T00:00:00Z' } };
+      expect(getNewCommentsCount(comments, post, currentMemberId)).toBe(1);
+    });
+
+    it('nepočítá s návštěvou jiného člena', () => {
+      const post = { id: 1, lastVisitedAt: { 999: '2026-01-10T00:00:00Z' } };
+      expect(getNewCommentsCount(comments, post, currentMemberId)).toBe(2);
     });
   });
 

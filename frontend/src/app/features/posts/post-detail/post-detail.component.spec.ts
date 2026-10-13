@@ -39,7 +39,8 @@ describe('PostDetailComponent', () => {
 
   function configure(user: User = authorUser, accessibleBoard: Group | null = board): void {
     currentUser = user;
-    postsSpy = jasmine.createSpyObj('PostsService', ['getPost', 'markAsRead', 'archivePost']);
+    postsSpy = jasmine.createSpyObj('PostsService', ['getPost', 'markAsRead', 'markVisited', 'archivePost']);
+    postsSpy.markVisited.and.returnValue(of(undefined));
     postsSpy.getPost.and.returnValue(of(post));
     postsSpy.markAsRead.and.returnValue(of(undefined));
     postsSpy.archivePost.and.returnValue(of(post));
@@ -87,6 +88,7 @@ describe('PostDetailComponent', () => {
     expect(fixture.componentInstance.notFound()).toBeTrue();
     expect(fixture.componentInstance.post()).toBeNull();
     expect(postsSpy.markAsRead).not.toHaveBeenCalled();
+    expect(postsSpy.markVisited).not.toHaveBeenCalled();
   });
 
   it('nezahrne do přehledu člena mimo skupinu nástěnky', () => {
@@ -104,6 +106,18 @@ describe('PostDetailComponent', () => {
     fixture.detectChanges();
 
     expect(postsSpy.markAsRead).toHaveBeenCalledWith(5, 1);
+  });
+
+  it('zaznamená návštěvu při otevření i při opuštění detailu', () => {
+    configure();
+    const fixture = TestBed.createComponent(PostDetailComponent);
+    fixture.detectChanges();
+
+    expect(postsSpy.markVisited).toHaveBeenCalledTimes(1);
+    expect(postsSpy.markVisited).toHaveBeenCalledWith(5, 1);
+
+    fixture.destroy();
+    expect(postsSpy.markVisited).toHaveBeenCalledTimes(2);
   });
 
   it('nevolá markAsRead, pokud už člen příspěvek přečetl', () => {
@@ -246,7 +260,8 @@ describe('PostDetailComponent s reálnou CommentsService (živý stream)', () =>
   };
 
   it('nepřidá právě odeslaný komentář dvakrát', fakeAsync(() => {
-    const postsSpy = jasmine.createSpyObj('PostsService', ['getPost', 'markAsRead']);
+    const postsSpy = jasmine.createSpyObj('PostsService', ['getPost', 'markAsRead', 'markVisited']);
+    postsSpy.markVisited.and.returnValue(of(undefined));
     postsSpy.getPost.and.returnValue(of(post));
     postsSpy.markAsRead.and.returnValue(of(undefined));
 

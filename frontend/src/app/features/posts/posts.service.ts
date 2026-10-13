@@ -53,6 +53,17 @@ export class PostsService {
     return of(undefined).pipe(delay(300));
   }
 
+  // Zaznamená návštěvu příspěvku členem – komentáře vytvořené před tímto okamžikem už nejsou "nové"
+  markVisited(postId: number, memberId: number): Observable<void> {
+    const index = postsCache.findIndex((p) => p.id === postId);
+    if (index !== -1) {
+      const lastVisitedAt = { ...postsCache[index].lastVisitedAt, [memberId]: new Date().toISOString() };
+      postsCache = [...postsCache];
+      postsCache[index] = { ...postsCache[index], lastVisitedAt };
+    }
+    return of(undefined).pipe(delay(300));
+  }
+
   // Archivace je vratná (na rozdíl od trvalého smazání, které je jen v administraci)
   archivePost(id: number): Observable<Post | undefined> {
     const index = postsCache.findIndex((p) => p.id === id);

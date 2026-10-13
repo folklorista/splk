@@ -10,6 +10,9 @@ import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
 import { BoardsService } from '../boards/boards.service';
 import { Member } from '../../core/models/member.model';
+import { PostComment } from './models/comment.model';
+import { CommentsService } from './comments.service';
+import { getNewCommentsCount } from '../../core/utils/visibility.utils';
 import { Group } from '../../core/models/group.model';
 
 // Nástěnka jedné skupiny (/app/boards/:slug)
@@ -25,6 +28,7 @@ export class PostsComponent implements OnInit {
   loading = signal(true);
   currentMemberId = signal<number | null>(null);
   allMembers = signal<Member[]>([]);
+  comments = signal<PostComment[]>([]);
 
   visiblePosts = computed(() => {
     const board = this.board();
@@ -47,6 +51,16 @@ export class PostsComponent implements OnInit {
     return this.auth.currentUser()?.roles.includes('admin') ?? false;
   }
 
+  newCommentsCount(post: Post): number {
+    return getNewCommentsCount(this.comments(), post, this.currentMemberId());
+  }
+
+  newCommentsLabel(count: number): string {
+    if (count === 1) return '1 nový komentář';
+    if (count < 5) return `${count} nové komentáře`;
+    return `${count} nových komentářů`;
+  }
+
   readCountLabel(post: Post): string {
     const boardMembers = this.allMembers().filter((m) => m.groupIds.includes(post.groupId));
     const readCount = boardMembers.filter((m) => post.readers?.includes(m.id)).length;
@@ -63,6 +77,7 @@ export class PostsComponent implements OnInit {
     private auth: AuthService,
     private membersService: MembersService,
     private boardsService: BoardsService,
+    private commentsService: CommentsService,
     private destroyRef: DestroyRef,
   ) {}
 
@@ -72,6 +87,12 @@ export class PostsComponent implements OnInit {
       this.loading.set(false);
       return;
     }
+
+    // Živý stream – počty nových komentářů se aktualizují i bez znovunačtení stránky
+    this.commentsService
+      .getAllComments()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((comments) => this.comments.set(comments));
 
     // Komponenta se při přechodu mezi nástěnkami znovu nevytváří, proto sledujeme změnu :slug
     this.route.paramMap
