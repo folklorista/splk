@@ -6,7 +6,7 @@ Hotovo:
 
 - **Fáze 1 (Angular shell)** – kompletní.
 - **Fáze 2 (mock modely a API services)** – kompletní, včetně feature services pro všechny níže uvedené moduly.
-- **Fáze 3 (klikací prototyp)** – obrazovky Login, Dashboard, Nástěnka + detail, Akce + detail s potvrzením účasti, Členové + detail, Skupiny, hrubý placeholder Krojové databáze jsou hotové a proklikatelné s mock daty.
+- **Fáze 3 (klikací prototyp)** – obrazovky Login, Dashboard, Nástěnka + detail, Akce + detail s potvrzením účasti, Skupiny, hrubý placeholder Krojové databáze (stránka Členové byla později zrušena, viz Nástěnky po skupinách) jsou hotové a proklikatelné s mock daty.
 - Navíc oproti původnímu plánu: rozpracovaná administrace (CRUD obrazovky pro příspěvky, akce, členy a skupiny) – nad rámec Fáze 3, ale využívá stejné feature services jako běžné obrazovky.
 
 Zatím neproběhlo:
@@ -168,4 +168,18 @@ Pozdější rozšíření:
 - mobilní aplikace přes Capacitor,
 - WebSocket realtime backend,
 - univerzální komponenta pro výpis seznamu členů (filtrování podle skupin, řazení podle atributů) – nahradila by ad-hoc seznamy v administraci (účast na akci, členové skupiny apod.),
-- **skupinové nástěnky**: každá skupina by mohla mít vlastní nástěnku, v navigaci zvlášť pro každou skupinu přihlášeného člena, stávající nástěnka zůstává společná pro všechny. Pokud se zavede, cílení příspěvků na konkrétní jednotlivce (viz `TargetingEditorComponent`) by v takovém modelu pravděpodobně ztratilo smysl – navrhováno řešit jako konfigurovatelný přepínač (skrytí sekce "Konkrétní lidé"), ne odstraněním datového pole.
+- ~~skupinové nástěnky~~ – hotovo, viz „Nástěnky po skupinách“ níže.
+
+## Nástěnky po skupinách (hotovo)
+
+- Každá skupina má **jednu vlastní nástěnku** (`/app/boards/:slug`), společná nástěnka zanikla. Příspěvek patří právě jedné nástěnce (`Post.groupId`).
+- Nástěnku vidí, píšou na ni a zmínit na ní lze jen **členy skupiny** (podle `Member.groupIds`). **Administrátor vidí všechny nástěnky.**
+- Menu: Přehled – Akce – nástěnky skupin přihlášeného – Kroje; sekce Správa: Můj profil, Administrace (jen admin, chráněno `adminGuard`). Na mobilu místo jednotlivých nástěnek položka „Nástěnky“ (rozcestník `/app/boards`).
+- Stránka **Členové** byla zrušena.
+- **Můj profil** umožňuje upravit e-mail a telefon; příslušnost ke skupinám a role se nezobrazují.
+- Cílení na konkrétní jednotlivce bylo zrušeno (příspěvky i akce). Pro jednorázovou příležitost se založí vlastní skupina (např. „Velikonoce 2027 – kluci“) a po skončení se zruší nebo skryje.
+
+## Naplánované úpravy (zatím neimplementovat)
+
+- **Označení příspěvku s novou zmínkou**: příspěvek, ve kterém byl přihlášený člen nově zmíněn (@mention v komentáři), označit ve výpisu nástěnky obdobně jako „Nepřečteno“ (např. štítek „Zmínka“). Badge nástěnky v menu už neviděné zmínky započítává (`getBoardBadgeCount`), chybí jen vyznačení u samotného příspěvku.
+- **Počet nových komentářů**: u příspěvků ve výpisu uvádět počet komentářů přibylých od poslední návštěvy (nepřečtených). Vyžaduje evidovat, kdy člen příspěvek naposledy viděl (dnes se ukládá jen, že ho jednou přečetl – `Post.readers`).
