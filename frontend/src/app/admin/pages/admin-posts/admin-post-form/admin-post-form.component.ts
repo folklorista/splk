@@ -5,12 +5,13 @@ import { PostsService } from '../../../../features/posts/posts.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { MembersService } from '../../../../features/members/members.service';
 import { Post } from '../../../../features/posts/models/post.model';
-import { TargetingEditorComponent } from '../../../../shared/targeting/targeting-editor.component';
+import { GroupsService } from '../../../../features/groups/groups.service';
+import { Group } from '../../../../core/models/group.model';
 
 @Component({
   selector: 'app-admin-post-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, TargetingEditorComponent],
+  imports: [ReactiveFormsModule, RouterLink],
   template: `
     <div class="admin-post-form">
       <div class="admin-post-form__header">
@@ -59,13 +60,16 @@ import { TargetingEditorComponent } from '../../../../shared/targeting/targeting
         </div>
 
         <div class="admin-post-form__field">
-          <label>Cílení (nepovinné)</label>
-          <app-targeting-editor
-            [selectedGroupIds]="targetGroupIds()"
-            [selectedMemberIds]="targetMemberIds()"
-            (selectedGroupIdsChange)="targetGroupIds.set($event)"
-            (selectedMemberIdsChange)="targetMemberIds.set($event)"
-          />
+          <label for="groupId">Nástěnka *</label>
+          <select id="groupId" formControlName="groupId" required>
+            <option [ngValue]="null" disabled>Vyberte skupinu</option>
+            @for (group of groups(); track group.id) {
+              <option [ngValue]="group.id">{{ group.name }}</option>
+            }
+          </select>
+          @if (form.get('groupId')?.invalid && form.get('groupId')?.touched) {
+            <span class="admin-post-form__error">Nástěnka je povinná</span>
+          }
         </div>
 
         <div class="admin-post-form__actions">
@@ -132,6 +136,7 @@ import { TargetingEditorComponent } from '../../../../shared/targeting/targeting
     }
 
     .admin-post-form__field input[type="text"],
+    .admin-post-form__field select,
     .admin-post-form__field textarea {
       padding: 0.75rem;
       border: 1px solid #ccc;
@@ -143,6 +148,7 @@ import { TargetingEditorComponent } from '../../../../shared/targeting/targeting
     }
 
     .admin-post-form__field input[type="text"]:focus,
+    .admin-post-form__field select:focus,
     .admin-post-form__field textarea:focus {
       border-color: #0066cc;
     }
@@ -216,8 +222,7 @@ export class AdminPostFormComponent implements OnInit {
   submitError = '';
   private postId: number | null = null;
   private originalPost: Post | null = null;
-  targetGroupIds = signal<number[]>([]);
-  targetMemberIds = signal<number[]>([]);
+  groups = signal<Group[]>([]);
 
   constructor(
     private fb: FormBuilder,
@@ -226,15 +231,18 @@ export class AdminPostFormComponent implements OnInit {
     private postsService: PostsService,
     private authService: AuthService,
     private membersService: MembersService,
+    private groupsService: GroupsService,
   ) {
     this.form = this.fb.group({
       title: ['', Validators.required],
       body: ['', Validators.required],
       isPinned: [false],
+      groupId: [null as number | null, Validators.required],
     });
   }
 
   ngOnInit(): void {
+    this.groupsService.getGroups().subscribe((groups) => this.groups.set(groups));
     const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) {
       this.isEditMode = true;
@@ -252,9 +260,8 @@ export class AdminPostFormComponent implements OnInit {
             title: post.title,
             body: post.body,
             isPinned: post.isPinned,
+            groupId: post.groupId,
           });
-          this.targetGroupIds.set(post.targetGroupIds ?? []);
-          this.targetMemberIds.set(post.targetMemberIds ?? []);
         }
       },
       error: () => {
@@ -282,7 +289,7 @@ export class AdminPostFormComponent implements OnInit {
 
     this.membersService.getMembers().subscribe({
       next: (members) => {
-        const member = members.find((m) => m.email === user.email);
+        const member = members.find((m) => m.userId === user.id);
         if (!member) {
           this.isSubmitting = false;
           this.submitError = 'Člen nebyl nalezen';
@@ -298,8 +305,7 @@ export class AdminPostFormComponent implements OnInit {
             title: formValue.title,
             body: formValue.body,
             isPinned: formValue.isPinned,
-            targetGroupIds: this.targetGroupIds(),
-            targetMemberIds: this.targetMemberIds(),
+            groupId: formValue.groupId,
           };
           this.postsService.updatePost(this.postId, postData).subscribe({
             next: () => {
@@ -316,8 +322,7 @@ export class AdminPostFormComponent implements OnInit {
             title: formValue.title,
             body: formValue.body,
             authorId: member.id,
-            targetGroupIds: this.targetGroupIds(),
-            targetMemberIds: this.targetMemberIds(),
+            groupId: formValue.groupId,
             publishedAt: now,
             updatedAt: now,
             isPinned: formValue.isPinned,

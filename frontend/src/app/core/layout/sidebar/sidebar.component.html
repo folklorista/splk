@@ -4,9 +4,11 @@
   </div>
 
   <nav class="sidebar__nav">
-    @for (section of navSections; track section.label) {
+    @for (section of navSections(); track $index) {
       <div class="sidebar__nav-section">
-        <div class="sidebar__nav-section-label">{{ section.label }}</div>
+        @if (section.label) {
+          <div class="sidebar__nav-section-label">{{ section.label }}</div>
+        }
         @for (item of section.items; track item.path) {
           <a
             class="sidebar__nav-item"

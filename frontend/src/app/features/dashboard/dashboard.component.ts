@@ -9,7 +9,7 @@ import { AttendanceService } from '../attendance/attendance.service';
 import { MembersService } from '../members/members.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
-import { isItemVisibleToUser } from '../../core/utils/visibility.utils';
+import { canAccessBoard, isAdmin, isItemVisibleToUser } from '../../core/utils/visibility.utils';
 
 @Component({
   selector: 'app-dashboard',
@@ -49,7 +49,7 @@ export class DashboardComponent implements OnInit {
     }
 
     this.membersService.getMembers().subscribe((members) => {
-      const member = members.find((m) => m.email === user.email);
+      const member = members.find((m) => m.userId === user.id);
       if (!member) {
         done();
         done();
@@ -61,7 +61,7 @@ export class DashboardComponent implements OnInit {
       this.postsService.getPosts().subscribe((posts) => {
         this.pinnedPosts.set(
           posts
-            .filter((p) => isItemVisibleToUser(p.targetGroupIds, user.groupIds, p.targetMemberIds, member.id))
+            .filter((p) => !p.archivedAt && canAccessBoard(p.groupId, member.groupIds, isAdmin(user)))
             .filter((p) => p.isPinned)
             .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)),
         );
@@ -69,7 +69,7 @@ export class DashboardComponent implements OnInit {
       });
 
       this.eventsService.getEvents().subscribe((events) => {
-        const visibleEvents = events.filter((e) => isItemVisibleToUser(e.targetGroupIds, user.groupIds, e.targetMemberIds, member.id));
+        const visibleEvents = events.filter((e) => isItemVisibleToUser(e.targetGroupIds, user.groupIds));
 
         const upcoming = visibleEvents
           .filter((e) => e.startsAt >= now)

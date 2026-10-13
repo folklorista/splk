@@ -30,7 +30,7 @@ export class MainLayoutComponent implements OnInit {
     if (!user) return;
 
     this.membersService.getMembers().subscribe((members) => {
-      const member = members.find((m) => m.email === user.email);
+      const member = members.find((m) => m.userId === user.id);
       if (!member) return;
 
       this.watchForNewMentions(member.id, members);

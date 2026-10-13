@@ -10,11 +10,16 @@ import { User } from '../../../core/auth/models/user.model';
 import { Member } from '../../../core/models/member.model';
 import { Post } from '../models/post.model';
 import { PostComment } from '../models/comment.model';
+import { BoardsService } from '../../boards/boards.service';
+import { Group } from '../../../core/models/group.model';
+
+const board: Group = { id: 1, ensembleId: 1, name: 'Dospělí', slug: 'dospeli' };
 
 describe('PostDetailComponent', () => {
   let postsSpy: jasmine.SpyObj<PostsService>;
   let membersSpy: jasmine.SpyObj<MembersService>;
   let commentsSpy: jasmine.SpyObj<CommentsService>;
+  let boardsSpy: jasmine.SpyObj<BoardsService>;
   let currentUser: User;
 
   const authorUser: User = { id: 1, name: 'Jana', email: 'jana@soubor.cz', groupIds: [1], roles: ['leader'] };
@@ -28,11 +33,11 @@ describe('PostDetailComponent', () => {
   ];
 
   const post: Post = {
-    id: 5, ensembleId: 1, title: 'Oznámení', body: 'Text', authorId: 1, targetGroupIds: [1],
+    id: 5, ensembleId: 1, title: 'Oznámení', body: 'Text', authorId: 1, groupId: 1,
     publishedAt: '2026-01-01T00:00:00', updatedAt: '2026-01-01T00:00:00', isPinned: false, readers: [2],
   };
 
-  function configure(user: User = authorUser): void {
+  function configure(user: User = authorUser, accessibleBoard: Group | null = board): void {
     currentUser = user;
     postsSpy = jasmine.createSpyObj('PostsService', ['getPost', 'markAsRead', 'archivePost']);
     postsSpy.getPost.and.returnValue(of(post));
@@ -46,6 +51,9 @@ describe('PostDetailComponent', () => {
     commentsSpy.getComments.and.returnValue(of([]));
     commentsSpy.markSeen.and.returnValue(of(undefined));
 
+    boardsSpy = jasmine.createSpyObj('BoardsService', ['getBoardById']);
+    boardsSpy.getBoardById.and.returnValue(of(accessibleBoard ?? undefined));
+
     TestBed.configureTestingModule({
       imports: [PostDetailComponent],
       providers: [
@@ -54,6 +62,7 @@ describe('PostDetailComponent', () => {
         { provide: PostsService, useValue: postsSpy },
         { provide: MembersService, useValue: membersSpy },
         { provide: CommentsService, useValue: commentsSpy },
+        { provide: BoardsService, useValue: boardsSpy },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '5' } } } },
       ],
     });
@@ -69,7 +78,18 @@ describe('PostDetailComponent', () => {
     expect(status.unread.map((m) => m.name)).toEqual(['Eva Svobodová']);
   });
 
-  it('nezahrne do přehledu člena mimo cílovou skupinu příspěvku', () => {
+  it('příspěvek z nástěnky, kam uživatel nemá přístup, se nezobrazí ani neoznačí za přečtený', () => {
+    configure(authorUser, null);
+    const fixture = TestBed.createComponent(PostDetailComponent);
+    fixture.detectChanges();
+
+    expect(boardsSpy.getBoardById).toHaveBeenCalledWith(1);
+    expect(fixture.componentInstance.notFound()).toBeTrue();
+    expect(fixture.componentInstance.post()).toBeNull();
+    expect(postsSpy.markAsRead).not.toHaveBeenCalled();
+  });
+
+  it('nezahrne do přehledu člena mimo skupinu nástěnky', () => {
     configure();
     const fixture = TestBed.createComponent(PostDetailComponent);
     fixture.detectChanges();
@@ -111,7 +131,7 @@ describe('PostDetailComponent', () => {
     expect(fixture.componentInstance.canManage).toBeFalse();
   });
 
-  it('archivePost zavolá archivaci a přesměruje na přehled, po potvrzení', () => {
+  it('archivePost zavolá archivaci a přesměruje na nástěnku, po potvrzení', () => {
     configure(authorUser);
     spyOn(window, 'confirm').and.returnValue(true);
     const fixture = TestBed.createComponent(PostDetailComponent);
@@ -122,7 +142,7 @@ describe('PostDetailComponent', () => {
     fixture.componentInstance.archivePost();
 
     expect(postsSpy.archivePost).toHaveBeenCalledWith(5);
-    expect(router.navigate).toHaveBeenCalledWith(['/app/posts']);
+    expect(router.navigate).toHaveBeenCalledWith(['/app/boards', 'dospeli']);
   });
 
   it('archivePost nic neudělá bez potvrzení', () => {
@@ -185,6 +205,7 @@ describe('PostDetailComponent', () => {
 
     expect(candidateIds).not.toContain(1); // přihlášený sám sebe
     expect(candidateIds).not.toContain(2); // už zmíněný
+    expect(candidateIds).not.toContain(3); // není členem skupiny nástěnky
     expect(candidateIds).toContain(4);
   });
 
@@ -220,7 +241,7 @@ describe('PostDetailComponent s reálnou CommentsService (živý stream)', () =>
   ];
 
   const post: Post = {
-    id: 5, ensembleId: 1, title: 'Oznámení', body: 'Text', authorId: 1, targetGroupIds: [],
+    id: 5, ensembleId: 1, title: 'Oznámení', body: 'Text', authorId: 1, groupId: 1,
     publishedAt: '2026-01-01T00:00:00', updatedAt: '2026-01-01T00:00:00', isPinned: false, readers: [1],
   };
 
@@ -239,6 +260,7 @@ describe('PostDetailComponent s reálnou CommentsService (živý stream)', () =>
         { provide: AuthService, useValue: { currentUser: () => authorUser } },
         { provide: PostsService, useValue: postsSpy },
         { provide: MembersService, useValue: membersSpy },
+        { provide: BoardsService, useValue: { getBoardById: () => of(board) } },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '5' } } } },
       ],
     });

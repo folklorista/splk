@@ -4,8 +4,8 @@ export interface Post {
   title: string;
   body: string;
   authorId: number;
-  targetGroupIds: number[];
-  targetMemberIds?: number[];
+  // Nástěnka = skupina, na které příspěvek visí
+  groupId: number;
   publishedAt: string;
   updatedAt: string;
   isPinned: boolean;

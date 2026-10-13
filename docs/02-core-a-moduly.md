@@ -128,22 +128,20 @@ Typický obsah:
 
 ## Nástěnka
 
-Modul nástěnky slouží pro oznámení a interní sdělení.
+Modul nástěnky slouží pro oznámení a interní sdělení. Každá skupina má jednu vlastní nástěnku, kterou vidí jen její členové (a administrátor).
 
 Základní funkce:
 
-- seznam příspěvků,
+- seznam příspěvků nástěnky skupiny,
 - detail příspěvku,
 - důležitý příspěvek,
-- cílení na skupiny,
 - publikace od/do,
 - později komentáře nebo potvrzení přečtení.
 
 Možné entity:
 
 ```text
-posts
-post_target_groups
+posts (group_id)
 post_comments
 ```
 

@@ -1,41 +1,40 @@
 import { User } from '../auth/models/user.model';
 
-// Položka (příspěvek/akce) je viditelná, když nemá žádné cílení (= pro všechny),
-// nebo když se protíná skupina uživatele s cílovými skupinami, nebo je uživatel
-// v seznamu konkrétně cílených lidí. Obě pravidla se sčítají přes NEBO.
-export function isItemVisibleToUser(
-  targetGroupIds: number[] | undefined,
-  userGroups: number[],
-  targetMemberIds?: number[],
-  memberId?: number | null,
-): boolean {
-  const hasGroupTargets = !!targetGroupIds && targetGroupIds.length > 0;
-  const hasMemberTargets = !!targetMemberIds && targetMemberIds.length > 0;
-
-  if (!hasGroupTargets && !hasMemberTargets) {
+// Položka (akce) je viditelná, když nemá žádné cílení (= pro všechny),
+// nebo když se protíná skupina uživatele s cílovými skupinami.
+export function isItemVisibleToUser(targetGroupIds: number[] | undefined, userGroups: number[]): boolean {
+  if (!targetGroupIds || targetGroupIds.length === 0) {
     return true;
   }
-  if (hasGroupTargets && targetGroupIds!.some(gid => userGroups.includes(gid))) {
-    return true;
-  }
-  if (hasMemberTargets && memberId != null && targetMemberIds!.includes(memberId)) {
-    return true;
-  }
-  return false;
+  return targetGroupIds.some(gid => userGroups.includes(gid));
 }
 
-export function getUnreadPostsCount(posts: any[], user: User | null, currentMemberId: number | null): number {
-  if (!user || !currentMemberId) return 0;
-  return posts
-    .filter(p => isItemVisibleToUser(p.targetGroupIds, user.groupIds, p.targetMemberIds, currentMemberId))
+// Nástěnku skupiny vidí (a píše na ni) jen člen té skupiny; administrátor vidí všechny.
+export function canAccessBoard(groupId: number, memberGroupIds: number[], isAdmin: boolean): boolean {
+  return isAdmin || memberGroupIds.includes(groupId);
+}
+
+export function isAdmin(user: User | null): boolean {
+  return user?.roles.includes('admin') ?? false;
+}
+
+// Badge nástěnky = nepřečtené (nearchivované) příspěvky + neviděné zmínky v komentářích k jejím příspěvkům
+export function getBoardBadgeCount(posts: any[], comments: any[], groupId: number, currentMemberId: number | null): number {
+  if (!currentMemberId) return 0;
+  const boardPosts = posts.filter(p => p.groupId === groupId);
+  const boardPostIds = new Set(boardPosts.map(p => p.id));
+  const unreadPosts = boardPosts
+    .filter(p => !p.archivedAt)
     .filter(p => !p.readers || !p.readers.includes(currentMemberId))
     .length;
+  const unseenMentions = getUnseenMentionsCount(comments.filter(c => boardPostIds.has(c.postId)), currentMemberId);
+  return unreadPosts + unseenMentions;
 }
 
 export function getUnconfirmedEventsCount(events: any[], user: User | null, currentMemberId: number | null): number {
   if (!user || !currentMemberId) return 0;
   return events
-    .filter(e => isItemVisibleToUser(e.targetGroupIds, user.groupIds, e.targetMemberIds, currentMemberId))
+    .filter(e => isItemVisibleToUser(e.targetGroupIds, user.groupIds))
     .filter(e => {
       const memberAttendance = e.attendance?.find((a: any) => a.memberId === currentMemberId);
       return !memberAttendance || memberAttendance.status === 'pending';

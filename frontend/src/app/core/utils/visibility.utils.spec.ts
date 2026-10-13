@@ -1,4 +1,4 @@
-import { getUnconfirmedEventsCount, getUnreadPostsCount, getUnseenMentionsCount, isItemVisibleToUser } from './visibility.utils';
+import { canAccessBoard, getBoardBadgeCount, getUnconfirmedEventsCount, getUnseenMentionsCount, isAdmin, isItemVisibleToUser } from './visibility.utils';
 import { User } from '../auth/models/user.model';
 
 describe('visibility.utils', () => {
@@ -23,43 +23,48 @@ describe('visibility.utils', () => {
     it('vrátí false, když se skupiny neprotínají', () => {
       expect(isItemVisibleToUser([3, 4], user.groupIds)).toBeFalse();
     });
+  });
 
-    it('vrátí true, když je uživatel v seznamu konkrétně cílených lidí, i mimo cílové skupiny', () => {
-      expect(isItemVisibleToUser([3, 4], user.groupIds, [currentMemberId], currentMemberId)).toBeTrue();
+  describe('canAccessBoard', () => {
+    it('pustí člena skupiny', () => {
+      expect(canAccessBoard(2, [1, 2], false)).toBeTrue();
     });
 
-    it('vrátí false, když nesedí ani skupina, ani konkrétní cílení', () => {
-      expect(isItemVisibleToUser([3, 4], user.groupIds, [999], currentMemberId)).toBeFalse();
+    it('nepustí nečlena', () => {
+      expect(canAccessBoard(3, [1, 2], false)).toBeFalse();
     });
 
-    it('vrátí true jen na základě shody skupiny, i bez memberId', () => {
-      expect(isItemVisibleToUser([2, 3], user.groupIds, [999])).toBeTrue();
-    });
-
-    it('vrátí true, pokud jsou cílové skupiny prázdné, ale je konkrétně cílen', () => {
-      expect(isItemVisibleToUser([], user.groupIds, [currentMemberId], currentMemberId)).toBeTrue();
+    it('administrátora pustí i na nástěnku cizí skupiny', () => {
+      expect(canAccessBoard(3, [], true)).toBeTrue();
     });
   });
 
-  describe('getUnreadPostsCount', () => {
-    it('vrátí 0 bez uživatele nebo bez ID člena', () => {
-      const posts = [{ targetGroupIds: [], readers: [] }];
-      expect(getUnreadPostsCount(posts, null, currentMemberId)).toBe(0);
-      expect(getUnreadPostsCount(posts, user, null)).toBe(0);
+  describe('isAdmin', () => {
+    it('pozná administrátora podle role', () => {
+      expect(isAdmin({ ...user, roles: ['member', 'admin'] })).toBeTrue();
+      expect(isAdmin(user)).toBeFalse();
+      expect(isAdmin(null)).toBeFalse();
+    });
+  });
+
+  describe('getBoardBadgeCount', () => {
+    it('vrátí 0 bez ID člena', () => {
+      expect(getBoardBadgeCount([{ id: 1, groupId: 1, readers: [] }], [], 1, null)).toBe(0);
     });
 
-    it('započítá jen viditelné a nepřečtené příspěvky', () => {
+    it('započítá nepřečtené nearchivované příspěvky dané nástěnky a neviděné zmínky u nich', () => {
       const posts = [
-        { targetGroupIds: [], readers: [currentMemberId] },
-        { targetGroupIds: [], readers: [] },
-        { targetGroupIds: [99], readers: [] },
+        { id: 1, groupId: 1, readers: [] },
+        { id: 2, groupId: 1, readers: [currentMemberId] },
+        { id: 3, groupId: 1, readers: [], archivedAt: '2026-01-01T00:00:00' },
+        { id: 4, groupId: 2, readers: [] },
       ];
-      expect(getUnreadPostsCount(posts, user, currentMemberId)).toBe(1);
-    });
-
-    it('započítá i příspěvek cílený konkrétně na člena mimo jeho skupiny', () => {
-      const posts = [{ targetGroupIds: [99], targetMemberIds: [currentMemberId], readers: [] }];
-      expect(getUnreadPostsCount(posts, user, currentMemberId)).toBe(1);
+      const comments = [
+        { postId: 2, mentionedMemberIds: [currentMemberId], seenByMemberIds: [] },
+        { postId: 4, mentionedMemberIds: [currentMemberId], seenByMemberIds: [] },
+      ];
+      expect(getBoardBadgeCount(posts, comments, 1, currentMemberId)).toBe(2);
+      expect(getBoardBadgeCount(posts, comments, 2, currentMemberId)).toBe(2);
     });
   });
 
@@ -91,11 +96,6 @@ describe('visibility.utils', () => {
     it('nezapočítá akci, která není určena pro skupiny uživatele', () => {
       const events = [{ targetGroupIds: [99], attendance: [] }];
       expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(0);
-    });
-
-    it('započítá i akci cílenou konkrétně na člena mimo jeho skupiny', () => {
-      const events = [{ targetGroupIds: [99], targetMemberIds: [currentMemberId], attendance: [] }];
-      expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(1);
     });
   });
 

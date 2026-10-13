@@ -7,10 +7,11 @@ import { PostsService } from '../posts.service';
 import { CommentsService } from '../comments.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MembersService } from '../../members/members.service';
+import { BoardsService } from '../../boards/boards.service';
+import { Group } from '../../../core/models/group.model';
 import { Member } from '../../../core/models/member.model';
 import { IconComponent } from '../../../shared/icon/icon.component';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
-import { isItemVisibleToUser } from '../../../core/utils/visibility.utils';
 
 @Component({
   selector: 'app-post-detail',
@@ -20,6 +21,7 @@ import { isItemVisibleToUser } from '../../../core/utils/visibility.utils';
 })
 export class PostDetailComponent implements OnInit {
   post = signal<Post | null>(null);
+  board = signal<Group | null>(null);
   loading = signal(true);
   notFound = signal(false);
   allMembers = signal<Member[]>([]);
@@ -33,10 +35,11 @@ export class PostDetailComponent implements OnInit {
     return this.visibleMembers().filter((m) => m.id !== this.currentMemberId() && !mentionedIds.has(m.id));
   });
 
+  // Členové skupiny, na jejíž nástěnce příspěvek visí – jen ty lze zmínit a jen u nich se sleduje přečtení
   readonly visibleMembers = computed(() => {
     const post = this.post();
     if (!post) return [];
-    return this.allMembers().filter((m) => isItemVisibleToUser(post.targetGroupIds, m.groupIds, post.targetMemberIds, m.id));
+    return this.allMembers().filter((m) => m.groupIds.includes(post.groupId));
   });
 
   readonly readStatus = computed(() => {
@@ -57,6 +60,7 @@ export class PostDetailComponent implements OnInit {
     private commentsService: CommentsService,
     private auth: AuthService,
     private membersService: MembersService,
+    private boardsService: BoardsService,
   ) {}
 
   get isLeader(): boolean {
@@ -93,7 +97,7 @@ export class PostDetailComponent implements OnInit {
 
     this.membersService.getMembers().subscribe((members) => {
       this.allMembers.set(members);
-      const member = members.find((m) => m.email === user.email);
+      const member = members.find((m) => m.userId === user.id);
       if (!member) {
         this.notFound.set(true);
         this.loading.set(false);
@@ -108,20 +112,32 @@ export class PostDetailComponent implements OnInit {
           return;
         }
 
-        this.loadComments(post.id, member.id);
-
-        const alreadyRead = post.readers?.includes(member.id) ?? false;
-        if (alreadyRead) {
-          this.post.set(post);
-          this.loading.set(false);
-          return;
-        }
-
-        this.postsService.markAsRead(post.id, member.id).subscribe(() => {
-          this.post.set({ ...post, readers: [...(post.readers ?? []), member.id] });
-          this.loading.set(false);
+        this.boardsService.getBoardById(post.groupId).subscribe((board) => {
+          if (!board) {
+            this.notFound.set(true);
+            this.loading.set(false);
+            return;
+          }
+          this.board.set(board);
+          this.showPost(post, member);
         });
       });
+    });
+  }
+
+  private showPost(post: Post, member: Member): void {
+    this.loadComments(post.id, member.id);
+
+    const alreadyRead = post.readers?.includes(member.id) ?? false;
+    if (alreadyRead) {
+      this.post.set(post);
+      this.loading.set(false);
+      return;
+    }
+
+    this.postsService.markAsRead(post.id, member.id).subscribe(() => {
+      this.post.set({ ...post, readers: [...(post.readers ?? []), member.id] });
+      this.loading.set(false);
     });
   }
 
@@ -166,7 +182,7 @@ export class PostDetailComponent implements OnInit {
     if (!confirm('Opravdu chcete tento příspěvek archivovat?')) return;
 
     this.postsService.archivePost(post.id).subscribe(() => {
-      this.router.navigate(['/app/posts']);
+      this.router.navigate(['/app/boards', this.board()?.slug ?? '']);
     });
   }
 }

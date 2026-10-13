@@ -25,8 +25,9 @@ describe('MainLayoutComponent', () => {
     postsSpy.getPosts.and.returnValue(of([]));
     const eventsSpy = jasmine.createSpyObj('EventsService', ['getEvents']);
     eventsSpy.getEvents.and.returnValue(of([]));
-    const membersSpy = jasmine.createSpyObj('MembersService', ['getMembers']);
+    const membersSpy = jasmine.createSpyObj('MembersService', ['getMembers', 'getMemberByUserId']);
     membersSpy.getMembers.and.returnValue(of([member]));
+    membersSpy.getMemberByUserId.and.returnValue(of(member));
     notificationSpy = jasmine.createSpyObj('NotificationService', ['notify']);
 
     TestBed.configureTestingModule({

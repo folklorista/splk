@@ -132,24 +132,12 @@ describe('DashboardComponent', () => {
     expect(fixture.componentInstance.nextEvent()?.id).toBe(futureEvent.id);
   });
 
-  it('zahrne akci cílenou konkrétně na člena, i mimo jeho skupiny', () => {
-    configure();
-    const targetedEvent: AppEvent = { ...foreignEvent, id: 102, targetMemberIds: [member.id] };
-    eventsSpy.getEvents.and.returnValue(of([targetedEvent]));
-    attendanceSpy.getMemberAttendance.and.returnValue(of([]));
-
-    const fixture = TestBed.createComponent(DashboardComponent);
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.nextEvent()?.id).toBe(102);
-  });
-
-  it('nezahrne do připnutých oznámení příspěvek mimo skupiny uživatele', () => {
+  it('nezahrne do připnutých oznámení příspěvek z nástěnky cizí skupiny', () => {
     configure();
     postsSpy.getPosts.and.returnValue(
       of([
-        { id: 1, title: 'Pro mou skupinu', body: '', publishedAt: '2026-01-01T00:00:00', isPinned: true, targetGroupIds: [1] } as any,
-        { id: 2, title: 'Pro cizí skupinu', body: '', publishedAt: '2026-01-01T00:00:00', isPinned: true, targetGroupIds: [99] } as any,
+        { id: 1, title: 'Pro mou skupinu', body: '', publishedAt: '2026-01-01T00:00:00', isPinned: true, groupId: 1 } as any,
+        { id: 2, title: 'Pro cizí skupinu', body: '', publishedAt: '2026-01-01T00:00:00', isPinned: true, groupId: 99 } as any,
       ]),
     );
     attendanceSpy.getMemberAttendance.and.returnValue(of([]));
@@ -159,5 +147,24 @@ describe('DashboardComponent', () => {
 
     const pinned = fixture.componentInstance.pinnedPosts();
     expect(pinned?.map((p) => p.id)).toEqual([1]);
+  });
+
+  it('administrátorovi zobrazí připnuté příspěvky ze všech nástěnek, archivované ne', () => {
+    user.roles = ['member', 'admin'];
+    configure();
+    postsSpy.getPosts.and.returnValue(
+      of([
+        { id: 1, title: 'Moje', body: '', publishedAt: '2026-01-01T00:00:00', isPinned: true, groupId: 1 } as any,
+        { id: 2, title: 'Cizí', body: '', publishedAt: '2026-01-01T00:00:00', isPinned: true, groupId: 99 } as any,
+        { id: 3, title: 'Archiv', body: '', publishedAt: '2026-01-01T00:00:00', isPinned: true, groupId: 1, archivedAt: '2026-02-01T00:00:00' } as any,
+      ]),
+    );
+    attendanceSpy.getMemberAttendance.and.returnValue(of([]));
+
+    const fixture = TestBed.createComponent(DashboardComponent);
+    fixture.detectChanges();
+    user.roles = ['leader'];
+
+    expect(fixture.componentInstance.pinnedPosts()?.map((p) => p.id).sort()).toEqual([1, 2]);
   });
 });

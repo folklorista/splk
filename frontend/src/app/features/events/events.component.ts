@@ -31,8 +31,7 @@ export class EventsComponent implements OnInit {
   visibleEvents = computed(() => {
     const user = this.auth.currentUser();
     if (!user) return [];
-    const memberId = this.currentMemberId();
-    return this.events().filter(e => isItemVisibleToUser(e.targetGroupIds, user.groupIds, e.targetMemberIds, memberId));
+    return this.events().filter(e => isItemVisibleToUser(e.targetGroupIds, user.groupIds));
   });
 
   getUserAttendanceStatus = (event: AppEvent): string | null => {
@@ -60,7 +59,7 @@ export class EventsComponent implements OnInit {
   };
 
   attendanceSummary = (event: AppEvent): { yes: number; no: number; maybe: number; pending: number } => {
-    const visibleMembers = this.allMembers().filter((m) => isItemVisibleToUser(event.targetGroupIds, m.groupIds, event.targetMemberIds, m.id));
+    const visibleMembers = this.allMembers().filter((m) => isItemVisibleToUser(event.targetGroupIds, m.groupIds));
     const records = event.attendance ?? [];
     let yes = 0, no = 0, maybe = 0;
     for (const member of visibleMembers) {
@@ -83,7 +82,7 @@ export class EventsComponent implements OnInit {
     if (user) {
       this.membersService.getMembers().subscribe((members) => {
         this.allMembers.set(members);
-        const member = members.find((m) => m.email === user.email);
+        const member = members.find((m) => m.userId === user.id);
         this.currentMemberId.set(member?.id ?? null);
       });
     }

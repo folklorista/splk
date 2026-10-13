@@ -6,6 +6,8 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { MembersService } from '../../members/members.service';
 import { Member } from '../../../core/models/member.model';
 import { Post } from '../models/post.model';
+import { BoardsService } from '../../boards/boards.service';
+import { Group } from '../../../core/models/group.model';
 
 @Component({
   selector: 'app-post-form',
@@ -13,12 +15,12 @@ import { Post } from '../models/post.model';
   imports: [ReactiveFormsModule, RouterLink],
   template: `
     <div class="page">
-      <a class="back-link" routerLink="/app/posts">← Zpět na nástěnku</a>
+      <a class="back-link" [routerLink]="backLink">← Zpět na nástěnku</a>
 
       @if (notAllowed) {
         <p class="state-note">Tento příspěvek nemůžete upravit.</p>
       } @else {
-        <h1 class="page__title">{{ isEditMode ? 'Upravit příspěvek' : 'Nový příspěvek' }}</h1>
+        <h1 class="page__title">{{ isEditMode ? 'Upravit příspěvek' : 'Nový příspěvek' }}@if (board) { – {{ board.name }}}</h1>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="post-form">
           <div class="post-form__field">
@@ -41,7 +43,7 @@ import { Post } from '../models/post.model';
             <button type="submit" class="btn-primary" [disabled]="form.invalid || isSubmitting">
               {{ isSubmitting ? 'Ukládám...' : (isEditMode ? 'Uložit' : 'Vytvořit') }}
             </button>
-            <a class="attendance-btn" routerLink="/app/posts">Zrušit</a>
+            <a class="attendance-btn" [routerLink]="backLink">Zrušit</a>
           </div>
 
           @if (submitError) {
@@ -71,6 +73,7 @@ export class PostFormComponent implements OnInit {
   isSubmitting = false;
   submitError = '';
   notAllowed = false;
+  board: Group | null = null;
   private postId: number | null = null;
   private originalPost: Post | null = null;
   private currentMember: Member | null = null;
@@ -82,6 +85,7 @@ export class PostFormComponent implements OnInit {
     private postsService: PostsService,
     private authService: AuthService,
     private membersService: MembersService,
+    private boardsService: BoardsService,
   ) {
     this.form = this.fb.group({
       title: ['', Validators.required],
@@ -97,14 +101,22 @@ export class PostFormComponent implements OnInit {
     }
 
     this.membersService.getMembers().subscribe((members) => {
-      this.currentMember = members.find((m) => m.email === user.email) ?? null;
+      this.currentMember = members.find((m) => m.userId === user.id) ?? null;
       if (!this.currentMember) {
         this.notAllowed = true;
         return;
       }
 
       const idParam = this.route.snapshot.paramMap.get('id');
-      if (!idParam) return;
+      if (!idParam) {
+        // Nový příspěvek – přístup na nástěnku už ověřil boardGuard
+        const slug = this.route.snapshot.paramMap.get('slug') ?? '';
+        this.boardsService.getBoardBySlug(slug).subscribe((board) => {
+          this.board = board ?? null;
+          this.notAllowed = !board;
+        });
+        return;
+      }
 
       this.isEditMode = true;
       this.postId = parseInt(idParam, 10);
@@ -118,14 +130,26 @@ export class PostFormComponent implements OnInit {
           this.notAllowed = true;
           return;
         }
-        this.originalPost = post;
-        this.form.patchValue({ title: post.title, body: post.body });
+        this.boardsService.getBoardById(post.groupId).subscribe((board) => {
+          if (!board) {
+            this.notAllowed = true;
+            return;
+          }
+          this.board = board;
+          this.originalPost = post;
+          this.form.patchValue({ title: post.title, body: post.body });
+        });
       });
     });
   }
 
+  get backLink(): string[] {
+    if (this.isEditMode && this.postId !== null) return ['/app/posts', String(this.postId)];
+    return this.board ? ['/app/boards', this.board.slug] : ['/app/boards'];
+  }
+
   onSubmit(): void {
-    if (this.form.invalid || !this.currentMember) {
+    if (this.form.invalid || !this.currentMember || !this.board) {
       return;
     }
 
@@ -149,7 +173,7 @@ export class PostFormComponent implements OnInit {
         title,
         body,
         authorId: this.currentMember.id,
-        targetGroupIds: [],
+        groupId: this.board.id,
         publishedAt: now,
         updatedAt: now,
         isPinned: false,

@@ -20,6 +20,11 @@ export class MembersService {
     return of(membersCache.find((m) => m.id === id)).pipe(delay(300));
   }
 
+  // Člen odpovídající přihlášenému uživateli (podle userId, e-mail si člen může změnit)
+  getMemberByUserId(userId: number): Observable<Member | undefined> {
+    return of(membersCache.find((m) => m.userId === userId)).pipe(delay(300));
+  }
+
   createMember(member: Omit<Member, 'id'>): Observable<Member> {
     const newId = Math.max(...membersCache.map((m) => m.id), 0) + 1;
     const newMember: Member = { ...member, id: newId };

@@ -3,6 +3,8 @@ import { RouterLink, Router } from '@angular/router';
 import { PostsService } from '../../../features/posts/posts.service';
 import { Post } from '../../../features/posts/models/post.model';
 import { DatePipe } from '@angular/common';
+import { GroupsService } from '../../../features/groups/groups.service';
+import { Group } from '../../../core/models/group.model';
 
 @Component({
   selector: 'app-admin-posts',
@@ -38,7 +40,7 @@ import { DatePipe } from '@angular/common';
               </div>
               <p class="admin-posts__item-body">{{ post.body.substring(0, 100) }}{{ post.body.length > 100 ? '...' : '' }}</p>
               <div class="admin-posts__item-meta">
-                <span class="admin-posts__item-date">{{ post.publishedAt | date: 'short' }}</span>
+                <span class="admin-posts__item-date">{{ post.publishedAt | date: 'short' }} · Nástěnka: {{ groupName(post) }}</span>
               </div>
               <div class="admin-posts__item-actions">
                 <a [routerLink]="'/app/admin/posts/' + post.id + '/edit'" class="admin-posts__btn-edit">
@@ -222,14 +224,21 @@ import { DatePipe } from '@angular/common';
 export class AdminPostsComponent implements OnInit {
   posts = signal<Post[]>([]);
   loading = signal(true);
+  groups = signal<Group[]>([]);
 
   constructor(
     private postsService: PostsService,
+    private groupsService: GroupsService,
     private router: Router,
   ) {}
 
   ngOnInit(): void {
+    this.groupsService.getGroups().subscribe((groups) => this.groups.set(groups));
     this.loadPosts();
+  }
+
+  groupName(post: Post): string {
+    return this.groups().find((g) => g.id === post.groupId)?.name ?? 'Neznámá skupina';
   }
 
   private loadPosts(): void {

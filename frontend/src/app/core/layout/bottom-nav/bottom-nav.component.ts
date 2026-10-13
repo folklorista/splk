@@ -1,11 +1,10 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { PostsService } from '../../../features/posts/posts.service';
 import { EventsService } from '../../../features/events/events.service';
-import { CommentsService } from '../../../features/posts/comments.service';
 import { AuthService } from '../../auth/auth.service';
 import { MembersService } from '../../../features/members/members.service';
-import { getUnreadPostsCount, getUnconfirmedEventsCount, getUnseenMentionsCount } from '../../utils/visibility.utils';
+import { BoardsService } from '../../../features/boards/boards.service';
+import { getUnconfirmedEventsCount } from '../../utils/visibility.utils';
 import { interval, Subscription } from 'rxjs';
 import { IconComponent, IconName } from '../../../shared/icon/icon.component';
 
@@ -45,63 +44,56 @@ interface NavItem {
   `],
 })
 export class BottomNavComponent implements OnInit, OnDestroy {
+  // Na mobilu není místo na každou nástěnku zvlášť – položka Nástěnky vede na rozcestník
   navItems: NavItem[] = [
     { path: '/app/dashboard', label: 'Přehled', icon: 'home' },
-    { path: '/app/posts', label: 'Nástěnka', icon: 'megaphone' },
     { path: '/app/events', label: 'Akce', icon: 'calendar' },
-    { path: '/app/members', label: 'Členové', icon: 'users' },
+    { path: '/app/boards', label: 'Nástěnky', icon: 'megaphone' },
     { path: '/app/profile', label: 'Profil', icon: 'user' },
   ];
 
-  currentMemberId = signal<number | null>(null);
   private refreshSubscription: Subscription | null = null;
 
   constructor(
-    private postsService: PostsService,
     private eventsService: EventsService,
-    private commentsService: CommentsService,
     private auth: AuthService,
-    private membersService: MembersService
+    private membersService: MembersService,
+    private boardsService: BoardsService,
   ) {}
 
   ngOnInit(): void {
     const user = this.auth.currentUser();
     if (!user) return;
 
-    this.membersService.getMembers().subscribe((members) => {
-      const member = members.find((m) => m.email === user.email);
-      if (member) {
-        this.currentMemberId.set(member.id);
+    this.membersService.getMemberByUserId(user.id).subscribe((member) => {
+      if (!member) return;
 
-        const updateBadges = () => {
-          this.postsService.getPosts().subscribe((posts) => {
-            this.commentsService.getAllComments().subscribe((comments) => {
-              const count = getUnreadPostsCount(posts, user, member.id) + getUnseenMentionsCount(comments, member.id);
-              const postsItem = this.navItems.find((item) => item.path === '/app/posts');
-              if (postsItem) {
-                postsItem.badge = count > 0 ? count : undefined;
-              }
-            });
-          });
+      const updateBadges = () => {
+        this.boardsService.getBoardBadges().subscribe((badges) => {
+          const count = [...badges.values()].reduce((sum, c) => sum + c, 0);
+          this.setBadge('/app/boards', count);
+        });
 
-          this.eventsService.getEvents().subscribe((events) => {
-            const count = getUnconfirmedEventsCount(events, user, member.id);
-            const eventsItem = this.navItems.find((item) => item.path === '/app/events');
-            if (eventsItem) {
-              eventsItem.badge = count > 0 ? count : undefined;
-            }
-          });
-        };
+        this.eventsService.getEvents().subscribe((events) => {
+          this.setBadge('/app/events', getUnconfirmedEventsCount(events, user, member.id));
+        });
+      };
 
-        updateBadges();
-        this.refreshSubscription = interval(2000).subscribe(() => updateBadges());
-      }
+      updateBadges();
+      this.refreshSubscription = interval(2000).subscribe(() => updateBadges());
     });
   }
 
   ngOnDestroy(): void {
     if (this.refreshSubscription) {
       this.refreshSubscription.unsubscribe();
+    }
+  }
+
+  private setBadge(path: string, count: number): void {
+    const item = this.navItems.find((i) => i.path === path);
+    if (item) {
+      item.badge = count > 0 ? count : undefined;
     }
   }
 }

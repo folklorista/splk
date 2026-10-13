@@ -1,5 +1,9 @@
 <div class="page">
-  <a class="back-link" routerLink="/app/posts">← Zpět na nástěnku</a>
+  @if (board(); as b) {
+    <a class="back-link" [routerLink]="['/app/boards', b.slug]">← Zpět na nástěnku {{ b.name }}</a>
+  } @else {
+    <a class="back-link" routerLink="/app/boards">← Zpět na nástěnky</a>
+  }
 
   @if (loading()) {
     <p class="state-note">Načítání…</p>

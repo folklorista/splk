@@ -1,13 +1,18 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { Post } from './models/post.model';
 import { PostsService } from './posts.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
+import { BoardsService } from '../boards/boards.service';
 import { Member } from '../../core/models/member.model';
-import { isItemVisibleToUser } from '../../core/utils/visibility.utils';
+import { Group } from '../../core/models/group.model';
 
+// Nástěnka jedné skupiny (/app/boards/:slug)
 @Component({
   selector: 'app-posts',
   standalone: true,
@@ -15,18 +20,18 @@ import { isItemVisibleToUser } from '../../core/utils/visibility.utils';
   templateUrl: './posts.component.html',
 })
 export class PostsComponent implements OnInit {
+  board = signal<Group | null>(null);
   posts = signal<Post[]>([]);
   loading = signal(true);
   currentMemberId = signal<number | null>(null);
   allMembers = signal<Member[]>([]);
 
   visiblePosts = computed(() => {
-    const user = this.auth.currentUser();
-    if (!user) return [];
-    const memberId = this.currentMemberId();
+    const board = this.board();
+    if (!board) return [];
     return this.posts()
-      .filter(p => !p.archivedAt)
-      .filter(p => isItemVisibleToUser(p.targetGroupIds, user.groupIds, p.targetMemberIds, memberId));
+      .filter(p => p.groupId === board.id)
+      .filter(p => !p.archivedAt);
   });
 
   isUnread = (post: Post): boolean => {
@@ -43,9 +48,9 @@ export class PostsComponent implements OnInit {
   }
 
   readCountLabel(post: Post): string {
-    const visibleMembers = this.allMembers().filter((m) => isItemVisibleToUser(post.targetGroupIds, m.groupIds, post.targetMemberIds, m.id));
-    const readCount = visibleMembers.filter((m) => post.readers?.includes(m.id)).length;
-    return `Přečteno ${readCount} z ${visibleMembers.length}`;
+    const boardMembers = this.allMembers().filter((m) => m.groupIds.includes(post.groupId));
+    const readCount = boardMembers.filter((m) => post.readers?.includes(m.id)).length;
+    return `Přečteno ${readCount} z ${boardMembers.length}`;
   }
 
   authorName(post: Post): string {
@@ -53,9 +58,12 @@ export class PostsComponent implements OnInit {
   }
 
   constructor(
+    private route: ActivatedRoute,
     private postsService: PostsService,
     private auth: AuthService,
-    private membersService: MembersService
+    private membersService: MembersService,
+    private boardsService: BoardsService,
+    private destroyRef: DestroyRef,
   ) {}
 
   ngOnInit(): void {
@@ -65,17 +73,26 @@ export class PostsComponent implements OnInit {
       return;
     }
 
-    this.membersService.getMembers().subscribe((members) => {
-      this.allMembers.set(members);
-      const member = members.find((m) => m.email === user.email);
-      if (member) {
-        this.currentMemberId.set(member.id);
-      }
-
-      this.postsService.getPosts().subscribe((posts) => {
+    // Komponenta se při přechodu mezi nástěnkami znovu nevytváří, proto sledujeme změnu :slug
+    this.route.paramMap
+      .pipe(
+        map((params) => params.get('slug') ?? ''),
+        switchMap((slug) => {
+          this.loading.set(true);
+          return forkJoin([
+            this.boardsService.getBoardBySlug(slug),
+            this.membersService.getMembers(),
+            this.postsService.getPosts(),
+          ]);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(([board, members, posts]) => {
+        this.board.set(board ?? null);
+        this.allMembers.set(members);
+        this.currentMemberId.set(members.find((m) => m.userId === user.id)?.id ?? null);
         this.posts.set(posts);
         this.loading.set(false);
       });
-    });
   }
 }

@@ -4,16 +4,13 @@ import { of } from 'rxjs';
 import { ProfileComponent } from './profile.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
-import { GroupsService } from '../groups/groups.service';
 import { EventsService } from '../events/events.service';
 import { User } from '../../core/auth/models/user.model';
-import { Group } from '../../core/models/group.model';
 import { Member } from '../../core/models/member.model';
 import { AppEvent } from '../events/models/event.model';
 
 describe('ProfileComponent', () => {
   let membersSpy: jasmine.SpyObj<MembersService>;
-  let groupsSpy: jasmine.SpyObj<GroupsService>;
   let eventsSpy: jasmine.SpyObj<EventsService>;
 
   const mockUser: User = {
@@ -35,17 +32,10 @@ describe('ProfileComponent', () => {
     isActive: true,
   };
 
-  const mockGroups: Group[] = [
-    { id: 1, ensembleId: 1, name: 'Mladší soubor', slug: 'mladsi-soubor', icon: 'person-child' },
-    { id: 2, ensembleId: 1, name: 'Kapela', slug: 'kapela' },
-  ];
-
   beforeEach(async () => {
-    membersSpy = jasmine.createSpyObj('MembersService', ['getMembers']);
-    membersSpy.getMembers.and.returnValue(of([mockMember]));
-
-    groupsSpy = jasmine.createSpyObj('GroupsService', ['getGroups']);
-    groupsSpy.getGroups.and.returnValue(of(mockGroups));
+    membersSpy = jasmine.createSpyObj('MembersService', ['getMemberByUserId', 'updateMember']);
+    membersSpy.getMemberByUserId.and.returnValue(of(mockMember));
+    membersSpy.updateMember.and.callFake((id, member) => of({ ...member, id }));
 
     eventsSpy = jasmine.createSpyObj('EventsService', ['getEvents']);
     eventsSpy.getEvents.and.returnValue(of([]));
@@ -56,33 +46,9 @@ describe('ProfileComponent', () => {
         provideRouter([]),
         { provide: AuthService, useValue: { currentUser: () => mockUser } },
         { provide: MembersService, useValue: membersSpy },
-        { provide: GroupsService, useValue: groupsSpy },
         { provide: EventsService, useValue: eventsSpy },
       ],
     }).compileComponents();
-  });
-
-  it('getGroupLabel vrátí název skupiny podle ID', () => {
-    const fixture = TestBed.createComponent(ProfileComponent);
-    const component = fixture.componentInstance;
-
-    expect(component.getGroupLabel(1)).toBe('Mladší soubor');
-    expect(component.getGroupLabel(2)).toBe('Kapela');
-  });
-
-  it('getGroupLabel vrátí náhradní text pro neznámé ID', () => {
-    const fixture = TestBed.createComponent(ProfileComponent);
-    const component = fixture.componentInstance;
-
-    expect(component.getGroupLabel(99)).toBe('Neznámá skupina (ID: 99)');
-  });
-
-  it('getGroupIcon vrátí ikonu skupiny, pokud je nastavená', () => {
-    const fixture = TestBed.createComponent(ProfileComponent);
-    const component = fixture.componentInstance;
-
-    expect(component.getGroupIcon(1)).toBe('person-child');
-    expect(component.getGroupIcon(2)).toBeUndefined();
   });
 
   it('pendingEventCount napočítá nepotvrzené akce podle ID člena, ne uživatele', () => {
@@ -109,5 +75,37 @@ describe('ProfileComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.componentInstance.pendingEventCount).toBe(0);
+  });
+
+  it('předvyplní kontaktní údaje člena', () => {
+    const fixture = TestBed.createComponent(ProfileComponent);
+    fixture.detectChanges();
+
+    expect(membersSpy.getMemberByUserId).toHaveBeenCalledWith(mockUser.id);
+    expect(fixture.componentInstance.contactForm.value).toEqual({ email: 'jana@soubor.cz', phone: '' });
+  });
+
+  it('saveContact uloží změněný e-mail a telefon a zbytek člena ponechá', () => {
+    const fixture = TestBed.createComponent(ProfileComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.contactForm.setValue({ email: 'nova@soubor.cz', phone: ' 777 888 999 ' });
+    component.saveContact();
+
+    const { id, ...rest } = mockMember;
+    expect(membersSpy.updateMember).toHaveBeenCalledWith(7, { ...rest, email: 'nova@soubor.cz', phone: '777 888 999' });
+    expect(component.saved).toBeTrue();
+  });
+
+  it('saveContact neuloží neplatný e-mail', () => {
+    const fixture = TestBed.createComponent(ProfileComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.contactForm.setValue({ email: 'neplatny', phone: '' });
+    component.saveContact();
+
+    expect(membersSpy.updateMember).not.toHaveBeenCalled();
   });
 });

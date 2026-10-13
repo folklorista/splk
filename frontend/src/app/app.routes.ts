@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
+import { adminGuard } from './core/auth/admin.guard';
+import { boardGuard } from './features/boards/board.guard';
 
 export const routes: Routes = [
   {
@@ -23,14 +25,23 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'posts',
+        path: 'boards',
+        loadComponent: () =>
+          import('./features/boards/boards.component').then(
+            (m) => m.BoardsComponent,
+          ),
+      },
+      {
+        path: 'boards/:slug',
+        canActivate: [boardGuard],
         loadComponent: () =>
           import('./features/posts/posts.component').then(
             (m) => m.PostsComponent,
           ),
       },
       {
-        path: 'posts/new',
+        path: 'boards/:slug/new',
+        canActivate: [boardGuard],
         loadComponent: () =>
           import('./features/posts/post-form/post-form.component').then(
             (m) => m.PostFormComponent,
@@ -65,20 +76,6 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'members/:id',
-        loadComponent: () =>
-          import('./features/members/member-detail/member-detail.component').then(
-            (m) => m.MemberDetailComponent,
-          ),
-      },
-      {
-        path: 'members',
-        loadComponent: () =>
-          import('./features/members/members.component').then(
-            (m) => m.MembersComponent,
-          ),
-      },
-      {
         path: 'profile',
         loadComponent: () =>
           import('./features/profile/profile.component').then(
@@ -94,6 +91,7 @@ export const routes: Routes = [
       },
       {
         path: 'admin',
+        canActivate: [adminGuard],
         loadComponent: () =>
           import('./admin/layout/admin-layout/admin-layout.component').then(
             (m) => m.AdminLayoutComponent,

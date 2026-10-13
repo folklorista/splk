@@ -88,9 +88,7 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
           <label>Cílení (nepovinné)</label>
           <app-targeting-editor
             [selectedGroupIds]="targetGroupIds()"
-            [selectedMemberIds]="targetMemberIds()"
             (selectedGroupIdsChange)="targetGroupIds.set($event)"
-            (selectedMemberIdsChange)="targetMemberIds.set($event)"
           />
         </div>
 
@@ -202,7 +200,6 @@ export class AdminEventFormComponent implements OnInit {
   readonly statusLabels = STATUS_LABELS;
   private allEventMembers = signal<Member[]>([]);
   targetGroupIds = signal<number[]>([]);
-  targetMemberIds = signal<number[]>([]);
   pendingStatuses = signal<Map<number, AttendanceStatus>>(new Map());
   viewedAtByMember = signal<Map<number, string | undefined>>(new Map());
   noteByMember = signal<Map<number, string | undefined>>(new Map());
@@ -260,16 +257,15 @@ export class AdminEventFormComponent implements OnInit {
             description: event.description || '',
           });
           this.targetGroupIds.set(event.targetGroupIds ?? []);
-          this.targetMemberIds.set(event.targetMemberIds ?? []);
-          this.loadAttendance(id, event.targetGroupIds, event.targetMemberIds);
+          this.loadAttendance(id, event.targetGroupIds);
         }
       },
     });
   }
 
-  private loadAttendance(eventId: number, targetGroupIds: number[], targetMemberIds?: number[]): void {
+  private loadAttendance(eventId: number, targetGroupIds: number[]): void {
     this.membersService.getMembers().subscribe((members) => {
-      const visible = members.filter((m) => isItemVisibleToUser(targetGroupIds, m.groupIds, targetMemberIds, m.id));
+      const visible = members.filter((m) => isItemVisibleToUser(targetGroupIds, m.groupIds));
       this.allEventMembers.set(visible);
 
       this.attendanceService.getAttendance(eventId).subscribe((records) => {
@@ -337,7 +333,6 @@ export class AdminEventFormComponent implements OnInit {
       location: formValue.location,
       description: formValue.description || undefined,
       targetGroupIds: this.targetGroupIds(),
-      targetMemberIds: this.targetMemberIds(),
     };
 
     if (this.isEditMode && this.eventId !== null) {

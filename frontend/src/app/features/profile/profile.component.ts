@@ -1,19 +1,17 @@
-import { Component, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
-import { GroupsService } from '../groups/groups.service';
 import { EventsService } from '../events/events.service';
 import { getUnconfirmedEventsCount } from '../../core/utils/visibility.utils';
-import { Group } from '../../core/models/group.model';
-import { IconComponent, IconName } from '../../shared/icon/icon.component';
+import { Member } from '../../core/models/member.model';
 import { NotificationService } from '../../core/notifications/notification.service';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, IconComponent],
+  imports: [RouterLink, ReactiveFormsModule],
   templateUrl: './profile.component.html',
   styles: [`
     .profile-page {
@@ -69,40 +67,6 @@ import { NotificationService } from '../../core/notifications/notification.servi
       font-weight: 500;
     }
 
-    .role-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      margin-right: 0.5rem;
-      margin-bottom: 0.5rem;
-      background: #e3f2fd;
-      color: #0066cc;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 500;
-    }
-
-    .role-badge.admin {
-      background: #ffebee;
-      color: #c94a3a;
-    }
-
-    .role-badge.leader {
-      background: #f3e5f5;
-      color: #7b1fa2;
-    }
-
-    .group-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      margin-right: 0.5rem;
-      margin-bottom: 0.5rem;
-      background: #e8f5e9;
-      color: #2e7d32;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 500;
-    }
-
     .pending-events {
       display: block;
       padding: 1rem;
@@ -121,6 +85,50 @@ import { NotificationService } from '../../core/notifications/notification.servi
     .pending-events-count {
       font-weight: 600;
       color: #856404;
+    }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .contact-form label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-size: 0.85rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .contact-form input {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
+    .contact-form__error {
+      font-size: 0.85rem;
+      color: #d32f2f;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
+    .contact-form__actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .contact-form__saved {
+      color: #2e7d32;
+      font-size: 0.9rem;
     }
 
     .logout-btn {
@@ -153,21 +161,26 @@ import { NotificationService } from '../../core/notifications/notification.servi
   `],
 })
 export class ProfileComponent {
-  memberName = '';
-  memberPhone = '';
   pendingEventCount = 0;
-  private groupsById = new Map<number, Group>();
+  contactForm: FormGroup;
+  isSaving = false;
+  saved = false;
+  saveError = '';
+  private member: Member | null = null;
 
   constructor(
     private auth: AuthService,
     private members: MembersService,
-    private groups: GroupsService,
     private events: EventsService,
     private router: Router,
     private notificationService: NotificationService,
+    fb: FormBuilder,
   ) {
+    this.contactForm = fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      phone: [''],
+    });
     this.loadMemberData();
-    this.loadGroups();
   }
 
   get notificationsSupported(): boolean {
@@ -190,12 +203,11 @@ export class ProfileComponent {
     const user = this.auth.currentUser();
     if (!user) return;
 
-    this.members.getMembers().subscribe((members) => {
-      const member = members.find((m) => m.email === user.email);
+    this.members.getMemberByUserId(user.id).subscribe((member) => {
       if (!member) return;
 
-      this.memberName = member.name;
-      this.memberPhone = member.phone || '—';
+      this.member = member;
+      this.contactForm.reset({ email: member.email, phone: member.phone ?? '' });
 
       this.events.getEvents().subscribe((events) => {
         this.pendingEventCount = getUnconfirmedEventsCount(events, user, member.id);
@@ -203,33 +215,31 @@ export class ProfileComponent {
     });
   }
 
-  private loadGroups(): void {
-    this.groups.getGroups().subscribe((groups) => {
-      this.groupsById = new Map(groups.map((group) => [group.id, group]));
+  saveContact(): void {
+    if (this.contactForm.invalid || !this.member) return;
+
+    this.isSaving = true;
+    this.saved = false;
+    this.saveError = '';
+    const { id, ...rest } = this.member;
+    const { email, phone } = this.contactForm.value;
+
+    this.members.updateMember(id, { ...rest, email: email.trim(), phone: phone.trim() || undefined }).subscribe({
+      next: (updated) => {
+        this.isSaving = false;
+        if (!updated) {
+          this.saveError = 'Nepodařilo se uložit kontaktní údaje';
+          return;
+        }
+        this.member = updated;
+        this.contactForm.markAsPristine();
+        this.saved = true;
+      },
+      error: () => {
+        this.isSaving = false;
+        this.saveError = 'Nepodařilo se uložit kontaktní údaje';
+      },
     });
-  }
-
-  getGroupLabel(groupId: number): string {
-    return this.groupsById.get(groupId)?.name || `Neznámá skupina (ID: ${groupId})`;
-  }
-
-  getGroupIcon(groupId: number): IconName | undefined {
-    return this.groupsById.get(groupId)?.icon;
-  }
-
-  getRoleLabel(role: string): string {
-    const labels: Record<string, string> = {
-      admin: 'Administrátor',
-      leader: 'Vedoucí',
-      member: 'Člen',
-    };
-    return labels[role] || role;
-  }
-
-  getRoleBadgeClass(role: string): string {
-    if (role === 'admin') return 'admin';
-    if (role === 'leader') return 'leader';
-    return '';
   }
 
   logout(): void {

@@ -80,12 +80,13 @@ describe('AdminPostFormComponent', () => {
       title: 'Nový příspěvek',
       body: 'Obsah příspěvku',
       isPinned: false,
+      groupId: 2,
     });
 
     component.onSubmit();
     tick(300);
 
-    expect(postsService.createPost).toHaveBeenCalled();
+    expect(postsService.createPost).toHaveBeenCalledWith(jasmine.objectContaining({ groupId: 2, authorId: 1 }));
     expect(router.navigate).toHaveBeenCalledWith(['/app/admin/posts']);
   }));
 
@@ -99,6 +100,10 @@ describe('AdminPostFormComponent', () => {
       body: 'Obsah',
     });
 
+    // Nástěnka je povinná
+    expect(component.form.invalid).toBeTrue();
+
+    component.form.patchValue({ groupId: 1 });
     expect(component.form.valid).toBeTrue();
   });
 
@@ -112,6 +117,7 @@ describe('AdminPostFormComponent', () => {
     component.form.patchValue({
       title: 'Nadpis',
       body: 'Obsah',
+      groupId: 1,
     });
     fixture.detectChanges();
     tick();
@@ -130,6 +136,7 @@ describe('AdminPostFormComponent', () => {
     component.form.patchValue({
       title: 'Nadpis',
       body: 'Obsah',
+      groupId: 1,
     });
 
     component.onSubmit();
@@ -141,7 +148,7 @@ describe('AdminPostFormComponent', () => {
 
 describe('AdminPostFormComponent v edit módu', () => {
   const existingPost: Post = {
-    id: 1, ensembleId: 1, title: 'Původní název', body: 'Původní text', authorId: 99, targetGroupIds: [5],
+    id: 1, ensembleId: 1, title: 'Původní název', body: 'Původní text', authorId: 99, groupId: 5,
     publishedAt: '2026-01-01T00:00:00', updatedAt: '2026-01-01T00:00:00', isPinned: true, readers: [4],
   };
 
@@ -176,7 +183,7 @@ describe('AdminPostFormComponent v edit módu', () => {
     component = fixture.componentInstance;
   });
 
-  it('zachová authorId a targetGroupIds původního příspěvku při úpravě', fakeAsync(() => {
+  it('zachová authorId a groupId původního příspěvku při úpravě', fakeAsync(() => {
     fixture.detectChanges();
     tick(300);
 
@@ -187,22 +194,20 @@ describe('AdminPostFormComponent v edit módu', () => {
     expect(postsService.updatePost).toHaveBeenCalledWith(1, jasmine.objectContaining({
       title: 'Upravený název',
       authorId: 99,
-      targetGroupIds: [5],
+      groupId: 5,
     }));
   }));
 
-  it('odešle změněné cílení, pokud ho admin upraví', fakeAsync(() => {
+  it('přesune příspěvek na jinou nástěnku, pokud ji admin změní', fakeAsync(() => {
     fixture.detectChanges();
     tick(300);
 
-    component.targetGroupIds.set([5, 6]);
-    component.targetMemberIds.set([42]);
+    component.form.patchValue({ groupId: 6 });
     component.onSubmit();
     tick(300);
 
     expect(postsService.updatePost).toHaveBeenCalledWith(1, jasmine.objectContaining({
-      targetGroupIds: [5, 6],
-      targetMemberIds: [42],
+      groupId: 6,
     }));
   }));
 });

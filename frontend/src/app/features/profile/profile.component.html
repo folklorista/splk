@@ -11,45 +11,42 @@
         <div class="profile-field-label">Jméno</div>
         <div class="profile-field-value">{{ currentUser()!.name }}</div>
       </div>
-
-      <div class="profile-field">
-        <div class="profile-field-label">E-mail</div>
-        <div class="profile-field-value">{{ currentUser()!.email }}</div>
-      </div>
-
-      <div class="profile-field">
-        <div class="profile-field-label">Telefon</div>
-        <div class="profile-field-value">{{ memberPhone }}</div>
-      </div>
     </div>
 
     <div class="profile-section">
-      <h2>Příslušnost</h2>
+      <h2>Kontaktní údaje</h2>
 
-      <div class="profile-field">
-        <div class="profile-field-label">Skupiny</div>
-        <div class="profile-field-value">
-          @for (groupId of currentUser()!.groupIds; track groupId) {
-            <span class="group-badge">
-              @if (getGroupIcon(groupId); as icon) {
-                <app-icon [name]="icon" [size]="12" />
-              }
-              {{ getGroupLabel(groupId) }}
-            </span>
+      <form class="contact-form" [formGroup]="contactForm" (ngSubmit)="saveContact()">
+        <label>
+          E-mail
+          <input type="email" formControlName="email" autocomplete="email" (input)="saved = false" />
+          @if (contactForm.get('email')?.invalid && contactForm.get('email')?.touched) {
+            <span class="contact-form__error">Zadejte platný e-mail</span>
+          }
+        </label>
+
+        <label>
+          Telefon
+          <input type="tel" formControlName="phone" autocomplete="tel" (input)="saved = false" />
+        </label>
+
+        <div class="contact-form__actions">
+          <button
+            type="submit"
+            class="attendance-btn attendance-btn--active"
+            [disabled]="contactForm.invalid || contactForm.pristine || isSaving"
+          >
+            {{ isSaving ? 'Ukládám…' : 'Uložit' }}
+          </button>
+          @if (saved) {
+            <span class="contact-form__saved">✓ Uloženo</span>
           }
         </div>
-      </div>
 
-      <div class="profile-field">
-        <div class="profile-field-label">Role a oprávnění</div>
-        <div class="profile-field-value">
-          @for (role of currentUser()!.roles; track role) {
-            <span class="role-badge" [ngClass]="getRoleBadgeClass(role)">
-              {{ getRoleLabel(role) }}
-            </span>
-          }
-        </div>
-      </div>
+        @if (saveError) {
+          <span class="contact-form__error">{{ saveError }}</span>
+        }
+      </form>
     </div>
 
     <div class="profile-section">

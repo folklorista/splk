@@ -1,12 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
 import { Router } from '@angular/router';
-import { PostsService } from '../../../features/posts/posts.service';
 import { EventsService } from '../../../features/events/events.service';
-import { CommentsService } from '../../../features/posts/comments.service';
 import { MembersService } from '../../../features/members/members.service';
-import { getUnreadPostsCount, getUnconfirmedEventsCount, getUnseenMentionsCount } from '../../utils/visibility.utils';
+import { BoardsService } from '../../../features/boards/boards.service';
+import { Group } from '../../models/group.model';
+import { getUnconfirmedEventsCount, isAdmin } from '../../utils/visibility.utils';
 import { interval, Subscription } from 'rxjs';
 import { IconComponent, IconName } from '../../../shared/icon/icon.component';
 
@@ -18,7 +18,7 @@ interface NavItem {
 }
 
 interface NavSection {
-  label: string;
+  label?: string;
   items: NavItem[];
 }
 
@@ -52,67 +52,68 @@ interface NavSection {
   `],
 })
 export class SidebarComponent implements OnInit, OnDestroy {
-  navSections: NavSection[] = [
-    {
-      label: 'Aplikace',
-      items: [
-        { path: '/app/dashboard', label: 'Přehled', icon: 'home' },
-        { path: '/app/posts', label: 'Nástěnka', icon: 'megaphone' },
-        { path: '/app/events', label: 'Akce', icon: 'calendar' },
-        { path: '/app/members', label: 'Členové', icon: 'users' },
-        { path: '/app/costumes', label: 'Krojová databáze', icon: 'shirt' },
-        { path: '/app/profile', label: 'Můj profil', icon: 'user' },
-      ],
-    },
-    {
-      label: 'Správa',
-      items: [
-        { path: '/app/admin', label: 'Administrace', icon: 'settings' },
-      ],
-    },
-  ];
+  private boards = signal<Group[]>([]);
+  private boardBadges = signal<Map<number, number>>(new Map());
+  private eventsBadge = signal(0);
+
+  // Hlavní část: Přehled – Akce – nástěnky skupin uživatele – Kroje; Správa: profil (+ administrace pro admina)
+  readonly navSections = computed<NavSection[]>(() => {
+    const badge = (count: number | undefined) => (count ? count : undefined);
+    const adminItems: NavItem[] = isAdmin(this.auth.currentUser())
+      ? [{ path: '/app/admin', label: 'Administrace', icon: 'settings' }]
+      : [];
+
+    return [
+      {
+        items: [
+          { path: '/app/dashboard', label: 'Přehled', icon: 'home' },
+          { path: '/app/events', label: 'Akce', icon: 'calendar', badge: badge(this.eventsBadge()) },
+          ...this.boards().map((b): NavItem => ({
+            path: `/app/boards/${b.slug}`,
+            label: b.name,
+            icon: b.icon ?? 'megaphone',
+            badge: badge(this.boardBadges().get(b.id)),
+          })),
+          { path: '/app/costumes', label: 'Kroje', icon: 'shirt' },
+        ],
+      },
+      {
+        label: 'Správa',
+        items: [
+          { path: '/app/profile', label: 'Můj profil', icon: 'user' },
+          ...adminItems,
+        ],
+      },
+    ];
+  });
 
   private refreshSubscription: Subscription | null = null;
 
   constructor(
     public auth: AuthService,
     private router: Router,
-    private postsService: PostsService,
     private eventsService: EventsService,
-    private commentsService: CommentsService,
     private membersService: MembersService,
+    private boardsService: BoardsService,
   ) {}
 
   ngOnInit(): void {
     const user = this.auth.currentUser();
     if (!user) return;
 
-    this.membersService.getMembers().subscribe((members) => {
-      const member = members.find((m) => m.email === user.email);
+    this.membersService.getMemberByUserId(user.id).subscribe((member) => {
       if (!member) return;
 
-      const updateBadges = () => {
-        this.postsService.getPosts().subscribe((posts) => {
-          this.commentsService.getAllComments().subscribe((comments) => {
-            const count = getUnreadPostsCount(posts, user, member.id) + getUnseenMentionsCount(comments, member.id);
-            const postsItem = this.navSections[0].items.find((item) => item.path === '/app/posts');
-            if (postsItem) {
-              postsItem.badge = count > 0 ? count : undefined;
-            }
-          });
-        });
-
+      const refresh = () => {
+        this.boardsService.getMyBoards().subscribe((boards) => this.boards.set(boards));
+        this.boardsService.getBoardBadges().subscribe((badges) => this.boardBadges.set(badges));
         this.eventsService.getEvents().subscribe((events) => {
-          const count = getUnconfirmedEventsCount(events, user, member.id);
-          const eventsItem = this.navSections[0].items.find((item) => item.path === '/app/events');
-          if (eventsItem) {
-            eventsItem.badge = count > 0 ? count : undefined;
-          }
+          this.eventsBadge.set(getUnconfirmedEventsCount(events, user, member.id));
         });
       };
 
-      updateBadges();
-      this.refreshSubscription = interval(2000).subscribe(() => updateBadges());
+      refresh();
+      this.refreshSubscription = interval(2000).subscribe(() => refresh());
     });
   }
 
