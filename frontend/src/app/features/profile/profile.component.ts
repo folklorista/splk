@@ -3,8 +3,6 @@ import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
-import { EventsService } from '../events/events.service';
-import { getUnconfirmedEventsCount } from '../../core/utils/visibility.utils';
 import { Member } from '../../core/models/member.model';
 import { getFullName } from '../../core/utils/member.utils';
 import { NotificationService } from '../../core/notifications/notification.service';
@@ -75,25 +73,8 @@ import { NotificationService } from '../../core/notifications/notification.servi
       font-weight: 400;
     }
 
-    .pending-events {
-      display: block;
-      padding: 1rem;
-      background: #fff3cd;
-      border: 1px solid #ffc107;
-      border-radius: 4px;
-      margin-bottom: 1rem;
-      color: inherit;
-      text-decoration: none;
-    }
 
-    .pending-events:hover {
-      border-color: #856404;
-    }
 
-    .pending-events-count {
-      font-weight: 600;
-      color: #856404;
-    }
 
     .contact-form {
       display: flex;
@@ -158,18 +139,9 @@ import { NotificationService } from '../../core/notifications/notification.servi
       background: #a73a2a;
     }
 
-    .no-pending {
-      padding: 1rem;
-      background: #e8f5e9;
-      border: 1px solid #4caf50;
-      border-radius: 4px;
-      color: #2e7d32;
-      font-weight: 500;
-    }
   `],
 })
 export class ProfileComponent {
-  pendingEventCount = 0;
   fullName = signal('');
   contactForm: FormGroup;
   isSaving = false;
@@ -180,7 +152,6 @@ export class ProfileComponent {
   constructor(
     private auth: AuthService,
     private members: MembersService,
-    private events: EventsService,
     private router: Router,
     private notificationService: NotificationService,
     fb: FormBuilder,
@@ -219,10 +190,6 @@ export class ProfileComponent {
       this.member = member;
       this.fullName.set(getFullName(member));
       this.contactForm.reset({ nickname: member.nickname, email: member.email ?? '', phone: member.phone ?? '' });
-
-      this.events.getEvents().subscribe((events) => {
-        this.pendingEventCount = getUnconfirmedEventsCount(events, user, member.id);
-      });
     });
   }
 

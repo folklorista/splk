@@ -4,14 +4,11 @@ import { of } from 'rxjs';
 import { ProfileComponent } from './profile.component';
 import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
-import { EventsService } from '../events/events.service';
 import { User } from '../../core/auth/models/user.model';
 import { Member } from '../../core/models/member.model';
-import { AppEvent } from '../events/models/event.model';
 
 describe('ProfileComponent', () => {
   let membersSpy: jasmine.SpyObj<MembersService>;
-  let eventsSpy: jasmine.SpyObj<EventsService>;
   let authSpy: jasmine.SpyObj<AuthService>;
 
   const mockUser: User = {
@@ -44,8 +41,6 @@ describe('ProfileComponent', () => {
     membersSpy.getMemberByUserId.and.returnValue(of(mockMember));
     membersSpy.updateMember.and.callFake((id, member) => of({ ...member, id }));
 
-    eventsSpy = jasmine.createSpyObj('EventsService', ['getEvents']);
-    eventsSpy.getEvents.and.returnValue(of([]));
 
     await TestBed.configureTestingModule({
       imports: [ProfileComponent],
@@ -53,35 +48,8 @@ describe('ProfileComponent', () => {
         provideRouter([]),
         { provide: AuthService, useValue: authSpy },
         { provide: MembersService, useValue: membersSpy },
-        { provide: EventsService, useValue: eventsSpy },
       ],
     }).compileComponents();
-  });
-
-  it('pendingEventCount napočítá nepotvrzené akce podle ID člena, ne uživatele', () => {
-    const events: AppEvent[] = [
-      { id: 1, ensembleId: 1, title: 'Bez odpovědi', type: 'rehearsal', startsAt: '2099-01-01T18:00:00', endsAt: '2099-01-01T20:00:00', location: '', targetGroupIds: [], attendance: [] },
-      { id: 2, ensembleId: 1, title: 'Potvrzeno', type: 'rehearsal', startsAt: '2099-01-01T18:00:00', endsAt: '2099-01-01T20:00:00', location: '', targetGroupIds: [], attendance: [{ eventId: 2, memberId: mockMember.id, status: 'yes' }] },
-    ];
-    eventsSpy.getEvents.and.returnValue(of(events));
-
-    const fixture = TestBed.createComponent(ProfileComponent);
-    fixture.detectChanges();
-
-    expect(eventsSpy.getEvents).toHaveBeenCalled();
-    expect(fixture.componentInstance.pendingEventCount).toBe(1);
-  });
-
-  it('pendingEventCount zůstane 0, když jsou všechny akce potvrzené', () => {
-    const events: AppEvent[] = [
-      { id: 1, ensembleId: 1, title: 'Potvrzeno', type: 'rehearsal', startsAt: '2099-01-01T18:00:00', endsAt: '2099-01-01T20:00:00', location: '', targetGroupIds: [], attendance: [{ eventId: 1, memberId: mockMember.id, status: 'no' }] },
-    ];
-    eventsSpy.getEvents.and.returnValue(of(events));
-
-    const fixture = TestBed.createComponent(ProfileComponent);
-    fixture.detectChanges();
-
-    expect(fixture.componentInstance.pendingEventCount).toBe(0);
   });
 
   it('předvyplní kontaktní údaje člena', () => {

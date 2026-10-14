@@ -9,6 +9,13 @@
     </div>
   </div>
 
+  @if (!loading() && pendingCount()) {
+    <button type="button" class="events-pending" (click)="showPending()">
+      <strong>{{ pendingCount() }}</strong>
+      {{ pendingCount() === 1 ? 'akce čeká' : pendingCount() < 5 ? 'akce čekají' : 'akcí čeká' }} na tvoji odpověď
+    </button>
+  }
+
   @if (loading()) {
     <p class="state-note">Načítání…</p>
   } @else if (view() === 'calendar') {
@@ -59,7 +66,7 @@
           <ul class="rsvp-list">
             @for (event of selectedDayEvents(); track event.id) {
               <li>
-                <app-event-rsvp-row [event]="event" [status]="ownStatus(event)" [showDate]="false"
+                <app-event-rsvp-row [event]="event" [status]="ownStatus(event)" [showDate]="false" [counts]="attendanceCounts(event)"
                   (statusChange)="setStatus(event.id, $event)" />
               </li>
             }
@@ -69,42 +76,38 @@
         }
       </section>
     </div>
-  } @else if (!upcomingEvents().length) {
-    <p class="state-note">Žádné nadcházející akce.</p>
   } @else {
-    <ul class="item-list">
-      @for (event of upcomingEvents(); track event.id) {
-        <li
-          class="item-list__item item-list__item--link"
-          [class.item-list__item--requires-action]="isWaitingForResponse(event)"
-          [routerLink]="['/app/events', event.id]"
-        >
-          <div class="item-list__row">
-            <span class="item-list__title">{{ event.title }}</span>
-            <div class="item-list__badges">
-              @if (isWaitingForResponse(event)) {
-                <span class="badge badge--requires-action">Čeká na vás</span>
-              }
-              @if (getUserAttendanceStatus(event)) {
-                <span class="badge badge--attendance" [attr.data-status]="getUserAttendanceStatus(event)">
-                  {{ getAttendanceLabel(getUserAttendanceStatus(event)) }}
-                </span>
-              }
-              <span class="badge">{{ typeLabel(event.type) }}</span>
-            </div>
-          </div>
-          <div class="item-list__meta">
-            {{ event.startsAt | date: 'd. M. yyyy, HH:mm' }} · {{ event.location }}
-          </div>
-          <div class="item-list__meta">
-            ANO: {{ attendanceSummary(event).yes }}, Možná: {{ attendanceSummary(event).maybe }},
-            Ne: {{ attendanceSummary(event).no }}, Neodpovědělo: {{ attendanceSummary(event).pending }}
-          </div>
-          @if (event.description) {
-            <p class="item-list__body">{{ event.description }}</p>
+    <div class="events-filters">
+      <label class="events-filters__field">
+        <span>Typ</span>
+        <select [value]="filters().type" (change)="setTypeFilter($any($event.target).value)">
+          <option value="all">Všechny</option>
+          @for (option of typeOptions; track option[0]) {
+            <option [value]="option[0]">{{ option[1] }}</option>
           }
-        </li>
-      }
-    </ul>
+        </select>
+      </label>
+      <label class="events-filters__field">
+        <span>Moje odpověď</span>
+        <select [value]="filters().response" (change)="setResponseFilter($any($event.target).value)">
+          <option value="all">Vše</option>
+          <option value="pending">Nepotvrzené</option>
+          <option value="answered">Potvrzené</option>
+        </select>
+      </label>
+    </div>
+
+    @if (!filteredEvents().length) {
+      <p class="state-note">{{ upcomingEvents().length ? 'Žádná akce neodpovídá filtrům.' : 'Žádné nadcházející akce.' }}</p>
+    } @else {
+      <ul class="rsvp-list">
+        @for (event of filteredEvents(); track event.id) {
+          <li>
+            <app-event-rsvp-row [event]="event" [status]="ownStatus(event)" [counts]="attendanceCounts(event)"
+              (statusChange)="setStatus(event.id, $event)" />
+          </li>
+        }
+      </ul>
+    }
   }
 </div>

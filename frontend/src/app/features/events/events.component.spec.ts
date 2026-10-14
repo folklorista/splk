@@ -53,13 +53,22 @@ describe('EventsComponent', () => {
     });
   }
 
-  it('attendanceSummary počítá jen viditelné členy a chybějící záznam jako neodpovědělo', () => {
+  it('počty odpovědí vidí jen výbor a počítají jen členy cílových skupin', () => {
+    user.roles = ['member', 'leader'];
     configure();
     const fixture = TestBed.createComponent(EventsComponent);
     fixture.detectChanges();
 
-    const summary = fixture.componentInstance.attendanceSummary(event);
-    expect(summary).toEqual({ yes: 1, no: 0, maybe: 0, pending: 1 });
+    expect(fixture.componentInstance.attendanceCounts(event)).toEqual({ yes: 1, no: 0, maybe: 0, pending: 1 });
+    user.roles = ['member'];
+  });
+
+  it('běžný člen počty odpovědí nevidí', () => {
+    configure();
+    const fixture = TestBed.createComponent(EventsComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.attendanceCounts(event)).toBeNull();
   });
 
   const upcoming: AppEvent = {
@@ -106,5 +115,27 @@ describe('EventsComponent', () => {
 
     expect(attendanceSpy.setStatus).toHaveBeenCalledWith(upcoming.id, 1, 'no');
     expect(fixture.componentInstance.ownStatus(fixture.componentInstance.events()[0])).toBe('no');
+  });
+
+  it('upozornění počítá nadcházející akce bez mé odpovědi a kliknutí zapne filtr nepotvrzených', () => {
+    configure({ view: 'calendar' });
+    const answered: AppEvent = { ...upcoming, id: 4, attendance: [{ eventId: 4, memberId: 1, status: 'yes' }] };
+    eventsSpy.getEvents.and.returnValue(of([event, upcoming, answered, foreign]));
+    const fixture = TestBed.createComponent(EventsComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(component.pendingCount()).toBe(1);
+    component.showPending();
+    expect(component.view()).toBe('list');
+    expect(component.filteredEvents().map((e) => e.id)).toEqual([2]);
+  });
+
+  it('query parametr response=pending rovnou zapne filtr nepotvrzených', () => {
+    configure({ response: 'pending' });
+    const fixture = TestBed.createComponent(EventsComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.filters().response).toBe('pending');
   });
 });

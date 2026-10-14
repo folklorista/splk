@@ -1,5 +1,5 @@
 <div class="rsvp-row" [class.rsvp-row--pending]="status === 'pending' && !isPast" [class.rsvp-row--past]="isPast">
-  <a class="rsvp-row__main" [routerLink]="['/app/events', event.id]">
+  <a class="rsvp-row__main" [routerLink]="['/app/events', event.id]" [title]="countsTitle">
     @if (showDate) {
       <span class="rsvp-row__date">
         <span class="rsvp-row__weekday">{{ weekday }}</span>
@@ -8,7 +8,12 @@
     }
     <span class="rsvp-row__info">
       <span class="rsvp-row__title">{{ event.title }}</span>
-      <span class="rsvp-row__meta">{{ event.startsAt | date: 'HH:mm' }} · {{ event.location }}</span>
+      <span class="rsvp-row__meta">
+        {{ event.startsAt | date: 'HH:mm' }} · {{ event.location }}
+        @if (counts; as c) {
+          <span class="rsvp-row__counts" [title]="countsTitle">· {{ c.yes }} ✓ · {{ c.maybe }} ? · {{ c.no }} ✗</span>
+        }
+      </span>
     </span>
   </a>
   <div class="rsvp-row__actions" role="group" aria-label="Moje účast">
@@ -19,10 +24,13 @@
         [attr.data-status]="quick"
         [class.rsvp-btn--active]="status === quick"
         [attr.aria-pressed]="status === quick"
+        [attr.aria-label]="quickLabels[quick]"
+        [title]="quickLabels[quick]"
         [disabled]="isPast"
         (click)="select(quick)"
       >
-        {{ quickLabels[quick] }}
+        <span class="rsvp-btn__icon" aria-hidden="true">{{ quickIcons[quick] }}</span>
+        <span class="rsvp-btn__label" aria-hidden="true">{{ quickLabels[quick] }}</span>
       </button>
     }
   </div>

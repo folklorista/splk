@@ -914,6 +914,7 @@
     flex-direction: column;
     align-items: center;
     min-width: 40px;
+    white-space: nowrap;
     font-size: var(--font-size-sm);
     font-weight: 600;
     line-height: 1.2;
@@ -1280,5 +1281,79 @@
     padding-left: var(--spacing-lg);
     font-size: var(--font-size-sm);
     line-height: 1.6;
+  }
+}
+
+// RSVP buttons: text on wider screens, icon only on narrow ones
+.rsvp-btn__icon {
+  display: none;
+  font-size: 14px;
+  line-height: 1;
+}
+
+@media (max-width: 479px) {
+  .rsvp-btn {
+    min-width: 34px;
+    padding: 6px;
+  }
+
+  .rsvp-btn__icon {
+    display: inline;
+  }
+
+  .rsvp-btn__label {
+    display: none;
+  }
+
+  // Counts for the committee only fit on wider screens (on hover via title)
+  .rsvp-row__counts {
+    display: none;
+  }
+}
+
+.rsvp-row__counts {
+  margin-left: 2px;
+}
+
+// Events list: pending notice and filters
+.events-pending {
+  display: block;
+  width: 100%;
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid #ef9a9a;
+  border-left: 4px solid var(--color-primary);
+  border-radius: 8px;
+  background: #ffebee;
+  color: #b71c1c;
+  font-size: var(--font-size-sm);
+  text-align: left;
+
+  &:hover {
+    background: #ffdde1;
+  }
+}
+
+.events-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+
+  &__field {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+
+    select {
+      padding: 4px var(--spacing-sm);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      background: var(--color-surface);
+      font: inherit;
+      color: var(--color-text);
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
-import { DatePipe } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AppEvent } from './models/event.model';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AppEvent, EventType } from './models/event.model';
+import { AttendanceCounts, DEFAULT_EVENT_FILTERS, EventFilters, ResponseFilter, filterEvents, ownAttendanceStatus } from './utils/event-filters';
 import { EventsService } from './events.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
@@ -14,7 +14,7 @@ import { MONTH_LABELS, WEEKDAY_LABELS, buildMonthGrid, eventsOnDay, toDateKey, w
 
 export type EventsView = 'list' | 'calendar';
 
-const EVENT_TYPE_LABELS: Record<string, string> = {
+const EVENT_TYPE_LABELS: Record<EventType, string> = {
   rehearsal: 'Zkouška',
   performance: 'Vystoupení',
   camp: 'Soustředění',
@@ -25,7 +25,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-events',
   standalone: true,
-  imports: [DatePipe, RouterLink, EventRsvpRowComponent],
+  imports: [EventRsvpRowComponent],
   templateUrl: './events.component.html',
 })
 export class EventsComponent implements OnInit {
@@ -69,46 +69,29 @@ export class EventsComponent implements OnInit {
 
   selectedDayEvents = computed(() => eventsOnDay(this.visibleEvents(), this.selectedDateKey()));
 
-  ownStatus = (event: AppEvent): AttendanceStatus => {
-    const memberId = this.currentMemberId();
-    return event.attendance?.find(a => a.memberId === memberId)?.status ?? 'pending';
-  };
+  ownStatus = (event: AppEvent): AttendanceStatus => ownAttendanceStatus(event, this.currentMemberId());
 
-  getUserAttendanceStatus = (event: AppEvent): string | null => {
-    const memberId = this.currentMemberId();
-    if (!event.attendance || event.attendance.length === 0 || memberId === null) return null;
-    const attendance = event.attendance.find(a => a.memberId === memberId);
-    return attendance?.status || null;
-  };
+  filters = signal<EventFilters>(DEFAULT_EVENT_FILTERS);
+  readonly typeOptions = Object.entries(EVENT_TYPE_LABELS) as [EventType, string][];
 
-  isWaitingForResponse = (event: AppEvent): boolean => {
-    const memberId = this.currentMemberId();
-    if (memberId === null) return false;
-    const own = event.attendance?.find(a => a.memberId === memberId);
-    return !own || own.status === 'pending';
-  };
+  filteredEvents = computed(() => filterEvents(this.upcomingEvents(), this.filters(), this.currentMemberId()));
 
-  getAttendanceLabel = (status: string | null): string => {
-    if (!status) return '';
-    const labels: Record<string, string> = {
-      yes: 'ANO',
-      no: 'NE',
-      maybe: 'MOŽNÁ',
-    };
-    return labels[status] ?? '';
-  };
+  // Upozornění v záhlaví – jen nadcházející akce bez mé odpovědi
+  pendingCount = computed(() =>
+    filterEvents(this.upcomingEvents(), { type: 'all', response: 'pending' }, this.currentMemberId()).length,
+  );
 
-  attendanceSummary = (event: AppEvent): { yes: number; no: number; maybe: number; pending: number } => {
-    const visibleMembers = this.allMembers().filter((m) => isItemVisibleToUser(event.targetGroupIds, m.groupIds));
-    const records = event.attendance ?? [];
-    let yes = 0, no = 0, maybe = 0;
+  // Počty odpovědí vidí jen výbor
+  readonly isLeader = computed(() => this.auth.currentUser()?.roles.includes('leader') ?? false);
+
+  attendanceCounts = (event: AppEvent): AttendanceCounts | null => {
+    if (!this.isLeader()) return null;
+    const visibleMembers = this.allMembers().filter((m) => m.isActive && isItemVisibleToUser(event.targetGroupIds, m.groupIds));
+    const counts: AttendanceCounts = { yes: 0, no: 0, maybe: 0, pending: 0 };
     for (const member of visibleMembers) {
-      const status = records.find((r) => r.memberId === member.id)?.status;
-      if (status === 'yes') yes++;
-      else if (status === 'no') no++;
-      else if (status === 'maybe') maybe++;
+      counts[event.attendance?.find((r) => r.memberId === member.id)?.status ?? 'pending']++;
     }
-    return { yes, no, maybe, pending: visibleMembers.length - yes - no - maybe };
+    return counts;
   };
 
   constructor(
@@ -121,7 +104,11 @@ export class EventsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.view.set(this.route.snapshot.queryParamMap.get('view') === 'calendar' ? 'calendar' : 'list');
+    const params = this.route.snapshot.queryParamMap;
+    this.view.set(params.get('view') === 'calendar' ? 'calendar' : 'list');
+    if (params.get('response') === 'pending') {
+      this.filters.set({ ...DEFAULT_EVENT_FILTERS, response: 'pending' });
+    }
 
     const user = this.auth.currentUser();
     if (user) {
@@ -138,8 +125,17 @@ export class EventsComponent implements OnInit {
     });
   }
 
-  typeLabel(type: string): string {
-    return EVENT_TYPE_LABELS[type] ?? type;
+  setTypeFilter(type: string): void {
+    this.filters.update((f) => ({ ...f, type: type as EventFilters['type'] }));
+  }
+
+  setResponseFilter(response: string): void {
+    this.filters.update((f) => ({ ...f, response: response as ResponseFilter }));
+  }
+
+  showPending(): void {
+    this.filters.set({ ...DEFAULT_EVENT_FILTERS, response: 'pending' });
+    this.setView('list');
   }
 
   setView(view: EventsView): void {

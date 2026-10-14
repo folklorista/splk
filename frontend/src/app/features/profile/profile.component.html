@@ -56,20 +56,6 @@
     </div>
 
     <div class="profile-section">
-      <h2>Nepotvrzené akce</h2>
-      @if (pendingEventCount === 0) {
-        <div class="no-pending">
-          ✓ Všechny akce jsou potvrzeny
-        </div>
-      } @else {
-        <a class="pending-events" routerLink="/app/events">
-          <span class="pending-events-count">{{ pendingEventCount }} akcí</span>
-          čeká na tvoji odpověď
-        </a>
-      }
-    </div>
-
-    <div class="profile-section">
       <h2>Upozornění</h2>
       @if (!notificationsSupported) {
         <p class="state-note">Tento prohlížeč upozornění nepodporuje.</p>
