@@ -1,6 +1,6 @@
 # Postup vývoje
 
-## Aktuální stav (2026-09-18)
+## Aktuální stav (2026-10-15)
 
 Hotovo:
 
@@ -8,6 +8,8 @@ Hotovo:
 - **Fáze 2 (mock modely a API services)** – kompletní, včetně feature services pro všechny níže uvedené moduly.
 - **Fáze 3 (klikací prototyp)** – obrazovky Login, Dashboard, Nástěnka + detail, Akce + detail s potvrzením účasti, Skupiny, hrubý placeholder Krojové databáze (stránka Členové byla později zrušena, viz Nástěnky po skupinách) jsou hotové a proklikatelné s mock daty.
 - Navíc oproti původnímu plánu: rozpracovaná administrace (CRUD obrazovky pro příspěvky, akce, členy a skupiny) – nad rámec Fáze 3, ale využívá stejné feature services jako běžné obrazovky.
+- Nástěnky po skupinách, model členů s přezdívkou, demo data s reálnými členy, kalendář akcí a rychlé potvrzení účasti – viz sekce „(hotovo)“ níže.
+- Další postup: vlny úprav a první nasazení demo verze pro výbor – viz „Plán úprav a první nasazení“.
 
 Zatím neproběhlo:
 
@@ -139,7 +141,7 @@ Před první konzultací není vhodné napevno implementovat:
 - finální role a oprávnění,
 - složitou registraci,
 - WebSocket,
-- push notifikace,
+- push notifikace ze serveru (lokální notifikace přes service worker u zmínek v komentářích už existují),
 - platby,
 - rodiče a zákonné zástupce,
 - složitý workflow půjčování krojů,
@@ -151,8 +153,8 @@ První použitelné MVP by mohlo obsahovat:
 
 1. Přihlášení.
 2. Dashboard.
-3. Členové.
-4. Nástěnka.
+3. Nástěnky skupin.
+4. Kalendář a seznam akcí.
 5. Akce.
 6. Potvrzení účasti.
 7. Základní krojová databáze jako katalog.
@@ -194,48 +196,73 @@ Pozdější rozšíření:
   - Běžný `start`/`build` a testy používají vymyšlené členy ve stejném formátu.
   - Až bude backend (Fáze 5), nahradí to neverzovaný SQL seed (např. `data/seed.local.sql`).
 
-## Naplánované úpravy (zatím neimplementovat)
+## Kalendář a rychlé potvrzení účasti (hotovo)
 
-- **Označení příspěvku s novou zmínkou**: příspěvek, ve kterém byl přihlášený člen nově zmíněn (@mention v komentáři), označit ve výpisu nástěnky obdobně jako „Nepřečteno“ (např. štítek „Zmínka“). Badge nástěnky v menu už neviděné zmínky započítává (`getBoardBadgeCount`), chybí jen vyznačení u samotného příspěvku.
-- **Profil přes jméno uživatele místo položky v menu**: zrušit položku „Můj profil“ (v sidebaru sekce Správa, na mobilu „Profil“ v bottom nav). Na `/app/profile` se uživatel dostane kliknutím na své jméno – na desktopu v patičce sidebaru, na mobilu v headeru.
-- **Nástěnky přímo v bottom nav na mobilu**: na místo uvolněné po „Profil“ a místo rozcestníku „Nástěnky“ vypsat v bottom nav jednotlivé nástěnky, jichž je přihlášený členem a které mají nástěnku povolenou (každá s vlastním badge). Otevřené body: `Group` zatím nemá příznak „nástěnka povolena“ – bude potřeba ho doplnit (model, mock data, administrace skupin); vyřešit, co u administrátora (vidí všechny nástěnky, ale v bottom nav jen ty, kde je členem?) a co při větším počtu nástěnek (místo na šířku). Rozcestník `/app/boards` může zůstat jako cíl pro případ přetečení.
-- **Administrace v bottom nav pro administrátora**: na mobilu přidat administrátorovi položku „Administrace“ (`/app/admin`), běžní členové ji nevidí.
-- **RSVP select na úzkých displejích**: v `event-rsvp-row` na úzkém displeji nahradit tři tlačítka (Ano / Možná / Ne) jedním selectem s prázdnou volbou (= neodpovězeno) a volbami Ano / Možná / Ne, aby zůstalo místo na čas a název akce.
-- **Kompaktní seznam akcí**: v seznamu akcí (`/app/events`) použít stejný kompaktní `event-rsvp-row` jako pod kalendářem a na přehledu – bez detailního popisu akce a počtů přihlášených.
-- **Filtry v seznamu akcí**: v seznamu akcí filtrovat podle typu (`EventType` – nácvik, vystoupení, soustředění, schůzka, ostatní) a podle mé odpovědi (potvrzené / nepotvrzené mnou). Filtry lze kombinovat.
-- **Tooltip dne v kalendáři**: při hoveru na den v měsíčním kalendáři zobrazit akce toho dne s časem začátku („18:00 – Nácvik“). Jen pro zařízení s hoverem; na mobilu stačí stávající výpis akcí vybraného dne.
-- **Poznámky k účasti viditelné pro všechny**: poznámka k účasti se teď ukládá, ale vidí ji jen autor. V sekci „Účast“ v detailu akce u jména člověka s poznámkou zobrazit příznak (ikonka komentáře); text poznámky se ukáže v tooltipu při hoveru, na mobilu po kliknutí na jméno.
-- **Zmínky při psaní přes „@“ a vyznačené v textu komentáře**: zmínka se teď vybírá zvlášť (select „@ Zmínit“) a ukládá jen do `mentionedMemberIds`, v textu komentáře není vyznačená. Nově:
-  - Po napsání „@“ v textarea komentáře vyskočí nabídka členů, které lze na nástěnce zmínit. Text psaný za „@“ (až po kurzor) nabídku filtruje, bez ohledu na diakritiku a velikost písmen. Ovládání myší i klávesnicí (šipky, Enter vybere, Esc zavře). Select „@ Zmínit“ odpadne.
-  - Po výběru se rozepsané „@Jak“ nahradí „@Jakub Hoza“ a komponenta si pamatuje vybrané členy. Při odeslání se v textu tato jména převedou na token (např. `@[member:1]`). Když uživatel jméno v textu mezitím přepíše nebo smaže, zmínka se neuloží.
-  - `mentionedMemberIds` se odvodí z tokenů v textu.
-  - Při vykreslení se token nahradí graficky odlišeným jménem člena. Text se rozparsuje na segmenty v šabloně, ne přes `innerHTML` (XSS). Mock data komentářů upravit na nový formát.
-  - Bez nové knihovny: obyčejná textarea + vlastní nabídka pod ní (ne `contenteditable`).
-- **Administrace až po členské části**: administrace bude potřebovat ještě řadu úprav (doplnit vše, co se v ní má spravovat). Priorita je nejdřív dotáhnout části viditelné běžným členům, administraci projít a doplnit až potom.
-- **Řazení příspěvků a archiv na nástěnce**: příspěvky na nástěnce řadit od nejnovějších (nahoře) po nejstarší (dole). Pod nimi oddělovač s tlačítkem „Zobrazit archivované“, po kliknutí se pod ním vypíšou i archivované příspěvky (také od nejnovějších).
-- **Přímý odkaz na příspěvek (i archivovaný) nesmí odhlásit**: detail archivovaného příspěvku sám o sobě funguje (`getPost` archiv nefiltruje). Odhlášení způsobuje to, že `AuthService` drží přihlášeného uživatele jen v paměti. Jakékoli otevření URL přímo (vložení do adresního řádku, reload, odkaz z notifikace) proto ztratí přihlášení a `authGuard` přesměruje na `/login`. U archivovaného příspěvku se to projeví nejvíc, protože z výpisu na něj zatím nevede odkaz. Řešení: přihlášení si pamatovat i po reloadu (v mock režimu např. v `localStorage`, později podle skutečné autentizace backendu). Po přihlášení vrátit uživatele na původně požadovanou URL. Souvisí s tím, že ani archivace (a další změny příspěvků v `postsCache`) zatím reload nepřežije – zvážit perzistenci mock příspěvků v `localStorage` podobně jako u komentářů.
-- **Nepotvrzené akce v záhlaví seznamu akcí**: upozornění „N akcí čeká na tvoji odpověď“ přesunout z `/app/profile` do záhlaví stránky Akce (seznam akcí). Kliknutí na něj může rovnou zapnout filtr „nepotvrzené“.
-- **Stránky Profil a Nastavení vedle sebe**: vedle `/app/profile` vytvořit `/app/settings`. V patičce sidebaru (na mobilu v headeru) přibude vedle tlačítka „Odhlásit se“ ikonka ozubeného kolečka vedoucí na Nastavení. Na profil se jde kliknutím na jméno (viz výše). Obě stránky budou časem přibývat o další položky. Rozdělení: **Profil** = údaje o mně (vidí je ostatní nebo vedení souboru), **Nastavení** = jak se mi aplikace chová.
-- **Rozšířený profil**:
-  - ~~Přezdívka~~ – hotovo, viz „Členové, skupiny a demo data“. Zmínky přes „@“ hledají podle přezdívky (celé jméno běžný člen nevidí).
-  - Nepovinně číslo pasu a datum konce jeho platnosti (pro seznamy členů na zahraniční zájezdy). Citlivý osobní údaj: vidí ho jen člen sám a administrátor, ne ostatní členové. Upozornit, pokud pas brzy vyprší (např. do 6 měsíců).
-- **Nastavení – notifikace**: zapínání notifikací přesunout z `/app/profile` do `/app/settings`. Rozšířit o výběr skupin, ze kterých chci notifikace dostávat (odběr po nástěnkách). Otevřený bod: zmínky přes „@“ by měly upozornit vždy, bez ohledu na odběr skupiny.
-- **Nastavení – vzhled**: přepínač režimu světlý / tmavý / automatický (podle systému). Barvy přes CSS proměnné, volba uložená v zařízení.
-- **Nastavení – další návrhy**:
-  - Velikost písma (normální / větší / největší) – přístupnost pro starší členy.
-  - Výchozí zobrazení stránky Akce (seznam / kalendář).
-  - Omezit animace (výchozí podle systému, `prefers-reduced-motion`).
-  - Volbu fontu nedoporučuji – víc fontů komplikuje vzhled a velikost písma pokryje hlavní potřebu (čitelnost).
-- **Deploy skript (build + nahrání přes FTP na produkci)**. Navazuje na stávající `scripts/release.mjs` (verze `vRRRR.M.N`, tag `vRRRR.M.N-<slug tance>`, `public/changelog.json`, jména tanců v `data/release-dances.json`). Při implementaci rozdělit do více commitů (env/konfigurace, deploy skript, informace o buildu, changelog stránka).
-  - **Přístupy** přesunout z `dev/local/ftp-splk.txt` do `.env` v kořeni (ignorovaný gitem), do repa jen `.env.example` s prázdnými klíči (`FTP_HOST`, `FTP_USER`, `FTP_PASSWORD`, `FTP_REMOTE_DIR`…).
+- **Přehled** ukazuje 5 nejbližších akcí (`DASHBOARD_EVENT_LIMIT`) v kompaktních řádcích (`event-rsvp-row`) s tlačítky Ano / Možná / Ne; klik na řádek otevře detail.
+- **Akce** mají přepínač Seznam / Kalendář (`?view=calendar`). Měsíční mřížka od pondělí, tečky podle mé účasti, pod mřížkou akce vybraného dne s rychlým potvrzením. Vícedenní akce se zobrazí v každém svém dni. Seznam ukazuje jen nadcházející akce, historie je v kalendáři.
+- `AttendanceService.setStatus` mění jen stav, poznámku a `firstViewedAt` zachová.
+- Mock data: pravidelné nácviky každé úterý a pátek ±8 týdnů od dneška, počítané relativně.
+- Počet nepotvrzených akcí (badge) zahrnuje jen nadcházející akce.
+
+## Plán úprav a první nasazení
+
+Rozhodnuto 2026-10-15. První nasazení je **demo pro výbor** (odpovídá Fázi 4), ne ostrý provoz: bez backendu se data nesdílí mezi lidmi. Pořadí: merge `feature/admin-crud-prototype` do `master`, vlna 1, nasazení, pak další vlny na krátkých větvích podle zpětné vazby.
+
+### Vlna 1 – před prvním nasazením
+
+- **Přihlášení přežije reload**: v mock režimu uložit přihlášeného člena do `localStorage`, později podle autentizace backendu. Po přihlášení vrátit uživatele na původně požadovanou URL (reload, odkaz z notifikace, přímá URL).
+- **Perzistence demo dat v prohlížeči**: účast, příspěvky (vč. archivace) a další změny uložit do `localStorage` podobně jako komentáře. Tlačítko „Obnovit demo data“.
+- **Pruh „Demo verze“**: viditelné upozornění, že data vidí jen uživatel sám v tomto prohlížeči.
+- **Maskování příjmení v demo buildu**: `import-members.mjs` zapíše příjmení jako iniciálu + pevný počet hvězdiček („Pavel H*****“), aby se neprozradila délka. Maskovat i náhradní přezdívku (dnes se při chybějící přezdívce skládá z plného jména). Plné příjmení se do buildu nesmí dostat. Přezdívky musí být unikátní – import duplicitu ohlásí jako chybu.
+- **Ochrana webu**: aplikace poběží na `moje.vonica.cz`. Celý web za HTTP Basic Auth (jeden společný účet pro soubor) v `.htaccess`, vynucené HTTPS, `X-Robots-Tag: noindex`. `.htpasswd` generuje deploy skript z `.env`, do gitu nejde. Manifest načítat s `crossorigin="use-credentials"`, jinak se PWA za Basic Auth nenainstaluje. Spoléhat na tajnou URL nestačí (adresa je veřejně v certificate transparency logu). Před prvním nasazením ověřit na prázdné stránce, že hosting `AuthType Basic` v `.htaccess` povoluje.
+- **Upozornění na novou verzi**: přes `SwUpdate` nabídnout „Je dostupná nová verze – obnovit“, jinak service worker servíruje starou verzi z cache.
+- **Deploy skript (build + nahrání přes SFTP, port 22)**. Navazuje na `scripts/release.mjs` (verze `vRRRR.M.N`, tag `vRRRR.M.N-<slug tance>`, `public/changelog.json`, jména tanců v `data/release-dances.json`). Rozdělit do více commitů (env/konfigurace, deploy skript, informace o buildu, changelog stránka).
+  - **Přístupy** přesunout z `dev/local/ftp-splk.txt` do `.env` v kořeni (ignorovaný gitem), do repa jen `.env.example` s prázdnými klíči (`SFTP_HOST`, `SFTP_PORT`, `SFTP_USER`, `SFTP_PASSWORD`, `SFTP_REMOTE_DIR`, `BASIC_AUTH_USER`, `BASIC_AUTH_PASSWORD`…).
   - **Volba zdroje buildu**:
-    1. aktuální pracovní kopie aktuální branche (včetně necommitnutých změn),
-    2. poslední commit aktuální branche (bez necommitnutých změn – build z čistého checkoutu, např. `git worktree` do dočasné složky),
+    1. aktuální pracovní kopie aktuální branche (včetně necommitnutých změn) – povoleno, ale s výrazným varováním a s příznakem v označení verze,
+    2. poslední commit aktuální branche (build z čistého checkoutu, např. `git worktree` do dočasné složky),
     3. poslední tag z `master` (stejně přes dočasný checkout).
-  - Nahrávat obsah `frontend/dist/frontend/browser/` včetně `.htaccess` přes knihovnu `basic-ftp` (závislost schválena). Umí i odstranit soubory, které na serveru zbyly ze starší verze.
+  - Nahrávat obsah `frontend/dist/frontend/browser/` včetně `.htaccess` a odstranit soubory, které na serveru zbyly ze starší verze. Knihovna: hosting nabízí SFTP (port 22), původně schválená `basic-ftp` umí jen FTP/FTPS – nutno zvolit SFTP knihovnu.
   - Před nahráním vypsat shrnutí (zdroj, verze/commit, cílový server) a vyžádat potvrzení.
 - **Označení verze v aplikaci**:
   - Codename tance malými písmeny (např. „klátková“), bez vlajky. Na PC v patičce sidebaru, na mobilu v headeru. Odkaz vede na stránku changelogu.
   - Do `<head>` při buildu vložit meta informace: tag / číslo verze, případně revize (branch + commit, příznak necommitnutých změn) a datum buildu. Build-info generovat skriptem do souboru, který aplikace načte (podobně jako `sync-public`).
   - Build, který není z tagu, se místo tance označí jako branch + krátký hash commitu (např. `feature/admin-crud-prototype@0feedfc`), u necommitnutých změn s příznakem.
-- **Changelog stránka**: výpis verzí z `changelog.json` (verze, datum, tanec s odkazem, seznam změn). Položky změn dvojjazyčně – `release.mjs` dnes ukládá `changes` jako pole řetězců, změnit na `{ cs, en }`. Zobrazit podle jazyka aplikace (zatím čeština).
+- **Changelog stránka**: výpis verzí z `changelog.json` (verze, datum, tanec s odkazem, seznam změn). Změny jen česky (pole řetězců jako dnes), dvojjazyčnost až při potřebě.
+
+### Vlna 2 – úpravy pro členy (po prvním nasazení, podle zpětné vazby)
+
+- **Kompaktní seznam akcí**: v seznamu akcí (`/app/events`) použít `event-rsvp-row` bez detailního popisu. Počty odpovědí („12 ✓ · 3 ✗ · 5 ?“) vidí jen výbor; když se do řádku nevejdou, ukázat je až při hoveru, na mobilu vůbec.
+- **Filtry v seznamu akcí**: podle typu (`EventType`) a podle mé odpovědi (potvrzené / nepotvrzené). Filtry lze kombinovat.
+- **Nepotvrzené akce v záhlaví seznamu akcí**: upozornění „N akcí čeká na tvoji odpověď“ přesunout z `/app/profile` do záhlaví stránky Akce; kliknutí zapne filtr „nepotvrzené“.
+- **RSVP na úzkých displejích**: v `event-rsvp-row` místo textových tlačítek tři malá ikonová (✓ ? ✗), aby zůstalo místo na čas a název akce. Jedno klepnutí zůstává.
+- **Tooltip dne v kalendáři**: při hoveru na den zobrazit akce toho dne s časem začátku („18:00 – Nácvik“). Jen pro zařízení s hoverem.
+- **Poznámky k účasti viditelné pro všechny členy**: v sekci „Účast“ v detailu akce u jména s poznámkou ikonka komentáře, text v tooltipu (na mobilu po kliknutí na jméno). U políčka poznámky upozornění, že ji uvidí ostatní.
+- **Označení příspěvku s novou zmínkou**: štítek „Zmínka“ ve výpisu nástěnky obdobně jako „Nepřečteno“ (badge v menu už zmínky započítává).
+- **Řazení příspěvků a archiv na nástěnce**: připnuté nahoře, pak od nejnovějších po nejstarší. Pod nimi oddělovač s tlačítkem „Zobrazit archivované“ (také od nejnovějších).
+- **Profil přes jméno uživatele**: zrušit položku „Můj profil“ (sidebar, mobilní „Profil“). Na `/app/profile` se jde kliknutím na své jméno – na desktopu v patičce sidebaru, na mobilu v headeru.
+- **Nástěnky přímo v bottom nav na mobilu**: místo rozcestníku „Nástěnky“ vypsat jednotlivé nástěnky přihlášeného (každá s badge). Při přetečení se bottom nav dá prstem posouvat do strany (horizontální scroll). `Group` dostane příznak „nástěnka povolena“ (model, mock data, administrace skupin). Administrátor má v bottom nav jen nástěnky, kde je členem; ostatní najde v rozcestníku `/app/boards`.
+- **Administrace v bottom nav pro administrátora** (`/app/admin`), běžní členové ji nevidí.
+- **Unikátní přezdívky**: při změně přezdívky na profilu (a v administraci) ověřit, že ji nemá nikdo jiný – jinak by se zmínky nedaly rozlišit.
+
+### Vlna 3
+
+- **Zmínky při psaní přes „@“ a vyznačené v textu komentáře**: zmínka se teď vybírá zvlášť (select „@ Zmínit“) a ukládá jen do `mentionedMemberIds`, v textu komentáře není vyznačená. Nově:
+  - Po napsání „@“ v textarea komentáře vyskočí nabídka členů, které lze na nástěnce zmínit (podle přezdívky). Text psaný za „@“ (až po kurzor) nabídku filtruje, bez ohledu na diakritiku a velikost písmen. Ovládání myší i klávesnicí (šipky, Enter vybere, Esc zavře). Select „@ Zmínit“ odpadne.
+  - Po výběru se rozepsané „@Jak“ nahradí „@Jakub“ a komponenta si pamatuje vybrané členy. Při odeslání se v textu tato jména převedou na token (např. `@[member:1]`). Když uživatel jméno v textu mezitím přepíše nebo smaže, zmínka se neuloží.
+  - `mentionedMemberIds` se odvodí z tokenů v textu.
+  - Při vykreslení se token nahradí graficky odlišeným jménem člena. Text se rozparsuje na segmenty v šabloně, ne přes `innerHTML` (XSS). Mock data komentářů upravit na nový formát.
+  - Bez nové knihovny: obyčejná textarea + vlastní nabídka pod ní (ne `contenteditable`).
+- **Stránky Profil a Nastavení vedle sebe**: vedle `/app/profile` vytvořit `/app/settings`. V patičce sidebaru (na mobilu v headeru) vedle „Odhlásit se“ ikonka ozubeného kolečka. **Profil** = údaje o mně, **Nastavení** = jak se mi aplikace chová.
+- **Nastavení – notifikace**: zapínání notifikací přesunout z `/app/profile` do `/app/settings`.
+- **Nastavení – vzhled**: světlý / tmavý / automatický režim. Barvy přes CSS proměnné, volba uložená v zařízení.
+- **Nastavení – další**: velikost písma (normální / větší / největší), výchozí zobrazení stránky Akce (seznam / kalendář), omezení animací (`prefers-reduced-motion`). Volbu fontu nedoporučuji.
+
+### Potom
+
+- **Administrace**: projít a doplnit vše, co se v ní má spravovat – až po dotažení členské části.
+
+### Odloženo na backend (Fáze 5+)
+
+- **Číslo pasu a jeho platnost** v profilu (pro zahraniční zájezdy): citlivý osobní údaj (GDPR), vidí jen člen sám a administrátor, upozornění na blížící se konec platnosti. V mock/demo verzi bez skutečného přihlášení nemá co dělat.
+- **Odběr notifikací po nástěnkách**: vyžaduje server (push). Zmínky přes „@“ mají upozornit vždy, bez ohledu na odběr.
