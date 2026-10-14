@@ -9,6 +9,7 @@ import { Group } from '../../models/group.model';
 import { getUnconfirmedEventsCount, isAdmin } from '../../utils/visibility.utils';
 import { interval, Subscription } from 'rxjs';
 import { IconComponent, IconName } from '../../../shared/icon/icon.component';
+import { VersionLabelComponent } from '../../../shared/version-label/version-label.component';
 
 interface NavItem {
   path: string;
@@ -25,7 +26,7 @@ interface NavSection {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, IconComponent],
+  imports: [RouterLink, RouterLinkActive, IconComponent, VersionLabelComponent],
   templateUrl: './sidebar.component.html',
   styles: [`
     .sidebar__nav-item {

@@ -5,6 +5,7 @@
       @if (auth.currentUser(); as user) {
         <span class="mobile-header__user">{{ user.name }}</span>
       }
+      <app-version-label />
       <button class="mobile-header__logout" (click)="logout()">Odhlásit se</button>
     </header>
     <main class="app-shell__content">

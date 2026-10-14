@@ -1205,3 +1205,80 @@
     white-space: nowrap;
   }
 }
+
+// Version label (sidebar footer, mobile header) → changelog
+.version-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+
+  &:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+}
+
+.mobile-header .version-label {
+  margin-left: auto;
+  margin-right: var(--spacing-md);
+  max-width: 40vw;
+}
+
+// Changelog page
+.changelog {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+
+  &__current {
+    margin-bottom: var(--spacing-lg);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__built {
+    margin-left: var(--spacing-xs);
+  }
+
+  &__entry {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: var(--spacing-md);
+  }
+
+  &__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+  }
+
+  &__dance {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+  }
+
+  &__meta {
+    font-size: 12px;
+    color: var(--color-text-muted);
+  }
+
+  &__dance-link {
+    font-size: var(--font-size-sm);
+    color: var(--color-primary);
+  }
+
+  &__changes {
+    margin-top: var(--spacing-sm);
+    padding-left: var(--spacing-lg);
+    font-size: var(--font-size-sm);
+    line-height: 1.6;
+  }
+}

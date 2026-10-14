@@ -1,5 +1,6 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { BuildInfoService } from '../../build/build-info.service';
 import { of } from 'rxjs';
 import { MainLayoutComponent } from './main-layout.component';
 import { AuthService } from '../../auth/auth.service';
@@ -35,6 +36,7 @@ describe('MainLayoutComponent', () => {
       imports: [MainLayoutComponent],
       providers: [
         provideRouter([]),
+        { provide: BuildInfoService, useValue: { getBuildInfo: () => of(null) } },
         { provide: AuthService, useValue: { currentUser: () => user, isLoggedIn: () => true } },
         { provide: MembersService, useValue: membersSpy },
         { provide: PostsService, useValue: postsSpy },

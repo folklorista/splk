@@ -76,6 +76,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'changelog',
+        loadComponent: () =>
+          import('./features/changelog/changelog.component').then(
+            (m) => m.ChangelogComponent,
+          ),
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./features/profile/profile.component').then(

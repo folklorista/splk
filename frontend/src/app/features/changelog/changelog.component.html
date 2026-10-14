@@ -1,0 +1,33 @@
+<div class="page">
+  <h1 class="page__title">Co je nového</h1>
+
+  <p class="changelog__current">
+    Používáš verzi <strong>{{ currentLabel() }}</strong>
+    @if (buildInfo(); as info) {
+      <span class="changelog__built">(sestaveno {{ info.builtAt | date: 'd. M. yyyy, HH:mm' }})</span>
+    }
+  </p>
+
+  @if (entries() === null) {
+    <p class="state-note">Načítání…</p>
+  } @else if (!entries()!.length) {
+    <p class="state-note">Zatím nebyla vydána žádná verze.</p>
+  } @else {
+    <ol class="changelog">
+      @for (entry of entries(); track entry.version) {
+        <li class="changelog__entry">
+          <div class="changelog__header">
+            <h2 class="changelog__dance">{{ entry.dance.codename }}</h2>
+            <span class="changelog__meta">{{ entry.version }} · {{ entry.releasedAt | date: 'd. M. yyyy' }}</span>
+          </div>
+          <a class="changelog__dance-link" [href]="entry.dance.url" target="_blank" rel="noopener">{{ entry.dance.title }}</a>
+          <ul class="changelog__changes">
+            @for (change of entry.changes; track $index) {
+              <li>{{ change }}</li>
+            }
+          </ul>
+        </li>
+      }
+    </ol>
+  }
+</div>
