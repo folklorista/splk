@@ -214,7 +214,7 @@ Rozhodnuto 2026-10-15. První nasazení je **demo pro výbor** (odpovídá Fázi
 - **Perzistence demo dat v prohlížeči**: účast, příspěvky (vč. archivace) a další změny uložit do `localStorage` podobně jako komentáře. Tlačítko „Obnovit demo data“.
 - **Pruh „Demo verze“**: viditelné upozornění, že data vidí jen uživatel sám v tomto prohlížeči.
 - **Maskování příjmení v demo buildu**: `import-members.mjs` zapíše příjmení jako iniciálu + pevný počet hvězdiček („Pavel H*****“), aby se neprozradila délka. Maskovat i náhradní přezdívku (dnes se při chybějící přezdívce skládá z plného jména). Plné příjmení se do buildu nesmí dostat. Přezdívky musí být unikátní – import duplicitu ohlásí jako chybu.
-- **Ochrana webu**: aplikace poběží na `moje.vonica.cz`. Celý web za HTTP Basic Auth (jeden společný účet pro soubor) v `.htaccess`, vynucené HTTPS, `X-Robots-Tag: noindex`. `.htpasswd` generuje deploy skript z `.env`, do gitu nejde. Manifest načítat s `crossorigin="use-credentials"`, jinak se PWA za Basic Auth nenainstaluje. Spoléhat na tajnou URL nestačí (adresa je veřejně v certificate transparency logu). Před prvním nasazením ověřit na prázdné stránce, že hosting `AuthType Basic` v `.htaccess` povoluje.
+- **Ochrana webu**: aplikace poběží na `moje.vonica.cz`. Celý web za HTTP Basic Auth (jeden společný účet pro soubor) v `.htaccess`, HTTPS (zajišťuje hosting), `X-Robots-Tag: noindex`. `.htpasswd` generuje deploy skript z `.env`, do gitu nejde. Manifest načítat s `crossorigin="use-credentials"`, jinak se PWA za Basic Auth nenainstaluje. Spoléhat na tajnou URL nestačí (adresa je veřejně v certificate transparency logu). Ověřeno, viz deploy skript níže.
 - **Upozornění na novou verzi**: přes `SwUpdate` nabídnout „Je dostupná nová verze – obnovit“, jinak service worker servíruje starou verzi z cache.
 - **Deploy skript (build + nahrání přes SFTP, port 22)**. Navazuje na `scripts/release.mjs` (verze `vRRRR.M.N`, tag `vRRRR.M.N-<slug tance>`, `public/changelog.json`, jména tanců v `data/release-dances.json`). Rozdělit do více commitů (env/konfigurace, deploy skript, informace o buildu, changelog stránka).
   - **Přístupy** přesunout z `dev/local/ftp-splk.txt` do `.env` v kořeni (ignorovaný gitem), do repa jen `.env.example` s prázdnými klíči (`SFTP_HOST`, `SFTP_PORT`, `SFTP_USER`, `SFTP_PASSWORD`, `SFTP_REMOTE_DIR`, `BASIC_AUTH_USER`, `BASIC_AUTH_PASSWORD`…).
@@ -222,8 +222,16 @@ Rozhodnuto 2026-10-15. První nasazení je **demo pro výbor** (odpovídá Fázi
     1. aktuální pracovní kopie aktuální branche (včetně necommitnutých změn) – povoleno, ale s výrazným varováním a s příznakem v označení verze,
     2. poslední commit aktuální branche (build z čistého checkoutu, např. `git worktree` do dočasné složky),
     3. poslední tag z `master` (stejně přes dočasný checkout).
-  - Nahrávat obsah `frontend/dist/frontend/browser/` včetně `.htaccess` a odstranit soubory, které na serveru zbyly ze starší verze. Knihovna: hosting nabízí SFTP (port 22), původně schválená `basic-ftp` umí jen FTP/FTPS – nutno zvolit SFTP knihovnu.
+  - Nahrávat obsah `frontend/dist/frontend/browser/` včetně `.htaccess` a odstranit soubory, které na serveru zbyly ze starší verze. Knihovna: `ssh2-sftp-client` (viz ověření níže).
   - Před nahráním vypsat shrnutí (zdroj, verze/commit, cílový server) a vyžádat potvrzení.
+  - **Ověřeno na hostingu (Websupport, 2026-10-14)**:
+    - SFTP (port 22) funguje, SSH shell ne (`exec` odmítnut) → `rsync`/`scp` nelze, nahrávat přes `ssh2-sftp-client` (závislost schválena místo `basic-ftp`).
+    - Kořen SFTP je přímo webový adresář `moje.vonica.cz` (na disku `/data/1/f/…/vonica.cz/sub/moje`). Mimo web root přístup není, `.htpasswd` proto musí ležet ve web rootu a `.htaccess` ho blokuje (`<Files ".ht*"> Require all denied` → ověřeno 403). Absolutní cestu pro `AuthUserFile` držet v `.env`, ne v repu.
+    - Basic Auth v `.htaccess` funguje (401 bez hesla / se špatným heslem, 200 se správným), hash APR1 (`openssl passwd -apr1`) Apache přijímá. `Header ... X-Robots-Tag` funguje (mod_headers).
+    - HTTPS s platným certifikátem a přesměrování HTTP → HTTPS už zajišťuje hosting (proxy openresty před Apache), v `.htaccess` ho není potřeba řešit.
+    - PHP 8.5 (FPM) je k dispozici – pro Fázi 5.
+    - Na webu teď běží starší build ze 7. 10. bez hesla (jen vymyšlení členové). V rootu je navíc `_index.php` (výchozí stránka hostingu) – deploy ho smí smazat.
+    - Pořadí při prvním nasazení s reálnými jmény: nejdřív nahrát `.htpasswd` a `.htaccess` s Basic Auth, teprve potom soubory aplikace, aby nebyl ani krátký okamžik, kdy jsou jména veřejně.
 - **Označení verze v aplikaci**:
   - Codename tance malými písmeny (např. „klátková“), bez vlajky. Na PC v patičce sidebaru, na mobilu v headeru. Odkaz vede na stránku changelogu.
   - Do `<head>` při buildu vložit meta informace: tag / číslo verze, případně revize (branch + commit, příznak necommitnutých změn) a datum buildu. Build-info generovat skriptem do souboru, který aplikace načte (podobně jako `sync-public`).
