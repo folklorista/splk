@@ -212,3 +212,16 @@ Pozdější rozšíření:
   - Výchozí zobrazení stránky Akce (seznam / kalendář).
   - Omezit animace (výchozí podle systému, `prefers-reduced-motion`).
   - Volbu fontu nedoporučuji – víc fontů komplikuje vzhled a velikost písma pokryje hlavní potřebu (čitelnost).
+- **Deploy skript (build + nahrání přes FTP na produkci)**. Navazuje na stávající `scripts/release.mjs` (verze `vRRRR.M.N`, tag `vRRRR.M.N-<slug tance>`, `public/changelog.json`, jména tanců v `data/release-dances.json`). Při implementaci rozdělit do více commitů (env/konfigurace, deploy skript, informace o buildu, changelog stránka).
+  - **Přístupy** přesunout z `dev/local/ftp-splk.txt` do `.env` v kořeni (ignorovaný gitem), do repa jen `.env.example` s prázdnými klíči (`FTP_HOST`, `FTP_USER`, `FTP_PASSWORD`, `FTP_REMOTE_DIR`…).
+  - **Volba zdroje buildu**:
+    1. aktuální pracovní kopie aktuální branche (včetně necommitnutých změn),
+    2. poslední commit aktuální branche (bez necommitnutých změn – build z čistého checkoutu, např. `git worktree` do dočasné složky),
+    3. poslední tag z `master` (stejně přes dočasný checkout).
+  - Nahrávat obsah `frontend/dist/frontend/browser/` včetně `.htaccess`. Nahrání: buď `curl` (je v systému, ale neumí mazat zastaralé soubory), nebo knihovna typu `basic-ftp` – nová závislost, nutné schválení. `lftp` není nainstalovaný.
+  - Před nahráním vypsat shrnutí (zdroj, verze/commit, cílový server) a vyžádat potvrzení.
+- **Označení verze v aplikaci**:
+  - Codename tance malými písmeny (např. „klátková“) + vlajka země/regionu původu. Na PC v patičce sidebaru, na mobilu v headeru. Odkaz vede na stránku changelogu.
+  - Do `<head>` při buildu vložit meta informace: tag / číslo verze, případně revize (branch + commit, příznak necommitnutých změn) a datum buildu. Build-info generovat skriptem do souboru, který aplikace načte (podobně jako `sync-public`).
+  - Otevřené: `data/release-dances.json` zatím nemá zemi/region ani vlajku – doplnit pole (např. `region`, `flag`). Co zobrazit u buildu, který není z tagu (např. jen branch + krátký hash)?
+- **Changelog stránka**: výpis verzí z `changelog.json` (verze, datum, tanec s odkazem, seznam změn). Položky změn dvojjazyčně – `release.mjs` dnes ukládá `changes` jako pole řetězců, změnit na `{ cs, en }`. Zobrazit podle jazyka aplikace (zatím čeština).
