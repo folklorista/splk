@@ -208,7 +208,9 @@ Pozdější rozšíření:
 
 Rozhodnuto 2026-10-15. První nasazení je **demo pro výbor** (odpovídá Fázi 4), ne ostrý provoz: bez backendu se data nesdílí mezi lidmi. Pořadí: merge `feature/admin-crud-prototype` do `master`, vlna 1, nasazení, pak další vlny na krátkých větvích podle zpětné vazby.
 
-### Vlna 1 – před prvním nasazením
+### Vlna 1 – před prvním nasazením (hotovo)
+
+Implementace: `AuthService` (`splk.auth.user`), `core/data/demo-storage.ts` (`splk.demo.*`, `DEMO_DATA_VERSION` – zvýšit při změně tvaru mock dat), `DemoBannerComponent`, `AppUpdateService`, `scripts/build.mjs` + `build-info.mjs`, `scripts/deploy.mjs` (+ `lib/apr1.mjs`), stránka `/app/changelog`. Postup vydání a nasazení viz README.
 
 - **Přihlášení přežije reload**: v mock režimu uložit přihlášeného člena do `localStorage`, později podle autentizace backendu. Po přihlášení vrátit uživatele na původně požadovanou URL (reload, odkaz z notifikace, přímá URL).
 - **Perzistence demo dat v prohlížeči**: účast, příspěvky (vč. archivace) a další změny uložit do `localStorage` podobně jako komentáře. Tlačítko „Obnovit demo data“.

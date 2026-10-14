@@ -10,12 +10,12 @@ Podrobný stav a další kroky viz [`docs/03-postup-vyvoje.md`](docs/03-postup-v
 
 - přihlašovací obrazovka s mock AuthService
 - layout po přihlášení: mobilní spodní navigace + desktopový sidebar
-- Dashboard, Nástěnka, Akce (s potvrzením účasti), Členové, Skupiny, hrubý placeholder Krojové databáze
+- Přehled s rychlým potvrzením účasti, nástěnky po skupinách, Akce (seznam a měsíční kalendář), hrubý placeholder Krojové databáze
 - mock feature services pro všechny moduly (komponenty na ně přistupují výhradně přes services, ne přímo na mock data)
 - rozpracovaná administrace (CRUD pro příspěvky, akce, členy, skupiny)
 - jednotkové testy (auth, routing, services, klíčová logika viditelnosti/účasti)
 
-Další krok: **Fáze 4 – konzultace s vedoucím souboru**, poté **Fáze 5 – první vertikální řez s PHP/MySQL backendem**
+Nasazeno jako **demo pro výbor** (data se ukládají jen v prohlížeči). Další krok: zpětná vazba výboru (Fáze 4), vlny úprav podle `docs/03`, poté **Fáze 5 – první vertikální řez s PHP/MySQL backendem**
 
 ## Stack
 
@@ -23,7 +23,7 @@ Další krok: **Fáze 4 – konzultace s vedoucím souboru**, poté **Fáze 5 �
 |---|---|
 | Frontend | Angular 19, standalone components, SCSS |
 | Backend (plánováno) | PHP REST API, MySQL |
-| Hosting (plánováno) | PHP hosting, statický build |
+| Hosting | Websupport (PHP hosting), statický build přes SFTP |
 
 ## Struktura repozitáře
 
@@ -62,6 +62,25 @@ docker compose up -d --build
 | MariaDB | `localhost:3307`, databáze `splk` |
 
 Kontejner s aplikací obsahuje produkční build – po změně kódu je potřeba znovu `docker compose up -d --build`. Pro vývoj s hot reloadem dál `ng serve`.
+
+## Vydání a nasazení
+
+Aplikace běží na `https://moje.vonica.cz` (Websupport, SFTP), celá za HTTP Basic Auth.
+
+```bash
+cp .env.example .env               # jednou: přístupy k SFTP a heslo Basic Auth (.env není v gitu)
+npm install                        # jednou: závislosti skriptů (ssh2-sftp-client)
+
+git checkout master                # vydává se z masteru
+npm run release -- "Změna 1" "Změna 2"      # verze vRRRR.M.N + tanec, changelog, commit a tag
+npm run deploy -- --source tag --demo       # build posledního tagu a nahrání na web
+```
+
+- `--source working|commit|tag` – pracovní kopie (i s necommitnutými změnami, s varováním), poslední commit aktuální větve, nebo poslední tag z `master`. `commit` a `tag` se sestaví v čistém dočasném `git worktree`.
+- `--demo` – reální členové z `dev/local/clenove.tsv` (příjmení zamaskovaná). Bez Basic Auth skript demo build odmítne nasadit.
+- `--dry-run` jen sestaví a vypíše shrnutí, `--yes` přeskočí potvrzení.
+- Skript nejdřív nahraje `.htpasswd` a `.htaccess` s Basic Auth, pak aplikaci (`index.html` a `ngsw.json` nakonec), smaže soubory ze starších verzí a ověří, že web bez hesla vrací 401 a s heslem novou revizi.
+- Lokální produkční build bez nasazení: `npm run frontend:build` (`frontend:build:demo` s reálnými členy).
 
 ## Testy
 
