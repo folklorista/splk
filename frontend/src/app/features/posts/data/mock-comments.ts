@@ -3,6 +3,7 @@ import { GROUP_IDS } from '../../../core/data/mock-groups';
 import { Member } from '../../../core/models/member.model';
 import { demoMember } from '../../members/data/demo-authors';
 import { MOCK_POSTS, daysAgo } from './mock-posts';
+import { mentionToken } from '../utils/mentions';
 
 const { vybor, tanecni, holky, malaVonica, sklad } = GROUP_IDS;
 
@@ -12,7 +13,7 @@ function comment(postId: number, author: Member, body: string, createdDaysAgo: n
     id: nextId++,
     postId,
     authorId: author.id,
-    body: mentioned.reduce((text, m, i) => text.replace(`{${i}}`, `@${m.nickname}`), body),
+    body: mentioned.reduce((text, m, i) => text.replace(`{${i}}`, mentionToken(m.id)), body),
     createdAt: daysAgo(createdDaysAgo, hour),
     mentionedMemberIds: mentioned.map((m) => m.id),
     seenByMemberIds: [],

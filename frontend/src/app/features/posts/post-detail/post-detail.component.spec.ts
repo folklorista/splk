@@ -198,50 +198,76 @@ describe('PostDetailComponent', () => {
     expect(commentsSpy.markSeen).not.toHaveBeenCalled();
   });
 
-  it('addMention přidá člena mezi zmíněné a vloží jeho jméno do textu', () => {
+  function typeInto(fixture: { componentInstance: PostDetailComponent }, text: string): void {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setSelectionRange(text.length, text.length);
+    fixture.componentInstance.onCommentInput(textarea);
+  }
+
+  it('po napsání „@“ nabídne členy nástěnky kromě sebe, filtrované textem za „@“', () => {
     configure(authorUser);
     const fixture = TestBed.createComponent(PostDetailComponent);
     fixture.detectChanges();
 
-    fixture.componentInstance.addMention(2);
+    typeInto(fixture, 'Ahoj @');
+    const all = fixture.componentInstance.mentionSuggestions().map((m) => m.id);
+    expect(all).not.toContain(1); // přihlášený sám sebe
+    expect(all).not.toContain(3); // není členem skupiny nástěnky
+    expect(all).toEqual(jasmine.arrayContaining([2, 4]));
 
-    expect(fixture.componentInstance.mentionedMembers().map((m) => m.id)).toEqual([2]);
-    expect(fixture.componentInstance.newCommentBody()).toContain('@Petr Novák');
+    typeInto(fixture, 'Ahoj @petr');
+    expect(fixture.componentInstance.mentionSuggestions().map((m) => m.id)).toEqual([2]);
   });
 
-  it('mentionCandidates nenabízí přihlášeného člena ani už zmíněné', () => {
-    configure(authorUser);
-    const fixture = TestBed.createComponent(PostDetailComponent);
-    fixture.detectChanges();
-
-    fixture.componentInstance.addMention(2);
-    const candidateIds = fixture.componentInstance.mentionCandidates().map((m) => m.id);
-
-    expect(candidateIds).not.toContain(1); // přihlášený sám sebe
-    expect(candidateIds).not.toContain(2); // už zmíněný
-    expect(candidateIds).not.toContain(3); // není členem skupiny nástěnky
-    expect(candidateIds).toContain(4);
-  });
-
-  it('submitComment odešle komentář se zmínkami a vyčistí formulář', () => {
+  it('výběr z nabídky doplní přezdívku a odeslání ji uloží jako token se zmínkou', () => {
     configure(authorUser);
     const newComment: PostComment = {
-      id: 20, postId: 5, authorId: 1, body: 'Test @Petr Novák', createdAt: '2026-01-03T00:00:00',
+      id: 20, postId: 5, authorId: 1, body: 'Test @[member:2] ', createdAt: '2026-01-03T00:00:00',
       mentionedMemberIds: [2], seenByMemberIds: [],
     };
     commentsSpy.addComment.and.returnValue(of(newComment));
-
     const fixture = TestBed.createComponent(PostDetailComponent);
     fixture.detectChanges();
+    const component = fixture.componentInstance;
 
-    fixture.componentInstance.addMention(2);
-    fixture.componentInstance.newCommentBody.set('Test @Petr Novák');
-    fixture.componentInstance.submitComment();
+    typeInto(fixture, 'Test @Pe');
+    component.chooseMention(component.mentionSuggestions()[0]);
+    expect(component.newCommentBody()).toBe('Test @Petr Novák ');
+    expect(component.mentionSuggestions()).toEqual([]);
 
-    expect(commentsSpy.addComment).toHaveBeenCalledWith(5, 1, 'Test @Petr Novák', [2]);
-    expect(fixture.componentInstance.comments()).toContain(newComment);
-    expect(fixture.componentInstance.newCommentBody()).toBe('');
-    expect(fixture.componentInstance.mentionedMembers()).toEqual([]);
+    component.submitComment();
+
+    expect(commentsSpy.addComment).toHaveBeenCalledWith(5, 1, 'Test @[member:2]', [2]);
+    expect(component.comments()).toContain(newComment);
+    expect(component.newCommentBody()).toBe('');
+    expect(component.selectedMentions()).toEqual([]);
+  });
+
+  it('když uživatel jméno po výběru přepíše, zmínka se neuloží', () => {
+    configure(authorUser);
+    commentsSpy.addComment.and.returnValue(of({ id: 21, postId: 5, authorId: 1, body: '', createdAt: '', mentionedMemberIds: [], seenByMemberIds: [] }));
+    const fixture = TestBed.createComponent(PostDetailComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    typeInto(fixture, '@Pe');
+    component.chooseMention(component.mentionSuggestions()[0]);
+    component.newCommentBody.set('@Petře pojď');
+    component.submitComment();
+
+    expect(commentsSpy.addComment).toHaveBeenCalledWith(5, 1, '@Petře pojď', []);
+  });
+
+  it('komentář se zmínkou vykreslí jménem člena podle tokenu', () => {
+    configure(authorUser);
+    const fixture = TestBed.createComponent(PostDetailComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    const segments = component.commentSegments({ id: 1, postId: 5, authorId: 1, body: 'Díky @[member:2]!', createdAt: '', mentionedMemberIds: [2], seenByMemberIds: [] });
+    expect(segments.length).toBe(3);
+    expect(component.memberNickname(2)).toBe('Petr Novák');
   });
 });
 

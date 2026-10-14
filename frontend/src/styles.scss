@@ -1624,3 +1624,53 @@ a.mobile-header__user {
   flex-shrink: 0;
   white-space: nowrap;
 }
+
+// Mentions: highlighted in comments, suggestion menu under the textarea
+.mention {
+  padding: 0 1px;
+  border-radius: 4px;
+  background: #e3f2fd;
+  color: #1565c0;
+  font-weight: 600;
+}
+
+.mention-input {
+  position: relative;
+
+  .comment-form__input {
+    width: 100%;
+  }
+
+  &__menu {
+    // Nad polem – formulář je na konci stránky a pod ním je na mobilu spodní lišta
+    position: absolute;
+    z-index: 50;
+    bottom: 100%;
+    left: 0;
+    min-width: 200px;
+    max-width: 100%;
+    margin-bottom: 2px;
+    padding: 4px 0;
+    list-style: none;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-surface);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &__option {
+    padding: 6px var(--spacing-md);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+
+    &--active,
+    &:hover {
+      background: var(--color-surface-alt);
+      color: var(--color-primary);
+    }
+  }
+}
+
+.comment-list__body {
+  white-space: pre-wrap;
+}

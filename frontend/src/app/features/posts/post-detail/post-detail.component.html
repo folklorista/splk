@@ -83,7 +83,15 @@
                     <strong>{{ commentAuthorName(comment) }}</strong>
                     <span class="detail__meta-relative">{{ comment.createdAt | relativeTime }}</span>
                   </div>
-                  <p class="comment-list__body">{{ comment.body }}</p>
+                  <p class="comment-list__body">
+                    @for (segment of commentSegments(comment); track $index) {
+                      @if (segment.type === 'mention') {
+                        <span class="mention">&#64;{{ memberNickname(segment.memberId) }}</span>
+                      } @else {
+                        <span>{{ segment.text }}</span>
+                      }
+                    }
+                  </p>
                 </li>
               }
             </ul>
@@ -92,37 +100,41 @@
           }
 
           <div class="comment-form">
-            <textarea
-              class="comment-form__input"
-              rows="2"
-              placeholder="Napište komentář…"
-              [value]="newCommentBody()"
-              (input)="newCommentBody.set($any($event.target).value)"
-            ></textarea>
+            <div class="mention-input">
+              <textarea
+                #commentInput
+                class="comment-form__input"
+                rows="2"
+                placeholder="Napište komentář… (@ pro zmínku)"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-controls="mention-suggestions"
+                [attr.aria-expanded]="mentionSuggestions().length > 0"
+                [attr.aria-activedescendant]="mentionSuggestions().length ? 'mention-option-' + activeSuggestion() : null"
+                [value]="newCommentBody()"
+                (input)="onCommentInput(commentInput)"
+                (click)="onCommentInput(commentInput)"
+                (keydown)="onCommentKeydown($event, commentInput)"
+                (blur)="mentionQuery.set(null)"
+              ></textarea>
 
-            @if (mentionedMembers().length) {
-              <div class="comment-form__mentions">
-                @for (m of mentionedMembers(); track m.id) {
-                  <span class="badge">
-                    &#64;{{ m.nickname }}
-                    <button type="button" class="comment-form__mention-remove" (click)="removeMention(m.id)" title="Odebrat zmínku">
-                      <app-icon name="close" [size]="10" />
-                    </button>
-                  </span>
-                }
-              </div>
-            }
-
-            @if (mentionCandidates().length) {
-              <div class="comment-form__add-mention">
-                <select #mentionSelect>
-                  @for (m of mentionCandidates(); track m.id) {
-                    <option [value]="m.id">{{ m.nickname }}</option>
+              @if (mentionSuggestions().length) {
+                <ul id="mention-suggestions" class="mention-input__menu" role="listbox">
+                  @for (m of mentionSuggestions(); track m.id; let i = $index) {
+                    <li
+                      [id]="'mention-option-' + i"
+                      role="option"
+                      class="mention-input__option"
+                      [class.mention-input__option--active]="i === activeSuggestion()"
+                      [attr.aria-selected]="i === activeSuggestion()"
+                      (mousedown)="$event.preventDefault(); chooseMention(m, commentInput)"
+                    >
+                      &#64;{{ m.nickname }}
+                    </li>
                   }
-                </select>
-                <button type="button" class="attendance-btn" (click)="addMention(+mentionSelect.value)">&#64; Zmínit</button>
-              </div>
-            }
+                </ul>
+              }
+            </div>
 
             <button
               type="button"
