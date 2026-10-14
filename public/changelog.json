@@ -1,5 +1,21 @@
 [
   {
+    "version": "v2026.10.3",
+    "releasedAt": "2026-10-14",
+    "dance": {
+      "url": "https://www.lidovakultura.cz/2019/03/01/b-11-do-skoku-z-velke-nad-velickou-rekonstrukce/",
+      "title": "Do skoku z Velké nad Veličkou (rekonstrukce)",
+      "codename": "do skoku",
+      "slug": "do-skoku"
+    },
+    "changes": [
+      "Nastavení: tmavý režim, větší písmo, omezení animací a výchozí zobrazení akcí",
+      "Zmínky přes @ přímo v textu komentáře s nabídkou členů",
+      "Nová ukázková data podle skutečného účelu skupin (Muzika, Kluci, Holky, Malá Vonica, Sklad)",
+      "Požadavky na krojový sklad se píšou do připnutého příspěvku na nástěnce Taneční"
+    ]
+  },
+  {
     "version": "v2026.10.2",
     "releasedAt": "2026-10-14",
     "dance": {
