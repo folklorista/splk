@@ -1,8 +1,18 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { Member } from '../../core/models/member.model';
 import { MOCK_MEMBERS } from './data/mock-members';
+import { nicknameKey } from '../../core/utils/member.utils';
+
+export class NicknameTakenError extends Error {
+  constructor(nickname: string) {
+    super(`Přezdívku „${nickname}“ už má někdo jiný.`);
+  }
+}
+
+const isNicknameTaken = (nickname: string, exceptId?: number) =>
+  membersCache.some((m) => m.id !== exceptId && nicknameKey(m.nickname) === nicknameKey(nickname));
 import { loadDemoData, saveDemoData } from '../../core/data/demo-storage';
 
 let membersCache = loadDemoData('members', () => [...MOCK_MEMBERS]);
@@ -28,6 +38,9 @@ export class MembersService {
   }
 
   createMember(member: Omit<Member, 'id'>): Observable<Member> {
+    if (isNicknameTaken(member.nickname)) {
+      return throwError(() => new NicknameTakenError(member.nickname));
+    }
     const newId = Math.max(...membersCache.map((m) => m.id), 0) + 1;
     const newMember: Member = { ...member, id: newId };
     membersCache.push(newMember);
@@ -39,6 +52,9 @@ export class MembersService {
     const index = membersCache.findIndex((m) => m.id === id);
     if (index === -1) {
       return of(undefined).pipe(delay(300));
+    }
+    if (isNicknameTaken(member.nickname, id)) {
+      return throwError(() => new NicknameTakenError(member.nickname));
     }
     const updated: Member = { ...member, id };
     membersCache[index] = updated;

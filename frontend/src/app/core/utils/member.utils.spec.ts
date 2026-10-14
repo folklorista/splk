@@ -1,5 +1,5 @@
 import { Member } from '../models/member.model';
-import { getFullName, getMemberRoles, memberToUser } from './member.utils';
+import { getFullName, getMemberRoles, memberToUser, nicknameKey } from './member.utils';
 import { LEADERSHIP_GROUP_ID } from '../data/mock-groups';
 
 describe('member.utils', () => {
@@ -35,5 +35,10 @@ describe('member.utils', () => {
     expect(user.name).toBe('Mrož');
     expect(user.email).toBe('');
     expect(user.groupIds).toEqual([2]);
+  });
+
+  it('nicknameKey ignoruje diakritiku, velikost písmen a mezery okolo', () => {
+    expect(nicknameKey(' Aňyčka ')).toBe(nicknameKey('anycka'));
+    expect(nicknameKey('Kuba D')).not.toBe(nicknameKey('Kuba'));
   });
 });

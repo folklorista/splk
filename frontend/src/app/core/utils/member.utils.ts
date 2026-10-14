@@ -23,3 +23,8 @@ export function memberToUser(member: Member): User {
     roles: getMemberRoles(member),
   };
 }
+
+// Přezdívky musí být unikátní (rozlišují členy v aplikaci i ve zmínkách) – porovnání bez diakritiky a velikosti písmen
+export function nicknameKey(nickname: string): string {
+  return nickname.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
+}

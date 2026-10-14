@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
-import { MembersService } from '../members/members.service';
+import { MembersService, NicknameTakenError } from '../members/members.service';
 import { Member } from '../../core/models/member.model';
 import { getFullName } from '../../core/utils/member.utils';
 import { NotificationService } from '../../core/notifications/notification.service';
@@ -215,9 +215,9 @@ export class ProfileComponent {
         this.contactForm.markAsPristine();
         this.saved = true;
       },
-      error: () => {
+      error: (err: Error) => {
         this.isSaving = false;
-        this.saveError = 'Nepodařilo se uložit údaje';
+        this.saveError = err instanceof NicknameTakenError ? err.message : 'Nepodařilo se uložit údaje';
       },
     });
   }

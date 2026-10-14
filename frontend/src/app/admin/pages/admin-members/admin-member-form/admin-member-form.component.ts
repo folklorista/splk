@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MembersService } from '../../../../features/members/members.service';
+import { MembersService, NicknameTakenError } from '../../../../features/members/members.service';
 import { GroupsService } from '../../../../features/groups/groups.service';
 import { Member } from '../../../../core/models/member.model';
 import { Group } from '../../../../core/models/group.model';
@@ -233,9 +233,9 @@ export class AdminMemberFormComponent implements OnInit {
         next: () => {
           this.router.navigate(['/app/admin/members']);
         },
-        error: () => {
+        error: (err: Error) => {
           this.isSubmitting = false;
-          this.submitError = 'Nepodařilo se uložit člena';
+          this.submitError = err instanceof NicknameTakenError ? err.message : 'Nepodařilo se uložit člena';
         },
       });
     } else {
@@ -243,9 +243,9 @@ export class AdminMemberFormComponent implements OnInit {
         next: () => {
           this.router.navigate(['/app/admin/members']);
         },
-        error: () => {
+        error: (err: Error) => {
           this.isSubmitting = false;
-          this.submitError = 'Nepodařilo se vytvořit člena';
+          this.submitError = err instanceof NicknameTakenError ? err.message : 'Nepodařilo se vytvořit člena';
         },
       });
     }

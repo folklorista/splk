@@ -1,5 +1,5 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { MembersService } from './members.service';
+import { MembersService, NicknameTakenError } from './members.service';
 import { Member } from '../../core/models/member.model';
 import { MOCK_MEMBERS } from './data/mock-members';
 
@@ -135,5 +135,27 @@ describe('MembersService', () => {
     service.deleteMember(9999).subscribe((success) => (deleted = success));
     tick(300);
     expect(deleted).toBeFalse();
+  }));
+
+  it('přezdívka musí být unikátní bez ohledu na diakritiku a velikost písmen', fakeAsync(() => {
+    const [first, second] = MOCK_MEMBERS;
+    const { id, ...rest } = second;
+    let error: unknown;
+    service.updateMember(id, { ...rest, nickname: ` ${first.nickname.toUpperCase()} ` }).subscribe({ error: (e) => (error = e) });
+    tick(300);
+    expect(error instanceof NicknameTakenError).toBeTrue();
+
+    let createError: unknown;
+    service.createMember({ ...rest, nickname: first.nickname }).subscribe({ error: (e) => (createError = e) });
+    tick(300);
+    expect(createError instanceof NicknameTakenError).toBeTrue();
+  }));
+
+  it('člen si může ponechat vlastní přezdívku', fakeAsync(() => {
+    const { id, ...rest } = MOCK_MEMBERS[0];
+    let result: Member | undefined;
+    service.updateMember(id, { ...rest, phone: '999' }).subscribe((m) => (result = m));
+    tick(300);
+    expect(result?.phone).toBe('999');
   }));
 });
