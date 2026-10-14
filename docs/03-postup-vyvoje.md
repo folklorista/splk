@@ -180,6 +180,20 @@ Pozdější rozšíření:
 - Ve výpisu nástěnky se u příspěvku zobrazuje počet nových komentářů od poslední návštěvy (`Post.lastVisitedAt`, zapisuje se při otevření i opuštění detailu). Do badge v menu se nepočítají – ten zahrnuje jen nepřečtené příspěvky a zmínky přihlášeného.
 - Cílení na konkrétní jednotlivce bylo zrušeno (příspěvky i akce). Pro jednorázovou příležitost se založí vlastní skupina (např. „Velikonoce 2027 – kluci“) a po skončení se zruší nebo skryje.
 
+## Členové, skupiny a demo data (hotovo)
+
+- **Skupiny** (výchozí): Výbor, Taneční, Muzika, Kluci, Holky, Malá Vonica, Sklad (`core/data/mock-groups.ts`). Každá má zatím nástěnku.
+- **Člen** (`Member`) má `firstName`, `lastName`, `nickname`, `createdAt` (datum přidání do souboru), `isAdmin`; e-mail je nepovinný.
+  - Běžní členové vidí všude jen **přezdívku**; plné jméno je jen v administraci (`getFullName` v `core/utils/member.utils.ts`).
+  - Přezdívku si člen mění sám na profilu, jméno a příjmení jen administrátor.
+- **Role** se odvozují z člena (`memberToUser`): `admin` = příznak `isAdmin`, `leader` = člen skupiny Výbor (`LEADERSHIP_GROUP_ID`).
+- **Mock přihlášení** hledá aktivního člena podle e-mailu; na login obrazovce je výběr demo profilu ze seznamu členů (podle přezdívky).
+- **Reálná data souboru se nesmí dostat do gitu.** Seznam členů je lokálně v `dev/local/clenove.tsv` (ignorováno). `npm run members:import` z něj vygeneruje `frontend/src/app/features/members/data/mock-members.local.ts` (ignorováno přes `*.local.ts`), který v konfiguraci `demo` nahradí vymyšlené členy (`fileReplacements` v `angular.json`).
+  - `npm run frontend:start:demo` – import + dev server s reálnými členy.
+  - `npm run frontend:build:demo` – import + produkční build s reálnými členy. Pozor: jména jsou pak v JavaScriptu stažitelném z webu a přihlášení je zatím jen mock – nasazovat jen tam, kam nemá přístup veřejnost.
+  - Běžný `start`/`build` a testy používají vymyšlené členy ve stejném formátu.
+  - Až bude backend (Fáze 5), nahradí to neverzovaný SQL seed (např. `data/seed.local.sql`).
+
 ## Naplánované úpravy (zatím neimplementovat)
 
 - **Označení příspěvku s novou zmínkou**: příspěvek, ve kterém byl přihlášený člen nově zmíněn (@mention v komentáři), označit ve výpisu nástěnky obdobně jako „Nepřečteno“ (např. štítek „Zmínka“). Badge nástěnky v menu už neviděné zmínky započítává (`getBoardBadgeCount`), chybí jen vyznačení u samotného příspěvku.
@@ -203,7 +217,7 @@ Pozdější rozšíření:
 - **Nepotvrzené akce v záhlaví seznamu akcí**: upozornění „N akcí čeká na tvoji odpověď“ přesunout z `/app/profile` do záhlaví stránky Akce (seznam akcí). Kliknutí na něj může rovnou zapnout filtr „nepotvrzené“.
 - **Stránky Profil a Nastavení vedle sebe**: vedle `/app/profile` vytvořit `/app/settings`. V patičce sidebaru (na mobilu v headeru) přibude vedle tlačítka „Odhlásit se“ ikonka ozubeného kolečka vedoucí na Nastavení. Na profil se jde kliknutím na jméno (viz výše). Obě stránky budou časem přibývat o další položky. Rozdělení: **Profil** = údaje o mně (vidí je ostatní nebo vedení souboru), **Nastavení** = jak se mi aplikace chová.
 - **Rozšířený profil**:
-  - Zobrazované jméno / přezdívka (např. „Mrož“ místo „Michal Musil“). Bude se zobrazovat v aplikaci místo celého jména. Celé jméno zůstane pro administraci a seznamy (zájezdy). Zmínky přes „@“ mají hledat podle přezdívky i celého jména.
+  - ~~Přezdívka~~ – hotovo, viz „Členové, skupiny a demo data“. Zmínky přes „@“ hledají podle přezdívky (celé jméno běžný člen nevidí).
   - Nepovinně číslo pasu a datum konce jeho platnosti (pro seznamy členů na zahraniční zájezdy). Citlivý osobní údaj: vidí ho jen člen sám a administrátor, ne ostatní členové. Upozornit, pokud pas brzy vyprší (např. do 6 měsíců).
 - **Nastavení – notifikace**: zapínání notifikací přesunout z `/app/profile` do `/app/settings`. Rozšířit o výběr skupin, ze kterých chci notifikace dostávat (odběr po nástěnkách). Otevřený bod: zmínky přes „@“ by měly upozornit vždy, bez ohledu na odběr skupiny.
 - **Nastavení – vzhled**: přepínač režimu světlý / tmavý / automatický (podle systému). Barvy přes CSS proměnné, volba uložená v zařízení.
