@@ -1,4 +1,5 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { demoStorageKey } from '../../core/data/demo-storage';
 import { CommentsService } from './comments.service';
 import { PostComment } from './models/comment.model';
 
@@ -76,7 +77,7 @@ describe('CommentsService', () => {
     service.addComment(4, 1, 'Persistovaný komentář', []).subscribe();
     tick(300);
 
-    const stored: PostComment[] = JSON.parse(localStorage.getItem('splk_comments')!);
+    const stored: PostComment[] = JSON.parse(localStorage.getItem(demoStorageKey('comments'))!);
     expect(stored.some((c) => c.body === 'Persistovaný komentář')).toBeTrue();
   }));
 
@@ -86,7 +87,7 @@ describe('CommentsService', () => {
     ];
 
     window.dispatchEvent(new StorageEvent('storage', {
-      key: 'splk_comments',
+      key: demoStorageKey('comments'),
       newValue: JSON.stringify(fromOtherTab),
     }));
 

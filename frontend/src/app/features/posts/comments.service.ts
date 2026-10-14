@@ -3,12 +3,14 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { PostComment } from './models/comment.model';
 import { MOCK_COMMENTS } from './data/mock-comments';
+import { demoStorageKey, loadDemoData, saveDemoData } from '../../core/data/demo-storage';
 
 // Bez backendu je jediný způsob, jak si dvě záložky/přihlášení na stejném
 // zařízení mohou "poslat" nový komentář (a tedy i zmínku), sdílet stav přes
 // localStorage – "storage" event se vyvolá jen v OSTATNÍCH záložkách, což se
 // tu hodí jako jednoduchá náhrada reálné synchronizace.
-const STORAGE_KEY = 'splk_comments';
+const STORAGE_NAME = 'comments';
+const STORAGE_KEY = demoStorageKey(STORAGE_NAME);
 
 @Injectable({ providedIn: 'root' })
 export class CommentsService {
@@ -24,19 +26,11 @@ export class CommentsService {
   }
 
   private loadFromStorage(): PostComment[] {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try {
-        return JSON.parse(raw);
-      } catch {
-        // poškozená data v localStorage – spadneme zpátky na mock data
-      }
-    }
-    return [...MOCK_COMMENTS];
+    return loadDemoData(STORAGE_NAME, () => [...MOCK_COMMENTS]);
   }
 
   private persist(comments: PostComment[]): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+    saveDemoData(STORAGE_NAME, comments);
   }
 
   getComments(postId: number): Observable<PostComment[]> {

@@ -3,12 +3,17 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { AttendanceRecord, AttendanceStatus } from './models/attendance.model';
 import { MOCK_ATTENDANCE } from './data/mock-attendance';
+import { loadDemoData, saveDemoData } from '../../core/data/demo-storage';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
-  private recordsSubject = new BehaviorSubject<AttendanceRecord[]>([...MOCK_ATTENDANCE]);
+  private recordsSubject = new BehaviorSubject<AttendanceRecord[]>(loadDemoData('attendance', () => [...MOCK_ATTENDANCE]));
 
   readonly records$ = this.recordsSubject.asObservable();
+
+  constructor() {
+    this.recordsSubject.subscribe((records) => saveDemoData('attendance', records));
+  }
 
   getAttendance(eventId: number): Observable<AttendanceRecord[]> {
     return this.records$.pipe(

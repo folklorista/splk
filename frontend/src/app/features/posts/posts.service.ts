@@ -3,8 +3,10 @@ import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { Post } from './models/post.model';
 import { MOCK_POSTS } from './data/mock-posts';
+import { loadDemoData, saveDemoData } from '../../core/data/demo-storage';
 
-let postsCache = [...MOCK_POSTS];
+let postsCache = loadDemoData('posts', () => [...MOCK_POSTS]);
+const persist = () => saveDemoData('posts', postsCache);
 
 @Injectable({ providedIn: 'root' })
 export class PostsService {
@@ -21,6 +23,7 @@ export class PostsService {
     const now = new Date().toISOString();
     const newPost: Post = { ...post, id: newId, publishedAt: now, updatedAt: now };
     postsCache.push(newPost);
+    persist();
     return of(newPost).pipe(delay(300));
   }
 
@@ -37,6 +40,7 @@ export class PostsService {
       updatedAt: new Date().toISOString(),
     };
     postsCache[index] = updated;
+    persist();
     return of(updated).pipe(delay(300));
   }
 
@@ -50,6 +54,7 @@ export class PostsService {
         postsCache[index] = { ...postsCache[index], readers: [...readers, memberId] };
       }
     }
+    persist();
     return of(undefined).pipe(delay(300));
   }
 
@@ -61,6 +66,7 @@ export class PostsService {
       postsCache = [...postsCache];
       postsCache[index] = { ...postsCache[index], lastVisitedAt };
     }
+    persist();
     return of(undefined).pipe(delay(300));
   }
 
@@ -72,6 +78,7 @@ export class PostsService {
     }
     postsCache = [...postsCache];
     postsCache[index] = { ...postsCache[index], archivedAt: new Date().toISOString() };
+    persist();
     return of(postsCache[index]).pipe(delay(300));
   }
 
@@ -81,6 +88,7 @@ export class PostsService {
       return of(false).pipe(delay(300));
     }
     postsCache.splice(index, 1);
+    persist();
     return of(true).pipe(delay(300));
   }
 

@@ -3,8 +3,10 @@ import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { Member } from '../../core/models/member.model';
 import { MOCK_MEMBERS } from './data/mock-members';
+import { loadDemoData, saveDemoData } from '../../core/data/demo-storage';
 
-let membersCache = [...MOCK_MEMBERS];
+let membersCache = loadDemoData('members', () => [...MOCK_MEMBERS]);
+const persist = () => saveDemoData('members', membersCache);
 
 @Injectable({ providedIn: 'root' })
 export class MembersService {
@@ -29,6 +31,7 @@ export class MembersService {
     const newId = Math.max(...membersCache.map((m) => m.id), 0) + 1;
     const newMember: Member = { ...member, id: newId };
     membersCache.push(newMember);
+    persist();
     return of(newMember).pipe(delay(300));
   }
 
@@ -39,6 +42,7 @@ export class MembersService {
     }
     const updated: Member = { ...member, id };
     membersCache[index] = updated;
+    persist();
     return of(updated).pipe(delay(300));
   }
 
@@ -48,6 +52,7 @@ export class MembersService {
       return of(false).pipe(delay(300));
     }
     membersCache.splice(index, 1);
+    persist();
     return of(true).pipe(delay(300));
   }
 

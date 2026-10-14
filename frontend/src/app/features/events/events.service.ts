@@ -4,15 +4,19 @@ import { delay, map } from 'rxjs/operators';
 import { AppEvent } from './models/event.model';
 import { MOCK_EVENTS } from './data/mock-events';
 import { AttendanceService } from '../attendance/attendance.service';
+import { loadDemoData, saveDemoData } from '../../core/data/demo-storage';
 
 const createInitialCache = (): AppEvent[] => MOCK_EVENTS.map(event => ({ ...event }));
 
 @Injectable({ providedIn: 'root' })
 export class EventsService {
-  private eventsSubject = new BehaviorSubject<AppEvent[]>(createInitialCache());
+  private eventsSubject = new BehaviorSubject<AppEvent[]>(loadDemoData('events', createInitialCache));
   private readonly eventsWithAttendance$: Observable<AppEvent[]>;
 
   constructor(private attendanceService: AttendanceService) {
+    // Účast se ukládá zvlášť (AttendanceService), k akcím se jen připojuje
+    this.eventsSubject.subscribe((events) => saveDemoData('events', events.map(({ attendance, ...event }) => event)));
+
     this.eventsWithAttendance$ = combineLatest([
       this.eventsSubject,
       this.attendanceService.records$,

@@ -3,8 +3,10 @@ import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { Group } from '../../core/models/group.model';
 import { MOCK_GROUPS } from '../../core/data/mock-groups';
+import { loadDemoData, saveDemoData } from '../../core/data/demo-storage';
 
-let groupsCache = [...MOCK_GROUPS];
+let groupsCache = loadDemoData('groups', () => [...MOCK_GROUPS]);
+const persist = () => saveDemoData('groups', groupsCache);
 
 @Injectable({ providedIn: 'root' })
 export class GroupsService {
@@ -20,6 +22,7 @@ export class GroupsService {
     const newId = Math.max(...groupsCache.map((g) => g.id), 0) + 1;
     const newGroup: Group = { ...group, id: newId };
     groupsCache.push(newGroup);
+    persist();
     return of(newGroup).pipe(delay(300));
   }
 
@@ -30,6 +33,7 @@ export class GroupsService {
     }
     const updated: Group = { ...group, id };
     groupsCache[index] = updated;
+    persist();
     return of(updated).pipe(delay(300));
   }
 
@@ -39,6 +43,7 @@ export class GroupsService {
       return of(false).pipe(delay(300));
     }
     groupsCache.splice(index, 1);
+    persist();
     return of(true).pipe(delay(300));
   }
 
