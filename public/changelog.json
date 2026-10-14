@@ -1,5 +1,23 @@
 [
   {
+    "version": "v2026.10.2",
+    "releasedAt": "2026-10-14",
+    "dance": {
+      "url": "https://www.lidovakultura.cz/2019/03/01/b-2-sedlacka-i-z-velke-nad-velickou/",
+      "title": "Sedlácká z Velké nad Veličkou",
+      "codename": "sedlácká",
+      "slug": "sedlacka"
+    },
+    "changes": [
+      "Kompaktní seznam akcí s filtry podle typu a mé odpovědi a upozorněním na nepotvrzené akce",
+      "Na mobilu ikonová tlačítka ✓ ? ✗, výbor vidí u akcí počty odpovědí",
+      "Poznámky k účasti vidí všichni, v kalendáři se po najetí myší ukážou časy akcí",
+      "Nástěnky: připnuté nahoře, archiv příspěvků a štítek Zmínka",
+      "Na mobilu má každá nástěnka vlastní položku v liště, profil se otevírá kliknutím na jméno",
+      "Přezdívky musí být unikátní"
+    ]
+  },
+  {
     "version": "v2026.10.1",
     "releasedAt": "2026-10-14",
     "dance": {
