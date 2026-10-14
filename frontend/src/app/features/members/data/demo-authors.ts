@@ -20,3 +20,14 @@ export function demoMember(groupIds: number[], nth = 0, excludeIds: number[] = [
   if (!member) throw new Error('Demo data need at least one active member');
   return member;
 }
+
+// Jiný člen skupiny pro komentář – na rozdíl od demoMember nikdy nesáhne mimo skupinu (poslední v seznamu);
+// když vhodný člen není, vrátí undefined a komentář se vynechá.
+export function otherDemoMember(groupIds: number[], nth = 0, excludeIds: number[] = []): Member | undefined {
+  const boardGroup = groupIds[groupIds.length - 1];
+  const inBoard = activeMembers().filter((m) => m.groupIds.includes(boardGroup) && !excludeIds.includes(m.id));
+  if (!inBoard.length) return undefined;
+  const inAll = inBoard.filter((m) => groupIds.every((g) => m.groupIds.includes(g)));
+  const pool = inAll.length ? inAll : inBoard;
+  return pool[nth % pool.length];
+}

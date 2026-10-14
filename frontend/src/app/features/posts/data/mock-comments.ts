@@ -1,44 +1,67 @@
 import { PostComment } from '../models/comment.model';
 import { GROUP_IDS } from '../../../core/data/mock-groups';
 import { Member } from '../../../core/models/member.model';
-import { demoMember } from '../../members/data/demo-authors';
+import { demoMember, otherDemoMember } from '../../members/data/demo-authors';
+import { MOCK_MEMBERS } from '../../members/data/mock-members';
 import { MOCK_POSTS, daysAgo } from './mock-posts';
 import { mentionToken } from '../utils/mentions';
 
-const { vybor, tanecni, holky, malaVonica, sklad } = GROUP_IDS;
+const { vybor, tanecni, muzika, kluci, holky, malaVonica, sklad } = GROUP_IDS;
 
 let nextId = 1;
-function comment(postId: number, author: Member, body: string, createdDaysAgo: number, hour: number, mentioned: Member[] = []): PostComment {
-  return {
+function comment(postId: number, author: Member | undefined, body: string, createdDaysAgo: number, hour: number, mentioned: (Member | undefined)[] = []): PostComment[] {
+  if (!author || mentioned.some((m) => !m)) return [];
+  const members = mentioned as Member[];
+  return [{
     id: nextId++,
     postId,
     authorId: author.id,
-    body: mentioned.reduce((text, m, i) => text.replace(`{${i}}`, mentionToken(m.id)), body),
+    body: members.reduce((text, m, i) => text.replace(`{${i}}`, mentionToken(m.id)), body),
     createdAt: daysAgo(createdDaysAgo, hour),
-    mentionedMemberIds: mentioned.map((m) => m.id),
+    mentionedMemberIds: members.map((m) => m.id),
     seenByMemberIds: [],
-  };
+  }];
 }
 
 const authorOf = (postId: number) => MOCK_POSTS.find((p) => p.id === postId)!.authorId;
 
-// Dotazy na kroje odpovídá Sklad, na dětský soubor Malá Vonica, na organizaci výbor
-const camper = demoMember([tanecni], 4, [authorOf(1)]);
-const storekeeper = demoMember([sklad, tanecni]);
-const helper = demoMember([tanecni], 5, [authorOf(4)]);
-const parent = demoMember([malaVonica], 1, [authorOf(6)]);
-const childrenLeader = demoMember([malaVonica], 0);
-const girl = demoMember([holky], 2, [authorOf(8)]);
-const girlsStorekeeper = demoMember([sklad, holky]);
-const committee = demoMember([vybor, tanecni]);
+
+// Taneční: dotaz k soustředění, žádosti o výměnu krojových součástek → odpovídá Sklad
+const camper = otherDemoMember([tanecni], 4, [authorOf(1)]);
+const committee = otherDemoMember([vybor, tanecni], 0, [camper?.id ?? 0]);
+const swapper = otherDemoMember([tanecni], 6, [authorOf(4)]);
+const shirtNeeder = otherDemoMember([tanecni], 7, [authorOf(4), swapper?.id ?? 0]);
+const storekeeper = otherDemoMember([sklad, tanecni], 0, [swapper?.id ?? 0]);
+// Muzika: kdo může hrát – různí členové Muziky kromě autora (skupina může být malá)
+const musicians = MOCK_MEMBERS.filter((m) => m.isActive && m.groupIds.includes(muzika) && m.id !== authorOf(6));
+// Kluci: obchůzka
+const boy = otherDemoMember([kluci], 2, [authorOf(8)]);
+// Holky: zpěvy
+const girl = otherDemoMember([holky], 3, [authorOf(9)]);
+// Malá Vonica, Sklad: domluva uvnitř skupiny
+const childrenLeader = otherDemoMember([malaVonica], 1, [authorOf(10)]);
+const seamstress = otherDemoMember([sklad], 1, [authorOf(11)]);
 
 export const MOCK_COMMENTS: PostComment[] = [
-  comment(1, camper, 'Budou na soustředění potřeba kroje, nebo si je máme vzít ze skladu?', 5, 18),
-  comment(1, storekeeper, '{0} kroje přivezeme ze skladu my, vlastní si vezměte jen boty a košili.', 5, 20, [camper]),
-  comment(1, camper, 'Díky! {0}, staví autobus i na zastávce u nádraží?', 4, 8, [committee]),
-  comment(4, helper, 'V sobotu dopoledne můžu pomoct.', 1, 19),
-  comment(6, parent, 'Od kolika let můžou děti začít a co si mají na zkoušku vzít?', 4, 12),
-  comment(6, childrenLeader, '{0} od 5 let, stačí cvičky, pohodlné oblečení a pití.', 4, 17, [parent]),
-  comment(8, girl, 'Kde přesně si šátky ve skladu vyzvednu a kdy je otevřeno?', 6, 10),
-  comment(8, girlsStorekeeper, '{0} sklad je otevřený ve čtvrtek 18–19 h, šátky jsou v krabici u vchodu.', 6, 15, [girl]),
+  // comment() vrací pole – prázdné, když pro komentář není vhodný člen
+  ...comment(1, camper, '{0} staví autobus i na zastávce u nádraží?', 5, 8, [committee]),
+  ...comment(1, committee, '{0} ano, v 15:10 u nádraží.', 5, 12, [camper]),
+
+  ...comment(4, swapper, 'Potřebuju vyměnit kordulku za menší, ta současná je mi velká. Ideálně do pátečního nácviku.', 3, 19),
+  ...comment(4, storekeeper, '{0} menší kordulku máme, přines tu svoji ve čtvrtek do skladu (18–19 h) a vyměníme.', 2, 9, [swapper]),
+  ...comment(4, shirtNeeder, 'Prosím o rukávce velikosti L, na jedněch mi chybí knoflík.', 1, 20),
+
+  ...[
+    'Můžu, kontr mám.',
+    'Já mám ten den svatbu v rodině, nemůžu.',
+    'Basa může, jen budu potřebovat odvoz.',
+  ].flatMap((text, i) => comment(6, musicians[i], text, 1, 20 + i)),
+
+  ...comment(8, boy, 'Pomlázku mám, ale koš na vajíčka zase ponesu já? :)', 4, 18),
+
+  ...comment(9, girl, 'Nahrála jsem melodii do sdílené složky, ať se to dá doma procvičit.', 6, 21),
+
+  ...comment(10, childrenLeader, '15. listopadu nemůžu, vyměním si to s někým za 22.', 3, 17),
+
+  ...comment(11, seamstress, 'Souhlas. Jen bych přidala ještě dvě zástěry, ty staré jsou už hodně sešlé.', 2, 18),
 ];
