@@ -1,5 +1,19 @@
 [
   {
+    "version": "v2026.10.1",
+    "releasedAt": "2026-10-14",
+    "dance": {
+      "url": "https://www.lidovakultura.cz/2019/08/01/j-17-hanaca-z-tesic/",
+      "title": "Hanača z Těšic",
+      "codename": "hanača",
+      "slug": "hanaca"
+    },
+    "changes": [
+      "Ukázkový obsah na nástěnkách všech skupin – na dotazy ke krojům odpovídá Sklad, k dětskému souboru Malá Vonica",
+      "Opravené přiřazení členů do skupin a rolí v demu"
+    ]
+  },
+  {
     "version": "v2026.10.0",
     "releasedAt": "2026-10-14",
     "dance": {
