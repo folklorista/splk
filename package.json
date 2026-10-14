@@ -13,6 +13,10 @@
     "frontend:build:demo": "node scripts/build.mjs --demo",
     "frontend:build": "node scripts/build.mjs",
     "build": "npm run frontend:build",
-    "build-info": "node scripts/build-info.mjs"
+    "build-info": "node scripts/build-info.mjs",
+    "deploy": "node scripts/deploy.mjs"
+  },
+  "devDependencies": {
+    "ssh2-sftp-client": "^11.0.0"
   }
 }

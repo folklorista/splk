@@ -71,3 +71,6 @@ file-structure.txt
 
 # Generated at build time (scripts/build-info.mjs)
 /frontend/public/build-info.json
+
+# Local secrets (deploy credentials) – only .env.example is versioned
+.env

@@ -18,3 +18,13 @@ RewriteRule ^ index.html [L]
     Header set Cache-Control "no-cache"
   </FilesMatch>
 </IfModule>
+
+# Neindexovat – aplikace je jen pro členy souboru
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow"
+</IfModule>
+
+# .htaccess/.htpasswd nikdy nevydávat (deploy ukládá .htpasswd do web rootu)
+<Files ".ht*">
+  Require all denied
+</Files>
