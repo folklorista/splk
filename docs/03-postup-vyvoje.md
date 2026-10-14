@@ -221,7 +221,7 @@ Pozdější rozšíření:
   - Nahrávat obsah `frontend/dist/frontend/browser/` včetně `.htaccess`. Nahrání: buď `curl` (je v systému, ale neumí mazat zastaralé soubory), nebo knihovna typu `basic-ftp` – nová závislost, nutné schválení. `lftp` není nainstalovaný.
   - Před nahráním vypsat shrnutí (zdroj, verze/commit, cílový server) a vyžádat potvrzení.
 - **Označení verze v aplikaci**:
-  - Codename tance malými písmeny (např. „klátková“) + vlajka země/regionu původu. Na PC v patičce sidebaru, na mobilu v headeru. Odkaz vede na stránku changelogu.
+  - Codename tance malými písmeny (např. „klátková“), bez vlajky. Na PC v patičce sidebaru, na mobilu v headeru. Odkaz vede na stránku changelogu.
   - Do `<head>` při buildu vložit meta informace: tag / číslo verze, případně revize (branch + commit, příznak necommitnutých změn) a datum buildu. Build-info generovat skriptem do souboru, který aplikace načte (podobně jako `sync-public`).
-  - Otevřené: `data/release-dances.json` zatím nemá zemi/region ani vlajku – doplnit pole (např. `region`, `flag`). Co zobrazit u buildu, který není z tagu (např. jen branch + krátký hash)?
+  - Otevřené: co zobrazit u buildu, který není z tagu (např. jen branch + krátký hash)?
 - **Changelog stránka**: výpis verzí z `changelog.json` (verze, datum, tanec s odkazem, seznam změn). Položky změn dvojjazyčně – `release.mjs` dnes ukládá `changes` jako pole řetězců, změnit na `{ cs, en }`. Zobrazit podle jazyka aplikace (zatím čeština).
