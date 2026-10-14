@@ -30,10 +30,14 @@ describe('DashboardComponent', () => {
     id: 5,
     ensembleId: 1,
     userId: 2,
-    name: 'Vedoucí Souboru',
+    firstName: 'Vedoucí',
+    lastName: 'Souboru',
+    nickname: 'Vedoucí Souboru',
     email: 'vedouci@soubor.cz',
     groupIds: [1],
+    isAdmin: false,
     isActive: true,
+    createdAt: '2020-01-01',
   };
 
   const futureEvent: AppEvent = {

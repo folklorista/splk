@@ -1,7 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService, DEMO_USERS } from '../../core/auth/auth.service';
+import { Observable } from 'rxjs';
+import { AuthService } from '../../core/auth/auth.service';
+import { Member } from '../../core/models/member.model';
+import { User } from '../../core/auth/models/user.model';
+import { LEADERSHIP_GROUP_ID } from '../../core/data/mock-groups';
 
 @Component({
   selector: 'app-login',
@@ -118,10 +122,18 @@ import { AuthService, DEMO_USERS } from '../../core/auth/auth.service';
       text-align: center;
     }
 
-    .demo-buttons {
+    .demo-login {
       display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.5rem;
+    }
+
+    .demo-login select {
+      flex: 1;
+      min-width: 0;
+      padding: 0.65rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9rem;
     }
 
     .btn-demo {
@@ -152,29 +164,40 @@ export class LoginComponent {
   password = '';
   error = signal<string | null>(null);
   loading = signal(false);
-  demoUsers = DEMO_USERS;
+  demoMembers = signal<Member[]>([]);
 
   constructor(
     private auth: AuthService,
     private router: Router,
-  ) {}
+  ) {
+    this.auth.getDemoMembers().subscribe((members) => this.demoMembers.set(members));
+  }
 
   onSubmit(): void {
     this.error.set(null);
     this.loading.set(true);
+    this.handleLogin(this.auth.login(this.email, this.password));
+  }
 
-    this.auth.login(this.email, this.password).subscribe({
+  quickLogin(memberId: number): void {
+    this.error.set(null);
+    this.loading.set(true);
+    this.handleLogin(this.auth.loginAsMember(memberId));
+  }
+
+  demoLabel(member: Member): string {
+    if (member.isAdmin) return `${member.nickname} (administrátor)`;
+    if (member.groupIds.includes(LEADERSHIP_GROUP_ID)) return `${member.nickname} (výbor)`;
+    return member.nickname;
+  }
+
+  private handleLogin(login$: Observable<User>): void {
+    login$.subscribe({
       next: () => this.router.navigate(['/app/dashboard']),
       error: (err: Error) => {
         this.error.set(err.message);
         this.loading.set(false);
       },
     });
-  }
-
-  quickLogin(email: string): void {
-    this.email = email;
-    this.password = 'demo';
-    this.onSubmit();
   }
 }

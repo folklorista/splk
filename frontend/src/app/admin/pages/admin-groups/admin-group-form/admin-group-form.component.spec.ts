@@ -14,10 +14,12 @@ describe('AdminGroupFormComponent', () => {
   const group: Group = { id: 1, ensembleId: 1, name: 'Tanečníci', slug: 'tanecnici', icon: 'footprints' };
 
   const memberInGroup: Member = {
-    id: 1, ensembleId: 1, userId: 1, name: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isActive: true,
+    id: 1, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: 'Nováková', nickname: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isAdmin: false,
+    isActive: true, createdAt: '2020-01-01',
   };
   const memberNotInGroup: Member = {
-    id: 2, ensembleId: 1, userId: 2, name: 'Petr Novák', email: 'petr@soubor.cz', groupIds: [], isActive: true,
+    id: 2, ensembleId: 1, userId: 2, firstName: 'Petr', lastName: 'Novák', nickname: 'Petr Novák', email: 'petr@soubor.cz', groupIds: [], isAdmin: false,
+    isActive: true, createdAt: '2020-01-01',
   };
 
   function configure(paramMap: Record<string, string>): void {

@@ -20,16 +20,32 @@ import { CommonModule } from '@angular/common';
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="admin-member-form__form">
         <div class="admin-member-form__field">
-          <label for="name">Jméno *</label>
-          <input id="name" type="text" formControlName="name" placeholder="Jméno člena" required />
-          @if (form.get('name')?.invalid && form.get('name')?.touched) {
+          <label for="firstName">Jméno *</label>
+          <input id="firstName" type="text" formControlName="firstName" required />
+          @if (form.get('firstName')?.invalid && form.get('firstName')?.touched) {
             <span class="admin-member-form__error">Jméno je povinné</span>
           }
         </div>
 
         <div class="admin-member-form__field">
-          <label for="email">Email *</label>
-          <input id="email" type="email" formControlName="email" placeholder="email@example.cz" required />
+          <label for="lastName">Příjmení *</label>
+          <input id="lastName" type="text" formControlName="lastName" required />
+          @if (form.get('lastName')?.invalid && form.get('lastName')?.touched) {
+            <span class="admin-member-form__error">Příjmení je povinné</span>
+          }
+        </div>
+
+        <div class="admin-member-form__field">
+          <label for="nickname">Přezdívka *</label>
+          <input id="nickname" type="text" formControlName="nickname" placeholder="Zobrazuje se ostatním členům" required />
+          @if (form.get('nickname')?.invalid && form.get('nickname')?.touched) {
+            <span class="admin-member-form__error">Přezdívka je povinná</span>
+          }
+        </div>
+
+        <div class="admin-member-form__field">
+          <label for="email">Email</label>
+          <input id="email" type="email" formControlName="email" placeholder="email@example.cz" />
           @if (form.get('email')?.invalid && form.get('email')?.touched) {
             <span class="admin-member-form__error">Zadejte platný email</span>
           }
@@ -44,6 +60,13 @@ import { CommonModule } from '@angular/common';
           <label for="isActive">
             <input id="isActive" type="checkbox" formControlName="isActive" />
             Aktivní člen
+          </label>
+        </div>
+
+        <div class="admin-member-form__field">
+          <label for="isAdmin">
+            <input id="isAdmin" type="checkbox" formControlName="isAdmin" />
+            Administrátor
           </label>
         </div>
 
@@ -112,6 +135,7 @@ export class AdminMemberFormComponent implements OnInit {
   availableGroups = signal<Group[]>([]);
   selectedGroupIds = signal<number[]>([]);
   private memberId: number | null = null;
+  private loadedMember: Member | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -121,10 +145,13 @@ export class AdminMemberFormComponent implements OnInit {
     private groupsService: GroupsService,
   ) {
     this.form = this.fb.group({
-      name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      nickname: ['', Validators.required],
+      email: ['', Validators.email],
       phone: [''],
       isActive: [true],
+      isAdmin: [false],
     });
   }
 
@@ -151,11 +178,15 @@ export class AdminMemberFormComponent implements OnInit {
     this.membersService.getMember(id).subscribe({
       next: (member) => {
         if (member) {
+          this.loadedMember = member;
           this.form.patchValue({
-            name: member.name,
-            email: member.email,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            nickname: member.nickname,
+            email: member.email ?? '',
             phone: member.phone || '',
             isActive: member.isActive,
+            isAdmin: member.isAdmin,
           });
           this.selectedGroupIds.set([...member.groupIds]);
         }
@@ -185,12 +216,16 @@ export class AdminMemberFormComponent implements OnInit {
     const formValue = this.form.value;
     const memberData: Omit<Member, 'id'> = {
       ensembleId: 1,
-      userId: this.memberId || 999,
-      name: formValue.name,
-      email: formValue.email,
+      userId: this.loadedMember?.userId ?? this.memberId ?? 999,
+      firstName: formValue.firstName.trim(),
+      lastName: formValue.lastName.trim(),
+      nickname: formValue.nickname.trim(),
+      email: formValue.email?.trim() || undefined,
       phone: formValue.phone || undefined,
       groupIds: this.selectedGroupIds(),
+      isAdmin: formValue.isAdmin,
       isActive: formValue.isActive,
+      createdAt: this.loadedMember?.createdAt ?? new Date().toISOString().slice(0, 10),
     };
 
     if (this.isEditMode && this.memberId !== null) {

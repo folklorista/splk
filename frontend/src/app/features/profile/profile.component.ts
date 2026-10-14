@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
@@ -6,6 +6,7 @@ import { MembersService } from '../members/members.service';
 import { EventsService } from '../events/events.service';
 import { getUnconfirmedEventsCount } from '../../core/utils/visibility.utils';
 import { Member } from '../../core/models/member.model';
+import { getFullName } from '../../core/utils/member.utils';
 import { NotificationService } from '../../core/notifications/notification.service';
 
 @Component({
@@ -65,6 +66,13 @@ import { NotificationService } from '../../core/notifications/notification.servi
       font-size: 0.95rem;
       color: #333;
       font-weight: 500;
+    }
+
+    .profile-field-hint {
+      display: block;
+      font-size: 0.8rem;
+      color: #888;
+      font-weight: 400;
     }
 
     .pending-events {
@@ -162,6 +170,7 @@ import { NotificationService } from '../../core/notifications/notification.servi
 })
 export class ProfileComponent {
   pendingEventCount = 0;
+  fullName = signal('');
   contactForm: FormGroup;
   isSaving = false;
   saved = false;
@@ -177,7 +186,8 @@ export class ProfileComponent {
     fb: FormBuilder,
   ) {
     this.contactForm = fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      nickname: ['', Validators.required],
+      email: ['', Validators.email],
       phone: [''],
     });
     this.loadMemberData();
@@ -207,7 +217,8 @@ export class ProfileComponent {
       if (!member) return;
 
       this.member = member;
-      this.contactForm.reset({ email: member.email, phone: member.phone ?? '' });
+      this.fullName.set(getFullName(member));
+      this.contactForm.reset({ nickname: member.nickname, email: member.email ?? '', phone: member.phone ?? '' });
 
       this.events.getEvents().subscribe((events) => {
         this.pendingEventCount = getUnconfirmedEventsCount(events, user, member.id);
@@ -222,22 +233,24 @@ export class ProfileComponent {
     this.saved = false;
     this.saveError = '';
     const { id, ...rest } = this.member;
-    const { email, phone } = this.contactForm.value;
+    const { nickname, email, phone } = this.contactForm.value;
+    const changes = { nickname: nickname.trim(), email: email.trim() || undefined, phone: phone.trim() || undefined };
 
-    this.members.updateMember(id, { ...rest, email: email.trim(), phone: phone.trim() || undefined }).subscribe({
+    this.members.updateMember(id, { ...rest, ...changes }).subscribe({
       next: (updated) => {
         this.isSaving = false;
         if (!updated) {
-          this.saveError = 'Nepodařilo se uložit kontaktní údaje';
+          this.saveError = 'Nepodařilo se uložit údaje';
           return;
         }
         this.member = updated;
+        this.auth.refreshFromMember(updated);
         this.contactForm.markAsPristine();
         this.saved = true;
       },
       error: () => {
         this.isSaving = false;
-        this.saveError = 'Nepodařilo se uložit kontaktní údaje';
+        this.saveError = 'Nepodařilo se uložit údaje';
       },
     });
   }

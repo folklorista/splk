@@ -31,7 +31,7 @@ describe('GroupsService', () => {
     service.getGroup(1).subscribe((group) => (result = group));
     tick(300);
     expect(result?.id).toBe(1);
-    expect(result?.name).toBe('Dospělí');
+    expect(result?.name).toBe('Výbor');
   }));
 
   it('getGroup vrátí undefined pro neexistující id', fakeAsync(() => {

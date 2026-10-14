@@ -1,32 +1,12 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
-import { delay, tap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 import { User } from './models/user.model';
+import { Member } from '../models/member.model';
+import { MembersService } from '../../features/members/members.service';
+import { memberToUser } from '../utils/member.utils';
 
-const MOCK_USERS: Record<string, User> = {
-  'jana@soubor.cz': {
-    id: 1,
-    name: 'Jana Nováková',
-    email: 'jana@soubor.cz',
-    groupIds: [1, 2],
-    roles: ['member'],
-  },
-  'vedouci@soubor.cz': {
-    id: 2,
-    name: 'Vedoucí Souboru',
-    email: 'vedouci@soubor.cz',
-    groupIds: [1, 3],
-    roles: ['member', 'leader'],
-  },
-  'admin@soubor.cz': {
-    id: 3,
-    name: 'Administrátor',
-    email: 'admin@soubor.cz',
-    groupIds: [1, 3],
-    roles: ['member', 'leader', 'admin'],
-  },
-};
-
+// Mock autentizace: uživatelé se odvozují z aktivních členů, heslo se nekontroluje
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private _currentUser = signal<User | null>(null);
@@ -34,23 +14,46 @@ export class AuthService {
   readonly currentUser = this._currentUser.asReadonly();
   readonly isLoggedIn = computed(() => this._currentUser() !== null);
 
+  constructor(private membersService: MembersService) {}
+
   login(email: string, password: string): Observable<User> {
     if (!email || !password) {
       return throwError(() => new Error('Zadejte email a heslo.'));
     }
-    const user = MOCK_USERS[email];
-    if (!user) {
-      return throwError(() => new Error('Uživatel nebyl nalezen.'));
+    const normalized = email.trim().toLowerCase();
+    return this.loginWhere((m) => m.email?.toLowerCase() === normalized);
+  }
+
+  loginAsMember(memberId: number): Observable<User> {
+    return this.loginWhere((m) => m.id === memberId);
+  }
+
+  // Seznam pro rychlé přihlášení na login obrazovce (demo)
+  getDemoMembers(): Observable<Member[]> {
+    return this.membersService
+      .getActiveMembers()
+      .pipe(map((members) => [...members].sort((a, b) => a.nickname.localeCompare(b.nickname, 'cs'))));
+  }
+
+  // Po úpravě vlastního profilu (např. přezdívky) se přihlášený uživatel aktualizuje
+  refreshFromMember(member: Member): void {
+    if (this._currentUser()?.id === member.userId) {
+      this._currentUser.set(memberToUser(member));
     }
-    return of(user).pipe(
-      delay(400),
-      tap((u) => this._currentUser.set(u)),
-    );
   }
 
   logout(): void {
     this._currentUser.set(null);
   }
-}
 
-export const DEMO_USERS = Object.values(MOCK_USERS);
+  private loginWhere(predicate: (member: Member) => boolean): Observable<User> {
+    return this.membersService.getActiveMembers().pipe(
+      map((members) => {
+        const member = members.find(predicate);
+        if (!member) throw new Error('Uživatel nebyl nalezen.');
+        return memberToUser(member);
+      }),
+      tap((user) => this._currentUser.set(user)),
+    );
+  }
+}

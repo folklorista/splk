@@ -27,7 +27,7 @@ describe('AdminPostFormComponent', () => {
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['currentUser']);
     const membersServiceSpy = jasmine.createSpyObj('MembersService', ['getMembers']);
     membersServiceSpy.getMembers.and.returnValue(of([
-      { id: 1, ensembleId: 1, userId: 1, name: 'Test User', email: 'test@test.cz', groupIds: [1], isActive: true },
+      { id: 1, ensembleId: 1, userId: 1, firstName: 'Test', lastName: 'User', nickname: 'Test User', email: 'test@test.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
     ]));
 
     await TestBed.configureTestingModule({
@@ -163,7 +163,7 @@ describe('AdminPostFormComponent v edit módu', () => {
 
     const membersServiceSpy = jasmine.createSpyObj('MembersService', ['getMembers']);
     membersServiceSpy.getMembers.and.returnValue(of([
-      { id: 1, ensembleId: 1, userId: 1, name: 'Editor', email: 'editor@test.cz', groupIds: [1], isActive: true },
+      { id: 1, ensembleId: 1, userId: 1, firstName: 'Editor', lastName: '', nickname: 'Editor', email: 'editor@test.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
     ]));
 
     await TestBed.configureTestingModule({

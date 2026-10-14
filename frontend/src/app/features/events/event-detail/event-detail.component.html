@@ -93,7 +93,7 @@
                   @if (membersByStatus()[status].length) {
                     <ul class="member-column__list">
                       @for (m of membersByStatus()[status]; track m.id) {
-                        <li>{{ m.name }}</li>
+                        <li>{{ m.nickname }}</li>
                       }
                     </ul>
                   } @else {
@@ -106,7 +106,7 @@
                 @if (membersByStatus().pending.length) {
                   <ul class="member-column__list">
                     @for (m of membersByStatus().pending; track m.id) {
-                      <li>{{ m.name }}</li>
+                      <li>{{ m.nickname }}</li>
                     }
                   </ul>
                 } @else {
@@ -126,7 +126,7 @@
                 @if (viewedStatus().viewed.length) {
                   <ul class="member-column__list">
                     @for (m of viewedStatus().viewed; track m.id) {
-                      <li>{{ m.name }}</li>
+                      <li>{{ m.nickname }}</li>
                     }
                   </ul>
                 } @else {
@@ -138,7 +138,7 @@
                 @if (viewedStatus().notViewed.length) {
                   <ul class="member-column__list">
                     @for (m of viewedStatus().notViewed; track m.id) {
-                      <li>{{ m.name }}</li>
+                      <li>{{ m.nickname }}</li>
                     }
                   </ul>
                 } @else {

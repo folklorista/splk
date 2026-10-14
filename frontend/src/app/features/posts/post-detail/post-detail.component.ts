@@ -78,11 +78,11 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   }
 
   authorName(post: Post): string {
-    return this.allMembers().find((m) => m.id === post.authorId)?.name ?? 'Neznámý autor';
+    return this.allMembers().find((m) => m.id === post.authorId)?.nickname ?? 'Neznámý autor';
   }
 
   commentAuthorName(comment: PostComment): string {
-    return this.allMembers().find((m) => m.id === comment.authorId)?.name ?? 'Neznámý autor';
+    return this.allMembers().find((m) => m.id === comment.authorId)?.nickname ?? 'Neznámý autor';
   }
 
   ngOnInit(): void {
@@ -164,7 +164,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     const member = this.mentionCandidates().find((m) => m.id === memberId);
     if (!member) return;
     this.mentionedMembers.update((members) => [...members, member]);
-    this.newCommentBody.update((body) => `${body}${body.endsWith(' ') || !body ? '' : ' '}@${member.name} `);
+    this.newCommentBody.update((body) => `${body}${body.endsWith(' ') || !body ? '' : ' '}@${member.nickname} `);
   }
 
   removeMention(memberId: number): void {

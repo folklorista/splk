@@ -23,9 +23,9 @@ describe('PostFormComponent', () => {
   const leaderUser: User = { id: 3, name: 'Eva', email: 'eva@soubor.cz', groupIds: [1], roles: ['leader'] };
 
   const members: Member[] = [
-    { id: 1, ensembleId: 1, userId: 1, name: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isActive: true },
-    { id: 2, ensembleId: 1, userId: 2, name: 'Petr Novák', email: 'petr@soubor.cz', groupIds: [1], isActive: true },
-    { id: 3, ensembleId: 1, userId: 3, name: 'Eva Svobodová', email: 'eva@soubor.cz', groupIds: [1], isActive: true },
+    { id: 1, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: 'Nováková', nickname: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
+    { id: 2, ensembleId: 1, userId: 2, firstName: 'Petr', lastName: 'Novák', nickname: 'Petr Novák', email: 'petr@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
+    { id: 3, ensembleId: 1, userId: 3, firstName: 'Eva', lastName: 'Svobodová', nickname: 'Eva Svobodová', email: 'eva@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
   ];
 
   const existingPost: Post = {

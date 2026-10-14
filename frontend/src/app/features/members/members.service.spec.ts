@@ -40,7 +40,7 @@ describe('MembersService', () => {
     service.getMember(1).subscribe((member) => (result = member));
     tick(300);
     expect(result?.id).toBe(1);
-    expect(result?.name).toBeTruthy();
+    expect(result?.nickname).toBeTruthy();
   }));
 
   it('getMember vrátí undefined pro neexistující id', fakeAsync(() => {
@@ -54,18 +54,22 @@ describe('MembersService', () => {
     const newMember: Omit<Member, 'id'> = {
       ensembleId: 1,
       userId: 99,
-      name: 'Nový člen',
+      firstName: 'Nový',
+      lastName: 'člen',
+      nickname: 'Nový člen',
       email: 'novy@soubor.cz',
       phone: '777 999 999',
       groupIds: [1],
+      isAdmin: false,
       isActive: true,
+      createdAt: '2020-01-01',
     };
     let created: Member | undefined;
     service.createMember(newMember).subscribe((m) => (created = m));
     tick(300);
     expect(created).toBeDefined();
     expect(created?.id).toBeGreaterThan(0);
-    expect(created?.name).toBe('Nový člen');
+    expect(created?.nickname).toBe('Nový člen');
 
     let allMembers: Member[] = [];
     service.getMembers().subscribe((m) => (allMembers = m));
@@ -77,17 +81,21 @@ describe('MembersService', () => {
     const updated: Omit<Member, 'id'> = {
       ensembleId: 1,
       userId: 1,
-      name: 'Jana Upravená',
+      firstName: 'Jana',
+      lastName: 'Upravená',
+      nickname: 'Jana Upravená',
       email: 'jana-updated@soubor.cz',
       phone: '601 000 000',
       groupIds: [2, 3],
+      isAdmin: false,
       isActive: true,
+      createdAt: '2020-01-01',
     };
     let result: Member | undefined;
     service.updateMember(1, updated).subscribe((m) => (result = m));
     tick(300);
     expect(result?.id).toBe(1);
-    expect(result?.name).toBe('Jana Upravená');
+    expect(result?.nickname).toBe('Jana Upravená');
     expect(result?.email).toBe('jana-updated@soubor.cz');
   }));
 
@@ -95,10 +103,14 @@ describe('MembersService', () => {
     const updated: Omit<Member, 'id'> = {
       ensembleId: 1,
       userId: 1,
-      name: 'Někdo',
+      firstName: 'Někdo',
+      lastName: '',
+      nickname: 'Někdo',
       email: 'nekdo@soubor.cz',
       groupIds: [],
+      isAdmin: false,
       isActive: true,
+      createdAt: '2020-01-01',
     };
     let result: Member | undefined = {} as Member;
     service.updateMember(9999, updated).subscribe((m) => (result = m));

@@ -49,7 +49,7 @@
                 @if (readStatus().read.length) {
                   <ul class="member-column__list">
                     @for (m of readStatus().read; track m.id) {
-                      <li>{{ m.name }}</li>
+                      <li>{{ m.nickname }}</li>
                     }
                   </ul>
                 } @else {
@@ -61,7 +61,7 @@
                 @if (readStatus().unread.length) {
                   <ul class="member-column__list">
                     @for (m of readStatus().unread; track m.id) {
-                      <li>{{ m.name }}</li>
+                      <li>{{ m.nickname }}</li>
                     }
                   </ul>
                 } @else {
@@ -104,7 +104,7 @@
               <div class="comment-form__mentions">
                 @for (m of mentionedMembers(); track m.id) {
                   <span class="badge">
-                    &#64;{{ m.name }}
+                    &#64;{{ m.nickname }}
                     <button type="button" class="comment-form__mention-remove" (click)="removeMention(m.id)" title="Odebrat zmínku">
                       <app-icon name="close" [size]="10" />
                     </button>
@@ -117,7 +117,7 @@
               <div class="comment-form__add-mention">
                 <select #mentionSelect>
                   @for (m of mentionCandidates(); track m.id) {
-                    <option [value]="m.id">{{ m.name }}</option>
+                    <option [value]="m.id">{{ m.nickname }}</option>
                   }
                 </select>
                 <button type="button" class="attendance-btn" (click)="addMention(+mentionSelect.value)">&#64; Zmínit</button>

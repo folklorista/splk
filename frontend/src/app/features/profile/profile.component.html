@@ -8,15 +8,21 @@
       <h2>Osobní údaje</h2>
 
       <div class="profile-field">
-        <div class="profile-field-label">Jméno</div>
-        <div class="profile-field-value">{{ currentUser()!.name }}</div>
+        <div class="profile-field-label">Jméno a příjmení</div>
+        <div class="profile-field-value">{{ fullName() }}</div>
+        <div class="profile-field-hint">Vidí ho jen administrátor, změnit ho může jen on.</div>
       </div>
-    </div>
-
-    <div class="profile-section">
-      <h2>Kontaktní údaje</h2>
 
       <form class="contact-form" [formGroup]="contactForm" (ngSubmit)="saveContact()">
+        <label>
+          Přezdívka
+          <input type="text" formControlName="nickname" (input)="saved = false" />
+          <span class="profile-field-hint">Pod tímto jménem vás vidí ostatní členové.</span>
+          @if (contactForm.get('nickname')?.invalid && contactForm.get('nickname')?.touched) {
+            <span class="contact-form__error">Přezdívka je povinná</span>
+          }
+        </label>
+
         <label>
           E-mail
           <input type="email" formControlName="email" autocomplete="email" (input)="saved = false" />

@@ -14,7 +14,8 @@ import { Member } from '../../models/member.model';
 describe('MainLayoutComponent', () => {
   const user: User = { id: 1, name: 'Staňa', email: 'stana@soubor.cz', groupIds: [1], roles: ['leader'] };
   const member: Member = {
-    id: 5, ensembleId: 1, userId: 1, name: 'Staňa', email: 'stana@soubor.cz', groupIds: [1], isActive: true,
+    id: 5, ensembleId: 1, userId: 1, firstName: 'Staňa', lastName: '', nickname: 'Staňa', email: 'stana@soubor.cz', groupIds: [1], isAdmin: false,
+    isActive: true, createdAt: '2020-01-01',
   };
 
   let notificationSpy: jasmine.SpyObj<NotificationService>;

@@ -12,6 +12,7 @@ import { AppEvent } from '../events/models/event.model';
 describe('ProfileComponent', () => {
   let membersSpy: jasmine.SpyObj<MembersService>;
   let eventsSpy: jasmine.SpyObj<EventsService>;
+  let authSpy: jasmine.SpyObj<AuthService>;
 
   const mockUser: User = {
     id: 1,
@@ -26,13 +27,19 @@ describe('ProfileComponent', () => {
     id: 7,
     ensembleId: 1,
     userId: 1,
-    name: 'Jana Nováková',
+    firstName: 'Jana',
+    lastName: 'Nováková',
+    nickname: 'Jana Nováková',
     email: 'jana@soubor.cz',
     groupIds: [1, 2],
+    isAdmin: false,
     isActive: true,
+    createdAt: '2020-01-01',
   };
 
   beforeEach(async () => {
+    authSpy = jasmine.createSpyObj('AuthService', ['currentUser', 'refreshFromMember']);
+    authSpy.currentUser.and.returnValue(mockUser);
     membersSpy = jasmine.createSpyObj('MembersService', ['getMemberByUserId', 'updateMember']);
     membersSpy.getMemberByUserId.and.returnValue(of(mockMember));
     membersSpy.updateMember.and.callFake((id, member) => of({ ...member, id }));
@@ -44,7 +51,7 @@ describe('ProfileComponent', () => {
       imports: [ProfileComponent],
       providers: [
         provideRouter([]),
-        { provide: AuthService, useValue: { currentUser: () => mockUser } },
+        { provide: AuthService, useValue: authSpy },
         { provide: MembersService, useValue: membersSpy },
         { provide: EventsService, useValue: eventsSpy },
       ],
@@ -82,20 +89,34 @@ describe('ProfileComponent', () => {
     fixture.detectChanges();
 
     expect(membersSpy.getMemberByUserId).toHaveBeenCalledWith(mockUser.id);
-    expect(fixture.componentInstance.contactForm.value).toEqual({ email: 'jana@soubor.cz', phone: '' });
+    expect(fixture.componentInstance.contactForm.value).toEqual({ nickname: 'Jana Nováková', email: 'jana@soubor.cz', phone: '' });
   });
 
-  it('saveContact uloží změněný e-mail a telefon a zbytek člena ponechá', () => {
+  it('saveContact uloží změněnou přezdívku, e-mail a telefon a zbytek člena ponechá', () => {
     const fixture = TestBed.createComponent(ProfileComponent);
     fixture.detectChanges();
     const component = fixture.componentInstance;
 
-    component.contactForm.setValue({ email: 'nova@soubor.cz', phone: ' 777 888 999 ' });
+    component.contactForm.setValue({ nickname: ' Janička ', email: 'nova@soubor.cz', phone: ' 777 888 999 ' });
     component.saveContact();
 
     const { id, ...rest } = mockMember;
-    expect(membersSpy.updateMember).toHaveBeenCalledWith(7, { ...rest, email: 'nova@soubor.cz', phone: '777 888 999' });
+    expect(membersSpy.updateMember).toHaveBeenCalledWith(7, { ...rest, nickname: 'Janička', email: 'nova@soubor.cz', phone: '777 888 999' });
+    expect(authSpy.refreshFromMember).toHaveBeenCalledWith(jasmine.objectContaining({ id: 7, nickname: 'Janička' }));
     expect(component.saved).toBeTrue();
+  });
+
+  it('saveContact povolí prázdný e-mail, ale ne prázdnou přezdívku', () => {
+    const fixture = TestBed.createComponent(ProfileComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    component.contactForm.setValue({ nickname: 'Jana', email: '', phone: '' });
+    expect(component.contactForm.valid).toBeTrue();
+
+    component.contactForm.setValue({ nickname: '', email: '', phone: '' });
+    component.saveContact();
+    expect(membersSpy.updateMember).not.toHaveBeenCalled();
   });
 
   it('saveContact neuloží neplatný e-mail', () => {
@@ -103,7 +124,7 @@ describe('ProfileComponent', () => {
     fixture.detectChanges();
     const component = fixture.componentInstance;
 
-    component.contactForm.setValue({ email: 'neplatny', phone: '' });
+    component.contactForm.setValue({ nickname: 'Jana', email: 'neplatny', phone: '' });
     component.saveContact();
 
     expect(membersSpy.updateMember).not.toHaveBeenCalled();

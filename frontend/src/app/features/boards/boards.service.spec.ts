@@ -20,7 +20,7 @@ describe('BoardsService', () => {
   ];
 
   // Členství se bere z člena (spravuje ho administrace), ne ze statického User.groupIds
-  const member: Member = { id: 7, ensembleId: 1, userId: 1, name: 'Jana', email: 'jana@soubor.cz', groupIds: [1, 2], isActive: true };
+  const member: Member = { id: 7, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: '', nickname: 'Jana', email: 'jana@soubor.cz', groupIds: [1, 2], isAdmin: false, isActive: true, createdAt: '2020-01-01' };
 
   const basePost: Post = {
     id: 1, ensembleId: 1, title: 'P', body: 'B', authorId: 1, groupId: 1,

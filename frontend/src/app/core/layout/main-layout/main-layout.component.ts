@@ -59,7 +59,7 @@ export class MainLayoutComponent implements OnInit {
   }
 
   private notifyMention(comment: PostComment, members: Member[]): void {
-    const authorName = members.find((m) => m.id === comment.authorId)?.name ?? 'Někdo';
+    const authorName = members.find((m) => m.id === comment.authorId)?.nickname ?? 'Někdo';
     this.notificationService.notify('Nová zmínka', `${authorName} vás zmínil(a) v komentáři`);
   }
 

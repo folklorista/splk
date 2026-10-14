@@ -10,7 +10,8 @@ describe('LoginComponent', () => {
   let router: Router;
 
   beforeEach(async () => {
-    authSpy = jasmine.createSpyObj('AuthService', ['login']);
+    authSpy = jasmine.createSpyObj('AuthService', ['login', 'loginAsMember', 'getDemoMembers']);
+    authSpy.getDemoMembers.and.returnValue(of([]));
 
     await TestBed.configureTestingModule({
       imports: [LoginComponent],
@@ -52,6 +53,18 @@ describe('LoginComponent', () => {
     tick(500);
 
     expect(authSpy.login).toHaveBeenCalledWith('jana@test.cz', 'heslo');
+    expect(router.navigate).toHaveBeenCalledWith(['/app/dashboard']);
+  }));
+
+  it('rychlé přihlášení přihlásí vybraného člena', fakeAsync(() => {
+    const mockUser = { id: 3, name: 'Admin', email: '', groupIds: [1], roles: ['member' as const] };
+    authSpy.loginAsMember.and.returnValue(of(mockUser));
+
+    const component = TestBed.createComponent(LoginComponent).componentInstance;
+    component.quickLogin(3);
+    tick(500);
+
+    expect(authSpy.loginAsMember).toHaveBeenCalledWith(3);
     expect(router.navigate).toHaveBeenCalledWith(['/app/dashboard']);
   }));
 });

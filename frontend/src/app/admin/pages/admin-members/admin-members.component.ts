@@ -4,6 +4,7 @@ import { MembersService } from '../../../features/members/members.service';
 import { GroupsService } from '../../../features/groups/groups.service';
 import { Member } from '../../../core/models/member.model';
 import { Group } from '../../../core/models/group.model';
+import { getFullName } from '../../../core/utils/member.utils';
 
 @Component({
   selector: 'app-admin-members',
@@ -32,13 +33,18 @@ import { Group } from '../../../core/models/group.model';
           @for (member of members(); track member.id) {
             <div class="admin-members__item">
               <div class="admin-members__item-header">
-                <h3 class="admin-members__item-title">{{ member.name }}</h3>
+                <h3 class="admin-members__item-title">{{ fullName(member) }} <span class="admin-members__item-nickname">({{ member.nickname }})</span></h3>
+                @if (member.isAdmin) {
+                  <span class="admin-members__badge-inactive">Administrátor</span>
+                }
                 @if (!member.isActive) {
                   <span class="admin-members__badge-inactive">Neaktivní</span>
                 }
               </div>
               <p class="admin-members__item-contact">
-                <span>📧 {{ member.email }}</span>
+                @if (member.email) {
+                  <span>📧 {{ member.email }}</span>
+                }
                 @if (member.phone) {
                   <span>📱 {{ member.phone }}</span>
                 }
@@ -81,6 +87,7 @@ import { Group } from '../../../core/models/group.model';
     .admin-members__item { background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 1.5rem; }
     .admin-members__item-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 0.75rem; }
     .admin-members__item-title { margin: 0; font-size: 1.05rem; font-weight: 600; flex: 1; }
+    .admin-members__item-nickname { font-weight: 400; color: #666; }
     .admin-members__badge-inactive { padding: 0.25rem 0.75rem; background: #f0f0f0; color: #999; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
     .admin-members__item-contact { margin: 0.5rem 0; color: #666; font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.25rem; }
     .admin-members__item-groups { margin: 0.75rem 0 0 0; color: #666; font-size: 0.9rem; }
@@ -115,13 +122,17 @@ export class AdminMembersComponent implements OnInit {
         this.groups.set(groups);
         this.membersService.getMembers().subscribe({
           next: (members) => {
-            this.members.set(members);
+            this.members.set(
+              [...members].sort((a, b) => `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`, 'cs')),
+            );
             this.loading.set(false);
           },
         });
       },
     });
   }
+
+  fullName = getFullName;
 
   getMemberGroupNames(memberId: number): string[] {
     const member = this.members().find((m) => m.id === memberId);

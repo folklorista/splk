@@ -36,7 +36,7 @@ describe('authGuard', () => {
   });
 
   it('přihlášený uživatel projde', (done) => {
-    authService.login('a@b.cz', 'x').subscribe(() => {
+    authService.login('jana@soubor.cz', 'x').subscribe(() => {
       const result = run();
       expect(result).toBe(true);
       done();

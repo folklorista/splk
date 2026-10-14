@@ -68,7 +68,7 @@ export class PostsComponent implements OnInit {
   }
 
   authorName(post: Post): string {
-    return this.allMembers().find((m) => m.id === post.authorId)?.name ?? 'Neznámý autor';
+    return this.allMembers().find((m) => m.id === post.authorId)?.nickname ?? 'Neznámý autor';
   }
 
   constructor(

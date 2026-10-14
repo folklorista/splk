@@ -5,6 +5,7 @@ import { MembersService } from '../../../features/members/members.service';
 import { Group } from '../../../core/models/group.model';
 import { Member } from '../../../core/models/member.model';
 import { IconComponent } from '../../../shared/icon/icon.component';
+import { getFullName } from '../../../core/utils/member.utils';
 
 @Component({
   selector: 'app-admin-groups',
@@ -123,7 +124,7 @@ export class AdminGroupsComponent implements OnInit {
   }
 
   formatMemberNames(members: Member[]): string {
-    return members.map((m) => m.name).join(', ');
+    return members.map((m) => getFullName(m)).join(', ');
   }
 
   onDelete(id: number): void {

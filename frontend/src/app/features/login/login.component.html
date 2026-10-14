@@ -41,17 +41,20 @@
 
     <div class="demo-section">
       <p class="demo-label">Demo profily:</p>
-      <div class="demo-buttons">
-        @for (user of demoUsers; track user.id) {
-          <button
-            class="btn-demo"
-            type="button"
-            (click)="quickLogin(user.email)"
-            [disabled]="loading()"
-          >
-            {{ user.name }}
-          </button>
-        }
+      <div class="demo-login">
+        <select #demoSelect aria-label="Demo profil" [disabled]="loading()">
+          @for (member of demoMembers(); track member.id) {
+            <option [value]="member.id">{{ demoLabel(member) }}</option>
+          }
+        </select>
+        <button
+          class="btn-demo"
+          type="button"
+          (click)="quickLogin(+demoSelect.value)"
+          [disabled]="loading() || !demoMembers().length"
+        >
+          Přihlásit
+        </button>
       </div>
     </div>
   </div>

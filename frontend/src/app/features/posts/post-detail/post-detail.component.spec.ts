@@ -26,10 +26,10 @@ describe('PostDetailComponent', () => {
   const otherMemberUser: User = { id: 2, name: 'Petr', email: 'petr@soubor.cz', groupIds: [1], roles: ['member'] };
 
   const members: Member[] = [
-    { id: 1, ensembleId: 1, userId: 1, name: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isActive: true },
-    { id: 2, ensembleId: 1, userId: 2, name: 'Petr Novák', email: 'petr@soubor.cz', groupIds: [1], isActive: true },
-    { id: 3, ensembleId: 1, userId: 3, name: 'Karel Mimo', email: 'karel@soubor.cz', groupIds: [99], isActive: true },
-    { id: 4, ensembleId: 1, userId: 4, name: 'Eva Svobodová', email: 'eva@soubor.cz', groupIds: [1], isActive: true },
+    { id: 1, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: 'Nováková', nickname: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
+    { id: 2, ensembleId: 1, userId: 2, firstName: 'Petr', lastName: 'Novák', nickname: 'Petr Novák', email: 'petr@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
+    { id: 3, ensembleId: 1, userId: 3, firstName: 'Karel', lastName: 'Mimo', nickname: 'Karel Mimo', email: 'karel@soubor.cz', groupIds: [99], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
+    { id: 4, ensembleId: 1, userId: 4, firstName: 'Eva', lastName: 'Svobodová', nickname: 'Eva Svobodová', email: 'eva@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
   ];
 
   const post: Post = {
@@ -75,8 +75,8 @@ describe('PostDetailComponent', () => {
     fixture.detectChanges();
 
     const status = fixture.componentInstance.readStatus();
-    expect(status.read.map((m) => m.name).sort()).toEqual(['Jana Nováková', 'Petr Novák']);
-    expect(status.unread.map((m) => m.name)).toEqual(['Eva Svobodová']);
+    expect(status.read.map((m) => m.nickname).sort()).toEqual(['Jana Nováková', 'Petr Novák']);
+    expect(status.unread.map((m) => m.nickname)).toEqual(['Eva Svobodová']);
   });
 
   it('příspěvek z nástěnky, kam uživatel nemá přístup, se nezobrazí ani neoznačí za přečtený', () => {
@@ -96,7 +96,7 @@ describe('PostDetailComponent', () => {
     const fixture = TestBed.createComponent(PostDetailComponent);
     fixture.detectChanges();
 
-    const names = fixture.componentInstance.visibleMembers().map((m) => m.name);
+    const names = fixture.componentInstance.visibleMembers().map((m) => m.nickname);
     expect(names).not.toContain('Karel Mimo');
   });
 
@@ -251,7 +251,7 @@ describe('PostDetailComponent s reálnou CommentsService (živý stream)', () =>
   const authorUser: User = { id: 1, name: 'Jana', email: 'jana@soubor.cz', groupIds: [1], roles: ['member'] };
 
   const members: Member[] = [
-    { id: 1, ensembleId: 1, userId: 1, name: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isActive: true },
+    { id: 1, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: 'Nováková', nickname: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
   ];
 
   const post: Post = {

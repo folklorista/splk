@@ -45,7 +45,7 @@ function generateRehearsals(): AppEvent[] {
       endsAt: relativeDate(friday, 21, 30),
       location: 'Kulturní dům, sál č. 2',
       description: 'Pravidelný páteční nácvik celého souboru.',
-      targetGroupIds: [1, 2],
+      targetGroupIds: [2, 3],
     });
   }
   return rehearsals;
@@ -61,7 +61,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     endsAt: relativeDate(-9, 21, 30),
     location: 'Kulturní dům, sál č. 2',
     description: 'Pravidelná týdenní zkouška. Nacvičujeme program na festival.',
-    targetGroupIds: [1],
+    targetGroupIds: [2, 3],
     requiresAction: true,
   },
   {
@@ -73,7 +73,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     endsAt: relativeDate(9, 16, 0),
     location: 'Strážnice, hlavní pódium',
     description: 'Výjezdní vystoupení na mezinárodním folklorním festivalu.',
-    targetGroupIds: [1, 2],
+    targetGroupIds: [2, 3],
   },
   {
     id: 3,
@@ -96,7 +96,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     endsAt: relativeDate(20, 17, 0),
     location: 'Luhačovice, Zálesí',
     description: 'Pětidenní soustředění s intenzivními zkouškami a společným programem.',
-    targetGroupIds: [1],
+    targetGroupIds: [2, 3],
   },
   {
     id: 5,
@@ -107,7 +107,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     endsAt: relativeDate(4, 18, 30),
     location: 'Kulturní dům, zasedací místnost',
     description: 'Schůzka vedení souboru – program, finance, plánování.',
-    targetGroupIds: [3],
+    targetGroupIds: [1],
   },
   {
     id: 6,
@@ -118,7 +118,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     endsAt: relativeDate(-10, 22, 0),
     location: 'Kulturní dům, malý sál',
     description: 'Nácvik hudebního doprovodu.',
-    targetGroupIds: [4],
+    targetGroupIds: [3],
   },
   {
     // Záměrně ve stejný den jako páteční nácvik
@@ -130,7 +130,7 @@ export const MOCK_EVENTS: AppEvent[] = [
     endsAt: relativeDate(daysUntilWeekday(FRIDAY) + 7, 16, 0),
     location: 'Náves, pódium u kostela',
     description: 'Vystoupení na hodech, sraz ve 13:15 v krojích.',
-    targetGroupIds: [1, 2],
+    targetGroupIds: [2, 3],
   },
   ...generateRehearsals(),
 ];

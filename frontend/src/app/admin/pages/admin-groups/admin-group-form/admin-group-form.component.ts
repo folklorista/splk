@@ -7,6 +7,7 @@ import { MembersService } from '../../../../features/members/members.service';
 import { Group } from '../../../../core/models/group.model';
 import { Member } from '../../../../core/models/member.model';
 import { IconComponent, IconName, GROUP_ICON_OPTIONS } from '../../../../shared/icon/icon.component';
+import { getFullName } from '../../../../core/utils/member.utils';
 
 @Component({
   selector: 'app-admin-group-form',
@@ -72,7 +73,7 @@ import { IconComponent, IconName, GROUP_ICON_OPTIONS } from '../../../../shared/
               <ul class="admin-group-form__member-list">
                 @for (member of groupMembers(); track member.id) {
                   <li class="admin-group-form__member-row">
-                    <span>{{ member.name }} <span class="admin-group-form__member-email">({{ member.email }})</span></span>
+                    <span>{{ fullName(member) }} <span class="admin-group-form__member-email">({{ member.nickname }})</span></span>
                     <button
                       type="button"
                       class="admin-group-form__member-remove"
@@ -90,7 +91,7 @@ import { IconComponent, IconName, GROUP_ICON_OPTIONS } from '../../../../shared/
               <div class="admin-group-form__add-member">
                 <select #memberSelect class="admin-group-form__member-select">
                   @for (member of availableMembers(); track member.id) {
-                    <option [value]="member.id">{{ member.name }}</option>
+                    <option [value]="member.id">{{ fullName(member) }} ({{ member.nickname }})</option>
                   }
                 </select>
                 <button type="button" class="admin-group-form__btn-secondary" (click)="addMember(+memberSelect.value)">
@@ -163,6 +164,8 @@ export class AdminGroupFormComponent implements OnInit {
   readonly groupMembers = computed(() => this.allMembers().filter((m) => this.pendingMemberIds().has(m.id)));
   readonly availableMembers = computed(() => this.allMembers().filter((m) => !this.pendingMemberIds().has(m.id)));
   private groupId: number | null = null;
+
+  fullName = getFullName;
 
   constructor(
     private fb: FormBuilder,

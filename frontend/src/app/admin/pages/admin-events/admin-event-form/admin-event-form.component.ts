@@ -12,6 +12,7 @@ import { Member } from '../../../../core/models/member.model';
 import { isItemVisibleToUser } from '../../../../core/utils/visibility.utils';
 import { RelativeTimePipe } from '../../../../shared/pipes/relative-time.pipe';
 import { TargetingEditorComponent } from '../../../../shared/targeting/targeting-editor.component';
+import { getFullName } from '../../../../core/utils/member.utils';
 
 const STATUS_LABELS: Record<AttendanceStatus, string> = {
   yes: 'Přijde',
@@ -111,7 +112,7 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
                 <tbody>
                   @for (member of attendanceMembers(); track member.id) {
                     <tr>
-                      <td>{{ member.name }}</td>
+                      <td>{{ fullName(member) }}</td>
                       <td>
                         <select
                           [value]="pendingStatuses().get(member.id)"
@@ -207,6 +208,8 @@ export class AdminEventFormComponent implements OnInit {
   private originalStatuses = new Map<number, AttendanceStatus>();
   private originalRecords = new Map<number, AttendanceRecord>();
   private eventId: number | null = null;
+
+  fullName = getFullName;
 
   constructor(
     private fb: FormBuilder,
