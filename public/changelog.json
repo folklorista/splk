@@ -1,1 +1,21 @@
-[]
+[
+  {
+    "version": "v2026.10.0",
+    "releasedAt": "2026-10-14",
+    "dance": {
+      "url": "https://www.lidovakultura.cz/2019/07/25/f-6-klatkova-z-hroznove-lhoty/",
+      "title": "Klátková z Hroznové Lhoty",
+      "codename": "klátková",
+      "slug": "klatkova"
+    },
+    "changes": [
+      "Přehled s nejbližšími akcemi a rychlým potvrzením účasti (Ano / Možná / Ne)",
+      "Akce v seznamu i v měsíčním kalendáři s barevně vyznačenou vlastní účastí",
+      "Nástěnky po skupinách souboru s komentáři, zmínkami a upozorněním na nové komentáře",
+      "Členové vystupují pod přezdívkou, kterou si každý může změnit v profilu",
+      "Přihlášení vydrží i po znovunačtení stránky a odkaz vede rovnou na požadované místo",
+      "Demo verze: změny se ukládají jen v tomto prohlížeči a lze je kdykoli obnovit",
+      "Upozornění na novou verzi aplikace a stránka Co je nového"
+    ]
+  }
+]

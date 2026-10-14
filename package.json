@@ -2,7 +2,7 @@
   "name": "splk",
   "description": "A web application for folk ensembles",
   "private": true,
-  "version": "2026.6.0",
+  "version": "2026.10.0",
   "scripts": {
     "sync-public": "node scripts/sync-public.mjs",
     "release": "node scripts/release.mjs",
