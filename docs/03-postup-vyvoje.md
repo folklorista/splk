@@ -218,10 +218,10 @@ Pozdější rozšíření:
     1. aktuální pracovní kopie aktuální branche (včetně necommitnutých změn),
     2. poslední commit aktuální branche (bez necommitnutých změn – build z čistého checkoutu, např. `git worktree` do dočasné složky),
     3. poslední tag z `master` (stejně přes dočasný checkout).
-  - Nahrávat obsah `frontend/dist/frontend/browser/` včetně `.htaccess`. Nahrání: buď `curl` (je v systému, ale neumí mazat zastaralé soubory), nebo knihovna typu `basic-ftp` – nová závislost, nutné schválení. `lftp` není nainstalovaný.
+  - Nahrávat obsah `frontend/dist/frontend/browser/` včetně `.htaccess` přes knihovnu `basic-ftp` (závislost schválena). Umí i odstranit soubory, které na serveru zbyly ze starší verze.
   - Před nahráním vypsat shrnutí (zdroj, verze/commit, cílový server) a vyžádat potvrzení.
 - **Označení verze v aplikaci**:
   - Codename tance malými písmeny (např. „klátková“), bez vlajky. Na PC v patičce sidebaru, na mobilu v headeru. Odkaz vede na stránku changelogu.
   - Do `<head>` při buildu vložit meta informace: tag / číslo verze, případně revize (branch + commit, příznak necommitnutých změn) a datum buildu. Build-info generovat skriptem do souboru, který aplikace načte (podobně jako `sync-public`).
-  - Otevřené: co zobrazit u buildu, který není z tagu (např. jen branch + krátký hash)?
+  - Build, který není z tagu, se místo tance označí jako branch + krátký hash commitu (např. `feature/admin-crud-prototype@0feedfc`), u necommitnutých změn s příznakem.
 - **Changelog stránka**: výpis verzí z `changelog.json` (verze, datum, tanec s odkazem, seznam změn). Položky změn dvojjazyčně – `release.mjs` dnes ukládá `changes` jako pole řetězců, změnit na `{ cs, en }`. Zobrazit podle jazyka aplikace (zatím čeština).
