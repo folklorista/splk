@@ -240,7 +240,9 @@ Implementace: `AuthService` (`splk.auth.user`), `core/data/demo-storage.ts` (`sp
   - Build, který není z tagu, se místo tance označí jako branch + krátký hash commitu (např. `feature/admin-crud-prototype@0feedfc`), u necommitnutých změn s příznakem.
 - **Changelog stránka**: výpis verzí z `changelog.json` (verze, datum, tanec s odkazem, seznam změn). Změny jen česky (pole řetězců jako dnes), dvojjazyčnost až při potřebě.
 
-### Vlna 2 – úpravy pro členy (po prvním nasazení, podle zpětné vazby)
+### Vlna 2 – úpravy pro členy (hotovo)
+
+Implementace: `utils/event-filters.ts` (filtry, počty odpovědí jen pro výbor), `event-rsvp-row` (ikony ✓ ? ✗ pod 480 px), `posts/utils/board-posts.ts` (řazení, archiv, zmínky), bottom nav s nástěnkami (horizontální scroll), `Group.boardEnabled` (chybí = povolena), `NicknameTakenError` v `MembersService`. Navíc: ukázkový obsah s autory podle rolí (`members/data/demo-authors.ts`), neaktivní členové se nepočítají do účasti ani do „Přečteno x z y“.
 
 - **Kompaktní seznam akcí**: v seznamu akcí (`/app/events`) použít `event-rsvp-row` bez detailního popisu. Počty odpovědí („12 ✓ · 3 ✗ · 5 ?“) vidí jen výbor; když se do řádku nevejdou, ukázat je až při hoveru, na mobilu vůbec.
 - **Filtry v seznamu akcí**: podle typu (`EventType`) a podle mé odpovědi (potvrzené / nepotvrzené). Filtry lze kombinovat.
