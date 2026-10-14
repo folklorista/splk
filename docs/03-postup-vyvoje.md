@@ -258,7 +258,9 @@ Implementace: `utils/event-filters.ts` (filtry, počty odpovědí jen pro výbor
 - **Administrace v bottom nav pro administrátora** (`/app/admin`), běžní členové ji nevidí.
 - **Unikátní přezdívky**: při změně přezdívky na profilu (a v administraci) ověřit, že ji nemá nikdo jiný – jinak by se zmínky nedaly rozlišit.
 
-### Vlna 3
+### Vlna 3 (hotovo)
+
+Implementace: `posts/utils/mentions.ts` (token `@[member:ID]`, vykreslení po segmentech bez `innerHTML`), nabídka zmínek v `post-detail` (otevírá se nad polem, šipky/Enter/Tab/Esc), `core/settings/settings.service.ts` (`splk.settings`, jen v zařízení – reset demo dat ho nemaže; atributy `data-theme`, `data-font-size`, `data-reduce-motion` na `<html>`), stránka `/app/settings`. Tmavý režim přebarví proměnné; barvy napevno (štítky, administrace) zůstávají světlé – doladit při revizi administrace. Velikost písma škáluje proměnné `--font-size-*` (nově i `--font-size-xs`).
 
 - **Zmínky při psaní přes „@“ a vyznačené v textu komentáře**: zmínka se teď vybírá zvlášť (select „@ Zmínit“) a ukládá jen do `mentionedMemberIds`, v textu komentáře není vyznačená. Nově:
   - Po napsání „@“ v textarea komentáře vyskočí nabídka členů, které lze na nástěnce zmínit (podle přezdívky). Text psaný za „@“ (až po kurzor) nabídku filtruje, bez ohledu na diakritiku a velikost písmen. Ovládání myší i klávesnicí (šipky, Enter vybere, Esc zavře). Select „@ Zmínit“ odpadne.
