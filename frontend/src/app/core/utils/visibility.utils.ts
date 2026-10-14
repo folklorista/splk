@@ -14,6 +14,10 @@ export function canAccessBoard(groupId: number, memberGroupIds: number[], isAdmi
   return isAdmin || memberGroupIds.includes(groupId);
 }
 
+export function hasBoard(group: { boardEnabled?: boolean }): boolean {
+  return group.boardEnabled !== false;
+}
+
 export function isAdmin(user: User | null): boolean {
   return user?.roles.includes('admin') ?? false;
 }

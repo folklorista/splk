@@ -6,4 +6,6 @@ export interface Group {
   name: string;
   slug: string;
   icon?: IconName;
+  // Nástěnka skupiny; chybějící hodnota = povolena (výchozí)
+  boardEnabled?: boolean;
 }

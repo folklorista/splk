@@ -3,7 +3,7 @@
   <div class="app-shell__main">
     <header class="mobile-header">
       @if (auth.currentUser(); as user) {
-        <span class="mobile-header__user">{{ user.name }}</span>
+        <a class="mobile-header__user" routerLink="/app/profile" title="Můj profil">{{ user.name }}</a>
       }
       <app-version-label />
       <button class="mobile-header__logout" (click)="logout()">Odhlásit se</button>

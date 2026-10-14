@@ -57,7 +57,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private boardBadges = signal<Map<number, number>>(new Map());
   private eventsBadge = signal(0);
 
-  // Hlavní část: Přehled – Akce – nástěnky skupin uživatele – Kroje; Správa: profil (+ administrace pro admina)
+  // Hlavní část: Přehled – Akce – nástěnky skupin uživatele – Kroje; Správa jen pro admina.
+  // Na profil se jde kliknutím na jméno v patičce.
   readonly navSections = computed<NavSection[]>(() => {
     const badge = (count: number | undefined) => (count ? count : undefined);
     const adminItems: NavItem[] = isAdmin(this.auth.currentUser())
@@ -78,13 +79,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
           { path: '/app/costumes', label: 'Kroje', icon: 'shirt' },
         ],
       },
-      {
-        label: 'Správa',
-        items: [
-          { path: '/app/profile', label: 'Můj profil', icon: 'user' },
-          ...adminItems,
-        ],
-      },
+      ...(adminItems.length ? [{ label: 'Správa', items: adminItems }] : []),
     ];
   });
 

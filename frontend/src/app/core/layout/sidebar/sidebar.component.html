@@ -28,7 +28,7 @@
 
   <div class="sidebar__footer">
     @if (auth.currentUser(); as user) {
-      <span class="sidebar__user">{{ user.name }}</span>
+      <a class="sidebar__user" routerLink="/app/profile" title="Můj profil">{{ user.name }}</a>
     }
     <button class="sidebar__logout" (click)="logout()">Odhlásit se</button>
     <app-version-label />

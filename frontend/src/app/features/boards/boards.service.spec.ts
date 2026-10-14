@@ -95,4 +95,14 @@ describe('BoardsService', () => {
       done();
     });
   });
+
+  it('getMyBoards vynechá skupiny s vypnutou nástěnkou (i pro admina)', (done) => {
+    user = { ...user, roles: ['member', 'admin'] };
+    groups[1].boardEnabled = false;
+    configure().getMyBoards().subscribe((boards) => {
+      delete groups[1].boardEnabled;
+      expect(boards.map((b) => b.id)).toEqual([1, 3]);
+      done();
+    });
+  });
 });

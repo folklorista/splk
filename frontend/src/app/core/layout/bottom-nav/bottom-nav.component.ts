@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { EventsService } from '../../../features/events/events.service';
 import { AuthService } from '../../auth/auth.service';
 import { MembersService } from '../../../features/members/members.service';
 import { BoardsService } from '../../../features/boards/boards.service';
-import { getUnconfirmedEventsCount } from '../../utils/visibility.utils';
+import { Group } from '../../models/group.model';
+import { getUnconfirmedEventsCount, isAdmin } from '../../utils/visibility.utils';
 import { interval, Subscription } from 'rxjs';
 import { IconComponent, IconName } from '../../../shared/icon/icon.component';
 
@@ -12,7 +13,7 @@ interface NavItem {
   path: string;
   label: string;
   icon: IconName;
-  badge?: number | string;
+  badge?: number;
 }
 
 @Component({
@@ -20,37 +21,28 @@ interface NavItem {
   standalone: true,
   imports: [RouterLink, RouterLinkActive, IconComponent],
   templateUrl: './bottom-nav.component.html',
-  styles: [`
-    .bottom-nav__item {
-      position: relative;
-    }
-
-    .bottom-nav__badge {
-      position: absolute;
-      top: -8px;
-      right: 6px;
-      min-width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--color-primary);
-      color: #fff;
-      border-radius: 50%;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 0 4px;
-    }
-  `],
 })
 export class BottomNavComponent implements OnInit, OnDestroy {
-  // Na mobilu není místo na každou nástěnku zvlášť – položka Nástěnky vede na rozcestník
-  navItems: NavItem[] = [
-    { path: '/app/dashboard', label: 'Přehled', icon: 'home' },
-    { path: '/app/events', label: 'Akce', icon: 'calendar' },
-    { path: '/app/boards', label: 'Nástěnky', icon: 'megaphone' },
-    { path: '/app/profile', label: 'Profil', icon: 'user' },
-  ];
+  private boards = signal<Group[]>([]);
+  private boardBadges = signal<Map<number, number>>(new Map());
+  private eventsBadge = signal(0);
+
+  // Přehled – Akce – nástěnky, kde je přihlášený členem – (Administrace pro admina).
+  // Když se položky nevejdou, lišta se dá posouvat prstem do strany.
+  readonly navItems = computed<NavItem[]>(() => {
+    const badge = (count: number | undefined) => (count ? count : undefined);
+    return [
+      { path: '/app/dashboard', label: 'Přehled', icon: 'home' },
+      { path: '/app/events', label: 'Akce', icon: 'calendar', badge: badge(this.eventsBadge()) },
+      ...this.boards().map((b): NavItem => ({
+        path: `/app/boards/${b.slug}`,
+        label: b.name,
+        icon: b.icon ?? 'megaphone',
+        badge: badge(this.boardBadges().get(b.id)),
+      })),
+      ...(isAdmin(this.auth.currentUser()) ? [{ path: '/app/admin', label: 'Administrace', icon: 'settings' as IconName }] : []),
+    ];
+  });
 
   private refreshSubscription: Subscription | null = null;
 
@@ -68,32 +60,23 @@ export class BottomNavComponent implements OnInit, OnDestroy {
     this.membersService.getMemberByUserId(user.id).subscribe((member) => {
       if (!member) return;
 
-      const updateBadges = () => {
-        this.boardsService.getBoardBadges().subscribe((badges) => {
-          const count = [...badges.values()].reduce((sum, c) => sum + c, 0);
-          this.setBadge('/app/boards', count);
-        });
-
+      const refresh = () => {
+        // Administrátor vidí všechny nástěnky, v liště má ale jen ty, kde je členem (ostatní v rozcestníku)
+        this.boardsService
+          .getMyBoards()
+          .subscribe((boards) => this.boards.set(boards.filter((b) => member.groupIds.includes(b.id))));
+        this.boardsService.getBoardBadges().subscribe((badges) => this.boardBadges.set(badges));
         this.eventsService.getEvents().subscribe((events) => {
-          this.setBadge('/app/events', getUnconfirmedEventsCount(events, user, member.id));
+          this.eventsBadge.set(getUnconfirmedEventsCount(events, user, member.id));
         });
       };
 
-      updateBadges();
-      this.refreshSubscription = interval(2000).subscribe(() => updateBadges());
+      refresh();
+      this.refreshSubscription = interval(2000).subscribe(() => refresh());
     });
   }
 
   ngOnDestroy(): void {
-    if (this.refreshSubscription) {
-      this.refreshSubscription.unsubscribe();
-    }
-  }
-
-  private setBadge(path: string, count: number): void {
-    const item = this.navItems.find((i) => i.path === path);
-    if (item) {
-      item.badge = count > 0 ? count : undefined;
-    }
+    this.refreshSubscription?.unsubscribe();
   }
 }
