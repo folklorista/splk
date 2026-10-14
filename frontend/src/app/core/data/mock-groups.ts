@@ -10,5 +10,15 @@ export const MOCK_GROUPS: Group[] = [
   { id: 7, ensembleId: 1, name: 'Sklad', slug: 'sklad', icon: 'shirt' },
 ];
 
+export const GROUP_IDS = {
+  vybor: 1,
+  tanecni: 2,
+  muzika: 3,
+  kluci: 4,
+  holky: 5,
+  malaVonica: 6,
+  sklad: 7,
+} as const;
+
 // Členové výboru mají roli vedoucího (leader)
-export const LEADERSHIP_GROUP_ID = 1;
+export const LEADERSHIP_GROUP_ID = GROUP_IDS.vybor;

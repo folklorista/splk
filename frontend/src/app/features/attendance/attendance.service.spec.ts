@@ -68,11 +68,11 @@ describe('AttendanceService', () => {
   }));
 
   it('markViewed vytvoří pending záznam s firstViewedAt, pokud neexistuje', fakeAsync(() => {
-    service.markViewed(3, 8).subscribe();
+    service.markViewed(9999, 8).subscribe();
     tick(300);
 
     let result: AttendanceRecord[] = [];
-    service.getAttendance(3).subscribe((records) => (result = records));
+    service.getAttendance(9999).subscribe((records) => (result = records));
     tick(300);
 
     const record = result.find((r) => r.memberId === 8);
