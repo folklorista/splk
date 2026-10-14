@@ -7,11 +7,12 @@
     "sync-public": "node scripts/sync-public.mjs",
     "release": "node scripts/release.mjs",
     "frontend:install": "npm --prefix frontend install",
-    "frontend:start": "npm --prefix frontend start",
+    "frontend:start": "node scripts/build-info.mjs && npm --prefix frontend start",
     "members:import": "node scripts/import-members.mjs",
-    "frontend:start:demo": "npm run members:import && npm --prefix frontend start -- --configuration demo",
-    "frontend:build:demo": "npm run sync-public && npm run members:import && npm --prefix frontend run build -- --configuration production,demo",
-    "frontend:build": "npm run sync-public && npm --prefix frontend run build",
-    "build": "npm run frontend:build"
+    "frontend:start:demo": "npm run members:import && node scripts/build-info.mjs && npm --prefix frontend start -- --configuration demo",
+    "frontend:build:demo": "node scripts/build.mjs --demo",
+    "frontend:build": "node scripts/build.mjs",
+    "build": "npm run frontend:build",
+    "build-info": "node scripts/build-info.mjs"
   }
 }
