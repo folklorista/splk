@@ -9,6 +9,7 @@ import { User } from '../../core/auth/models/user.model';
 import { Member } from '../../core/models/member.model';
 import { AppEvent } from './models/event.model';
 import { AttendanceService } from '../attendance/attendance.service';
+import { SettingsService } from '../../core/settings/settings.service';
 
 describe('EventsComponent', () => {
   let eventsSpy: jasmine.SpyObj<EventsService>;
@@ -144,5 +145,14 @@ describe('EventsComponent', () => {
     const component = TestBed.createComponent(EventsComponent).componentInstance;
     expect(component.dayTooltip([upcoming, { ...upcoming, startsAt: '2099-03-01T20:30:00', title: 'Schůzka' }]))
       .toBe('18:00 – Budoucí\n20:30 – Schůzka');
+  });
+
+  it('bez query parametru otevře zobrazení podle nastavení', () => {
+    configure();
+    TestBed.inject(SettingsService).update({ eventsView: 'calendar' });
+    const fixture = TestBed.createComponent(EventsComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.view()).toBe('calendar');
   });
 });

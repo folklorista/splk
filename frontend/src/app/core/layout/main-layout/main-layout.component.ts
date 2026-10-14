@@ -3,6 +3,7 @@ import { RouterLink, RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
 import { BottomNavComponent } from '../bottom-nav/bottom-nav.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
+import { IconComponent } from '../../../shared/icon/icon.component';
 import { DemoBannerComponent } from '../demo-banner/demo-banner.component';
 import { VersionLabelComponent } from '../../../shared/version-label/version-label.component';
 import { AuthService } from '../../auth/auth.service';
@@ -15,7 +16,7 @@ import { PostComment } from '../../../features/posts/models/comment.model';
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, BottomNavComponent, SidebarComponent, DemoBannerComponent, VersionLabelComponent],
+  imports: [RouterOutlet, RouterLink, IconComponent, BottomNavComponent, SidebarComponent, DemoBannerComponent, VersionLabelComponent],
   templateUrl: './main-layout.component.html',
 })
 export class MainLayoutComponent implements OnInit {

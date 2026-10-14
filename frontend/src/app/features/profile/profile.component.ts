@@ -5,7 +5,6 @@ import { AuthService } from '../../core/auth/auth.service';
 import { MembersService, NicknameTakenError } from '../members/members.service';
 import { Member } from '../../core/models/member.model';
 import { getFullName } from '../../core/utils/member.utils';
-import { NotificationService } from '../../core/notifications/notification.service';
 
 @Component({
   selector: 'app-profile',
@@ -153,7 +152,6 @@ export class ProfileComponent {
     private auth: AuthService,
     private members: MembersService,
     private router: Router,
-    private notificationService: NotificationService,
     fb: FormBuilder,
   ) {
     this.contactForm = fb.group({
@@ -164,17 +162,8 @@ export class ProfileComponent {
     this.loadMemberData();
   }
 
-  get notificationsSupported(): boolean {
-    return this.notificationService.isSupported;
-  }
 
-  get notificationPermission() {
-    return this.notificationService.permission;
-  }
 
-  enableNotifications(): void {
-    this.notificationService.requestPermission();
-  }
 
   get currentUser() {
     return this.auth.currentUser;

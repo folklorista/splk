@@ -7,6 +7,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
 import { Member } from '../../core/models/member.model';
 import { isItemVisibleToUser } from '../../core/utils/visibility.utils';
+import { SettingsService } from '../../core/settings/settings.service';
 import { AttendanceService } from '../attendance/attendance.service';
 import { AttendanceStatus } from '../attendance/models/attendance.model';
 import { EventRsvpRowComponent } from './event-rsvp-row/event-rsvp-row.component';
@@ -106,11 +107,13 @@ export class EventsComponent implements OnInit {
     private membersService: MembersService,
     private route: ActivatedRoute,
     private router: Router,
+    private settings: SettingsService,
   ) {}
 
   ngOnInit(): void {
     const params = this.route.snapshot.queryParamMap;
-    this.view.set(params.get('view') === 'calendar' ? 'calendar' : 'list');
+    const viewParam = params.get('view');
+    this.view.set(viewParam === 'calendar' || viewParam === 'list' ? viewParam : this.settings.settings().eventsView);
     if (params.get('response') === 'pending') {
       this.filters.set({ ...DEFAULT_EVENT_FILTERS, response: 'pending' });
     }
@@ -147,7 +150,7 @@ export class EventsComponent implements OnInit {
     this.view.set(view);
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { view: view === 'calendar' ? 'calendar' : null },
+      queryParams: { view: view === this.settings.settings().eventsView ? null : view },
       replaceUrl: true,
     });
   }

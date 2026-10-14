@@ -23,6 +23,7 @@
 
   // Typography
   --font-family: system-ui, -apple-system, sans-serif;
+  --font-size-xs: 12px;
   --font-size-sm: 13px;
   --font-size-base: 15px;
   --font-size-lg: 18px;
@@ -31,6 +32,36 @@
   // Breakpoints (used as reference – media queries use raw values)
   // Mobile: < 768px → bottom nav
   // Desktop: >= 768px → sidebar
+}
+
+// Tmavý režim (Nastavení → Vzhled). Barvy, které jsou v komponentách napevno (štítky, upozornění),
+// zůstávají světlé – na tmavém pozadí jsou čitelné.
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-primary: #e5574a;
+  --color-primary-dark: #c0392b;
+  --color-surface: #1e1f22;
+  --color-surface-alt: #141517;
+  --color-border: #3a3b40;
+  --color-text: #ececec;
+  --color-text-muted: #a0a0a6;
+}
+
+// Velikost písma (Nastavení → Vzhled) – pro starší členy
+:root[data-font-size='larger'] {
+  --font-size-xs: 14px;
+  --font-size-sm: 15px;
+  --font-size-base: 17px;
+  --font-size-lg: 20px;
+  --font-size-h1: 25px;
+}
+
+:root[data-font-size='largest'] {
+  --font-size-xs: 16px;
+  --font-size-sm: 17px;
+  --font-size-base: 19px;
+  --font-size-lg: 23px;
+  --font-size-h1: 28px;
 }
 
 $bp-desktop: 768px;

@@ -135,6 +135,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--spacing-sm);
   padding: 0 var(--spacing-md);
   height: var(--header-height);
   background: var(--color-surface);
@@ -198,7 +199,7 @@
 
   &__nav-section-label {
     padding: 10px var(--spacing-md);
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -290,7 +291,7 @@
     justify-content: center;
     gap: 2px;
     padding: 0 4px;
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     transition: color 0.1s;
 
@@ -437,7 +438,7 @@
   }
 
   &__section-title {
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -524,7 +525,7 @@
   display: inline-block;
   padding: 2px 8px;
   border-radius: 12px;
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   white-space: nowrap;
   background: var(--color-surface-alt);
@@ -564,7 +565,7 @@
 
 // Attendance status indicator
 .attendance-status {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 12px;
@@ -848,7 +849,7 @@
   }
 
   &__toggle {
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     flex-shrink: 0;
   }
@@ -887,7 +888,7 @@
     color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     margin-bottom: var(--spacing-sm);
   }
 }
@@ -952,7 +953,7 @@
   }
 
   &__weekday {
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     font-weight: 500;
     color: var(--color-text-muted);
     text-transform: uppercase;
@@ -973,7 +974,7 @@
   }
 
   &__meta {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     white-space: nowrap;
     overflow: hidden;
@@ -991,7 +992,7 @@
   min-width: 44px;
   padding: 6px 8px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   font-weight: 600;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
@@ -1090,7 +1091,7 @@
 
   &__weekday {
     text-align: center;
-    font-size: 11px;
+    font-size: var(--font-size-xs);
     font-weight: 600;
     color: var(--color-text-muted);
     text-transform: uppercase;
@@ -1160,7 +1161,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-md);
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
 
     > span {
@@ -1194,9 +1195,10 @@
     padding: 4px 10px;
     border: 1px solid #f5c542;
     border-radius: 6px;
-    background: var(--color-surface);
+    // Banner je žlutý i v tmavém režimu – tlačítko drží světlé pozadí
+    background: #fff;
     color: inherit;
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     white-space: nowrap;
 
     &:hover {
@@ -1240,7 +1242,7 @@
 
 // Version label (sidebar footer, mobile header) → changelog
 .version-label {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   text-decoration: none;
   overflow: hidden;
@@ -1254,10 +1256,20 @@
   }
 }
 
-.mobile-header .version-label {
+// Flex položkou je hostitelský element komponenty, ne odkaz uvnitř
+.mobile-header app-version-label {
+  flex: 0 1 auto;
+  min-width: 0;
   margin-left: auto;
-  margin-right: var(--spacing-md);
-  max-width: 40vw;
+  overflow: hidden;
+
+  .version-label {
+    display: block;
+  }
+}
+
+.mobile-header__user {
+  flex-shrink: 0;
 }
 
 // Changelog page
@@ -1298,7 +1310,7 @@
   }
 
   &__meta {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
   }
 
@@ -1414,13 +1426,13 @@
     border-radius: 6px;
     background: var(--color-surface-alt);
     color: var(--color-text-muted);
-    font-size: 12px;
+    font-size: var(--font-size-xs);
   }
 }
 
 .attendance-note__hint {
   margin: 4px 0;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-muted);
 }
 
@@ -1486,4 +1498,129 @@ a.mobile-header__user {
     color: var(--color-primary);
     text-decoration: underline;
   }
+}
+
+// Omezit animace (Nastavení, výchozí podle systému)
+:root[data-reduce-motion='true'] *,
+:root[data-reduce-motion='true'] *::before,
+:root[data-reduce-motion='true'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+// Settings link (gear next to logout)
+.settings-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  color: var(--color-text-muted);
+
+  &:hover,
+  &--active {
+    color: var(--color-primary);
+    background: var(--color-surface-alt);
+  }
+}
+
+.mobile-header .settings-link {
+  flex-shrink: 0;
+}
+
+.sidebar__footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// Settings page
+.settings {
+  &__intro {
+    margin-top: calc(-1 * var(--spacing-sm));
+    margin-bottom: var(--spacing-lg);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+
+  &__section {
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-surface);
+  }
+
+  &__title {
+    margin-bottom: var(--spacing-md);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+  }
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &--check {
+      justify-content: flex-start;
+      cursor: pointer;
+    }
+  }
+
+  &__label {
+    font-size: var(--font-size-base);
+  }
+
+  &__hint {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+
+  &__ok {
+    color: #2e7d32;
+    font-size: var(--font-size-sm);
+  }
+}
+
+// Segmented control (settings)
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  overflow: hidden;
+
+  &__btn {
+    padding: 6px 12px;
+    font-size: var(--font-size-sm);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+
+    & + & {
+      border-left: 1px solid var(--color-border);
+    }
+
+    &--active {
+      background: var(--color-primary);
+      color: #fff;
+    }
+  }
+}
+
+.mobile-header__logout {
+  flex-shrink: 0;
+  white-space: nowrap;
 }

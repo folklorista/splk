@@ -1,0 +1,66 @@
+<div class="page settings">
+  <h1 class="page__title">Nastavení</h1>
+  <p class="settings__intro">Platí jen pro toto zařízení.</p>
+
+  <section class="settings__section">
+    <h2 class="settings__title">Vzhled</h2>
+
+    <div class="settings__row">
+      <span class="settings__label">Režim</span>
+      <div class="segmented" role="radiogroup" aria-label="Režim">
+        @for (option of themeOptions; track option.value) {
+          <button type="button" role="radio" class="segmented__btn" [class.segmented__btn--active]="settings().theme === option.value"
+            [attr.aria-checked]="settings().theme === option.value" (click)="update({ theme: option.value })">{{ option.label }}</button>
+        }
+      </div>
+    </div>
+
+    <div class="settings__row">
+      <span class="settings__label">Velikost písma</span>
+      <div class="segmented" role="radiogroup" aria-label="Velikost písma">
+        @for (option of fontSizeOptions; track option.value) {
+          <button type="button" role="radio" class="segmented__btn" [class.segmented__btn--active]="settings().fontSize === option.value"
+            [attr.aria-checked]="settings().fontSize === option.value" (click)="update({ fontSize: option.value })">{{ option.label }}</button>
+        }
+      </div>
+    </div>
+
+    <label class="settings__row settings__row--check">
+      <input type="checkbox" [checked]="settingsService.resolvedReduceMotion()" (change)="update({ reduceMotion: $any($event.target).checked })" />
+      <span>
+        Omezit animace
+        @if (settings().reduceMotion === null) {
+          <span class="settings__hint">(podle systému)</span>
+        }
+      </span>
+    </label>
+  </section>
+
+  <section class="settings__section">
+    <h2 class="settings__title">Akce</h2>
+    <div class="settings__row">
+      <span class="settings__label">Výchozí zobrazení</span>
+      <div class="segmented" role="radiogroup" aria-label="Výchozí zobrazení akcí">
+        @for (option of eventsViewOptions; track option.value) {
+          <button type="button" role="radio" class="segmented__btn" [class.segmented__btn--active]="settings().eventsView === option.value"
+            [attr.aria-checked]="settings().eventsView === option.value" (click)="update({ eventsView: option.value })">{{ option.label }}</button>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="settings__section">
+    <h2 class="settings__title">Upozornění</h2>
+    @if (!notificationsSupported) {
+      <p class="state-note">Tento prohlížeč upozornění nepodporuje.</p>
+    } @else if (notificationPermission() === 'granted') {
+      <p class="settings__ok">✓ Upozornění na zmínky v komentářích jsou povolená</p>
+    } @else if (notificationPermission() === 'denied') {
+      <p class="state-note">Upozornění jsou zablokovaná – povol je v nastavení prohlížeče.</p>
+    } @else {
+      <button type="button" class="attendance-btn attendance-btn--active" (click)="enableNotifications()">
+        Povolit upozornění na zmínky
+      </button>
+    }
+  </section>
+</div>

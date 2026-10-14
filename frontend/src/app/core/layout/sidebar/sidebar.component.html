@@ -30,7 +30,12 @@
     @if (auth.currentUser(); as user) {
       <a class="sidebar__user" routerLink="/app/profile" title="Můj profil">{{ user.name }}</a>
     }
-    <button class="sidebar__logout" (click)="logout()">Odhlásit se</button>
+    <div class="sidebar__footer-actions">
+      <button class="sidebar__logout" (click)="logout()">Odhlásit se</button>
+      <a class="settings-link" routerLink="/app/settings" routerLinkActive="settings-link--active" title="Nastavení" aria-label="Nastavení">
+        <app-icon name="settings" [size]="18" />
+      </a>
+    </div>
     <app-version-label />
   </div>
 </aside>

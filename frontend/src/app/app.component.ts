@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { SettingsService } from './core/settings/settings.service';
 import { UpdateBannerComponent } from './core/layout/update-banner/update-banner.component';
 
 @Component({
@@ -8,4 +9,7 @@ import { UpdateBannerComponent } from './core/layout/update-banner/update-banner
   imports: [RouterOutlet, UpdateBannerComponent],
   template: `<app-update-banner /><router-outlet />`,
 })
-export class AppComponent {}
+export class AppComponent {
+  // Vytvoření služby při startu aplikace promítne uložené nastavení (motiv, písmo, animace)
+  constructor(_settings: SettingsService) {}
+}
