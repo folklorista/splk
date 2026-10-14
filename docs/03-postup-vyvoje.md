@@ -171,6 +171,7 @@ Pozdější rozšíření:
 - WebSocket realtime backend,
 - univerzální komponenta pro výpis seznamu členů (filtrování podle skupin, řazení podle atributů) – nahradila by ad-hoc seznamy v administraci (účast na akci, členové skupiny apod.),
 - ~~skupinové nástěnky~~ – hotovo, viz „Nástěnky po skupinách“ níže.
+- **Inventura krojových součástek u členů** (výhledový cíl, zadáno 2026-10-14): evidovat, které součásti krojů ze skladu má který člen doma, a umožnit jejich inventuru přímo v aplikaci. Rozsáhlá práce na delší dobu, ale hlavní důvod, proč aplikaci v souboru zavést – navazuje na modul Kroje (skupina Sklad) a vyžaduje backend.
 
 ## Nástěnky po skupinách (hotovo)
 
