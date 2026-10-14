@@ -6,10 +6,34 @@ import { Member } from '../models/member.model';
 import { MembersService } from '../../features/members/members.service';
 import { memberToUser } from '../utils/member.utils';
 
+export const AUTH_STORAGE_KEY = 'splk.auth.user';
+
+// Přihlášený uživatel přežije reload / znovuotevření PWA. Úložiště může být nedostupné
+// (anonymní okno, zablokovaná data) – pak se jen nepamatuje.
+function readStoredUser(): User | null {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!raw) return null;
+    const user = JSON.parse(raw) as User;
+    return typeof user?.id === 'number' && Array.isArray(user.groupIds) && Array.isArray(user.roles) ? user : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredUser(user: User | null): void {
+  try {
+    if (user) localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+    else localStorage.removeItem(AUTH_STORAGE_KEY);
+  } catch {
+    // úložiště nedostupné – přihlášení platí jen do reloadu
+  }
+}
+
 // Mock autentizace: uživatelé se odvozují z aktivních členů, heslo se nekontroluje
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private _currentUser = signal<User | null>(null);
+  private _currentUser = signal<User | null>(readStoredUser());
 
   readonly currentUser = this._currentUser.asReadonly();
   readonly isLoggedIn = computed(() => this._currentUser() !== null);
@@ -38,12 +62,17 @@ export class AuthService {
   // Po úpravě vlastního profilu (např. přezdívky) se přihlášený uživatel aktualizuje
   refreshFromMember(member: Member): void {
     if (this._currentUser()?.id === member.userId) {
-      this._currentUser.set(memberToUser(member));
+      this.setUser(memberToUser(member));
     }
   }
 
   logout(): void {
-    this._currentUser.set(null);
+    this.setUser(null);
+  }
+
+  private setUser(user: User | null): void {
+    this._currentUser.set(user);
+    writeStoredUser(user);
   }
 
   private loginWhere(predicate: (member: Member) => boolean): Observable<User> {
@@ -53,7 +82,7 @@ export class AuthService {
         if (!member) throw new Error('Uživatel nebyl nalezen.');
         return memberToUser(member);
       }),
-      tap((user) => this._currentUser.set(user)),
+      tap((user) => this.setUser(user)),
     );
   }
 }

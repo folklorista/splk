@@ -1,11 +1,18 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { Member } from '../../core/models/member.model';
 import { User } from '../../core/auth/models/user.model';
 import { LEADERSHIP_GROUP_ID } from '../../core/data/mock-groups';
+
+const DEFAULT_RETURN_URL = '/app/dashboard';
+
+// Vrátit se lze jen dovnitř aplikace – ne na cizí doménu (open redirect) ani zpět na login
+export function safeReturnUrl(url: string | null | undefined): string {
+  return url && url.startsWith('/app') ? url : DEFAULT_RETURN_URL;
+}
 
 @Component({
   selector: 'app-login',
@@ -166,10 +173,19 @@ export class LoginComponent {
   loading = signal(false);
   demoMembers = signal<Member[]>([]);
 
+  private readonly returnUrl: string;
+
   constructor(
     private auth: AuthService,
     private router: Router,
+    route: ActivatedRoute,
   ) {
+    this.returnUrl = safeReturnUrl(route.snapshot.queryParamMap.get('returnUrl'));
+    // Už přihlášený (zapamatované přihlášení) na login nepatří
+    if (this.auth.isLoggedIn()) {
+      this.router.navigateByUrl(this.returnUrl);
+      return;
+    }
     this.auth.getDemoMembers().subscribe((members) => this.demoMembers.set(members));
   }
 
@@ -193,7 +209,7 @@ export class LoginComponent {
 
   private handleLogin(login$: Observable<User>): void {
     login$.subscribe({
-      next: () => this.router.navigate(['/app/dashboard']),
+      next: () => this.router.navigateByUrl(this.returnUrl),
       error: (err: Error) => {
         this.error.set(err.message);
         this.loading.set(false);

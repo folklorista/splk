@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { Router } from '@angular/router';
 import { authGuard } from './auth.guard';
-import { AuthService } from './auth.service';
+import { AUTH_STORAGE_KEY, AuthService } from './auth.service';
 
 describe('authGuard', () => {
   let authService: AuthService;
@@ -10,10 +10,11 @@ describe('authGuard', () => {
 
   const run = () =>
     TestBed.runInInjectionContext(() =>
-      authGuard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot),
+      authGuard({} as ActivatedRouteSnapshot, { url: '/app/events/5' } as RouterStateSnapshot),
     );
 
   beforeEach(() => {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
     TestBed.configureTestingModule({
       providers: [
         {
@@ -29,10 +30,12 @@ describe('authGuard', () => {
     router = TestBed.inject(Router);
   });
 
-  it('nepřihlášený uživatel dostane UrlTree na /login', () => {
+  afterEach(() => localStorage.removeItem(AUTH_STORAGE_KEY));
+
+  it('nepřihlášený uživatel dostane UrlTree na /login s návratovou URL', () => {
     const result = run();
     expect(result).not.toBe(true);
-    expect(router.createUrlTree).toHaveBeenCalledWith(['/login']);
+    expect(router.createUrlTree).toHaveBeenCalledWith(['/login'], { queryParams: { returnUrl: '/app/events/5' } });
   });
 
   it('přihlášený uživatel projde', (done) => {
