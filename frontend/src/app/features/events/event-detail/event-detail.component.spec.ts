@@ -108,4 +108,28 @@ describe('EventDetailComponent', () => {
 
     expect(attendanceSpy.getAttendance).toHaveBeenCalledWith(10);
   });
+
+  it('poznámku k účasti vidí i ostatní a na kliknutí se rozbalí', () => {
+    configure([{ eventId: 10, memberId: 2, status: 'no', note: 'Pracovní povinnost' }]);
+    const fixture = TestBed.createComponent(EventDetailComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+
+    expect(component.noteFor(2)).toBe('Pracovní povinnost');
+    expect(component.noteFor(3)).toBeUndefined();
+    component.toggleNote(2);
+    expect(component.openNoteMemberId()).toBe(2);
+    component.toggleNote(2);
+    expect(component.openNoteMemberId()).toBeNull();
+  });
+
+  it('neaktivní členy do účasti nepočítá', () => {
+    members.push({ ...members[0], id: 5, userId: 5, nickname: 'Bývalý', isActive: false });
+    configure([]);
+    const fixture = TestBed.createComponent(EventDetailComponent);
+    fixture.detectChanges();
+    members.pop();
+
+    expect(fixture.componentInstance.visibleMembers().map((m) => m.nickname)).not.toContain('Bývalý');
+  });
 });

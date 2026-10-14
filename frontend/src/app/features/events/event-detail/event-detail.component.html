@@ -68,10 +68,11 @@
                 <textarea
                   class="attendance-note__input"
                   rows="2"
-                  placeholder="Poznámka pro vedoucího…"
+                  placeholder="Poznámka k účasti…"
                   [value]="noteValue()"
                   (input)="noteValue.set($any($event.target).value)"
                 ></textarea>
+                <p class="attendance-note__hint">Poznámku uvidí všichni, kdo vidí tuto akci.</p>
                 <div class="attendance-note__actions">
                   <button class="attendance-btn attendance-btn--active" (click)="saveNote(noteValue())">Uložit</button>
                   <button class="attendance-btn" (click)="noteOpen.set(false)">Zrušit</button>
@@ -93,7 +94,19 @@
                   @if (membersByStatus()[status].length) {
                     <ul class="member-column__list">
                       @for (m of membersByStatus()[status]; track m.id) {
-                        <li>{{ m.nickname }}</li>
+                        <li>
+                          @if (noteFor(m.id); as note) {
+                            <button type="button" class="member-note" [title]="note" [attr.aria-expanded]="openNoteMemberId() === m.id"
+                              (click)="toggleNote(m.id)">
+                              {{ m.nickname }} <app-icon name="comment" [size]="13" />
+                            </button>
+                            @if (openNoteMemberId() === m.id) {
+                              <span class="member-note__text">{{ note }}</span>
+                            }
+                          } @else {
+                            {{ m.nickname }}
+                          }
+                        </li>
                       }
                     </ul>
                   } @else {

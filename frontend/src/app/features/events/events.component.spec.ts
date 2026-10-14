@@ -138,4 +138,11 @@ describe('EventsComponent', () => {
 
     expect(fixture.componentInstance.filters().response).toBe('pending');
   });
+
+  it('tooltip dne vypíše čas a název akcí', () => {
+    configure();
+    const component = TestBed.createComponent(EventsComponent).componentInstance;
+    expect(component.dayTooltip([upcoming, { ...upcoming, startsAt: '2099-03-01T20:30:00', title: 'Schůzka' }]))
+      .toBe('18:00 – Budoucí\n20:30 – Schůzka');
+  });
 });

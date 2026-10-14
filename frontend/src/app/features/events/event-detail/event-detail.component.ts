@@ -48,12 +48,22 @@ export class EventDetailComponent implements OnInit {
   targetGroups = signal<Group[]>([]);
 
   readonly statuses: AttendanceStatus[] = ['yes', 'no', 'maybe'];
+  // Na mobilu (bez hoveru) se poznámka rozbalí kliknutím na jméno
+  openNoteMemberId = signal<number | null>(null);
+
+  // Poznámky k účasti vidí všichni, kdo akci vidí
+  noteFor = (memberId: number): string | undefined =>
+    this.eventRecords().find((r) => r.memberId === memberId)?.note;
+
+  toggleNote(memberId: number): void {
+    this.openNoteMemberId.update((current) => (current === memberId ? null : memberId));
+  }
   readonly statusLabels = STATUS_LABELS;
 
   readonly visibleMembers = computed(() => {
     const event = this.event();
     if (!event) return [];
-    return this.allMembers().filter((m) => isItemVisibleToUser(event.targetGroupIds, m.groupIds));
+    return this.allMembers().filter((m) => m.isActive && isItemVisibleToUser(event.targetGroupIds, m.groupIds));
   });
 
   // Členové rozdělení podle stavu účasti – chybějící záznam se počítá jako "pending"

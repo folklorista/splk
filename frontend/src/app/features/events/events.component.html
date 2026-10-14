@@ -40,6 +40,7 @@
               [class.calendar__day--today]="day.dateKey === todayKey"
               [class.calendar__day--selected]="day.dateKey === selectedDateKey()"
               [attr.aria-label]="day.day + '. ' + (day.events.length ? '– akcí: ' + day.events.length : '')"
+              [title]="dayTooltip(day.events)"
               (click)="selectDay(day.dateKey)"
             >
               <span class="calendar__day-number">{{ day.day }}</span>

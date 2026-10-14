@@ -67,6 +67,11 @@ export class EventsComponent implements OnInit {
     );
   });
 
+  // Tooltip dne (jen zařízení s hoverem): „18:00 – Nácvik“
+  dayTooltip(events: AppEvent[]): string {
+    return events.map((e) => `${e.startsAt.slice(11, 16)} – ${e.title}`).join('\n');
+  }
+
   selectedDayEvents = computed(() => eventsOnDay(this.visibleEvents(), this.selectedDateKey()));
 
   ownStatus = (event: AppEvent): AttendanceStatus => ownAttendanceStatus(event, this.currentMemberId());
