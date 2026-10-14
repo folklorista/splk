@@ -83,6 +83,14 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "demo": {
+              "fileReplacements": [
+                {
+                  "replace": "src/app/features/members/data/mock-members.ts",
+                  "with": "src/app/features/members/data/mock-members.local.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -95,6 +103,9 @@
             },
             "development": {
               "buildTarget": "frontend:build:development"
+            },
+            "demo": {
+              "buildTarget": "frontend:build:development,demo"
             }
           },
           "defaultConfiguration": "development"

@@ -65,3 +65,6 @@ file-structure.txt
 
 # Claude files
 .claude
+
+# Local demo data with real member names (scripts/import-members.mjs)
+*.local.ts
