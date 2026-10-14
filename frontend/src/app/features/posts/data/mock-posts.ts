@@ -19,7 +19,7 @@ function post(
   title: string,
   body: string,
   publishedDaysAgo: number,
-  options: Partial<Pick<Post, 'isPinned' | 'requiresAction'>> = {},
+  options: Partial<Pick<Post, 'isPinned' | 'requiresAction'>> & { archivedDaysAgo?: number } = {},
 ): Post {
   const publishedAt = daysAgo(publishedDaysAgo, 9 + (id % 9), 15);
   return {
@@ -34,6 +34,7 @@ function post(
     isPinned: options.isPinned ?? false,
     requiresAction: options.requiresAction ?? false,
     readers: [],
+    ...(options.archivedDaysAgo !== undefined ? { archivedAt: daysAgo(options.archivedDaysAgo, 20) } : {}),
   };
 }
 
@@ -70,4 +71,7 @@ export const MOCK_POSTS: Post[] = [
   post(10, sklad, demoMember([sklad]).id, 'Inventura krojů',
     'V sobotu dopoledne děláme inventuru. Kdo má doma kroj ze skladu, vraťte ho prosím do pátku.',
     10),
+  post(11, tanecni, demoMember([vybor, tanecni]).id, 'Přihlášky na zájezd do Polska',
+    'Přihlášky na zájezd jsou uzavřené, seznam účastníků rozešleme e-mailem. Díky všem!',
+    30, { archivedDaysAgo: 20 }),
 ];

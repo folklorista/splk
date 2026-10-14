@@ -6,7 +6,7 @@ export const DEMO_STORAGE_PREFIX = 'splk.demo.';
 
 // Zvýšit při změně tvaru mock dat – starší uložená data se pak zahodí místo toho,
 // aby rozbila novou verzi aplikace
-export const DEMO_DATA_VERSION = 2;
+export const DEMO_DATA_VERSION = 3;
 
 const VERSION_KEY = `${DEMO_STORAGE_PREFIX}version`;
 

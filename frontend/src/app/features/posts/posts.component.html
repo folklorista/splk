@@ -10,39 +10,66 @@
     <p class="state-note">Načítání…</p>
   } @else if (!board()) {
     <p class="state-note">Nástěnka nebyla nalezena.</p>
-  } @else if (!visiblePosts().length) {
-    <p class="state-note">Žádné příspěvky.</p>
   } @else {
-    <ul class="item-list">
-      @for (post of visiblePosts(); track post.id) {
-        <li
-          class="item-list__item item-list__item--link"
-          [class.item-list__item--requires-action]="isUnread(post)"
-          [routerLink]="['/app/posts', post.id]"
-        >
-          <div class="item-list__row">
-            <span class="item-list__title">{{ post.title }}</span>
-            <div class="item-list__badges">
-              @if (isUnread(post)) {
-                <span class="badge badge--requires-action">Nepřečteno</span>
-              }
-              @if (newCommentsCount(post); as count) {
-                <span class="badge">{{ newCommentsLabel(count) }}</span>
-              }
-              @if (post.isPinned) {
-                <span class="badge badge--pinned">Připnuto</span>
-              }
-            </div>
-          </div>
-          <div class="item-list__meta">
-            {{ post.publishedAt | date: 'd. M. yyyy' }} · {{ authorName(post) }}
-            @if (isLeader || isAdmin) {
-              · {{ readCountLabel(post) }}
-            }
-          </div>
-          <p class="item-list__body">{{ post.body }}</p>
-        </li>
+    @if (!visiblePosts().length) {
+      <p class="state-note">Žádné příspěvky.</p>
+    } @else {
+      <ul class="item-list">
+        @for (post of visiblePosts(); track post.id) {
+          <ng-container *ngTemplateOutlet="postItem; context: { $implicit: post }" />
+        }
+      </ul>
+    }
+
+    @if (archivedPosts().length) {
+      <div class="board-archive">
+        <button type="button" class="board-archive__toggle" [attr.aria-expanded]="showArchived()" (click)="showArchived.set(!showArchived())">
+          {{ showArchived() ? 'Skrýt archivované' : 'Zobrazit archivované' }} ({{ archivedPosts().length }})
+        </button>
+      </div>
+      @if (showArchived()) {
+        <ul class="item-list">
+          @for (post of archivedPosts(); track post.id) {
+            <ng-container *ngTemplateOutlet="postItem; context: { $implicit: post }" />
+          }
+        </ul>
       }
-    </ul>
+    }
   }
 </div>
+
+<ng-template #postItem let-post>
+  <li
+    class="item-list__item item-list__item--link"
+    [class.item-list__item--requires-action]="!post.archivedAt && (isUnread(post) || hasMention(post))"
+    [class.item-list__item--archived]="post.archivedAt"
+    [routerLink]="['/app/posts', post.id]"
+  >
+    <div class="item-list__row">
+      <span class="item-list__title">{{ post.title }}</span>
+      <div class="item-list__badges">
+        @if (hasMention(post)) {
+          <span class="badge badge--mention">Zmínka</span>
+        }
+        @if (!post.archivedAt && isUnread(post)) {
+          <span class="badge badge--requires-action">Nepřečteno</span>
+        }
+        @if (newCommentsCount(post); as count) {
+          <span class="badge">{{ newCommentsLabel(count) }}</span>
+        }
+        @if (post.archivedAt) {
+          <span class="badge">Archiv</span>
+        } @else if (post.isPinned) {
+          <span class="badge badge--pinned">Připnuto</span>
+        }
+      </div>
+    </div>
+    <div class="item-list__meta">
+      {{ post.publishedAt | date: 'd. M. yyyy' }} · {{ authorName(post) }}
+      @if (isLeader || isAdmin) {
+        · {{ readCountLabel(post) }}
+      }
+    </div>
+    <p class="item-list__body">{{ post.body }}</p>
+  </li>
+</ng-template>

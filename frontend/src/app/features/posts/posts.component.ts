@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
@@ -14,12 +14,13 @@ import { PostComment } from './models/comment.model';
 import { CommentsService } from './comments.service';
 import { getNewCommentsCount } from '../../core/utils/visibility.utils';
 import { Group } from '../../core/models/group.model';
+import { hasUnseenMention, sortArchivedPosts, sortBoardPosts } from './utils/board-posts';
 
 // Nástěnka jedné skupiny (/app/boards/:slug)
 @Component({
   selector: 'app-posts',
   standalone: true,
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, NgTemplateOutlet],
   templateUrl: './posts.component.html',
 })
 export class PostsComponent implements OnInit {
@@ -30,13 +31,17 @@ export class PostsComponent implements OnInit {
   allMembers = signal<Member[]>([]);
   comments = signal<PostComment[]>([]);
 
-  visiblePosts = computed(() => {
+  showArchived = signal(false);
+
+  private boardPosts = computed(() => {
     const board = this.board();
-    if (!board) return [];
-    return this.posts()
-      .filter(p => p.groupId === board.id)
-      .filter(p => !p.archivedAt);
+    return board ? this.posts().filter(p => p.groupId === board.id) : [];
   });
+
+  visiblePosts = computed(() => sortBoardPosts(this.boardPosts().filter(p => !p.archivedAt)));
+  archivedPosts = computed(() => sortArchivedPosts(this.boardPosts().filter(p => !!p.archivedAt)));
+
+  hasMention = (post: Post): boolean => hasUnseenMention(post, this.comments(), this.currentMemberId());
 
   isUnread = (post: Post): boolean => {
     const memberId = this.currentMemberId();
@@ -62,7 +67,7 @@ export class PostsComponent implements OnInit {
   }
 
   readCountLabel(post: Post): string {
-    const boardMembers = this.allMembers().filter((m) => m.groupIds.includes(post.groupId));
+    const boardMembers = this.allMembers().filter((m) => m.isActive && m.groupIds.includes(post.groupId));
     const readCount = boardMembers.filter((m) => post.readers?.includes(m.id)).length;
     return `Přečteno ${readCount} z ${boardMembers.length}`;
   }
