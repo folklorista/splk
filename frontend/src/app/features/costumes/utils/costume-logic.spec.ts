@@ -10,6 +10,8 @@ import {
   kitView,
   parseBorrowerKey,
   borrowerKey,
+  myCostumeRows,
+  stockSummary,
 } from './costume-logic';
 
 describe('costume-logic', () => {
@@ -69,5 +71,24 @@ describe('costume-logic', () => {
       ],
     });
     expect(progress).toEqual(jasmine.objectContaining({ total: 3, checked: 2, unchecked: 1, outside: 1, outsideUnchecked: 1, missing: 1 }));
+  });
+});
+
+describe('costume-logic – přehledy', () => {
+  const state = seedCostumeState();
+
+  it('Moje kroje: věci svěřené členovi včetně neočíslovaných kusů', () => {
+    const rows = myCostumeRows(state, 1);
+    expect(rows.length).toBe(5);
+    expect(rows.some((r) => r.label.includes('1 ks'))).toBeTrue();
+    expect(myCostumeRows(state, 999).length).toBe(0);
+  });
+
+  it('souhrn skladu', () => {
+    const summary = stockSummary(state);
+    expect(summary.retired).toBe(1);
+    expect(summary.withoutNumber).toBe(1);
+    expect(summary.overdueLoans).toBe(1);
+    expect(summary.openLoans).toBe(3);
   });
 });

@@ -9,6 +9,9 @@ import { MembersService } from '../members/members.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
 import { EventRsvpRowComponent } from '../events/event-rsvp-row/event-rsvp-row.component';
+import { MyCostumesComponent } from '../costumes/my-costumes/my-costumes.component';
+import { CostumesService } from '../costumes/costumes.service';
+import { myCostumeRows } from '../costumes/utils/costume-logic';
 import { canAccessBoard, isAdmin, isItemVisibleToUser } from '../../core/utils/visibility.utils';
 
 // Kolik nejbližších akcí se na přehledu zobrazí s rychlým potvrzením účasti
@@ -22,7 +25,7 @@ export interface UpcomingEventRow {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, EventRsvpRowComponent],
+  imports: [RouterLink, EventRsvpRowComponent, MyCostumesComponent],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
@@ -30,6 +33,8 @@ export class DashboardComponent implements OnInit {
   pinnedPosts = signal<Post[] | null>(null);
   loading = signal(true);
   currentMemberId = signal<number | null>(null);
+  // Sekce „Moje kroje“ se ukáže jen tomu, kdo má něco svěřeno
+  hasCostumes = signal(false);
 
   isUnread = (post: Post): boolean => {
     const memberId = this.currentMemberId();
@@ -41,7 +46,8 @@ export class DashboardComponent implements OnInit {
     private eventsService: EventsService,
     private postsService: PostsService,
     private attendanceService: AttendanceService,
-    private membersService: MembersService
+    private membersService: MembersService,
+    private costumesService: CostumesService,
   ) { }
 
   ngOnInit(): void {
@@ -62,6 +68,7 @@ export class DashboardComponent implements OnInit {
         return;
       }
       this.currentMemberId.set(member.id);
+      this.costumesService.getState().subscribe((state) => this.hasCostumes.set(myCostumeRows(state, member.id).length > 0));
 
       this.postsService.getPosts().subscribe((posts) => {
         this.pinnedPosts.set(

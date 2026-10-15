@@ -1,4 +1,66 @@
 <div class="page">
   <app-costumes-nav />
   <h1 class="page__title">Kroje</h1>
+
+  <section class="detail__section">
+    <h2 class="detail__section-title">Moje kroje</h2>
+    <app-my-costumes />
+  </section>
+
+  @if (canViewStock() && summary(); as s) {
+    <section class="detail__section">
+      <h2 class="detail__section-title">Krojový sklad</h2>
+      @if (!canManage()) {
+        <p class="state-note">Sklad můžete prohlížet; změny v evidenci zapisují pověřené krojárky.</p>
+      }
+      <div class="costume-stats">
+        <a class="costume-stats__tile" routerLink="/app/costumes/items">
+          <span class="costume-stats__value">{{ s.items }}</span>
+          <span class="costume-stats__label">evidovaných součástí</span>
+        </a>
+        <a class="costume-stats__tile" routerLink="/app/costumes/loans">
+          <span class="costume-stats__value">{{ s.onLoan }}</span>
+          <span class="costume-stats__label">zapůjčeno · {{ s.openLoans }} zápůjček</span>
+        </a>
+        <a class="costume-stats__tile" [class.costume-stats__tile--alert]="s.overdueLoans" routerLink="/app/costumes/loans" [queryParams]="{ filter: 'overdue' }">
+          <span class="costume-stats__value">{{ s.overdueLoans }}</span>
+          <span class="costume-stats__label">po termínu vrácení</span>
+        </a>
+        <a class="costume-stats__tile" routerLink="/app/costumes/kits">
+          <span class="costume-stats__value">{{ s.incompleteKits }} / {{ s.kits }}</span>
+          <span class="costume-stats__label">neúplných kompletů</span>
+        </a>
+        <a class="costume-stats__tile" routerLink="/app/costumes/items">
+          <span class="costume-stats__value">{{ s.notReady }}</span>
+          <span class="costume-stats__label">nepřipraveno k zapůjčení</span>
+        </a>
+        <a class="costume-stats__tile" routerLink="/app/costumes/items">
+          <span class="costume-stats__value">{{ s.withoutNumber }}</span>
+          <span class="costume-stats__label">čeká na fyzické číslo</span>
+        </a>
+        <a class="costume-stats__tile" routerLink="/app/costumes/inventories">
+          <span class="costume-stats__value">{{ s.openInventories }}</span>
+          <span class="costume-stats__label">probíhajících inventur</span>
+        </a>
+      </div>
+
+      @if (canManage()) {
+        <div class="costume-actions">
+          <a class="btn-primary btn-primary--sm" routerLink="/app/costumes/loans/new">+ Nová zápůjčka</a>
+          <a class="btn-primary btn-primary--sm" routerLink="/app/costumes/items/new">+ Nová součást</a>
+          <a class="btn-primary btn-primary--sm" routerLink="/app/costumes/inventories">Inventura</a>
+        </div>
+      }
+
+      <h3 class="costume-reports__title">Sestavy k tisku a exportu</h3>
+      <ul class="costume-reports">
+        <li><a routerLink="/app/costumes/items">Seznam součástí podle řady, čísla a dalších filtrů</a></li>
+        <li><a routerLink="/app/costumes/kits">Seznam kompletů a co v nich chybí</a></li>
+        <li><a routerLink="/app/costumes/people">Kroje zapůjčené konkrétnímu člověku</a></li>
+        <li><a routerLink="/app/costumes/loans">Nevrácené a po termínu</a></li>
+        <li><a routerLink="/app/costumes/inventories">Inventurní seznam a souhrn inventury</a></li>
+        <li><a routerLink="/app/costumes/items" [queryParams]="{ status: 'retired' }">Vyřazené součásti a jejich historie</a></li>
+      </ul>
+    </section>
+  }
 </div>

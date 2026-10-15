@@ -333,3 +333,62 @@ export const INVENTORY_RESULT_LABELS = {
   problem: 'Nesrovnalost',
   missing: 'Chybí',
 } as const;
+
+// --- Moje kroje ---
+
+export interface MyCostumeRow {
+  key: string;
+  label: string;
+  kit?: string;
+  issuedAt: string;
+  dueAt?: string;
+  overdue: boolean;
+}
+
+export function myCostumeRows(state: CostumeState, memberId: number, now = new Date()): MyCostumeRow[] {
+  return holdingsOf(state, { kind: 'member', memberId })
+    .map(({ loan, line, remaining }): MyCostumeRow => {
+      const item = line.itemId !== undefined ? state.items.find((i) => i.id === line.itemId) : undefined;
+      return {
+        key: `${loan.id}-${line.id}`,
+        label: item ? itemLabel(state, item) : `${partTypeName(state, line.partTypeId)} – ${remaining} ks`,
+        kit: kitLabel(state, line.fromKitId) || undefined,
+        issuedAt: loan.issuedAt,
+        dueAt: loan.longTerm ? undefined : loan.dueAt,
+        overdue: isLoanOverdue(loan, now),
+      };
+    })
+    .sort((a, b) => (a.kit ?? '').localeCompare(b.kit ?? '', 'cs') || a.label.localeCompare(b.label, 'cs'));
+}
+
+// --- Přehled skladu pro krojárky ---
+
+export interface CostumeStockSummary {
+  items: number;
+  onLoan: number;
+  notReady: number;
+  withoutNumber: number;
+  retired: number;
+  openLoans: number;
+  overdueLoans: number;
+  incompleteKits: number;
+  kits: number;
+  openInventories: number;
+}
+
+export function stockSummary(state: CostumeState, now = new Date()): CostumeStockSummary {
+  const active = state.items.filter((i) => !i.retired);
+  const statuses = active.map((i) => itemStatus(state, i));
+  return {
+    items: active.length,
+    onLoan: statuses.filter((s) => s === 'on-loan').length,
+    notReady: statuses.filter((s) => s === 'not-ready').length,
+    withoutNumber: active.filter((i) => i.number === undefined).length,
+    retired: state.items.length - active.length,
+    openLoans: state.loans.filter(isLoanOpen).length,
+    overdueLoans: state.loans.filter((l) => isLoanOverdue(l, now)).length,
+    incompleteKits: state.kits.filter((k) => kitView(state, k).completeness !== 'complete').length,
+    kits: state.kits.length,
+    openInventories: state.inventories.filter((i) => !i.closedAt).length,
+  };
+}

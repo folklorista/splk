@@ -1906,3 +1906,127 @@ a.mobile-header__user {
 :root[data-theme='dark'] .attendance-report__cell--present {
   color: #66bb6a;
 }
+
+// Krojový sklad – záložky, souhrn, sestavy
+.costumes-nav {
+  display: flex;
+  gap: var(--spacing-xs);
+  overflow-x: auto;
+  margin-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  scrollbar-width: none;
+}
+
+.costumes-nav__link {
+  flex: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+
+  &:hover { color: var(--color-text); }
+  &--active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    font-weight: 600;
+  }
+}
+
+.costume-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.costume-stats__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--spacing-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+
+  &:hover { border-color: var(--color-primary); }
+  &--alert .costume-stats__value { color: var(--color-primary); }
+}
+
+.costume-stats__value {
+  font-size: var(--font-size-h1);
+  font-weight: 700;
+}
+
+.costume-stats__label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.costume-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.costume-reports__title {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.costume-reports {
+  list-style: disc;
+  padding-left: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+
+  li { margin-bottom: var(--spacing-xs); }
+  a { color: var(--color-primary); }
+}
+
+// Tisk přehledů (krojový sklad, docházka): jen obsah stránky, bez navigace a ovládání
+@media print {
+  .app-shell__sidebar,
+  .app-shell__bottom-nav,
+  .sidebar,
+  .bottom-nav,
+  .mobile-header,
+  .demo-banner,
+  .update-banner,
+  .no-print,
+  button {
+    display: none !important;
+  }
+
+  :root {
+    --color-surface: #fff;
+    --color-surface-alt: #fff;
+    --color-text: #000;
+    --color-text-muted: #333;
+    --color-border: #999;
+  }
+
+  body,
+  .app-shell {
+    background: #fff !important;
+    color: #000;
+  }
+
+  .app-shell,
+  .app-shell__main,
+  .app-shell__content,
+  .page {
+    display: block !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  a { color: inherit !important; text-decoration: none; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #999; padding: 2px 4px; }
+  .item-list__item { break-inside: avoid; }
+}
