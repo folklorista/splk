@@ -22,6 +22,11 @@ export function isAdmin(user: User | null): boolean {
   return user?.roles.includes('admin') ?? false;
 }
 
+// Skutečnou docházku zapisuje a prohlíží výbor (role leader) a administrátor
+export function isLeaderOrAdmin(user: User | null): boolean {
+  return user?.roles.some((role) => role === 'leader' || role === 'admin') ?? false;
+}
+
 // Badge nástěnky = nepřečtené (nearchivované) příspěvky + neviděné zmínky v komentářích k jejím příspěvkům
 export function getBoardBadgeCount(posts: any[], comments: any[], groupId: number, currentMemberId: number | null): number {
   if (!currentMemberId) return 0;
