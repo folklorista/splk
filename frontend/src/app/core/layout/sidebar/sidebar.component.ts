@@ -6,7 +6,7 @@ import { EventsService } from '../../../features/events/events.service';
 import { MembersService } from '../../../features/members/members.service';
 import { BoardsService } from '../../../features/boards/boards.service';
 import { Group } from '../../models/group.model';
-import { getUnconfirmedEventsCount, isAdmin } from '../../utils/visibility.utils';
+import { getUnconfirmedEventsCount, isAdmin, isLeaderOrAdmin } from '../../utils/visibility.utils';
 import { interval, Subscription } from 'rxjs';
 import { IconComponent, IconName } from '../../../shared/icon/icon.component';
 import { VersionLabelComponent } from '../../../shared/version-label/version-label.component';
@@ -70,6 +70,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         items: [
           { path: '/app/dashboard', label: 'Přehled', icon: 'home' },
           { path: '/app/events', label: 'Akce', icon: 'calendar', badge: badge(this.eventsBadge()) },
+          ...(isLeaderOrAdmin(this.auth.currentUser()) ? [{ path: '/app/attendance', label: 'Docházka', icon: 'clipboard-check' } as NavItem] : []),
           ...this.boards().map((b): NavItem => ({
             path: `/app/boards/${b.slug}`,
             label: b.name,

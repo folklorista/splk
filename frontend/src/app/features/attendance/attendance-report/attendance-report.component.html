@@ -1,0 +1,69 @@
+<div class="page">
+  <div class="page__header">
+    <h1 class="page__title">Docházka</h1>
+    <button type="button" class="btn-primary btn-primary--sm" [disabled]="!report().rows.length" (click)="exportCsv()">Export CSV</button>
+  </div>
+
+  <div class="attendance-report__filters">
+    <label class="attendance-report__filter">
+      <span>Od</span>
+      <input type="date" [value]="from()" (change)="from.set($any($event.target).value)" />
+    </label>
+    <label class="attendance-report__filter">
+      <span>Do</span>
+      <input type="date" [value]="to()" (change)="to.set($any($event.target).value)" />
+    </label>
+    <label class="attendance-report__filter">
+      <span>Typ akce</span>
+      <select [value]="type()" (change)="setType($any($event.target).value)">
+        <option value="all">Všechny</option>
+        @for (option of typeOptions; track option[0]) {
+          <option [value]="option[0]">{{ option[1] }}</option>
+        }
+      </select>
+    </label>
+  </div>
+
+  @if (loading()) {
+    <p class="state-note">Načítání…</p>
+  } @else if (!report().events.length) {
+    <p class="state-note">V tomto období neproběhla žádná akce.</p>
+  } @else {
+    <p class="attendance-report__legend">✓ přítomen · ✗ nepřítomen · – nezapsáno</p>
+    <div class="attendance-report__table-wrap">
+      <table class="attendance-report__table">
+        <thead>
+          <tr>
+            <th class="attendance-report__member" scope="col">Člen</th>
+            @for (event of report().events; track event.id) {
+              <th scope="col" class="attendance-report__event">
+                <a [routerLink]="['/app/events', event.id]" [title]="event.title">
+                  {{ event.startsAt | date: 'd. M.' }}
+                  <span class="attendance-report__event-type">{{ typeLabel(event.type) }}</span>
+                </a>
+              </th>
+            }
+            <th scope="col" class="attendance-report__total">Celkem</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of report().rows; track row.member.id) {
+            <tr>
+              <th scope="row" class="attendance-report__member">{{ row.member.nickname }}</th>
+              @for (cell of row.cells; track $index) {
+                <td class="attendance-report__cell"
+                  [class.attendance-report__cell--present]="cell === true"
+                  [class.attendance-report__cell--absent]="cell === false"
+                  [title]="cellTitle(cell)">{{ cellSymbol(cell) }}</td>
+              }
+              <td class="attendance-report__total">
+                {{ row.summary.present }}/{{ row.summary.recorded }}
+                <span class="attendance-report__percentage">{{ formatSummary(row.summary) }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
