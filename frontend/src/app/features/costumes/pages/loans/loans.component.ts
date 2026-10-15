@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { downloadCsv, formatDate, printPage } from '../../../../shared/export/export.utils';
 import { MembersService } from '../../../members/members.service';
@@ -82,7 +82,8 @@ export class CostumeLoansComponent {
     { value: 'overdue', label: 'Po termínu' },
     { value: 'all', label: 'Všechny' },
   ];
-  readonly filter = signal<LoanFilter>('open');
+  // ?filter=overdue z přehledu skladu otevře rovnou zápůjčky po termínu
+  readonly filter = signal<LoanFilter>(inject(ActivatedRoute).snapshot.queryParamMap.get('filter') === 'overdue' ? 'overdue' : 'open');
   readonly search = signal('');
 
   private readonly labelOf = (b: Borrower) => borrowerLabel(b, this.members(), this.state().externals);

@@ -216,7 +216,7 @@ export class CostumesService {
       }
       if (existing) {
         const text = `${name}: požadováno ${existing.required} → ${required}, v kompletu ${existing.present} → ${present}`;
-        Object.assign(existing, { required, present, note: clean(note) ?? existing.note });
+        Object.assign(existing, { required, present, note: clean(note) });
         this.log(state, { kind: 'kit-bulk', kitId, partTypeId, text, note: clean(note) });
       } else {
         kit.bulk.push({ partTypeId, required, present, note: clean(note) });
