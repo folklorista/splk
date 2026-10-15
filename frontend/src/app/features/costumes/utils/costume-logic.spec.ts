@@ -34,14 +34,14 @@ describe('costume-logic', () => {
     expect(isLoanOverdue(returned)).toBeFalse();
   });
 
-  it('komplet svěřený celý není kvůli tomu neúplný; chybějící mašle ano', () => {
+  it('komplet svěřený celý není kvůli tomu neúplný', () => {
     const view = kitView(state, state.kits[1]);
     expect(view.kitLoan?.id).toBe(2);
     expect(view.items.every((i) => i.withKitLoan)).toBeTrue();
-    // 2 požadované, 1 u vypůjčitelky, 1 vrácena do kompletu? ne – present 0, takže 1 chybí
+    // 2 požadované: 1 u vypůjčitelky se zápůjčkou kompletu, 1 vrácená v kompletu
     expect(view.bulk[0].loanedWithKit).toBe(1);
-    expect(view.bulk[0].missing).toBe(1);
-    expect(view.completeness).toBe('incomplete');
+    expect(view.bulk[0].missing).toBe(0);
+    expect(view.completeness).toBe('complete');
   });
 
   it('přehled držených věcí osoby', () => {

@@ -321,6 +321,7 @@ export class CostumesService {
       const line = loan.lines.find((l) => l.id === lineId);
       if (!line) throw new CostumeRuleError('Řádek zápůjčky nebyl nalezen.');
       if (!note.trim()) throw new CostumeRuleError('Popište, jak bylo vypořádáno.');
+      if (lineRemaining(line) === 0) throw new CostumeRuleError('Řádek je už vrácený nebo vypořádaný.');
       line.settled = { at: this.now(), byUserId: this.actorId(), note: note.trim() };
       return loan;
     });

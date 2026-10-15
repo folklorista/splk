@@ -63,7 +63,7 @@ export function seedCostumeState(): CostumeState {
       issuedByUserId: 0,
       lines: [{ id: 1, itemId: 4, count: 1, fromKitId: 1, returns: [] }],
     },
-    // Komplet 2 dlouhodobě svěřený člence včetně dvou mašlí; jedna mašle už se vrátila
+    // Komplet 2 dlouhodobě svěřený člence včetně dvou mašlí; jedna mašle už se vrátila do kompletu (1 ze 2)
     {
       id: 2,
       borrower: { kind: 'member', memberId: 1 },
@@ -81,7 +81,7 @@ export function seedCostumeState(): CostumeState {
           partTypeId: PART.masle,
           count: 2,
           fromKitId: 2,
-          returns: [{ at: daysFromNow(-20), count: 1, note: 'druhá mašle se ztratila', ready: true, byUserId: 0 }],
+          returns: [{ at: daysFromNow(-20), count: 1, note: 'jedna vrácena dřív, druhá zůstává u členky', ready: true, byUserId: 0 }],
         },
       ],
     },
@@ -131,7 +131,7 @@ export function seedCostumeState(): CostumeState {
     items,
     kits: [
       { id: 1, label: 'HČ ženský 1', seriesId: SERIES.hornackaCerna, bulk: [{ partTypeId: PART.masle, required: 2, present: 2 }], createdAt: '2026-09-01T10:00:00.000Z' },
-      { id: 2, label: 'HČ ženský 2', seriesId: SERIES.hornackaCerna, bulk: [{ partTypeId: PART.masle, required: 2, present: 0 }], createdAt: '2026-09-01T10:00:00.000Z' },
+      { id: 2, label: 'HČ ženský 2', seriesId: SERIES.hornackaCerna, bulk: [{ partTypeId: PART.masle, required: 2, present: 1 }], createdAt: '2026-09-01T10:00:00.000Z' },
       { id: 3, label: 'Kopaničký mužský 1', seriesId: SERIES.kopanicka, bulk: [{ partTypeId: PART.pentle, required: 1, present: 1 }], createdAt: '2026-09-01T10:00:00.000Z' },
     ],
     externals: [{ id: 1, name: 'Marie Dvořáková', contact: '777 123 456', note: 'Hradčovice, hostování', createdAt: '2026-09-10T10:00:00.000Z' }],
