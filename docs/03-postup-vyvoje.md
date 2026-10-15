@@ -18,6 +18,23 @@ Zatím neproběhlo:
 
 Poznatek z ladění mock vrstvy: pokud stejná data (např. účast na akci) potřebuje víc feature services, musí mít **jeden sdílený zdroj pravdy** (reaktivní stav, ne kopie pole při startu), jinak se snadno rozjedou do nekonzistence. Mock data s pevně zapsaným datem/časem navíc časem zestárnou (přestanou být „v budoucnu“) – kde na tom závisí logika (např. nadcházející akce), je lepší počítat data relativně k aktuálnímu datu.
 
+## Cíl V1.0 (docs/07, docs/06) – stav k 2026-10-15
+
+Rozsah V1.0 je nově definován v `07-souborovy-system-vize-funkce-roadmapa.md` a `06-specifikace-krojoveho-skladu.md`. Ve frontendu (demo režim, data v prohlížeči) je hotovo:
+
+- **Skutečná docházka** (docs/07 kap. 19): vedoucí a administrátor v detailu proběhlé akce označí Přítomen / Nepřítomen, odděleně od nahlášené účasti (ta se nepřepisuje), s „Ostatní nepřítomni“ a počtem nezkontrolovaných. Přehled `/app/attendance` (období, typ akce, souhrn na člena, export CSV). `ActualAttendanceService`, `leaderGuard`.
+- **Krojový sklad** (docs/06): číselné řady podle druhu kroje, opětovné použití čísla po vyřazení bez spojení historie, součásti bez čísla (čekající na číslo) i neočíslované zaměnitelné doplňky podle počtu v kompletu, komplety s určeným složením a historií změn, zápůjčky jednotlivých součástí i celého kompletu (bez dílů půjčených jinde), částečné vrácení s poznámkou a připraveností u každého řádku, jiné vypořádání, vyřazení s upozorněním na otevřenou zápůjčku, externisté a bývalí členové jako vypůjčitelé, inventura se zachyceným očekávaným stavem (nezkontrolováno ≠ chybí, mimo sklad = osobní ověření), „Moje kroje“ (rozcestník i Přehled), tisk a export CSV přehledů.
+  - Model a pravidla: `features/costumes/models`, `costumes.service.ts` (mutace, `CostumeRuleError`), odvozené pohledy jako čisté funkce v `utils/costume-logic.ts`.
+  - Oprávnění: zapisují jen členové skupiny **Sklad** (`canManageCostumes`); vedoucí a administrátoři sklad jen prohlížejí; běžný člen vidí jen své kroje. Vynucení je zatím jen ve frontendu.
+
+Zbývá do V1.0 (vyžaduje backend nebo rozhodnutí, docs/07 kap. 63):
+
+- trvalé sdílené ukládání dat, serverová kontrola oprávnění, zálohy (Fáze 5+),
+- skutečné přihlašování a obnova přístupu,
+- role host / superadministrátor, správci skupin (garanti) s moderováním, režim zakládání skupin, audit změn členství,
+- cílení akcí na jednotlivé hosty, notifikace (push nebo náhradní cesta),
+- doladit s krojárkami: seznam číselných řad, druhy neočíslovaných doplňků, podoba tiskových sestav (docs/06 kap. 13).
+
 ## Základní strategie
 
 Vývoj má probíhat iterativně a po malých celcích.
