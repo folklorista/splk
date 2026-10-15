@@ -368,6 +368,7 @@ export class CostumesService {
   closeInventory(inventoryId: number): Observable<Inventory> {
     return this.mutate((state) => {
       const inventory = this.findInventory(state, inventoryId);
+      if (inventory.closedAt) throw new CostumeRuleError('Inventura už je uzavřená.');
       inventory.closedAt = this.now();
       return inventory;
     });
