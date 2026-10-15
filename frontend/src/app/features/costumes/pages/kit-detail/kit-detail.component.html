@@ -1,0 +1,253 @@
+<div class="page">
+  <app-costumes-nav />
+  <a class="back-link no-print" routerLink="/app/costumes/kits">← Zpět na komplety</a>
+
+  @let v = view();
+  @if (!v) {
+    <p class="state-note">Komplet nebyl nalezen.</p>
+  } @else {
+    <div class="detail">
+      <div class="detail__header">
+        <h1 class="detail__title">Komplet {{ v.kit.label }}</h1>
+        <span class="badge cs-status cs-status--{{ v.completeness }}">{{ completenessLabels[v.completeness] }}</span>
+      </div>
+
+      <dl class="detail__meta">
+        <dt>Řada</dt>
+        <dd>{{ series() || '–' }}</dd>
+        <dt>Svěřeno</dt>
+        <dd>
+          @if (holder(); as h) {
+            <a class="cs-link" [routerLink]="['/app/costumes/people', h.key]">{{ h.label }}</a>
+            · <a class="cs-link" [routerLink]="['/app/costumes/loans', h.loanId]">zápůjčka kompletu</a>
+          } @else {
+            nikomu (komplet je ve skladu)
+          }
+        </dd>
+      </dl>
+      @if (v.kit.note) {
+        <p class="detail__body"><strong>Poznámka:</strong> {{ v.kit.note }}</p>
+      }
+
+      <div class="cs-toolbar no-print">
+        @if (canManage()) {
+          @if (v.kitLoan) {
+            <span class="cs-btn cs-btn--disabled" aria-disabled="true">Půjčit komplet</span>
+            <span class="cs-hint">Komplet je už zapůjčený – nejdřív zapište jeho vrácení.</span>
+          } @else {
+            <a class="cs-btn cs-btn--primary" routerLink="/app/costumes/loans/new" [queryParams]="{ kitId: v.kit.id }">Půjčit komplet</a>
+          }
+          <a class="cs-btn" routerLink="/app/costumes/items/new" [queryParams]="{ kitId: v.kit.id }">+ Nová součást do kompletu</a>
+        }
+        <span class="cs-toolbar__spacer"></span>
+        <button type="button" class="cs-btn" (click)="print()">Tisk</button>
+        <button type="button" class="cs-btn" (click)="exportCsv()">Export CSV</button>
+      </div>
+
+      @if (feedback.error()) {
+        <p class="cs-error no-print" role="alert">{{ feedback.error() }}</p>
+      }
+      @if (feedback.success()) {
+        <p class="cs-success no-print" role="status">{{ feedback.success() }}</p>
+      }
+
+      <section class="detail__section">
+        <h2 class="detail__section-title">Složení</h2>
+        @if (!itemRows().length && !bulkRows().length) {
+          <p class="state-note">Komplet zatím nemá žádné součásti.</p>
+        }
+        <ul class="kit__list">
+          @for (row of itemRows(); track row.entry.item.id) {
+            <li class="kit__row">
+              <span>
+                <a class="cs-link kit__name" [routerLink]="['/app/costumes/items', row.entry.item.id]">{{ row.name }} – {{ row.code }}</a>
+                @if (row.entry.item.size) {
+                  <span class="cs-muted"> · {{ row.entry.item.size }}</span>
+                }
+              </span>
+              <span class="kit__state" [class.kit__state--warn]="!!row.entry.separateLoan">
+                {{ row.status.text }}
+                @if (row.status.holder) {
+                  : <a class="cs-link" [routerLink]="['/app/costumes/people', row.status.personKey]">{{ row.status.holder }}</a>
+                  (<a class="cs-link" [routerLink]="['/app/costumes/loans', row.status.loanId]">zápůjčka</a>)
+                }
+                @if (row.entry.status === 'not-ready' && row.entry.item.note) {
+                  – {{ row.entry.item.note }}
+                }
+              </span>
+            </li>
+          }
+          @for (row of bulkRows(); track row.bulk.line.partTypeId) {
+            <li class="kit__row">
+              <span>
+                <span class="kit__name">{{ row.name }}</span>
+                <span class="cs-muted"> · bez čísla, požadováno {{ row.bulk.line.required }}</span>
+              </span>
+              <span class="kit__state" [class.kit__state--warn]="row.bulk.missing > 0 || row.bulk.loanedSeparately > 0">
+                {{ row.text }}
+                @for (h of row.holders; track h.loanId) {
+                  · <a class="cs-link" [routerLink]="['/app/costumes/loans', h.loanId]">{{ h.holder }} ({{ h.count }}×)</a>
+                }
+                @if (row.bulk.line.note) {
+                  – {{ row.bulk.line.note }}
+                }
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+
+      @if (canManage()) {
+        <section class="detail__section no-print">
+          <h2 class="detail__section-title">Úpravy kompletu</h2>
+          <div class="cs-actions">
+            <details class="cs-panel">
+              <summary>Přidat existující součást</summary>
+              <div class="cs-panel__body">
+                <label class="cs-field">
+                  <span>Součást</span>
+                  <select (change)="addItemId.set($any($event.target).value)">
+                    <option value="" [selected]="addItemId() === ''">Vyberte součást</option>
+                    @for (c of addCandidates(); track c.item.id) {
+                      <option [value]="c.item.id" [selected]="addItemId() === '' + c.item.id">{{ c.label }}{{ c.fromKit ? ' (v kompletu ' + c.fromKit + ')' : '' }}</option>
+                    }
+                  </select>
+                </label>
+                @if (selectedCandidate()?.fromKit) {
+                  <p class="cs-warning">Součást se přesune z kompletu {{ selectedCandidate()!.fromKit }} do tohoto kompletu.</p>
+                }
+                <label class="cs-field">
+                  <span>Poznámka ke změně (nepovinná)</span>
+                  <input type="text" [value]="addNote()" (input)="addNote.set($any($event.target).value)" />
+                </label>
+                <div class="cs-form__actions">
+                  <button type="button" class="cs-btn" [disabled]="!addItemId() || feedback.busy()" (click)="addItem()">
+                    {{ selectedCandidate()?.fromKit ? 'Přesunout do tohoto kompletu' : 'Přidat do kompletu' }}
+                  </button>
+                </div>
+              </div>
+            </details>
+
+            @if (itemRows().length) {
+              <details class="cs-panel">
+                <summary>Odebrat součást ze složení</summary>
+                <div class="cs-panel__body">
+                  <label class="cs-field">
+                    <span>Součást</span>
+                    <select (change)="removeItemId.set($any($event.target).value)">
+                      <option value="" [selected]="removeItemId() === ''">Vyberte součást</option>
+                      @for (row of itemRows(); track row.entry.item.id) {
+                        <option [value]="row.entry.item.id" [selected]="removeItemId() === '' + row.entry.item.id">{{ row.name }} – {{ row.code }}</option>
+                      }
+                    </select>
+                  </label>
+                  <label class="cs-field">
+                    <span>Poznámka ke změně (nepovinná)</span>
+                    <input type="text" [value]="removeNote()" (input)="removeNote.set($any($event.target).value)" />
+                  </label>
+                  <p class="cs-hint">Trvalá změna složení – dřívější zápůjčky a inventury se nemění.</p>
+                  <div class="cs-form__actions">
+                    <button type="button" class="cs-btn cs-btn--danger" [disabled]="!removeItemId() || feedback.busy()" (click)="removeItem()">Odebrat ze složení</button>
+                  </div>
+                </div>
+              </details>
+            }
+
+            <details class="cs-panel">
+              <summary>Neočíslované doplňky (počet kusů)</summary>
+              <div class="cs-panel__body">
+                <label class="cs-field">
+                  <span>Druh</span>
+                  <select (change)="selectBulkType($any($event.target).value)">
+                    <option value="" [selected]="bulkPartTypeId() === ''">Vyberte druh</option>
+                    @for (type of unnumberedTypes(); track type.id) {
+                      <option [value]="type.id" [selected]="bulkPartTypeId() === '' + type.id">{{ type.name }}</option>
+                    }
+                  </select>
+                </label>
+                @if (bulkPartTypeId()) {
+                  <div class="cs-form__row">
+                    <label class="cs-field">
+                      <span>Požadováno kusů</span>
+                      <input type="number" min="0" [value]="bulkRequired()" (input)="bulkRequired.set($any($event.target).value)" />
+                    </label>
+                    <label class="cs-field">
+                      <span>Přítomno v kompletu</span>
+                      <input type="number" min="0" [value]="bulkPresent()" (input)="bulkPresent.set($any($event.target).value)" />
+                    </label>
+                  </div>
+                  <label class="cs-field">
+                    <span>Poznámka (nepovinná)</span>
+                    <input type="text" [value]="bulkNote()" (input)="bulkNote.set($any($event.target).value)" />
+                  </label>
+                  <p class="cs-hint">Přítomné = fyzicky v kompletu (bez zapůjčených). Požadováno 0 a přítomno 0 druh ze složení odebere.</p>
+                  <div class="cs-form__actions">
+                    <button type="button" class="cs-btn" [disabled]="feedback.busy()" (click)="saveBulk()">Uložit počty</button>
+                  </div>
+                }
+              </div>
+            </details>
+
+            <details class="cs-panel">
+              <summary>Upravit údaje kompletu</summary>
+              <div class="cs-panel__body">
+                <div class="cs-form__row">
+                  <label class="cs-field">
+                    <span>Označení *</span>
+                    <input type="text" [value]="editLabel()" (input)="editLabel.set($any($event.target).value)" />
+                  </label>
+                  <label class="cs-field">
+                    <span>Řada</span>
+                    <select (change)="editSeriesId.set($any($event.target).value)">
+                      <option value="" [selected]="editSeriesId() === ''">Bez řady</option>
+                      @for (s of state().series; track s.id) {
+                        <option [value]="s.id" [selected]="editSeriesId() === '' + s.id">{{ s.name }}</option>
+                      }
+                    </select>
+                  </label>
+                </div>
+                <label class="cs-field">
+                  <span>Poznámka</span>
+                  <input type="text" [value]="editNote()" (input)="editNote.set($any($event.target).value)" />
+                </label>
+                <label class="cs-field cs-field--inline">
+                  <input type="checkbox" [checked]="editNeedsCheck()" (change)="editNeedsCheck.set($any($event.target).checked)" />
+                  Čeká na kontrolu
+                </label>
+                <div class="cs-form__actions">
+                  <button type="button" class="cs-btn" [disabled]="feedback.busy()" (click)="saveKit()">Uložit</button>
+                  <button type="button" class="cs-btn" (click)="resetEdit()">Vrátit změny</button>
+                </div>
+              </div>
+            </details>
+          </div>
+        </section>
+      }
+
+      <section class="detail__section">
+        <h2 class="detail__section-title">Historie složení</h2>
+        @if (!history().length) {
+          <p class="state-note">Zatím bez záznamů.</p>
+        } @else {
+          <ol class="cs-history">
+            @for (h of history(); track h.entry.id) {
+              <li class="cs-history__item">
+                <div class="cs-history__meta">{{ h.entry.at | date: 'd. M. yyyy HH:mm' }} · {{ h.by }}</div>
+                <div>
+                  @if (h.entry.itemId !== undefined) {
+                    <a class="cs-link" [routerLink]="['/app/costumes/items', h.entry.itemId]">{{ h.entry.text }}</a>
+                  } @else {
+                    {{ h.entry.text }}
+                  }
+                </div>
+                @if (h.entry.note) {
+                  <div class="cs-history__note">{{ h.entry.note }}</div>
+                }
+              </li>
+            }
+          </ol>
+        }
+      </section>
+    </div>
+  }
+</div>
