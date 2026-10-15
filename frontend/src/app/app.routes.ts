@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { adminGuard } from './core/auth/admin.guard';
 import { boardGuard } from './features/boards/board.guard';
+import { costumeManagerGuard, costumeStockGuard } from './features/costumes/costumes.guard';
 
 export const routes: Routes = [
   {
@@ -101,6 +102,110 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/costumes/costumes.component').then(
             (m) => m.CostumesComponent,
+          ),
+      },
+      {
+        path: 'costumes/items',
+        canActivate: [costumeStockGuard],
+        loadComponent: () =>
+          import('./features/costumes/pages/items/items.component').then(
+            (m) => m.CostumeItemsComponent,
+          ),
+      },
+      {
+        path: 'costumes/items/new',
+        canActivate: [costumeManagerGuard],
+        loadComponent: () =>
+          import('./features/costumes/pages/item-form/item-form.component').then(
+            (m) => m.CostumeItemFormComponent,
+          ),
+      },
+      {
+        path: 'costumes/items/:id/edit',
+        canActivate: [costumeManagerGuard],
+        loadComponent: () =>
+          import('./features/costumes/pages/item-form/item-form.component').then(
+            (m) => m.CostumeItemFormComponent,
+          ),
+      },
+      {
+        path: 'costumes/items/:id',
+        canActivate: [costumeStockGuard],
+        loadComponent: () =>
+          import('./features/costumes/pages/item-detail/item-detail.component').then(
+            (m) => m.CostumeItemDetailComponent,
+          ),
+      },
+      {
+        path: 'costumes/kits',
+        canActivate: [costumeStockGuard],
+        loadComponent: () =>
+          import('./features/costumes/pages/kits/kits.component').then(
+            (m) => m.CostumeKitsComponent,
+          ),
+      },
+      {
+        path: 'costumes/kits/:id',
+        canActivate: [costumeStockGuard],
+        loadComponent: () =>
+          import('./features/costumes/pages/kit-detail/kit-detail.component').then(
+            (m) => m.CostumeKitDetailComponent,
+          ),
+      },
+      {
+        path: 'costumes/loans',
+        canActivate: [costumeStockGuard],
+        loadComponent: () =>
+          import('./features/costumes/pages/loans/loans.component').then(
+            (m) => m.CostumeLoansComponent,
+          ),
+      },
+      {
+        path: 'costumes/loans/new',
+        canActivate: [costumeManagerGuard],
+        loadComponent: () =>
+          import('./features/costumes/pages/loan-form/loan-form.component').then(
+            (m) => m.CostumeLoanFormComponent,
+          ),
+      },
+      {
+        path: 'costumes/loans/:id',
+        canActivate: [costumeStockGuard],
+        loadComponent: () =>
+          import('./features/costumes/pages/loan-detail/loan-detail.component').then(
+            (m) => m.CostumeLoanDetailComponent,
+          ),
+      },
+      {
+        path: 'costumes/people',
+        canActivate: [costumeStockGuard],
+        loadComponent: () =>
+          import('./features/costumes/pages/people/people.component').then(
+            (m) => m.CostumePeopleComponent,
+          ),
+      },
+      {
+        path: 'costumes/people/:key',
+        canActivate: [costumeStockGuard],
+        loadComponent: () =>
+          import('./features/costumes/pages/person/person.component').then(
+            (m) => m.CostumePersonComponent,
+          ),
+      },
+      {
+        path: 'costumes/inventories',
+        canActivate: [costumeStockGuard],
+        loadComponent: () =>
+          import('./features/costumes/pages/inventories/inventories.component').then(
+            (m) => m.CostumeInventoriesComponent,
+          ),
+      },
+      {
+        path: 'costumes/inventories/:id',
+        canActivate: [costumeStockGuard],
+        loadComponent: () =>
+          import('./features/costumes/pages/inventory-detail/inventory-detail.component').then(
+            (m) => m.CostumeInventoryDetailComponent,
           ),
       },
       {
