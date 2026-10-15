@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { adminGuard } from './core/auth/admin.guard';
+import { leaderGuard } from './core/auth/leader.guard';
 import { boardGuard } from './features/boards/board.guard';
 import { costumeManagerGuard, costumeStockGuard } from './features/costumes/costumes.guard';
 
@@ -74,6 +75,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/events/event-detail/event-detail.component').then(
             (m) => m.EventDetailComponent,
+          ),
+      },
+      {
+        path: 'attendance',
+        canActivate: [leaderGuard],
+        loadComponent: () =>
+          import('./features/attendance/attendance-report/attendance-report.component').then(
+            (m) => m.AttendanceReportComponent,
           ),
       },
       {

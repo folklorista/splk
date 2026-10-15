@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, DestroyRef, OnInit, signal, computed, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -12,7 +13,10 @@ import { GroupsService } from '../../../core/services/groups.service';
 import { Group } from '../../../core/models/group.model';
 import { Member } from '../../../core/models/member.model';
 import { IconComponent } from '../../../shared/icon/icon.component';
-import { isItemVisibleToUser } from '../../../core/utils/visibility.utils';
+import { isItemVisibleToUser, isLeaderOrAdmin } from '../../../core/utils/visibility.utils';
+import { ActualAttendanceService } from '../../attendance/actual-attendance.service';
+import { ActualAttendance } from '../../attendance/models/actual-attendance.model';
+import { hasEventStarted } from '../../attendance/utils/actual-attendance.utils';
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
   rehearsal: 'Zkouška',
@@ -100,6 +104,36 @@ export class EventDetailComponent implements OnInit {
     return { viewed, notViewed };
   });
 
+  // Skutečná docházka – zapisuje výbor/admin od začátku akce, nahlášenou účast nemění
+  private actualAttendanceService = inject(ActualAttendanceService);
+  private destroyRef = inject(DestroyRef);
+  actualRecords = signal<ActualAttendance[]>([]);
+
+  readonly canRecordActual = computed(() => {
+    const event = this.event();
+    return !!event && isLeaderOrAdmin(this.auth.currentUser()) && hasEventStarted(event);
+  });
+
+  // Očekávaní členové s nahlášenou účastí a skutečnou přítomností (null = nezkontrolováno)
+  readonly actualRows = computed(() => {
+    const rsvp = this.eventRecords();
+    const actual = this.actualRecords();
+    return this.visibleMembers().map((member) => ({
+      member,
+      rsvp: rsvp.find((r) => r.memberId === member.id)?.status ?? ('pending' as AttendanceStatus),
+      present: actual.find((r) => r.memberId === member.id)?.present ?? null,
+    }));
+  });
+
+  readonly actualSummary = computed(() => {
+    const rows = this.actualRows();
+    return {
+      present: rows.filter((r) => r.present === true).length,
+      absent: rows.filter((r) => r.present === false).length,
+      unchecked: rows.filter((r) => r.present === null).length,
+    };
+  });
+
   constructor(
     private route: ActivatedRoute,
     private eventsService: EventsService,
@@ -145,6 +179,11 @@ export class EventDetailComponent implements OnInit {
         this.event.set(event);
 
         this.loadTargetGroups(event.targetGroupIds);
+        if (this.canRecordActual()) {
+          this.actualAttendanceService.getForEvent(id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((records) => this.actualRecords.set(records));
+        }
         this.attendanceService.markViewed(id, member.id).subscribe();
         this.attendanceService.getAttendance(id).subscribe((records) => {
           this.eventRecords.set(records);
@@ -221,5 +260,27 @@ export class EventDetailComponent implements OnInit {
       this.noteValue.set(note.trim());
       this.noteOpen.set(false);
     });
+  }
+
+  // Opětovné klepnutí na už zvolený stav záznam zruší (oprava omylu)
+  markActual(memberId: number, present: boolean): void {
+    const event = this.event();
+    const recorderId = this.currentMemberId();
+    if (!event || !recorderId) return;
+    const current = this.actualRecords().find((r) => r.memberId === memberId);
+    if (current?.present === present) {
+      this.actualAttendanceService.clear(event.id, memberId).subscribe();
+    } else {
+      this.actualAttendanceService.mark(event.id, memberId, present, recorderId).subscribe();
+    }
+  }
+
+  markRestAbsent(): void {
+    const event = this.event();
+    const recorderId = this.currentMemberId();
+    if (!event || !recorderId) return;
+    const unchecked = this.actualRows().filter((r) => r.present === null).map((r) => r.member.id);
+    if (!unchecked.length) return;
+    this.actualAttendanceService.markMany(event.id, unchecked, false, recorderId).subscribe();
   }
 }

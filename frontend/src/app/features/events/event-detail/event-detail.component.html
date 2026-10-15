@@ -130,6 +130,44 @@
           </section>
         }
 
+        @if (canRecordActual() && visibleMembers().length > 0) {
+          <section class="detail__section actual-attendance">
+            <div class="actual-attendance__header">
+              <h2 class="detail__section-title">Skutečná docházka</h2>
+              <a class="actual-attendance__report-link" routerLink="/app/attendance">Přehled docházky</a>
+            </div>
+            <p class="actual-attendance__summary">
+              Přítomno: <strong>{{ actualSummary().present }}</strong> ·
+              Nepřítomno: <strong>{{ actualSummary().absent }}</strong> ·
+              Nezkontrolováno: <strong>{{ actualSummary().unchecked }}</strong>
+            </p>
+            <ul class="actual-attendance__list">
+              @for (row of actualRows(); track row.member.id) {
+                <li class="actual-attendance__row" [class.actual-attendance__row--unchecked]="row.present === null">
+                  <span class="actual-attendance__name">
+                    {{ row.member.nickname }}
+                    <span class="attendance-status attendance-status--{{ row.rsvp }}" title="Nahlášená účast">{{ statusLabel(row.rsvp) }}</span>
+                  </span>
+                  <span class="actual-attendance__toggle" role="group" [attr.aria-label]="'Docházka – ' + row.member.nickname">
+                    <button type="button" class="actual-attendance__btn actual-attendance__btn--present"
+                      [class.actual-attendance__btn--active]="row.present === true" [attr.aria-pressed]="row.present === true"
+                      (click)="markActual(row.member.id, true)">Přítomen</button>
+                    <button type="button" class="actual-attendance__btn actual-attendance__btn--absent"
+                      [class.actual-attendance__btn--active]="row.present === false" [attr.aria-pressed]="row.present === false"
+                      (click)="markActual(row.member.id, false)">Nepřítomen</button>
+                  </span>
+                </li>
+              }
+            </ul>
+            <div class="actual-attendance__actions">
+              @if (actualSummary().unchecked > 0) {
+                <button type="button" class="attendance-btn" (click)="markRestAbsent()">Ostatní nepřítomni</button>
+              }
+              <span class="actual-attendance__hint">Opětovným klepnutím na zvolený stav záznam zrušíte.</span>
+            </div>
+          </section>
+        }
+
         @if (isAdmin && visibleMembers().length > 0) {
           <section class="detail__section">
             <h2 class="detail__section-title">Zobrazení</h2>

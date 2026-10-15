@@ -1674,3 +1674,235 @@ a.mobile-header__user {
 .comment-list__body {
   white-space: pre-wrap;
 }
+
+// Events – link to the attendance report in the page header
+.page__header-link {
+  margin-left: auto;
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+
+  &:hover { text-decoration: underline; }
+}
+
+// Event detail – actual attendance (leaders, admin)
+.actual-attendance {
+  &__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+  }
+
+  &__report-link {
+    font-size: var(--font-size-sm);
+    color: var(--color-primary);
+
+    &:hover { text-decoration: underline; }
+  }
+
+  &__summary {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-sm);
+
+    strong { color: var(--color-text); }
+  }
+
+  &__list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--color-surface);
+
+    & + & { border-top: 1px solid var(--color-border); }
+
+    &--unchecked { background: var(--color-surface-alt); }
+  }
+
+  &__name {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-base);
+    color: var(--color-text);
+  }
+
+  &__toggle {
+    display: inline-flex;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  &__btn {
+    min-width: 96px;
+    min-height: 40px;
+    padding: 6px 12px;
+    font-size: var(--font-size-sm);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    transition: background 0.1s, color 0.1s;
+
+    & + & { border-left: 1px solid var(--color-border); }
+
+    &:hover { color: var(--color-text); }
+
+    &--present.actual-attendance__btn--active {
+      background: #2e7d32;
+      color: #fff;
+    }
+
+    &--absent.actual-attendance__btn--active {
+      background: var(--color-primary);
+      color: #fff;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+  }
+
+  &__hint {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+}
+
+// Attendance report – members × past events
+.attendance-report {
+  &__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+
+  &__filter {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+
+    input,
+    select {
+      padding: 8px var(--spacing-sm);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      background: var(--color-surface);
+      color: var(--color-text);
+      font-size: var(--font-size-sm);
+      font-family: inherit;
+    }
+  }
+
+  &__legend {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  // Na mobilu se posouvá jen tabulka, ne celá stránka
+  &__table-wrap {
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+  }
+
+  &__table {
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    background: var(--color-surface);
+
+    th,
+    td {
+      padding: 6px var(--spacing-sm);
+      border-bottom: 1px solid var(--color-border);
+      white-space: nowrap;
+    }
+
+    tbody tr:last-child th,
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    thead th {
+      font-weight: 600;
+      color: var(--color-text-muted);
+      background: var(--color-surface-alt);
+    }
+  }
+
+  // První sloupec zůstává při posouvání vidět
+  &__member {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    text-align: left;
+    font-weight: 500;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+  }
+
+  &__event {
+    text-align: center;
+
+    a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: inherit;
+
+      &:hover { color: var(--color-primary); }
+    }
+  }
+
+  &__event-type {
+    font-size: var(--font-size-xs);
+    font-weight: 400;
+  }
+
+  &__cell {
+    text-align: center;
+    color: var(--color-text-muted);
+
+    &--present { color: #2e7d32; font-weight: 700; }
+    &--absent { color: var(--color-primary); font-weight: 700; }
+  }
+
+  &__total {
+    text-align: right;
+    font-weight: 600;
+    border-left: 1px solid var(--color-border);
+  }
+
+  &__percentage {
+    margin-left: var(--spacing-xs);
+    font-weight: 400;
+    color: var(--color-text-muted);
+  }
+}
+
+:root[data-theme='dark'] .attendance-report__cell--present {
+  color: #66bb6a;
+}

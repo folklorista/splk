@@ -1,12 +1,12 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AppEvent, EventType } from './models/event.model';
 import { AttendanceCounts, DEFAULT_EVENT_FILTERS, EventFilters, ResponseFilter, filterEvents, ownAttendanceStatus } from './utils/event-filters';
 import { EventsService } from './events.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
 import { Member } from '../../core/models/member.model';
-import { isItemVisibleToUser } from '../../core/utils/visibility.utils';
+import { isItemVisibleToUser, isLeaderOrAdmin } from '../../core/utils/visibility.utils';
 import { SettingsService } from '../../core/settings/settings.service';
 import { AttendanceService } from '../attendance/attendance.service';
 import { AttendanceStatus } from '../attendance/models/attendance.model';
@@ -26,7 +26,7 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
 @Component({
   selector: 'app-events',
   standalone: true,
-  imports: [EventRsvpRowComponent],
+  imports: [EventRsvpRowComponent, RouterLink],
   templateUrl: './events.component.html',
 })
 export class EventsComponent implements OnInit {
@@ -89,6 +89,9 @@ export class EventsComponent implements OnInit {
 
   // Počty odpovědí vidí jen výbor
   readonly isLeader = computed(() => this.auth.currentUser()?.roles.includes('leader') ?? false);
+
+  // Odkaz na přehled skutečné docházky (výbor, admin)
+  readonly canViewAttendance = computed(() => isLeaderOrAdmin(this.auth.currentUser()));
 
   attendanceCounts = (event: AppEvent): AttendanceCounts | null => {
     if (!this.isLeader()) return null;

@@ -1,4 +1,4 @@
-import { canAccessBoard, getBoardBadgeCount, getNewCommentsCount, getUnconfirmedEventsCount, getUnseenMentionsCount, isAdmin, isItemVisibleToUser } from './visibility.utils';
+import { canAccessBoard, getBoardBadgeCount, getNewCommentsCount, getUnconfirmedEventsCount, getUnseenMentionsCount, isAdmin, isItemVisibleToUser, isLeaderOrAdmin } from './visibility.utils';
 import { User } from '../auth/models/user.model';
 
 describe('visibility.utils', () => {
@@ -44,6 +44,15 @@ describe('visibility.utils', () => {
       expect(isAdmin({ ...user, roles: ['member', 'admin'] })).toBeTrue();
       expect(isAdmin(user)).toBeFalse();
       expect(isAdmin(null)).toBeFalse();
+    });
+  });
+
+  describe('isLeaderOrAdmin', () => {
+    it('pustí vedoucího i administrátora, běžného člena ne', () => {
+      expect(isLeaderOrAdmin({ ...user, roles: ['member', 'leader'] })).toBeTrue();
+      expect(isLeaderOrAdmin({ ...user, roles: ['member', 'admin'] })).toBeTrue();
+      expect(isLeaderOrAdmin(user)).toBeFalse();
+      expect(isLeaderOrAdmin(null)).toBeFalse();
     });
   });
 

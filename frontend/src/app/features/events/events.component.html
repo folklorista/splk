@@ -1,6 +1,9 @@
 <div class="page">
   <div class="page__header">
     <h1 class="page__title">Akce</h1>
+    @if (canViewAttendance()) {
+      <a class="page__header-link" routerLink="/app/attendance">Docházka</a>
+    }
     <div class="view-toggle" role="group" aria-label="Zobrazení">
       <button type="button" class="view-toggle__btn" [class.view-toggle__btn--active]="view() === 'list'"
         [attr.aria-pressed]="view() === 'list'" (click)="setView('list')">Seznam</button>

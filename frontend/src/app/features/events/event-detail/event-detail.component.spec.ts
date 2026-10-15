@@ -4,6 +4,8 @@ import { of } from 'rxjs';
 import { EventDetailComponent } from './event-detail.component';
 import { EventsService } from '../events.service';
 import { AttendanceService } from '../../attendance/attendance.service';
+import { ActualAttendanceService } from '../../attendance/actual-attendance.service';
+import { ActualAttendance } from '../../attendance/models/actual-attendance.model';
 import { AuthService } from '../../../core/auth/auth.service';
 import { MembersService } from '../../members/members.service';
 import { GroupsService } from '../../../core/services/groups.service';
@@ -15,6 +17,7 @@ import { AttendanceRecord } from '../../attendance/models/attendance.model';
 describe('EventDetailComponent', () => {
   let eventsSpy: jasmine.SpyObj<EventsService>;
   let attendanceSpy: jasmine.SpyObj<AttendanceService>;
+  let actualSpy: jasmine.SpyObj<ActualAttendanceService>;
   let membersSpy: jasmine.SpyObj<MembersService>;
   let groupsSpy: jasmine.SpyObj<GroupsService>;
 
@@ -34,7 +37,13 @@ describe('EventDetailComponent', () => {
     location: 'Sál', targetGroupIds: [1],
   };
 
-  function configure(records: AttendanceRecord[]): void {
+  function configure(records: AttendanceRecord[], actual: ActualAttendance[] = []): void {
+    actualSpy = jasmine.createSpyObj('ActualAttendanceService', ['getForEvent', 'mark', 'markMany', 'clear']);
+    actualSpy.getForEvent.and.returnValue(of(actual));
+    actualSpy.mark.and.returnValue(of(actual[0]));
+    actualSpy.markMany.and.returnValue(of([]));
+    actualSpy.clear.and.returnValue(of(undefined));
+
     eventsSpy = jasmine.createSpyObj('EventsService', ['getEvent']);
     eventsSpy.getEvent.and.returnValue(of(event));
 
@@ -55,6 +64,7 @@ describe('EventDetailComponent', () => {
         { provide: AuthService, useValue: { currentUser: () => user } },
         { provide: EventsService, useValue: eventsSpy },
         { provide: AttendanceService, useValue: attendanceSpy },
+        { provide: ActualAttendanceService, useValue: actualSpy },
         { provide: MembersService, useValue: membersSpy },
         { provide: GroupsService, useValue: groupsSpy },
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: { get: () => '10' } } } },
@@ -131,5 +141,58 @@ describe('EventDetailComponent', () => {
     members.pop();
 
     expect(fixture.componentInstance.visibleMembers().map((m) => m.nickname)).not.toContain('Bývalý');
+  });
+
+  describe('skutečná docházka', () => {
+    const actual = (memberId: number, present: boolean): ActualAttendance => ({
+      eventId: 10, memberId, present, recordedByMemberId: 1, recordedAt: '2026-01-01T21:00:00Z',
+    });
+
+    it('vedoucímu u proběhlé akce ukáže očekávané členy s nahlášenou účastí a zapsanou přítomností', () => {
+      configure([{ eventId: 10, memberId: 2, status: 'yes' }], [actual(2, false)]);
+      const fixture = TestBed.createComponent(EventDetailComponent);
+      fixture.detectChanges();
+      const component = fixture.componentInstance;
+
+      expect(component.canRecordActual()).toBeTrue();
+      const petr = component.actualRows().find((r) => r.member.id === 2)!;
+      expect(petr.rsvp).toBe('yes');
+      expect(petr.present).toBeFalse();
+      expect(component.actualSummary()).toEqual({ present: 0, absent: 1, unchecked: 2 });
+    });
+
+    it('zapíše přítomnost za přihlášeného vedoucího a opětovné klepnutí záznam zruší', () => {
+      configure([], [actual(2, true)]);
+      const fixture = TestBed.createComponent(EventDetailComponent);
+      fixture.detectChanges();
+      const component = fixture.componentInstance;
+
+      component.markActual(3, true);
+      expect(actualSpy.mark).toHaveBeenCalledWith(10, 3, true, 1);
+      component.markActual(2, true);
+      expect(actualSpy.clear).toHaveBeenCalledWith(10, 2);
+      expect(attendanceSpy.updateAttendance).not.toHaveBeenCalled();
+    });
+
+    it('„Ostatní nepřítomni“ označí jen nezkontrolované', () => {
+      configure([], [actual(2, true)]);
+      const fixture = TestBed.createComponent(EventDetailComponent);
+      fixture.detectChanges();
+
+      fixture.componentInstance.markRestAbsent();
+      expect(actualSpy.markMany).toHaveBeenCalledWith(10, [1, 3], false, 1);
+    });
+
+    it('běžnému členovi se sekce nezobrazí', () => {
+      const original = user.roles;
+      user.roles = ['member'];
+      configure([]);
+      const fixture = TestBed.createComponent(EventDetailComponent);
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.canRecordActual()).toBeFalse();
+      expect(actualSpy.getForEvent).not.toHaveBeenCalled();
+      user.roles = original;
+    });
   });
 });
