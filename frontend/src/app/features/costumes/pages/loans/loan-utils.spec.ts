@@ -20,7 +20,7 @@ import {
 
 describe('loan-utils', () => {
   const member = (id: number, nickname: string, isActive = true): Member => ({
-    id, ensembleId: 1, userId: id, firstName: '', lastName: '', nickname, groupIds: [], isAdmin: false, isActive, createdAt: '',
+    id, ensembleId: 1, userId: id, firstName: '', lastName: '', nickname, groupIds: [], isActive, createdAt: '',
   });
   const members = [member(1, 'Anička'), member(4, 'Lojza'), member(5, 'Bára', false)];
   const state = seedCostumeState();

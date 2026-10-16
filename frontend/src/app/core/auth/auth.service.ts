@@ -15,7 +15,7 @@ function readStoredUser(): User | null {
     const raw = localStorage.getItem(AUTH_STORAGE_KEY);
     if (!raw) return null;
     const user = JSON.parse(raw) as User;
-    return typeof user?.id === 'number' && Array.isArray(user.groupIds) && Array.isArray(user.roles) ? user : null;
+    return typeof user?.id === 'number' ? { id: user.id, name: user.name, email: user.email } : null;
   } catch {
     return null;
   }

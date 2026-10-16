@@ -11,11 +11,13 @@ import { CommentsService } from '../../../features/posts/comments.service';
 import { NotificationService } from '../../notifications/notification.service';
 import { User } from '../../auth/models/user.model';
 import { Member } from '../../models/member.model';
+import { provideTestAccess } from '../../../testing/access.testing';
+import { NavigationService } from '../navigation.service';
 
 describe('MainLayoutComponent', () => {
-  const user: User = { id: 1, name: 'Staňa', email: 'stana@soubor.cz', groupIds: [1], roles: ['leader'] };
+  const user: User = { id: 1, name: 'Staňa', email: 'stana@soubor.cz' };
   const member: Member = {
-    id: 5, ensembleId: 1, userId: 1, firstName: 'Staňa', lastName: '', nickname: 'Staňa', email: 'stana@soubor.cz', groupIds: [1], isAdmin: false,
+    id: 5, ensembleId: 1, userId: 1, firstName: 'Staňa', lastName: '', nickname: 'Staňa', email: 'stana@soubor.cz', groupIds: [1],
     isActive: true, createdAt: '2020-01-01',
   };
 
@@ -42,6 +44,8 @@ describe('MainLayoutComponent', () => {
         { provide: PostsService, useValue: postsSpy },
         { provide: EventsService, useValue: eventsSpy },
         { provide: NotificationService, useValue: notificationSpy },
+        provideTestAccess(member),
+        { provide: NavigationService, useValue: { start: () => {}, stop: () => {}, sections: () => [], bottomItems: () => [] } },
       ],
     });
 

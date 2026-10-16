@@ -5,7 +5,8 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { Member } from '../../core/models/member.model';
 import { User } from '../../core/auth/models/user.model';
-import { LEADERSHIP_GROUP_ID } from '../../core/data/mock-groups';
+import { MandatesService } from '../mandates/mandates.service';
+import { MANDATE_LABELS } from '../../core/models/mandate.model';
 
 const DEFAULT_RETURN_URL = '/app/dashboard';
 
@@ -178,6 +179,7 @@ export class LoginComponent {
   constructor(
     private auth: AuthService,
     private router: Router,
+    private mandatesService: MandatesService,
     route: ActivatedRoute,
   ) {
     this.returnUrl = safeReturnUrl(route.snapshot.queryParamMap.get('returnUrl'));
@@ -201,10 +203,12 @@ export class LoginComponent {
     this.handleLogin(this.auth.loginAsMember(memberId));
   }
 
+  // V demu pomáhá vybrat profil podle toho, co smí: souborová funkce, případně hlavní pověření
   demoLabel(member: Member): string {
-    if (member.isAdmin) return `${member.nickname} (administrátor)`;
-    if (member.groupIds.includes(LEADERSHIP_GROUP_ID)) return `${member.nickname} (výbor)`;
-    return member.nickname;
+    const kinds = this.mandatesService.mandates().filter((m) => m.memberId === member.id).map((m) => m.kind);
+    const main = kinds.includes('ensemble-admin') ? MANDATE_LABELS['ensemble-admin'] : kinds.includes('costumes') ? 'Krojárna' : undefined;
+    const label = [member.functionTitle, main].filter(Boolean).join(', ');
+    return label ? `${member.nickname} (${label})` : member.nickname;
   }
 
   private handleLogin(login$: Observable<User>): void {

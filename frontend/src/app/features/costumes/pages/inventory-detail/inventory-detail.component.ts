@@ -8,7 +8,7 @@ import { CostumesNavComponent } from '../../costumes-nav/costumes-nav.component'
 import { CostumeRuleError, CostumesService } from '../../costumes.service';
 import { MembersService } from '../../../members/members.service';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { canManageCostumes } from '../../costume-permissions';
+import { AccessService } from '../../../../core/access/access.service';
 import { InventoryResult } from '../../models/costume.model';
 import { INVENTORY_RESULT_LABELS, inventoryProgress, seriesName } from '../../utils/costume-logic';
 import { downloadCsv, printPage } from '../../../../shared/export/export.utils';
@@ -287,6 +287,7 @@ import {
   `,
 })
 export class CostumeInventoryDetailComponent {
+  private readonly accessService = inject(AccessService);
   private readonly costumes = inject(CostumesService);
   private readonly membersService = inject(MembersService);
   private readonly auth = inject(AuthService);
@@ -318,7 +319,7 @@ export class CostumeInventoryDetailComponent {
     const inv = this.inventory();
     return inv ? inventoryProgress(inv) : undefined;
   });
-  readonly canEdit = computed(() => canManageCostumes(this.auth.currentUser()) && !this.inventory()?.closedAt);
+  readonly canEdit = computed(() => this.accessService.canManageCostumes() && !this.inventory()?.closedAt);
 
   readonly scopeLabel = computed(() => {
     const inv = this.inventory();

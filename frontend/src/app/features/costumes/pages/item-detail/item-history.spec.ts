@@ -38,7 +38,7 @@ describe('itemHistory', () => {
 
   it('userName přeloží userId člena na přezdívku', () => {
     const members: Member[] = [
-      { id: 1, ensembleId: 1, userId: 7, firstName: 'A', lastName: 'B', nickname: 'Maky', groupIds: [], isAdmin: false, isActive: true, createdAt: '' },
+      { id: 1, ensembleId: 1, userId: 7, firstName: 'A', lastName: 'B', nickname: 'Maky', groupIds: [], isActive: true, createdAt: '' },
     ];
     expect(userName(members, 7)).toBe('Maky');
     expect(userName(members, 0)).toBe('evidence');

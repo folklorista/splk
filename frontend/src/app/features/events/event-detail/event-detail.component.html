@@ -12,6 +12,9 @@
         <div class="detail__header">
           <h1 class="detail__title">{{ ev.title }}</h1>
           <span class="badge">{{ typeLabel(ev.type) }}</span>
+          @if (canEdit()) {
+            <a class="attendance-btn" [routerLink]="['/app/events', ev.id, 'edit']">Upravit</a>
+          }
         </div>
 
         <dl class="detail__meta">
@@ -21,6 +24,22 @@
           <dd>{{ ev.endsAt | date: 'd. M. yyyy, HH:mm' }}</dd>
           <dt><app-icon class="detail__meta-icon" name="location" /> Místo</dt>
           <dd>{{ ev.location }}</dd>
+          @if (organizerGroups().length) {
+            <dt><app-icon class="detail__meta-icon" name="flag" /> Pořádá</dt>
+            <dd>
+              @for (group of organizerGroups(); track group.id) {
+                <span class="badge">{{ group.name }}</span>
+              }
+            </dd>
+          }
+          @if (guests().length) {
+            <dt><app-icon class="detail__meta-icon" name="user" /> Hosté</dt>
+            <dd>
+              @for (guest of guests(); track guest.id) {
+                <span class="badge">{{ guest.nickname }}</span>
+              }
+            </dd>
+          }
           @if (targetGroups().length) {
             <dt><app-icon class="detail__meta-icon" name="users" /> Pro skupiny</dt>
             <dd>
@@ -40,6 +59,7 @@
           <p class="detail__body">{{ ev.description }}</p>
         }
 
+        @if (isAudience()) {
         <section class="detail__section">
           <h2 class="detail__section-title">Moje účast</h2>
           <div class="attendance-actions">
@@ -83,6 +103,7 @@
             }
           </div>
         </section>
+        }
 
         @if (visibleMembers().length > 0) {
           <section class="detail__section">
@@ -168,7 +189,7 @@
           </section>
         }
 
-        @if (isAdmin && visibleMembers().length > 0) {
+        @if (canSeeResponses() && visibleMembers().length > 0) {
           <section class="detail__section">
             <h2 class="detail__section-title">Zobrazení</h2>
             <div class="member-columns">

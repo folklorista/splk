@@ -5,7 +5,7 @@ import { map } from 'rxjs/operators';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { downloadCsv, formatDate, printPage } from '../../../../shared/export/export.utils';
 import { MembersService } from '../../../members/members.service';
-import { canManageCostumes } from '../../costume-permissions';
+import { AccessService } from '../../../../core/access/access.service';
 import { CostumesNavComponent } from '../../costumes-nav/costumes-nav.component';
 import { CostumesService } from '../../costumes.service';
 import { Loan, LoanLine } from '../../models/costume.model';
@@ -117,12 +117,13 @@ import { lineLabel, loanPieces, openLinesCsvRows, todayInputValue } from '../loa
   ],
 })
 export class CostumePersonComponent {
+  private readonly accessService = inject(AccessService);
   private costumes = inject(CostumesService);
   private auth = inject(AuthService);
 
   readonly state = toSignal(this.costumes.state$, { requireSync: true });
   readonly members = toSignal(inject(MembersService).getMembers(), { initialValue: [] });
-  readonly canManage = computed(() => canManageCostumes(this.auth.currentUser()));
+  readonly canManage = this.accessService.canManageCostumes;
   readonly key = toSignal(inject(ActivatedRoute).paramMap.pipe(map((p) => p.get('key') ?? '')), { initialValue: '' });
 
   readonly borrower = computed(() => parseBorrowerKey(this.key()));

@@ -12,7 +12,9 @@ import { EventRsvpRowComponent } from '../events/event-rsvp-row/event-rsvp-row.c
 import { MyCostumesComponent } from '../costumes/my-costumes/my-costumes.component';
 import { CostumesService } from '../costumes/costumes.service';
 import { myCostumeRows } from '../costumes/utils/costume-logic';
-import { canAccessBoard, isAdmin, isItemVisibleToUser } from '../../core/utils/visibility.utils';
+import { AccessService } from '../../core/access/access.service';
+import { canReadGroupContent, isEventAudience } from '../../core/access/access.utils';
+import { GroupsService } from '../groups/groups.service';
 
 // Kolik nejbližších akcí se na přehledu zobrazí s rychlým potvrzením účasti
 export const DASHBOARD_EVENT_LIMIT = 5;
@@ -48,6 +50,8 @@ export class DashboardComponent implements OnInit {
     private attendanceService: AttendanceService,
     private membersService: MembersService,
     private costumesService: CostumesService,
+    private access: AccessService,
+    private groupsService: GroupsService,
   ) { }
 
   ngOnInit(): void {
@@ -73,7 +77,11 @@ export class DashboardComponent implements OnInit {
       this.postsService.getPosts().subscribe((posts) => {
         this.pinnedPosts.set(
           posts
-            .filter((p) => !p.archivedAt && canAccessBoard(p.groupId, member.groupIds, isAdmin(user)))
+            .filter((p) => !p.archivedAt && !p.hiddenAt && member.groupIds.includes(p.groupId))
+            .filter((p) => {
+              const group = this.groupsService.findGroup(p.groupId);
+              return !!group && canReadGroupContent(this.access.subject(), group);
+            })
             .filter((p) => p.isPinned)
             .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)),
         );
@@ -86,7 +94,7 @@ export class DashboardComponent implements OnInit {
         const now = new Date();
         this.upcomingEvents.set(
           events
-            .filter((e) => isItemVisibleToUser(e.targetGroupIds, user.groupIds))
+            .filter((e) => isEventAudience(member, e))
             .filter((e) => new Date(e.startsAt) >= now)
             .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
             .slice(0, DASHBOARD_EVENT_LIMIT)

@@ -1,7 +1,7 @@
-import { Component, computed } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
-import { canViewCostumeStock } from '../costume-permissions';
+import { AccessService } from '../../../core/access/access.service';
 
 // Záložky krojového skladu – běžný člen vidí jen „Moje kroje“, záložky se mu nezobrazí
 @Component({
@@ -22,7 +22,8 @@ import { canViewCostumeStock } from '../costume-permissions';
   `,
 })
 export class CostumesNavComponent {
-  readonly visible = computed(() => canViewCostumeStock(this.auth.currentUser()));
+  private readonly accessService = inject(AccessService);
+  readonly visible = this.accessService.canViewCostumeStock;
 
   constructor(private auth: AuthService) {}
 }

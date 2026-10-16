@@ -6,7 +6,7 @@ import { CostumesNavComponent } from '../../costumes-nav/costumes-nav.component'
 import { CostumesService } from '../../costumes.service';
 import { MembersService } from '../../../members/members.service';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { canManageCostumes } from '../../costume-permissions';
+import { AccessService } from '../../../../core/access/access.service';
 import {
   ITEM_STATUS_LABELS,
   borrowerKey,
@@ -18,7 +18,7 @@ import {
   partTypeName,
   seriesName,
 } from '../../utils/costume-logic';
-import { ActionFeedback, COSTUME_PAGE_STYLES } from '../items/costume-ui';
+import { ActionFeedback } from '../items/costume-ui';
 import { itemHistory, userName } from './item-history';
 
 @Component({
@@ -26,16 +26,16 @@ import { itemHistory, userName } from './item-history';
   standalone: true,
   imports: [CostumesNavComponent, RouterLink, DatePipe],
   templateUrl: './item-detail.component.html',
-  styles: [COSTUME_PAGE_STYLES],
-})
+  })
 export class CostumeItemDetailComponent {
+  private readonly accessService = inject(AccessService);
   private costumes = inject(CostumesService);
   private auth = inject(AuthService);
 
   readonly itemId = Number(inject(ActivatedRoute).snapshot.paramMap.get('id'));
   readonly state = toSignal(this.costumes.state$, { initialValue: this.costumes.snapshot });
   readonly members = toSignal(inject(MembersService).getMembers(), { initialValue: [] });
-  readonly canManage = computed(() => canManageCostumes(this.auth.currentUser()));
+  readonly canManage = this.accessService.canManageCostumes;
   readonly feedback = new ActionFeedback();
   readonly statusLabels = ITEM_STATUS_LABELS;
 

@@ -4,13 +4,15 @@ import { Observable, of } from 'rxjs';
 import { boardGuard } from './board.guard';
 import { BoardsService } from './boards.service';
 import { Group } from '../../core/models/group.model';
+import { provideTestAccess, testMember } from '../../testing/access.testing';
 
 describe('boardGuard', () => {
   const board: Group = { id: 2, ensembleId: 1, name: 'Kluci', slug: 'kluci' };
 
-  function run(slug: string, accessible: Group | undefined): Observable<unknown> {
+  function run(slug: string, accessible: Group | undefined, groupIds = [2]): Observable<unknown> {
     TestBed.configureTestingModule({
       providers: [
+        provideTestAccess(testMember({ groupIds })),
         { provide: BoardsService, useValue: { getBoardBySlug: jasmine.createSpy().and.returnValue(of(accessible)) } },
         { provide: Router, useValue: { createUrlTree: jasmine.createSpy('createUrlTree').and.callFake((c: string[]) => c) } },
       ],
@@ -29,6 +31,13 @@ describe('boardGuard', () => {
 
   it('nedostupnou nástěnku přesměruje na rozcestník', (done) => {
     run('vedeni', undefined).subscribe((result) => {
+      expect(result).toEqual(['/app/boards']);
+      done();
+    });
+  });
+
+  it('nečlena otevřené skupiny na psaní příspěvku nepustí', (done) => {
+    run('kluci', { ...board, visibility: 'open' }, []).subscribe((result) => {
       expect(result).toEqual(['/app/boards']);
       done();
     });

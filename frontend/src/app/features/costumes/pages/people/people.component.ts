@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { MembersService } from '../../../members/members.service';
-import { canManageCostumes } from '../../costume-permissions';
+import { AccessService } from '../../../../core/access/access.service';
 import { CostumesNavComponent } from '../../costumes-nav/costumes-nav.component';
 import { CostumesService } from '../../costumes.service';
 import { ExternalPerson } from '../../models/costume.model';
@@ -124,12 +124,13 @@ const EMPTY_DRAFT: ExternalDraft = { name: '', contact: '', note: '' };
   ],
 })
 export class CostumePeopleComponent {
+  private readonly accessService = inject(AccessService);
   private costumes = inject(CostumesService);
   private auth = inject(AuthService);
 
   readonly state = toSignal(this.costumes.state$, { requireSync: true });
   readonly members = toSignal(inject(MembersService).getMembers(), { initialValue: [] });
-  readonly canManage = computed(() => canManageCostumes(this.auth.currentUser()));
+  readonly canManage = this.accessService.canManageCostumes;
 
   readonly filters: { value: BorrowerFilter; label: string }[] = [
     { value: 'all', label: 'Všichni vypůjčitelé' },

@@ -1,58 +1,16 @@
-import { canAccessBoard, getBoardBadgeCount, getNewCommentsCount, getUnconfirmedEventsCount, getUnseenMentionsCount, isAdmin, isItemVisibleToUser, isLeaderOrAdmin } from './visibility.utils';
-import { User } from '../auth/models/user.model';
+import { getBoardBadgeCount, getNewCommentsCount, getUnconfirmedEventsCount, getUnseenMentionsCount, hasBoard, hasChat } from './visibility.utils';
+import { AccessSubject } from '../access/access.utils';
 
 describe('visibility.utils', () => {
-  const user: User = {
-    id: 1,
-    name: 'Jana Nováková',
-    email: 'jana@soubor.cz',
-    groupIds: [1, 2],
-    roles: ['member'],
-  };
   const currentMemberId = 10;
+  const subject: AccessSubject = { memberId: currentMemberId, groupIds: [1, 2], isExternal: false, mandates: [] };
 
-  describe('isItemVisibleToUser', () => {
-    it('vrátí true, když položka nemá cílové skupiny', () => {
-      expect(isItemVisibleToUser([], user.groupIds)).toBeTrue();
-    });
-
-    it('vrátí true, když se skupiny protínají', () => {
-      expect(isItemVisibleToUser([2, 3], user.groupIds)).toBeTrue();
-    });
-
-    it('vrátí false, když se skupiny neprotínají', () => {
-      expect(isItemVisibleToUser([3, 4], user.groupIds)).toBeFalse();
-    });
-  });
-
-  describe('canAccessBoard', () => {
-    it('pustí člena skupiny', () => {
-      expect(canAccessBoard(2, [1, 2], false)).toBeTrue();
-    });
-
-    it('nepustí nečlena', () => {
-      expect(canAccessBoard(3, [1, 2], false)).toBeFalse();
-    });
-
-    it('administrátora pustí i na nástěnku cizí skupiny', () => {
-      expect(canAccessBoard(3, [], true)).toBeTrue();
-    });
-  });
-
-  describe('isAdmin', () => {
-    it('pozná administrátora podle role', () => {
-      expect(isAdmin({ ...user, roles: ['member', 'admin'] })).toBeTrue();
-      expect(isAdmin(user)).toBeFalse();
-      expect(isAdmin(null)).toBeFalse();
-    });
-  });
-
-  describe('isLeaderOrAdmin', () => {
-    it('pustí vedoucího i administrátora, běžného člena ne', () => {
-      expect(isLeaderOrAdmin({ ...user, roles: ['member', 'leader'] })).toBeTrue();
-      expect(isLeaderOrAdmin({ ...user, roles: ['member', 'admin'] })).toBeTrue();
-      expect(isLeaderOrAdmin(user)).toBeFalse();
-      expect(isLeaderOrAdmin(null)).toBeFalse();
+  describe('hasBoard / hasChat', () => {
+    it('chybějící nastavení = zapnuto', () => {
+      expect(hasBoard({})).toBeTrue();
+      expect(hasChat({})).toBeTrue();
+      expect(hasBoard({ boardEnabled: false })).toBeFalse();
+      expect(hasChat({ chatEnabled: false })).toBeFalse();
     });
   });
 
@@ -80,10 +38,9 @@ describe('visibility.utils', () => {
   describe('getUnconfirmedEventsCount', () => {
     const FUTURE = '2099-01-01T18:00:00';
 
-    it('vrátí 0 bez uživatele nebo bez ID člena', () => {
+    it('vrátí 0 bez přihlášeného člena', () => {
       const events = [{ startsAt: FUTURE, targetGroupIds: [], attendance: [] }];
-      expect(getUnconfirmedEventsCount(events, null, currentMemberId)).toBe(0);
-      expect(getUnconfirmedEventsCount(events, user, null)).toBe(0);
+      expect(getUnconfirmedEventsCount(events, null)).toBe(0);
     });
 
     it('nezapočítá akci, kde už člen vyjádřil účast', () => {
@@ -92,7 +49,7 @@ describe('visibility.utils', () => {
         { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'no' }] },
         { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'maybe' }] },
       ];
-      expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(0);
+      expect(getUnconfirmedEventsCount(events, subject)).toBe(0);
     });
 
     it('započítá akci bez záznamu účasti nebo se stavem pending', () => {
@@ -101,17 +58,25 @@ describe('visibility.utils', () => {
         { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'pending' }] },
         { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: 999, status: 'yes' }] },
       ];
-      expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(3);
+      expect(getUnconfirmedEventsCount(events, subject)).toBe(3);
     });
 
     it('nezapočítá akci, která není určena pro skupiny uživatele', () => {
       const events = [{ startsAt: FUTURE, targetGroupIds: [99], attendance: [] }];
-      expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(0);
+      expect(getUnconfirmedEventsCount(events, subject)).toBe(0);
+    });
+
+    it('započítá akci, kam je člen pozván jako host, ale ne akci pro celý soubor u externisty', () => {
+      const events = [
+        { startsAt: FUTURE, targetGroupIds: [99], guestMemberIds: [currentMemberId], attendance: [] },
+        { startsAt: FUTURE, targetGroupIds: [], attendance: [] },
+      ];
+      expect(getUnconfirmedEventsCount(events, { ...subject, isExternal: true })).toBe(1);
     });
 
     it('nezapočítá proběhlou akci bez odpovědi', () => {
       const events = [{ startsAt: '2000-01-01T18:00:00', targetGroupIds: [], attendance: [] }];
-      expect(getUnconfirmedEventsCount(events, user, currentMemberId)).toBe(0);
+      expect(getUnconfirmedEventsCount(events, subject)).toBe(0);
     });
   });
 

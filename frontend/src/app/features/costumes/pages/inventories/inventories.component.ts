@@ -7,7 +7,7 @@ import { CostumesNavComponent } from '../../costumes-nav/costumes-nav.component'
 import { CostumeRuleError, CostumesService } from '../../costumes.service';
 import { MembersService } from '../../../members/members.service';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { canManageCostumes } from '../../costume-permissions';
+import { AccessService } from '../../../../core/access/access.service';
 import { inventoryProgress, seriesName } from '../../utils/costume-logic';
 import { userNameFromMembers } from '../inventory-detail/inventory-detail.utils';
 
@@ -107,6 +107,7 @@ import { userNameFromMembers } from '../inventory-detail/inventory-detail.utils'
   `,
 })
 export class CostumeInventoriesComponent {
+  private readonly accessService = inject(AccessService);
   private readonly costumes = inject(CostumesService);
   private readonly membersService = inject(MembersService);
   private readonly auth = inject(AuthService);
@@ -114,7 +115,7 @@ export class CostumeInventoriesComponent {
 
   readonly state = toSignal(this.costumes.state$);
   readonly members = toSignal(this.membersService.getMembers(), { initialValue: [] });
-  readonly canManage = computed(() => canManageCostumes(this.auth.currentUser()));
+  readonly canManage = this.accessService.canManageCostumes;
 
   readonly formOpen = signal(false);
   readonly name = signal('');

@@ -5,10 +5,9 @@ import { CostumesNavComponent } from '../../costumes-nav/costumes-nav.component'
 import { CostumesService } from '../../costumes.service';
 import { MembersService } from '../../../members/members.service';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { canManageCostumes } from '../../costume-permissions';
+import { AccessService } from '../../../../core/access/access.service';
 import { ITEM_STATUS_LABELS, ItemStatus } from '../../utils/costume-logic';
 import { downloadCsv, printPage } from '../../../../shared/export/export.utils';
-import { COSTUME_PAGE_STYLES } from './costume-ui';
 import { ItemFilter, buildItemRows, filterItemRows, itemCsvRows } from './items.utils';
 
 const STATUSES: ItemStatus[] = ['available', 'not-ready', 'on-loan', 'retired'];
@@ -21,7 +20,6 @@ const optionalId = (value: string | null): number | undefined => (value ? Number
   imports: [CostumesNavComponent, RouterLink],
   templateUrl: './items.component.html',
   styles: [
-    COSTUME_PAGE_STYLES,
     `
       .items__count { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--spacing-sm); }
       .items__code { font-weight: 700; }
@@ -37,13 +35,14 @@ const optionalId = (value: string | null): number | undefined => (value ? Number
   ],
 })
 export class CostumeItemsComponent {
+  private readonly accessService = inject(AccessService);
   private costumes = inject(CostumesService);
   private auth = inject(AuthService);
   private route = inject(ActivatedRoute);
 
   readonly state = toSignal(this.costumes.state$, { initialValue: this.costumes.snapshot });
   readonly members = toSignal(inject(MembersService).getMembers(), { initialValue: [] });
-  readonly canManage = computed(() => canManageCostumes(this.auth.currentUser()));
+  readonly canManage = this.accessService.canManageCostumes;
 
   readonly statuses = STATUSES;
   readonly statusLabels = ITEM_STATUS_LABELS;

@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { AUTH_STORAGE_KEY, AuthService } from './auth.service';
 import { MOCK_MEMBERS } from '../../features/members/data/mock-members';
+import { MembersService } from '../../features/members/members.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -79,15 +80,18 @@ describe('AuthService', () => {
     });
   });
 
-  it('uživatel přebírá přezdívku člena a role podle výboru a administrátora', (done) => {
+  it('uživatel přebírá přezdívku člena, role se do přihlášení neukládají', (done) => {
     service.loginAsMember(2).subscribe((user) => {
       expect(user.name).toBe('Vedoucí');
-      expect(user.roles).toEqual(['member', 'leader']);
-      service.loginAsMember(3).subscribe((admin) => {
-        expect(admin.roles).toEqual(['member', 'leader', 'admin']);
-        done();
-      });
+      expect('roles' in user).toBeFalse();
+      done();
     });
+  });
+
+  it('starší uložené přihlášení s rolemi se načte jen jako identita', () => {
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ id: 1, name: 'Jana', email: 'j@x.cz', groupIds: [1], roles: ['admin'] }));
+    const fresh = new AuthService(TestBed.inject(MembersService));
+    expect(fresh.currentUser()).toEqual({ id: 1, name: 'Jana', email: 'j@x.cz' });
   });
 
   it('refreshFromMember aktualizuje přihlášeného uživatele', (done) => {

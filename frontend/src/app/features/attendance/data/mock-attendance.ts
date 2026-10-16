@@ -1,7 +1,7 @@
 import { AttendanceRecord, AttendanceStatus } from '../models/attendance.model';
 import { MOCK_EVENTS } from '../../events/data/mock-events';
 import { MOCK_MEMBERS } from '../../members/data/mock-members';
-import { isItemVisibleToUser } from '../../../core/utils/visibility.utils';
+import { isEventAudience } from '../../../core/access/access.utils';
 
 const NO_NOTES = ['Pracovní povinnost', 'Jsem nemocná/ý', 'Rodinná oslava', 'Nestihnu to z práce'];
 const MAYBE_NOTES = ['Dorazím později', 'Podle toho, jak skončím v práci', 'Možná jen na první hodinu'];
@@ -14,7 +14,7 @@ function generateAttendance(): AttendanceRecord[] {
   const records: AttendanceRecord[] = [];
   for (const event of MOCK_EVENTS) {
     const isPast = event.startsAt < now;
-    const members = MOCK_MEMBERS.filter((m) => m.isActive && isItemVisibleToUser(event.targetGroupIds, m.groupIds));
+    const members = MOCK_MEMBERS.filter((m) => isEventAudience(m, event));
     for (const member of members) {
       const roll = (event.id * 7 + member.id * 13) % 10;
       const status: AttendanceStatus | null = isPast

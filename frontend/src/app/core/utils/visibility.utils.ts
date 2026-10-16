@@ -1,30 +1,11 @@
-import { User } from '../auth/models/user.model';
-
-// Položka (akce) je viditelná, když nemá žádné cílení (= pro všechny),
-// nebo když se protíná skupina uživatele s cílovými skupinami.
-export function isItemVisibleToUser(targetGroupIds: number[] | undefined, userGroups: number[]): boolean {
-  if (!targetGroupIds || targetGroupIds.length === 0) {
-    return true;
-  }
-  return targetGroupIds.some(gid => userGroups.includes(gid));
-}
-
-// Nástěnku skupiny vidí (a píše na ni) jen člen té skupiny; administrátor vidí všechny.
-export function canAccessBoard(groupId: number, memberGroupIds: number[], isAdmin: boolean): boolean {
-  return isAdmin || memberGroupIds.includes(groupId);
-}
+import { AccessSubject, isEventAudience } from '../access/access.utils';
 
 export function hasBoard(group: { boardEnabled?: boolean }): boolean {
   return group.boardEnabled !== false;
 }
 
-export function isAdmin(user: User | null): boolean {
-  return user?.roles.includes('admin') ?? false;
-}
-
-// Skutečnou docházku zapisuje a prohlíží výbor (role leader) a administrátor
-export function isLeaderOrAdmin(user: User | null): boolean {
-  return user?.roles.some((role) => role === 'leader' || role === 'admin') ?? false;
+export function hasChat(group: { chatEnabled?: boolean }): boolean {
+  return group.chatEnabled !== false;
 }
 
 // Badge nástěnky = nepřečtené (nearchivované) příspěvky + neviděné zmínky v komentářích k jejím příspěvkům
@@ -40,12 +21,13 @@ export function getBoardBadgeCount(posts: any[], comments: any[], groupId: numbe
   return unreadPosts + unseenMentions;
 }
 
-// Počítají se jen nadcházející akce – na proběhlé už účast potvrzovat nejde
-export function getUnconfirmedEventsCount(events: any[], user: User | null, currentMemberId: number | null, now = new Date()): number {
-  if (!user || !currentMemberId) return 0;
+// Počítají se jen nadcházející akce, kterými je člen osloven – na proběhlé už účast potvrzovat nejde
+export function getUnconfirmedEventsCount(events: any[], subject: AccessSubject | null, now = new Date()): number {
+  if (!subject) return 0;
+  const currentMemberId = subject.memberId;
   return events
     .filter(e => new Date(e.startsAt) >= now)
-    .filter(e => isItemVisibleToUser(e.targetGroupIds, user.groupIds))
+    .filter(e => isEventAudience({ id: currentMemberId, groupIds: subject.groupIds, isActive: true, isExternal: subject.isExternal }, e))
     .filter(e => {
       const memberAttendance = e.attendance?.find((a: any) => a.memberId === currentMemberId);
       return !memberAttendance || memberAttendance.status === 'pending';

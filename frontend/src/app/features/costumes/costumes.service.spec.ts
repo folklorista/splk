@@ -1,6 +1,7 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { CostumeRuleError, CostumesService } from './costumes.service';
-import { AuthService } from '../../core/auth/auth.service';
+import { AccessService } from '../../core/access/access.service';
+import { AccessDeniedError } from '../../core/access/mandate-rules';
 import { CostumeState, Loan } from './models/costume.model';
 import { clearDemoData } from '../../core/data/demo-storage';
 import { isLoanOpen, itemStatus, kitIssueCandidates, kitView, lineRemaining, nextFreeNumber } from './utils/costume-logic';
@@ -11,10 +12,13 @@ describe('CostumesService', () => {
   const item = (id: number) => state().items.find((i) => i.id === id)!;
   const kit = (id: number) => state().kits.find((k) => k.id === id)!;
 
+  let canManage = true;
+
   beforeEach(() => {
     clearDemoData();
+    canManage = true;
     TestBed.configureTestingModule({
-      providers: [{ provide: AuthService, useValue: { currentUser: () => ({ id: 9, name: 'Maky', email: '', groupIds: [7], roles: ['member'] }) } }],
+      providers: [{ provide: AccessService, useValue: { memberId: () => 9, canManageCostumes: () => canManage } }],
     });
     service = TestBed.inject(CostumesService);
   });
@@ -27,6 +31,12 @@ describe('CostumesService', () => {
     tick(1000);
     return result;
   }
+
+  it('bez pověření Správa krojů zápis odmítne', fakeAsync(() => {
+    canManage = false;
+    const denied = run(service.createItem({ seriesId: 2, number: 99, partTypeId: 1 }));
+    expect(denied.error).toEqual(jasmine.any(AccessDeniedError));
+  }));
 
   it('dovolí stejné číslo v různých řadách, ale ne v jedné řadě (A)', fakeAsync(() => {
     const ok = run(service.createItem({ seriesId: 2, number: 2, partTypeId: 1 }));

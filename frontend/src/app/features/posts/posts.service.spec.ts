@@ -2,12 +2,21 @@ import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { PostsService } from './posts.service';
 import { MOCK_POSTS } from './data/mock-posts';
 import { Post } from './models/post.model';
+import { AccessService } from '../../core/access/access.service';
+import { AccessDeniedError } from '../../core/access/mandate-rules';
+import { AuditService } from '../audit/audit.service';
+import { createTestAccess, testMandate, testMember } from '../../testing/access.testing';
 
 describe('PostsService', () => {
   let service: PostsService;
+  let env: ReturnType<typeof createTestAccess>;
+  // Přihlášený je autor příspěvku 1 a člen jeho skupiny i skupiny 1
+  const post1 = MOCK_POSTS.find((p) => p.id === 1)!;
+  const author = testMember({ id: post1.authorId, userId: post1.authorId, groupIds: [1, post1.groupId] });
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    env = createTestAccess(author);
+    TestBed.configureTestingModule({ providers: [{ provide: AccessService, useValue: env.access }] });
     service = TestBed.inject(PostsService);
     service.resetCache();
   });
@@ -53,7 +62,7 @@ describe('PostsService', () => {
       ensembleId: 1,
       title: 'Nový příspěvek',
       body: 'Obsah',
-      authorId: 1,
+      authorId: author.id,
       groupId: 1,
       publishedAt: '2026-06-23T10:00:00',
       updatedAt: '2026-06-23T10:00:00',
@@ -88,7 +97,8 @@ describe('PostsService', () => {
     tick(300);
     expect(result?.id).toBe(1);
     expect(result?.title).toBe('Upravený nadpis');
-    expect(result?.isPinned).toBeTrue();
+    // Připnutí je moderátorský zásah (setPinned), úprava obsahu ho nemění
+    expect(result?.isPinned).toBe(post1.isPinned);
   }));
 
   it('updatePost nezmění původní publishedAt, i když je v datech jiné', fakeAsync(() => {
@@ -127,23 +137,45 @@ describe('PostsService', () => {
     expect(result).toBeUndefined();
   }));
 
-  it('deletePost odstraní příspěvek', fakeAsync(() => {
-    let deleted: boolean = false;
-    service.deletePost(1).subscribe((success) => (deleted = success));
+  it('createPost odmítne příspěvek do skupiny, kde autor není členem', fakeAsync(() => {
+    let error: unknown;
+    service.createPost({ ...post1, groupId: 7, authorId: author.id }).subscribe({ error: (e) => (error = e) });
     tick(300);
-    expect(deleted).toBeTrue();
-
-    let posts: Post[] = [];
-    service.getPosts().subscribe((p) => (posts = p));
-    tick(300);
-    expect(posts.find((p) => p.id === 1)).toBeUndefined();
+    expect(error).toEqual(jasmine.any(AccessDeniedError));
   }));
 
-  it('deletePost vrátí false pro neexistující id', fakeAsync(() => {
-    let deleted: boolean = true;
-    service.deletePost(9999).subscribe((success) => (deleted = success));
+  it('updatePost cizího příspěvku odmítne i správci skupiny', fakeAsync(() => {
+    env.members.set([{ ...author, id: 999, userId: author.userId }]);
+    env.mandates.set([testMandate(999, 'group-owner', { groupId: post1.groupId })]);
+    let error: unknown;
+    service.updatePost(1, { ...post1, title: 'Přepsáno' }).subscribe({ error: (e) => (error = e) });
     tick(300);
-    expect(deleted).toBeFalse();
+    expect(error).toEqual(jasmine.any(AccessDeniedError));
+  }));
+
+  it('setPinned a setHidden smí jen správce skupiny a zásah se zapíše do historie', fakeAsync(() => {
+    let error: unknown;
+    service.setPinned(1, true).subscribe({ error: (e) => (error = e) });
+    tick(300);
+    expect(error).toEqual(jasmine.any(AccessDeniedError));
+
+    env.mandates.set([testMandate(author.id, 'group-deputy', { groupId: post1.groupId })]);
+    let hidden: Post | undefined;
+    service.setHidden(1, true).subscribe((p) => (hidden = p));
+    tick(300);
+    expect(hidden?.hiddenAt).toBeTruthy();
+    expect(hidden?.hiddenById).toBe(author.id);
+    const audit = TestBed.inject(AuditService).entries();
+    expect(audit[audit.length - 1].action).toBe('post-hidden');
+  }));
+
+  it('restorePost vrátí archivovaný příspěvek', fakeAsync(() => {
+    service.archivePost(1).subscribe();
+    tick(300);
+    let restored: Post | undefined;
+    service.restorePost(1).subscribe((p) => (restored = p));
+    tick(300);
+    expect(restored?.archivedAt).toBeUndefined();
   }));
 
   it('markAsRead přidá člena mezi readers, beze změny updatedAt', fakeAsync(() => {

@@ -15,7 +15,8 @@ import {
 } from './models/costume.model';
 import { seedCostumeState } from './data/mock-costumes';
 import { loadDemoData, saveDemoData } from '../../core/data/demo-storage';
-import { AuthService } from '../../core/auth/auth.service';
+import { AccessService } from '../../core/access/access.service';
+import { AccessDeniedError } from '../../core/access/mandate-rules';
 import {
   buildInventoryLines,
   isNumberTaken,
@@ -63,15 +64,15 @@ const MOCK_DELAY = 150;
 const nextId = (rows: { id: number }[]) => Math.max(0, ...rows.map((r) => r.id)) + 1;
 const clean = (text: string | undefined) => text?.trim() || undefined;
 
-// Mock implementace krojové evidence. Zapisovat smí jen krojárky – oprávnění kontrolují
-// stránky (canManageCostumes); skutečné vynucení bude na serveru.
+// Mock implementace krojové evidence. Zapisovat smí jen pověřené krojárky (Správa krojů) –
+// služba to ověřuje stejně, jako to bude dělat server; skrytá tlačítka nestačí.
 @Injectable({ providedIn: 'root' })
 export class CostumesService {
   private stateSubject = new BehaviorSubject<CostumeState>(loadDemoData('costumes', seedCostumeState));
 
   readonly state$ = this.stateSubject.asObservable();
 
-  constructor(private auth: AuthService) {
+  constructor(private access: AccessService) {
     this.stateSubject.subscribe((state) => saveDemoData('costumes', state));
   }
 
@@ -382,11 +383,14 @@ export class CostumesService {
   }
 
   private actorId(): number {
-    return this.auth.currentUser()?.id ?? 0;
+    return this.access.memberId() ?? 0;
   }
 
   // Změny se provádějí na hluboké kopii – při chybě zůstane původní stav beze změny
   private mutate<T>(change: (state: CostumeState) => T): Observable<T> {
+    if (!this.access.canManageCostumes()) {
+      return throwError(() => new AccessDeniedError('Krojovou evidenci mění jen pověřené krojárky.'));
+    }
     const draft: CostumeState = structuredClone(this.stateSubject.value);
     try {
       const result = change(draft);

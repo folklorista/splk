@@ -17,6 +17,8 @@ import {
   formatSummary,
 } from '../utils/actual-attendance.utils';
 import { downloadTextFile } from '../../../core/utils/download.utils';
+import { AccessService } from '../../../core/access/access.service';
+import { canRecordAttendance } from '../../../core/access/access.utils';
 
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
   rehearsal: 'Zkouška',
@@ -26,7 +28,8 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
   other: 'Jiné',
 };
 
-// Přehled skutečné docházky za období (výbor, admin) – tabulka členové × proběhlé akce
+// Přehled skutečné docházky za období – tabulka členové × proběhlé akce.
+// Jen akce v rozsahu pověření Evidence docházky přihlášeného.
 @Component({
   selector: 'app-attendance-report',
   standalone: true,
@@ -38,6 +41,7 @@ export class AttendanceReportComponent implements OnInit {
   private membersService = inject(MembersService);
   private actualAttendanceService = inject(ActualAttendanceService);
   private destroyRef = inject(DestroyRef);
+  private access = inject(AccessService);
 
   private events = signal<AppEvent[]>([]);
   private members = signal<Member[]>([]);
@@ -52,7 +56,9 @@ export class AttendanceReportComponent implements OnInit {
   readonly formatSummary = formatSummary;
 
   readonly report = computed(() => {
-    const events = filterPeriodEvents(this.events(), { from: this.from(), to: this.to(), type: this.type() });
+    const subject = this.access.subject();
+    const inScope = this.events().filter((e) => canRecordAttendance(subject, e));
+    const events = filterPeriodEvents(inScope, { from: this.from(), to: this.to(), type: this.type() });
     return buildAttendanceReport(events, this.members(), this.records());
   });
 

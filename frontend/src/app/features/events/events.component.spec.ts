@@ -4,6 +4,8 @@ import { of } from 'rxjs';
 import { EventsComponent } from './events.component';
 import { EventsService } from './events.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { AccessService } from '../../core/access/access.service';
+import { createTestAccess, testMandate } from '../../testing/access.testing';
 import { MembersService } from '../members/members.service';
 import { User } from '../../core/auth/models/user.model';
 import { Member } from '../../core/models/member.model';
@@ -16,12 +18,13 @@ describe('EventsComponent', () => {
   let membersSpy: jasmine.SpyObj<MembersService>;
   let attendanceSpy: jasmine.SpyObj<AttendanceService>;
 
-  const user: User = { id: 1, name: 'Jana', email: 'jana@soubor.cz', groupIds: [1], roles: ['member'] };
+  const user: User = { id: 1, name: 'Jana', email: 'jana@soubor.cz' };
+  let env: ReturnType<typeof createTestAccess>;
 
   const members: Member[] = [
-    { id: 1, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: 'Nováková', nickname: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
-    { id: 2, ensembleId: 1, userId: 2, firstName: 'Petr', lastName: 'Novák', nickname: 'Petr Novák', email: 'petr@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
-    { id: 3, ensembleId: 1, userId: 3, firstName: 'Karel', lastName: 'Mimo', nickname: 'Karel Mimo', email: 'karel@soubor.cz', groupIds: [99], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
+    { id: 1, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: 'Nováková', nickname: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isActive: true, createdAt: '2020-01-01' },
+    { id: 2, ensembleId: 1, userId: 2, firstName: 'Petr', lastName: 'Novák', nickname: 'Petr Novák', email: 'petr@soubor.cz', groupIds: [1], isActive: true, createdAt: '2020-01-01' },
+    { id: 3, ensembleId: 1, userId: 3, firstName: 'Karel', lastName: 'Mimo', nickname: 'Karel Mimo', email: 'karel@soubor.cz', groupIds: [99], isActive: true, createdAt: '2020-01-01' },
   ];
 
   const event: AppEvent = {
@@ -30,6 +33,10 @@ describe('EventsComponent', () => {
     location: 'Sál', targetGroupIds: [1],
     attendance: [{ eventId: 1, memberId: 2, status: 'yes' }],
   };
+
+  beforeEach(() => {
+    env = createTestAccess(members[0], { members });
+  });
 
   function configure(queryParams: Record<string, string> = {}): void {
     attendanceSpy = jasmine.createSpyObj('AttendanceService', ['setStatus']);
@@ -46,6 +53,7 @@ describe('EventsComponent', () => {
       providers: [
         provideRouter([]),
         { provide: AuthService, useValue: { currentUser: () => user } },
+        { provide: AccessService, useValue: env.access },
         { provide: EventsService, useValue: eventsSpy },
         { provide: MembersService, useValue: membersSpy },
         { provide: AttendanceService, useValue: attendanceSpy },
@@ -54,14 +62,13 @@ describe('EventsComponent', () => {
     });
   }
 
-  it('počty odpovědí vidí jen výbor a počítají jen členy cílových skupin', () => {
-    user.roles = ['member', 'leader'];
+  it('počty odpovědí vidí evidence docházky a počítají jen členy cílových skupin', () => {
+    env.mandates.set([testMandate(1, 'attendance')]);
     configure();
     const fixture = TestBed.createComponent(EventsComponent);
     fixture.detectChanges();
 
     expect(fixture.componentInstance.attendanceCounts(event)).toEqual({ yes: 1, no: 0, maybe: 0, pending: 1 });
-    user.roles = ['member'];
   });
 
   it('běžný člen počty odpovědí nevidí', () => {

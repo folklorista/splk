@@ -15,7 +15,7 @@ import { Group } from '../../../core/models/group.model';
   imports: [ReactiveFormsModule, RouterLink],
   template: `
     <div class="page">
-      <a class="back-link" [routerLink]="backLink">← Zpět na nástěnku</a>
+      <a class="back-link" [routerLink]="backLink" [queryParams]="backQuery">← Zpět na nástěnku</a>
 
       @if (notAllowed) {
         <p class="state-note">Tento příspěvek nemůžete upravit.</p>
@@ -125,7 +125,8 @@ export class PostFormComponent implements OnInit {
           this.notAllowed = true;
           return;
         }
-        const canEdit = post.authorId === this.currentMember!.id || user.roles.includes('leader') || user.roles.includes('admin');
+        // Obsah upravuje jen autor – správce skupiny cizí příspěvek nepřepisuje, jen moderuje
+        const canEdit = post.authorId === this.currentMember!.id;
         if (!canEdit) {
           this.notAllowed = true;
           return;
@@ -146,6 +147,10 @@ export class PostFormComponent implements OnInit {
   get backLink(): string[] {
     if (this.isEditMode && this.postId !== null) return ['/app/posts', String(this.postId)];
     return this.board ? ['/app/boards', this.board.slug] : ['/app/boards'];
+  }
+
+  get backQuery(): Record<string, string> | null {
+    return this.isEditMode ? null : { tab: 'board' };
   }
 
   onSubmit(): void {

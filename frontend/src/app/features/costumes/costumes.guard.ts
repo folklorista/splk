@@ -1,16 +1,15 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { AuthService } from '../../core/auth/auth.service';
-import { canManageCostumes, canViewCostumeStock } from './costume-permissions';
+import { AccessService } from '../../core/access/access.service';
 
-// Přehled skladu – krojárky, vedoucí, administrátoři; ostatní zpět na „Moje kroje“
+// Přehled skladu – pověření Správa krojů nebo Náhled do krojárky; ostatní zpět na „Moje kroje“
 export const costumeStockGuard: CanActivateFn = () => {
-  const auth = inject(AuthService);
-  return canViewCostumeStock(auth.currentUser()) || inject(Router).createUrlTree(['/app/costumes']);
+  const access = inject(AccessService);
+  return (access.modules().costumes && access.canViewCostumeStock()) || inject(Router).createUrlTree(['/app/costumes']);
 };
 
-// Zápis do evidence – jen krojárky
+// Zápis do evidence – jen pověřené krojárky (Správa krojů)
 export const costumeManagerGuard: CanActivateFn = () => {
-  const auth = inject(AuthService);
-  return canManageCostumes(auth.currentUser()) || inject(Router).createUrlTree(['/app/costumes']);
+  const access = inject(AccessService);
+  return (access.modules().costumes && access.canManageCostumes()) || inject(Router).createUrlTree(['/app/costumes']);
 };

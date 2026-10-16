@@ -1,15 +1,12 @@
-<div class="page">
-  @if (board(); as b) {
-    <div class="page__header">
-      <h1 class="page__title">{{ b.name }}</h1>
-      <a class="btn-primary btn-primary--sm" [routerLink]="['/app/boards', b.slug, 'new']">+ Nový příspěvek</a>
+<div class="board">
+  @if (canPost()) {
+    <div class="board__toolbar">
+      <a class="btn-primary btn-primary--sm" [routerLink]="['/app/boards', board().slug, 'new']">+ Nový příspěvek</a>
     </div>
   }
 
   @if (loading()) {
     <p class="state-note">Načítání…</p>
-  } @else if (!board()) {
-    <p class="state-note">Nástěnka nebyla nalezena.</p>
   } @else {
     @if (!visiblePosts().length) {
       <p class="state-note">Žádné příspěvky.</p>
@@ -42,7 +39,7 @@
   <li
     class="item-list__item item-list__item--link"
     [class.item-list__item--requires-action]="!post.archivedAt && (isUnread(post) || hasMention(post))"
-    [class.item-list__item--archived]="post.archivedAt"
+    [class.item-list__item--archived]="post.archivedAt || post.hiddenAt"
     [routerLink]="['/app/posts', post.id]"
   >
     <div class="item-list__row">
@@ -57,6 +54,9 @@
         @if (newCommentsCount(post); as count) {
           <span class="badge">{{ newCommentsLabel(count) }}</span>
         }
+        @if (post.hiddenAt) {
+          <span class="badge">Skryto moderátorem</span>
+        }
         @if (post.archivedAt) {
           <span class="badge">Archiv</span>
         } @else if (post.isPinned) {
@@ -66,7 +66,7 @@
     </div>
     <div class="item-list__meta">
       {{ post.publishedAt | date: 'd. M. yyyy' }} · {{ authorName(post) }}
-      @if (isLeader || isAdmin) {
+      @if (canSeeReadStats()) {
         · {{ readCountLabel(post) }}
       }
     </div>

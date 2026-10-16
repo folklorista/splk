@@ -5,6 +5,8 @@ import { PostDetailComponent } from './post-detail.component';
 import { PostsService } from '../posts.service';
 import { CommentsService } from '../comments.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { AccessService } from '../../../core/access/access.service';
+import { createTestAccess, testMandate } from '../../../testing/access.testing';
 import { MembersService } from '../../members/members.service';
 import { User } from '../../../core/auth/models/user.model';
 import { Member } from '../../../core/models/member.model';
@@ -22,14 +24,15 @@ describe('PostDetailComponent', () => {
   let boardsSpy: jasmine.SpyObj<BoardsService>;
   let currentUser: User;
 
-  const authorUser: User = { id: 1, name: 'Jana', email: 'jana@soubor.cz', groupIds: [1], roles: ['leader'] };
-  const otherMemberUser: User = { id: 2, name: 'Petr', email: 'petr@soubor.cz', groupIds: [1], roles: ['member'] };
+  const authorUser: User = { id: 1, name: 'Jana', email: 'jana@soubor.cz' };
+  const otherMemberUser: User = { id: 2, name: 'Petr', email: 'petr@soubor.cz' };
+  let env: ReturnType<typeof createTestAccess>;
 
   const members: Member[] = [
-    { id: 1, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: 'Nováková', nickname: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
-    { id: 2, ensembleId: 1, userId: 2, firstName: 'Petr', lastName: 'Novák', nickname: 'Petr Novák', email: 'petr@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
-    { id: 3, ensembleId: 1, userId: 3, firstName: 'Karel', lastName: 'Mimo', nickname: 'Karel Mimo', email: 'karel@soubor.cz', groupIds: [99], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
-    { id: 4, ensembleId: 1, userId: 4, firstName: 'Eva', lastName: 'Svobodová', nickname: 'Eva Svobodová', email: 'eva@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
+    { id: 1, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: 'Nováková', nickname: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isActive: true, createdAt: '2020-01-01' },
+    { id: 2, ensembleId: 1, userId: 2, firstName: 'Petr', lastName: 'Novák', nickname: 'Petr Novák', email: 'petr@soubor.cz', groupIds: [1], isActive: true, createdAt: '2020-01-01' },
+    { id: 3, ensembleId: 1, userId: 3, firstName: 'Karel', lastName: 'Mimo', nickname: 'Karel Mimo', email: 'karel@soubor.cz', groupIds: [99], isActive: true, createdAt: '2020-01-01' },
+    { id: 4, ensembleId: 1, userId: 4, firstName: 'Eva', lastName: 'Svobodová', nickname: 'Eva Svobodová', email: 'eva@soubor.cz', groupIds: [1], isActive: true, createdAt: '2020-01-01' },
   ];
 
   const post: Post = {
@@ -39,6 +42,7 @@ describe('PostDetailComponent', () => {
 
   function configure(user: User = authorUser, accessibleBoard: Group | null = board): void {
     currentUser = user;
+    env = createTestAccess(members.find((m) => m.userId === user.id)!, { members, mandates: env?.mandates() ?? [] });
     postsSpy = jasmine.createSpyObj('PostsService', ['getPost', 'markAsRead', 'markVisited', 'archivePost']);
     postsSpy.markVisited.and.returnValue(of(undefined));
     postsSpy.getPost.and.returnValue(of(post));
@@ -60,6 +64,7 @@ describe('PostDetailComponent', () => {
       providers: [
         provideRouter([]),
         { provide: AuthService, useValue: { currentUser: () => currentUser } },
+        { provide: AccessService, useValue: env.access },
         { provide: PostsService, useValue: postsSpy },
         { provide: MembersService, useValue: membersSpy },
         { provide: CommentsService, useValue: commentsSpy },
@@ -129,34 +134,58 @@ describe('PostDetailComponent', () => {
     expect(postsSpy.markAsRead).not.toHaveBeenCalled();
   });
 
-  it('canManage je true pro autora příspěvku', () => {
+  it('autor smí upravit a archivovat, ale nemoderuje', () => {
     configure(authorUser);
     const fixture = TestBed.createComponent(PostDetailComponent);
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.canManage).toBeTrue();
+    expect(fixture.componentInstance.isAuthor()).toBeTrue();
+    expect(fixture.componentInstance.canArchive()).toBeTrue();
+    expect(fixture.componentInstance.canModerate()).toBeFalse();
   });
 
-  it('canManage je false pro člena, který není autor ani vedoucí/admin', () => {
+  it('běžný člen cizí příspěvek neupraví ani nearchivuje', () => {
     configure(otherMemberUser);
     const fixture = TestBed.createComponent(PostDetailComponent);
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.canManage).toBeFalse();
+    expect(fixture.componentInstance.isAuthor()).toBeFalse();
+    expect(fixture.componentInstance.canArchive()).toBeFalse();
   });
 
-  it('archivePost zavolá archivaci a přesměruje na nástěnku, po potvrzení', () => {
+  it('spolusprávce skupiny moderuje cizí příspěvek, ale neupravuje ho', () => {
+    configure(otherMemberUser);
+    env.mandates.set([testMandate(2, 'group-deputy', { groupId: 1 })]);
+    const fixture = TestBed.createComponent(PostDetailComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.canModerate()).toBeTrue();
+    expect(fixture.componentInstance.canArchive()).toBeTrue();
+    expect(fixture.componentInstance.isAuthor()).toBeFalse();
+    expect(fixture.componentInstance.canSeeReadStats()).toBeTrue();
+    env.mandates.set([]);
+  });
+
+  it('archivePost po potvrzení zavolá archivaci a příspěvek zůstane otevřený jako archivovaný', () => {
     configure(authorUser);
+    postsSpy.archivePost.and.returnValue(of({ ...post, archivedAt: '2026-02-01T00:00:00' }));
     spyOn(window, 'confirm').and.returnValue(true);
     const fixture = TestBed.createComponent(PostDetailComponent);
     fixture.detectChanges();
-    const router = TestBed.inject(Router);
-    spyOn(router, 'navigate');
 
     fixture.componentInstance.archivePost();
 
     expect(postsSpy.archivePost).toHaveBeenCalledWith(5);
-    expect(router.navigate).toHaveBeenCalledWith(['/app/boards', 'dospeli']);
+    expect(fixture.componentInstance.post()?.archivedAt).toBeTruthy();
+  });
+
+  it('cizí skrytý příspěvek běžnému členovi nezobrazí', () => {
+    configure(otherMemberUser);
+    postsSpy.getPost.and.returnValue(of({ ...post, hiddenAt: '2026-02-01T00:00:00' }));
+    const fixture = TestBed.createComponent(PostDetailComponent);
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.notFound()).toBeTrue();
   });
 
   it('archivePost nic neudělá bez potvrzení', () => {
@@ -274,10 +303,10 @@ describe('PostDetailComponent', () => {
 describe('PostDetailComponent s reálnou CommentsService (živý stream)', () => {
   // Regrese: getComments() je živý stream, který se znovu spustí i po vlastním
   // addComment() volání – zápis do this.comments musí zůstat idempotentní.
-  const authorUser: User = { id: 1, name: 'Jana', email: 'jana@soubor.cz', groupIds: [1], roles: ['member'] };
+  const authorUser: User = { id: 1, name: 'Jana', email: 'jana@soubor.cz' };
 
   const members: Member[] = [
-    { id: 1, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: 'Nováková', nickname: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
+    { id: 1, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: 'Nováková', nickname: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isActive: true, createdAt: '2020-01-01' },
   ];
 
   const post: Post = {
@@ -299,6 +328,7 @@ describe('PostDetailComponent s reálnou CommentsService (živý stream)', () =>
       providers: [
         provideRouter([]),
         { provide: AuthService, useValue: { currentUser: () => authorUser } },
+        { provide: AccessService, useValue: createTestAccess(members[0], { members }).access },
         { provide: PostsService, useValue: postsSpy },
         { provide: MembersService, useValue: membersSpy },
         { provide: BoardsService, useValue: { getBoardById: () => of(board) } },
