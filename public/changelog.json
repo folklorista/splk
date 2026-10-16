@@ -1,5 +1,25 @@
 [
   {
+    "version": "v2026.10.4",
+    "releasedAt": "2026-10-16",
+    "dance": {
+      "url": "https://www.lidovakultura.cz/2018/11/29/a-10-pozehnany-z-roznova-pod-radhostem/",
+      "title": "Požehnaný z Rožnova pod Radhoštěm",
+      "codename": "požehnaný",
+      "slug": "pozehnany"
+    },
+    "changes": [
+      "Krojový sklad: součásti, komplety, zápůjčky, vrácení, inventury a Moje kroje",
+      "Skutečná docházka u proběhlých akcí a přehled docházky s exportem",
+      "Pověření místo pevných rolí: správa souboru, správci skupin, organizace akcí, docházka, kroje",
+      "Nová Správa (Členové, Skupiny, Konfigurace, Historie) místo Administrace; Správa souboru nevidí obsah cizích skupin",
+      "Žádosti o vstup, návrhy a pozvánky do skupin, otevřené / soukromé / skryté skupiny",
+      "Skupinový chat ve všech skupinách s aktivitou nástěnky, seskupováním komentářů a systémovými zprávami",
+      "Akce zakládá a upravuje pověřený organizátor přímo v Akcích, s pořádající skupinou a hosty",
+      "Moderace příspěvků správcem skupiny: připnout, skrýt, archivovat, obnovit"
+    ]
+  },
+  {
     "version": "v2026.10.3",
     "releasedAt": "2026-10-14",
     "dance": {
