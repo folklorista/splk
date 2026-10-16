@@ -1,58 +1,54 @@
 import { Injectable } from '@angular/core';
 import { Observable, forkJoin, of } from 'rxjs';
 import { map, take } from 'rxjs/operators';
-import { AuthService } from '../../core/auth/auth.service';
+import { AccessService } from '../../core/access/access.service';
+import { canReadGroupContent } from '../../core/access/access.utils';
 import { Group } from '../../core/models/group.model';
-import { canAccessBoard, getBoardBadgeCount, hasBoard, isAdmin } from '../../core/utils/visibility.utils';
+import { getBoardBadgeCount, hasBoard, hasChat } from '../../core/utils/visibility.utils';
 import { GroupsService } from '../groups/groups.service';
-import { MembersService } from '../members/members.service';
 import { PostsService } from '../posts/posts.service';
 import { CommentsService } from '../posts/comments.service';
 
-// Každá skupina má (pokud ji nemá vypnutou) jednu nástěnku. Uživatel vidí nástěnky svých skupin, administrátor všechny.
+// Komunikační prostory skupin (chat a/nebo nástěnka). V menu jsou skupiny, kde je uživatel členem;
+// otevřít lze i otevřenou skupinu, jejíž obsah smí číst. Správa souboru ani technická správa
+// skupiny obsah neodemyká (docs/08 kap. 10.1).
 @Injectable({ providedIn: 'root' })
 export class BoardsService {
   constructor(
-    private auth: AuthService,
+    private access: AccessService,
     private groupsService: GroupsService,
-    private membersService: MembersService,
     private postsService: PostsService,
     private commentsService: CommentsService,
   ) {}
 
-  getMyBoards(): Observable<Group[]> {
-    const user = this.auth.currentUser();
-    if (!user) return of([]);
+  private hasSpace(group: Group): boolean {
+    return hasBoard(group) || hasChat(group);
+  }
 
-    return forkJoin([this.groupsService.getGroups(), this.membersService.getMemberByUserId(user.id)]).pipe(
-      map(([groups, member]) =>
-        groups.filter((g) => hasBoard(g) && canAccessBoard(g.id, member?.groupIds ?? [], isAdmin(user))),
-      ),
-    );
+  getMyBoards(): Observable<Group[]> {
+    return of(this.access.myGroups().filter((g) => this.hasSpace(g)));
   }
 
   getBoardBySlug(slug: string): Observable<Group | undefined> {
-    return this.getMyBoards().pipe(map((boards) => boards.find((b) => b.slug === slug)));
+    const group = this.groupsService.groups().find((g) => g.slug === slug);
+    return of(group && this.hasSpace(group) && canReadGroupContent(this.access.subject(), group) ? group : undefined);
   }
 
   getBoardById(groupId: number): Observable<Group | undefined> {
-    return this.getMyBoards().pipe(map((boards) => boards.find((b) => b.id === groupId)));
+    const group = this.groupsService.groups().find((g) => g.id === groupId);
+    return of(group && canReadGroupContent(this.access.subject(), group) ? group : undefined);
   }
 
-  // Počet nepřečtených příspěvků a neviděných zmínek pro každou dostupnou nástěnku
+  // Počet nepřečtených příspěvků a neviděných zmínek pro každou skupinu z menu
   getBoardBadges(): Observable<Map<number, number>> {
-    const user = this.auth.currentUser();
-    if (!user) return of(new Map());
+    const memberId = this.access.memberId();
+    if (!memberId) return of(new Map());
 
-    return forkJoin([
-      this.getMyBoards(),
-      this.membersService.getMemberByUserId(user.id),
-      this.postsService.getPosts(),
-      this.commentsService.getAllComments().pipe(take(1)),
-    ]).pipe(
-      map(([boards, member, posts, comments]) =>
-        new Map(boards.map((b) => [b.id, getBoardBadgeCount(posts, comments, b.id, member?.id ?? null)])),
-      ),
+    return forkJoin([this.getMyBoards(), this.postsService.getPosts(), this.commentsService.getAllComments().pipe(take(1))]).pipe(
+      map(([boards, posts, comments]) => {
+        const visible = posts.filter((p) => !p.hiddenAt || p.authorId === memberId);
+        return new Map(boards.map((b) => [b.id, hasBoard(b) ? getBoardBadgeCount(visible, comments, b.id, memberId) : 0]));
+      }),
     );
   }
 }

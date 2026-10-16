@@ -15,8 +15,7 @@ describe('ProfileComponent', () => {
     id: 1,
     name: 'Jana Nováková',
     email: 'jana@soubor.cz',
-    groupIds: [1, 2],
-    roles: ['member'],
+
   };
 
   // ID člena záměrně odlišné od ID uživatele, aby test odhalil záměnu obou identifikátorů
@@ -29,7 +28,6 @@ describe('ProfileComponent', () => {
     nickname: 'Jana Nováková',
     email: 'jana@soubor.cz',
     groupIds: [1, 2],
-    isAdmin: false,
     isActive: true,
     createdAt: '2020-01-01',
   };

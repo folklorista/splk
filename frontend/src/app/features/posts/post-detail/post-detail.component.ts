@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Post } from '../models/post.model';
@@ -21,6 +21,9 @@ import {
   insertMention,
   parseCommentBody,
 } from '../utils/mentions';
+import { AccessService } from '../../../core/access/access.service';
+import { canModerateGroup, canPostInGroup, canSeeReadStats } from '../../../core/access/access.utils';
+import { errorMessage } from '../../../shared/ui/form-ui';
 
 @Component({
   selector: 'app-post-detail',
@@ -81,19 +84,16 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     private boardsService: BoardsService,
   ) {}
 
-  get isLeader(): boolean {
-    return this.auth.currentUser()?.roles.includes('leader') ?? false;
-  }
+  private access = inject(AccessService);
+  actionError = signal('');
 
-  get isAdmin(): boolean {
-    return this.auth.currentUser()?.roles.includes('admin') ?? false;
-  }
-
-  get canManage(): boolean {
-    const post = this.post();
-    if (!post) return false;
-    return post.authorId === this.currentMemberId() || this.isLeader || this.isAdmin;
-  }
+  // Obsah upravuje jen autor; správce skupiny moderuje (připnout, skrýt, archivovat), nepřepisuje
+  readonly isAuthor = computed(() => !!this.post() && this.post()!.authorId === this.currentMemberId());
+  readonly canModerate = computed(() => !!this.board() && canModerateGroup(this.access.subject(), this.board()!));
+  readonly canArchive = computed(() => this.isAuthor() || this.canModerate());
+  readonly canSeeReadStats = computed(() => !!this.board() && canSeeReadStats(this.access.subject(), this.board()!));
+  // Otevřenou skupinu může číst i nečlen, komentovat ale jen člen
+  readonly canComment = computed(() => !!this.board() && canPostInGroup(this.access.subject(), this.board()!));
 
   authorName(post: Post): string {
     return this.allMembers().find((m) => m.id === post.authorId)?.nickname ?? 'Neznámý autor';
@@ -131,7 +131,8 @@ export class PostDetailComponent implements OnInit, OnDestroy {
         }
 
         this.boardsService.getBoardById(post.groupId).subscribe((board) => {
-          if (!board) {
+          const hiddenForMe = !!post.hiddenAt && post.authorId !== member.id && !(board && canModerateGroup(this.access.subject(), board));
+          if (!board || hiddenForMe) {
             this.notFound.set(true);
             this.loading.set(false);
             return;
@@ -169,9 +170,19 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Odkaz z chatové karty (#comment-ID) otevře správné místo diskuze
+  get targetFragment(): string | null {
+    return this.route.snapshot?.fragment ?? null;
+  }
+  private scrolledToTarget = false;
+
   private loadComments(postId: number, memberId: number): void {
     this.commentsService.getComments(postId).subscribe((comments) => {
       this.comments.set(comments);
+      if (this.targetFragment && !this.scrolledToTarget) {
+        this.scrolledToTarget = true;
+        setTimeout(() => document.getElementById(this.targetFragment!)?.scrollIntoView({ block: 'center' }));
+      }
       comments
         .filter((c) => c.mentionedMemberIds.includes(memberId) && !c.seenByMemberIds.includes(memberId))
         .forEach((c) => this.commentsService.markSeen(c.id, memberId).subscribe());
@@ -240,13 +251,35 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  private moderate(action: ReturnType<PostsService['setPinned']>): void {
+    this.actionError.set('');
+    action.subscribe({
+      next: (updated) => updated && this.post.update((p) => (p ? { ...p, ...updated, readers: p.readers } : p)),
+      error: (e) => this.actionError.set(errorMessage(e)),
+    });
+  }
+
   archivePost(): void {
     const post = this.post();
-    if (!post || !this.canManage) return;
+    if (!post || !this.canArchive()) return;
     if (!confirm('Opravdu chcete tento příspěvek archivovat?')) return;
+    this.moderate(this.postsService.archivePost(post.id));
+  }
 
-    this.postsService.archivePost(post.id).subscribe(() => {
-      this.router.navigate(['/app/boards', this.board()?.slug ?? '']);
-    });
+  restorePost(): void {
+    const post = this.post();
+    if (post) this.moderate(this.postsService.restorePost(post.id));
+  }
+
+  togglePinned(): void {
+    const post = this.post();
+    if (post) this.moderate(this.postsService.setPinned(post.id, !post.isPinned));
+  }
+
+  toggleHidden(): void {
+    const post = this.post();
+    if (!post) return;
+    if (!post.hiddenAt && !confirm('Skrýt příspěvek? Uvidí ho jen autor a správci skupiny. Zásah se zapíše do historie skupiny.')) return;
+    this.moderate(this.postsService.setHidden(post.id, !post.hiddenAt));
   }
 }

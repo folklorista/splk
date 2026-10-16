@@ -1,40 +1,36 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { BoardsService } from './boards.service';
-import { AuthService } from '../../core/auth/auth.service';
+import { AccessService } from '../../core/access/access.service';
 import { GroupsService } from '../groups/groups.service';
-import { MembersService } from '../members/members.service';
 import { PostsService } from '../posts/posts.service';
 import { CommentsService } from '../posts/comments.service';
-import { User } from '../../core/auth/models/user.model';
 import { Group } from '../../core/models/group.model';
-import { Member } from '../../core/models/member.model';
 import { Post } from '../posts/models/post.model';
 import { PostComment } from '../posts/models/comment.model';
+import { createTestAccess, testMandate, testMember } from '../../testing/access.testing';
 
 describe('BoardsService', () => {
   const groups: Group[] = [
     { id: 1, ensembleId: 1, name: 'Tanečníci a tanečnice', slug: 'tanecnici' },
     { id: 2, ensembleId: 1, name: 'Kluci', slug: 'kluci' },
     { id: 3, ensembleId: 1, name: 'Vedení', slug: 'vedeni' },
+    { id: 4, ensembleId: 1, name: 'Otevřená', slug: 'otevrena', visibility: 'open' },
   ];
-
-  // Členství se bere z člena (spravuje ho administrace), ne ze statického User.groupIds
-  const member: Member = { id: 7, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: '', nickname: 'Jana', email: 'jana@soubor.cz', groupIds: [1, 2], isAdmin: false, isActive: true, createdAt: '2020-01-01' };
+  const member = testMember({ id: 7, groupIds: [1, 2] });
 
   const basePost: Post = {
     id: 1, ensembleId: 1, title: 'P', body: 'B', authorId: 1, groupId: 1,
     publishedAt: '2026-01-01T00:00:00', updatedAt: '2026-01-01T00:00:00', isPinned: false, readers: [],
   };
 
-  let user: User;
+  let env: ReturnType<typeof createTestAccess>;
 
   function configure(posts: Post[] = [], comments: PostComment[] = []): BoardsService {
     TestBed.configureTestingModule({
       providers: [
-        { provide: AuthService, useValue: { currentUser: () => user } },
-        { provide: GroupsService, useValue: { getGroups: () => of(groups) } },
-        { provide: MembersService, useValue: { getMemberByUserId: () => of(member) } },
+        { provide: AccessService, useValue: env.access },
+        { provide: GroupsService, useValue: { groups: env.groups } },
         { provide: PostsService, useValue: { getPosts: () => of(posts) } },
         { provide: CommentsService, useValue: { getAllComments: () => of(comments) } },
       ],
@@ -43,43 +39,48 @@ describe('BoardsService', () => {
   }
 
   beforeEach(() => {
-    user = { id: 1, name: 'Jana', email: 'jana@soubor.cz', groupIds: [], roles: ['member'] };
+    env = createTestAccess(member, { groups: groups.map((g) => ({ ...g })) });
   });
 
-  it('getMyBoards vrátí jen nástěnky skupin, kterých je člen členem', (done) => {
+  it('getMyBoards vrátí jen skupiny, kterých je člen členem', (done) => {
     configure().getMyBoards().subscribe((boards) => {
       expect(boards.map((b) => b.id)).toEqual([1, 2]);
       done();
     });
   });
 
-  it('getMyBoards vrátí administrátorovi všechny nástěnky', (done) => {
-    user = { ...user, roles: ['member', 'admin'] };
-    configure().getMyBoards().subscribe((boards) => {
-      expect(boards.map((b) => b.id)).toEqual([1, 2, 3]);
+  it('Správa souboru nevidí obsah cizích soukromých skupin', (done) => {
+    env.mandates.set([testMandate(7, 'ensemble-admin'), testMandate(7, 'group-owner', { groupId: 3 })]);
+    const service = configure();
+    service.getMyBoards().subscribe((boards) => {
+      expect(boards.map((b) => b.id)).toEqual([1, 2]);
+      service.getBoardBySlug('vedeni').subscribe((board) => {
+        expect(board).toBeUndefined();
+        done();
+      });
+    });
+  });
+
+  it('getBoardBySlug pustí do otevřené skupiny i nečlena (čtení)', (done) => {
+    configure().getBoardBySlug('otevrena').subscribe((board) => {
+      expect(board?.id).toBe(4);
       done();
     });
   });
 
-  it('getBoardBySlug nevrátí nástěnku cizí skupiny', (done) => {
-    configure().getBoardBySlug('vedeni').subscribe((board) => {
-      expect(board).toBeUndefined();
-      done();
-    });
-  });
-
-  it('getBoardBySlug vrátí nástěnku vlastní skupiny', (done) => {
+  it('getBoardBySlug vrátí vlastní skupinu', (done) => {
     configure().getBoardBySlug('kluci').subscribe((board) => {
       expect(board?.id).toBe(2);
       done();
     });
   });
 
-  it('getBoardBadges spočítá badge pro každou dostupnou nástěnku', (done) => {
+  it('getBoardBadges spočítá badge pro každou skupinu z menu (bez cizích skrytých příspěvků)', (done) => {
     const posts = [
       { ...basePost, id: 1, groupId: 1 },
       { ...basePost, id: 2, groupId: 2, readers: [7] },
       { ...basePost, id: 3, groupId: 3 },
+      { ...basePost, id: 4, groupId: 1, hiddenAt: '2026-01-02T00:00:00' },
     ];
     configure(posts).getBoardBadges().subscribe((badges) => {
       expect([...badges.entries()]).toEqual([[1, 1], [2, 0]]);
@@ -87,21 +88,18 @@ describe('BoardsService', () => {
     });
   });
 
-  it('bez přihlášeného uživatele nevrátí žádné nástěnky', (done) => {
-    configure();
-    user = null as unknown as User;
-    TestBed.inject(BoardsService).getMyBoards().subscribe((boards) => {
+  it('bez přihlášeného uživatele nevrátí žádné skupiny', (done) => {
+    env = createTestAccess(null, { groups });
+    configure().getMyBoards().subscribe((boards) => {
       expect(boards).toEqual([]);
       done();
     });
   });
 
-  it('getMyBoards vynechá skupiny s vypnutou nástěnkou (i pro admina)', (done) => {
-    user = { ...user, roles: ['member', 'admin'] };
-    groups[1].boardEnabled = false;
+  it('skupina bez chatu i nástěnky není komunikační prostor', (done) => {
+    env.groups.update((list) => list.map((g) => (g.id === 2 ? { ...g, boardEnabled: false, chatEnabled: false } : g)));
     configure().getMyBoards().subscribe((boards) => {
-      delete groups[1].boardEnabled;
-      expect(boards.map((b) => b.id)).toEqual([1, 3]);
+      expect(boards.map((b) => b.id)).toEqual([1]);
       done();
     });
   });

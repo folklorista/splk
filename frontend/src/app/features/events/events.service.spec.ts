@@ -3,13 +3,20 @@ import { EventsService } from './events.service';
 import { MOCK_EVENTS } from './data/mock-events';
 import { AppEvent } from './models/event.model';
 import { AttendanceService } from '../attendance/attendance.service';
+import { AccessService } from '../../core/access/access.service';
+import { AccessDeniedError } from '../../core/access/mandate-rules';
+import { AuditService } from '../audit/audit.service';
+import { createTestAccess, testMandate, testMember } from '../../testing/access.testing';
 
 describe('EventsService', () => {
   let service: EventsService;
   let attendanceService: AttendanceService;
+  let env: ReturnType<typeof createTestAccess>;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    // Organizátor s pověřením pro celý soubor
+    env = createTestAccess(testMember({ id: 1 }), { mandates: [testMandate(1, 'events')] });
+    TestBed.configureTestingModule({ providers: [{ provide: AccessService, useValue: env.access }] });
     service = TestBed.inject(EventsService);
     attendanceService = TestBed.inject(AttendanceService);
     service.resetCache();
@@ -142,5 +149,40 @@ describe('EventsService', () => {
     service.getEvent(1).subscribe((e) => (after = e));
     tick(300);
     expect(after?.attendance?.find((a) => a.memberId === 1)?.status).toBe('pending');
+  }));
+
+  it('bez pověření Organizace akcí akci nezaloží ani neupraví', fakeAsync(() => {
+    env.mandates.set([]);
+    const errors: unknown[] = [];
+    const { id, ...data } = MOCK_EVENTS[0];
+    service.createEvent(data).subscribe({ error: (e) => errors.push(e) });
+    service.updateEvent(id, data).subscribe({ error: (e) => errors.push(e) });
+    tick(300);
+    expect(errors.length).toBe(2);
+    expect(errors.every((e) => e instanceof AccessDeniedError)).toBeTrue();
+  }));
+
+  it('organizátor jen pro skupinu zakládá akce pořádané touto skupinou', fakeAsync(() => {
+    env.mandates.set([testMandate(1, 'events', { groupId: 4 })]);
+    const { id, ...data } = MOCK_EVENTS[0];
+    let error: unknown;
+    let created: AppEvent | undefined;
+    service.createEvent({ ...data, organizerGroupIds: [5] }).subscribe({ error: (e) => (error = e) });
+    service.createEvent({ ...data, organizerGroupIds: [4] }).subscribe((e) => (created = e));
+    tick(300);
+    expect(error).toEqual(jasmine.any(AccessDeniedError));
+    expect(created?.organizerGroupIds).toEqual([4]);
+  }));
+
+  it('podstatná změna akce se zapíše do historie pro cílové skupiny (a tím do jejich chatu)', fakeAsync(() => {
+    const event = MOCK_EVENTS.find((e) => e.targetGroupIds.length)!;
+    const { id, ...data } = event;
+    service.updateEvent(id, { ...data, startsAt: '2099-05-01T19:30:00', location: 'Náves' }).subscribe();
+    tick(300);
+    const entry = TestBed.inject(AuditService).entries().at(-1)!;
+    expect(entry.action).toBe('event-updated');
+    expect(entry.groupIds).toEqual(event.targetGroupIds);
+    expect(entry.details).toContain('začátek');
+    expect(entry.details).toContain('Náves');
   }));
 });

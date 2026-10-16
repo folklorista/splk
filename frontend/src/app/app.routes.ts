@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
-import { adminGuard } from './core/auth/admin.guard';
-import { leaderGuard } from './core/auth/leader.guard';
+import { attendanceGuard, ensembleAdminGuard, eventCreateGuard, groupCreateGuard, moduleGuard } from './core/access/access.guards';
 import { boardGuard } from './features/boards/board.guard';
 import { costumeManagerGuard, costumeStockGuard } from './features/costumes/costumes.guard';
 
@@ -35,10 +34,9 @@ export const routes: Routes = [
       },
       {
         path: 'boards/:slug',
-        canActivate: [boardGuard],
         loadComponent: () =>
-          import('./features/posts/posts.component').then(
-            (m) => m.PostsComponent,
+          import('./features/groups/group-space/group-space.component').then(
+            (m) => m.GroupSpaceComponent,
           ),
       },
       {
@@ -65,13 +63,31 @@ export const routes: Routes = [
       },
       {
         path: 'events',
+        canActivate: [moduleGuard('events')],
         loadComponent: () =>
           import('./features/events/events.component').then(
             (m) => m.EventsComponent,
           ),
       },
       {
+        path: 'events/new',
+        canActivate: [eventCreateGuard],
+        loadComponent: () =>
+          import('./features/events/event-form/event-form.component').then(
+            (m) => m.EventFormComponent,
+          ),
+      },
+      {
+        path: 'events/:id/edit',
+        canActivate: [moduleGuard('events')],
+        loadComponent: () =>
+          import('./features/events/event-form/event-form.component').then(
+            (m) => m.EventFormComponent,
+          ),
+      },
+      {
         path: 'events/:id',
+        canActivate: [moduleGuard('events')],
         loadComponent: () =>
           import('./features/events/event-detail/event-detail.component').then(
             (m) => m.EventDetailComponent,
@@ -79,7 +95,7 @@ export const routes: Routes = [
       },
       {
         path: 'attendance',
-        canActivate: [leaderGuard],
+        canActivate: [attendanceGuard],
         loadComponent: () =>
           import('./features/attendance/attendance-report/attendance-report.component').then(
             (m) => m.AttendanceReportComponent,
@@ -107,7 +123,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'groups/new',
+        canActivate: [groupCreateGuard],
+        loadComponent: () =>
+          import('./features/manage/manage-group.component').then((m) => m.ManageGroupComponent),
+      },
+      {
         path: 'costumes',
+        canActivate: [moduleGuard('costumes')],
         loadComponent: () =>
           import('./features/costumes/costumes.component').then(
             (m) => m.CostumesComponent,
@@ -217,124 +240,54 @@ export const routes: Routes = [
             (m) => m.CostumeInventoryDetailComponent,
           ),
       },
+      // Dřívější Administrace – staré odkazy vedou do Správy
+      { path: 'admin', redirectTo: 'manage', pathMatch: 'prefix' },
       {
-        path: 'admin',
-        canActivate: [adminGuard],
+        path: 'manage',
+        canActivate: [ensembleAdminGuard],
         loadComponent: () =>
-          import('./admin/layout/admin-layout/admin-layout.component').then(
-            (m) => m.AdminLayoutComponent,
-          ),
+          import('./features/manage/manage-layout.component').then((m) => m.ManageLayoutComponent),
         children: [
-          {
-            path: '',
-            loadComponent: () =>
-              import('./admin/pages/admin-dashboard/admin-dashboard.component').then(
-                (m) => m.AdminDashboardComponent,
-              ),
-          },
-          {
-            path: 'posts',
-            children: [
-              {
-                path: '',
-                loadComponent: () =>
-                  import('./admin/pages/admin-posts/admin-posts.component').then(
-                    (m) => m.AdminPostsComponent,
-                  ),
-              },
-              {
-                path: 'new',
-                loadComponent: () =>
-                  import('./admin/pages/admin-posts/admin-post-form/admin-post-form.component').then(
-                    (m) => m.AdminPostFormComponent,
-                  ),
-              },
-              {
-                path: ':id/edit',
-                loadComponent: () =>
-                  import('./admin/pages/admin-posts/admin-post-form/admin-post-form.component').then(
-                    (m) => m.AdminPostFormComponent,
-                  ),
-              },
-            ],
-          },
-          {
-            path: 'events',
-            children: [
-              {
-                path: '',
-                loadComponent: () =>
-                  import('./admin/pages/admin-events/admin-events.component').then(
-                    (m) => m.AdminEventsComponent,
-                  ),
-              },
-              {
-                path: 'new',
-                loadComponent: () =>
-                  import('./admin/pages/admin-events/admin-event-form/admin-event-form.component').then(
-                    (m) => m.AdminEventFormComponent,
-                  ),
-              },
-              {
-                path: ':id/edit',
-                loadComponent: () =>
-                  import('./admin/pages/admin-events/admin-event-form/admin-event-form.component').then(
-                    (m) => m.AdminEventFormComponent,
-                  ),
-              },
-            ],
-          },
+          { path: '', redirectTo: 'members', pathMatch: 'full' },
           {
             path: 'members',
-            children: [
-              {
-                path: '',
-                loadComponent: () =>
-                  import('./admin/pages/admin-members/admin-members.component').then(
-                    (m) => m.AdminMembersComponent,
-                  ),
-              },
-              {
-                path: 'new',
-                loadComponent: () =>
-                  import('./admin/pages/admin-members/admin-member-form/admin-member-form.component').then(
-                    (m) => m.AdminMemberFormComponent,
-                  ),
-              },
-              {
-                path: ':id/edit',
-                loadComponent: () =>
-                  import('./admin/pages/admin-members/admin-member-form/admin-member-form.component').then(
-                    (m) => m.AdminMemberFormComponent,
-                  ),
-              },
-            ],
+            loadComponent: () =>
+              import('./features/manage/manage-members.component').then((m) => m.ManageMembersComponent),
+          },
+          {
+            path: 'members/new',
+            loadComponent: () =>
+              import('./features/manage/manage-person.component').then((m) => m.ManagePersonComponent),
+          },
+          {
+            path: 'members/:id',
+            loadComponent: () =>
+              import('./features/manage/manage-person.component').then((m) => m.ManagePersonComponent),
           },
           {
             path: 'groups',
-            children: [
-              {
-                path: '',
-                loadComponent: () =>
-                  import('./admin/pages/admin-groups/admin-groups.component').then(
-                    (m) => m.AdminGroupsComponent,
-                  ),
-              },
-              {
-                path: 'new',
-                loadComponent: () =>
-                  import('./admin/pages/admin-groups/admin-group-form/admin-group-form.component').then(
-                    (m) => m.AdminGroupFormComponent,
-                  ),
-              },
-              {
-                path: ':id/edit',
-                loadComponent: () =>
-                  import('./admin/pages/admin-groups/admin-group-form/admin-group-form.component').then(
-                    (m) => m.AdminGroupFormComponent,
-                  ),
-              },
-            ],
+            loadComponent: () =>
+              import('./features/manage/manage-groups.component').then((m) => m.ManageGroupsComponent),
+          },
+          {
+            path: 'groups/new',
+            loadComponent: () =>
+              import('./features/manage/manage-group.component').then((m) => m.ManageGroupComponent),
+          },
+          {
+            path: 'groups/:id',
+            loadComponent: () =>
+              import('./features/manage/manage-group.component').then((m) => m.ManageGroupComponent),
+          },
+          {
+            path: 'config',
+            loadComponent: () =>
+              import('./features/manage/manage-config.component').then((m) => m.ManageConfigComponent),
+          },
+          {
+            path: 'history',
+            loadComponent: () =>
+              import('./features/manage/manage-history.component').then((m) => m.ManageHistoryComponent),
           },
         ],
       },

@@ -1,0 +1,64 @@
+// Společné prvky formulářových stránek (Krojárna, Správa, akce, skupiny). Třídy mají historicky prefix cs-.
+.cs-toolbar { display: flex; flex-wrap: wrap; gap: var(--spacing-sm); align-items: center; margin-bottom: var(--spacing-md); }
+  .cs-toolbar__spacer { flex: 1; }
+  .cs-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    padding: 7px 12px; border: 1px solid var(--color-border); border-radius: 6px;
+    background: var(--color-surface); color: var(--color-text); font-size: var(--font-size-sm);
+  }
+  .cs-btn:hover:not(:disabled) { border-color: var(--color-primary); color: var(--color-primary); }
+  .cs-btn:disabled, .cs-btn--disabled { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
+  .cs-btn--primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; font-weight: 600; }
+  .cs-btn--primary:hover:not(:disabled) { background: var(--color-primary-dark); color: #fff; }
+  .cs-btn--danger { color: var(--color-primary); border-color: var(--color-primary); }
+  .cs-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
+  .cs-field { display: flex; flex-direction: column; gap: 4px; font-size: var(--font-size-sm); }
+  .cs-field > span, .cs-field__label { color: var(--color-text-muted); font-weight: 500; }
+  .cs-field--inline { flex-direction: row; align-items: center; gap: var(--spacing-sm); color: var(--color-text); }
+  .cs-field input:not([type='checkbox']), .cs-field select, .cs-field textarea, .cs-input {
+    width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px;
+    background: var(--color-surface); color: var(--color-text); font: inherit; font-size: var(--font-size-base);
+  }
+  .cs-field input:focus, .cs-field select:focus, .cs-field textarea:focus { outline: none; border-color: var(--color-primary); }
+  .cs-hint { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+  .cs-form { display: flex; flex-direction: column; gap: var(--spacing-md); }
+  .cs-form__row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--spacing-sm); align-items: end; }
+  .cs-form__actions { display: flex; flex-wrap: wrap; gap: var(--spacing-sm); align-items: center; }
+  .cs-error {
+    padding: var(--spacing-sm) var(--spacing-md); border-radius: 6px; font-size: var(--font-size-sm);
+    border: 1px solid var(--color-primary); border-left-width: 4px; color: var(--color-text);
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  }
+  .cs-warning {
+    padding: var(--spacing-sm) var(--spacing-md); border-radius: 6px; font-size: var(--font-size-sm);
+    border: 1px solid #f9a825; border-left-width: 4px; color: var(--color-text);
+    background: color-mix(in srgb, #f9a825 14%, transparent);
+  }
+  .cs-success { font-size: var(--font-size-sm); font-weight: 600; color: #2e7d32; }
+  :root[data-theme='dark'] .cs-success { color: #81c784; }
+  .cs-status { border-color: currentColor; background: transparent; }
+  .cs-status--available { color: #2e7d32; }
+  .cs-status--on-loan { color: #1565c0; }
+  .cs-status--not-ready { color: #e65100; }
+  .cs-status--retired { color: var(--color-text-muted); }
+  .cs-status--complete { color: #2e7d32; }
+  .cs-status--incomplete { color: #e65100; }
+  .cs-status--needs-check { color: #c62828; }
+  :root[data-theme='dark'] .cs-status--available, :root[data-theme='dark'] .cs-status--complete { color: #81c784; }
+  :root[data-theme='dark'] .cs-status--on-loan { color: #64b5f6; }
+  :root[data-theme='dark'] .cs-status--not-ready, :root[data-theme='dark'] .cs-status--incomplete { color: #ffb74d; }
+  :root[data-theme='dark'] .cs-status--needs-check { color: #ef9a9a; }
+  .cs-link { color: var(--color-primary); }
+  .cs-link:hover { text-decoration: underline; }
+  .cs-panel { border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); }
+  .cs-panel > summary { padding: var(--spacing-sm) var(--spacing-md); cursor: pointer; font-weight: 600; font-size: var(--font-size-sm); }
+  .cs-panel__body { padding: 0 var(--spacing-md) var(--spacing-md); display: flex; flex-direction: column; gap: var(--spacing-sm); }
+  .cs-actions { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+  .cs-history { list-style: none; display: flex; flex-direction: column; gap: var(--spacing-sm); font-size: var(--font-size-sm); }
+  .cs-history__item { padding-left: var(--spacing-sm); border-left: 3px solid var(--color-border); }
+  .cs-history__meta { color: var(--color-text-muted); font-size: var(--font-size-xs); }
+  .cs-history__note { color: var(--color-text-muted); font-style: italic; white-space: pre-wrap; }
+  .cs-muted { color: var(--color-text-muted); }
+  @media print {
+    .no-print { display: none !important; }
+  }

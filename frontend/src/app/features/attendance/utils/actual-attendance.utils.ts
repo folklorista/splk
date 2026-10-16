@@ -1,7 +1,7 @@
 import { AppEvent, EventType } from '../../events/models/event.model';
 import { Member } from '../../../core/models/member.model';
 import { ActualAttendance } from '../models/actual-attendance.model';
-import { isItemVisibleToUser } from '../../../core/utils/visibility.utils';
+import { isEventAudience } from '../../../core/access/access.utils';
 
 export interface AttendancePeriodFilter {
   from: string; // yyyy-mm-dd, včetně
@@ -42,9 +42,9 @@ export function defaultPeriod(today = new Date()): { from: string; to: string } 
   return { from: toDateKey(from), to: toDateKey(today) };
 }
 
-// Očekávaní účastníci = aktivní členové skupin, kterým je akce určená
-export function expectedMembers(event: Pick<AppEvent, 'targetGroupIds'>, members: Member[]): Member[] {
-  return members.filter((m) => m.isActive && isItemVisibleToUser(event.targetGroupIds, m.groupIds));
+// Očekávaní účastníci = aktivní členové skupin, kterým je akce určená, a pozvaní hosté
+export function expectedMembers(event: Pick<AppEvent, 'targetGroupIds' | 'guestMemberIds'>, members: Member[]): Member[] {
+  return members.filter((m) => isEventAudience(m, event));
 }
 
 // Docházku lze zapisovat od začátku akce

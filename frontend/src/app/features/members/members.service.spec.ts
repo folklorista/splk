@@ -60,7 +60,6 @@ describe('MembersService', () => {
       email: 'novy@soubor.cz',
       phone: '777 999 999',
       groupIds: [1],
-      isAdmin: false,
       isActive: true,
       createdAt: '2020-01-01',
     };
@@ -87,7 +86,6 @@ describe('MembersService', () => {
       email: 'jana-updated@soubor.cz',
       phone: '601 000 000',
       groupIds: [2, 3],
-      isAdmin: false,
       isActive: true,
       createdAt: '2020-01-01',
     };
@@ -108,7 +106,6 @@ describe('MembersService', () => {
       nickname: 'Někdo',
       email: 'nekdo@soubor.cz',
       groupIds: [],
-      isAdmin: false,
       isActive: true,
       createdAt: '2020-01-01',
     };
@@ -118,24 +115,21 @@ describe('MembersService', () => {
     expect(result).toBeUndefined();
   }));
 
-  it('deleteMember odstraní člena', fakeAsync(() => {
-    let deleted: boolean = false;
-    service.deleteMember(1).subscribe((success) => (deleted = success));
-    tick(300);
-    expect(deleted).toBeTrue();
+  it('setGroupMembership zapíše členství i čas vstupu a odebrání ho smaže', () => {
+    const member = service.setGroupMembership(1, 7, true, '2026-10-16T10:00:00Z')!;
+    expect(member.groupIds).toContain(7);
+    expect(member.groupJoinedAt?.[7]).toBe('2026-10-16T10:00:00Z');
+    expect(service.members().find((m) => m.id === 1)?.groupIds).toContain(7);
 
-    let members: Member[] = [];
-    service.getMembers().subscribe((m) => (members = m));
-    tick(300);
-    expect(members.find((m) => m.id === 1)).toBeUndefined();
-  }));
+    const removed = service.setGroupMembership(1, 7, false)!;
+    expect(removed.groupIds).not.toContain(7);
+    expect(removed.groupJoinedAt?.[7]).toBeUndefined();
+  });
 
-  it('deleteMember vrátí false pro neexistující id', fakeAsync(() => {
-    let deleted: boolean = true;
-    service.deleteMember(9999).subscribe((success) => (deleted = success));
-    tick(300);
-    expect(deleted).toBeFalse();
-  }));
+  it('setActive ukončí členství bez smazání osoby', () => {
+    service.setActive(1, false);
+    expect(service.members().find((m) => m.id === 1)?.isActive).toBeFalse();
+  });
 
   it('přezdívka musí být unikátní bez ohledu na diakritiku a velikost písmen', fakeAsync(() => {
     const [first, second] = MOCK_MEMBERS;

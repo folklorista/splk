@@ -4,6 +4,9 @@
     @if (canViewAttendance()) {
       <a class="page__header-link" routerLink="/app/attendance">Docházka</a>
     }
+    @if (canCreateEvents()) {
+      <a class="btn-primary btn-primary--sm" routerLink="/app/events/new">+ Nová akce</a>
+    }
     <div class="view-toggle" role="group" aria-label="Zobrazení">
       <button type="button" class="view-toggle__btn" [class.view-toggle__btn--active]="view() === 'list'"
         [attr.aria-pressed]="view() === 'list'" (click)="setView('list')">Seznam</button>

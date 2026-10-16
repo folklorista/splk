@@ -14,4 +14,7 @@ export interface Post {
   // Kdy člen příspěvek naposledy viděl (memberId → ISO čas) – podle toho se počítají nové komentáře
   lastVisitedAt?: Record<number, string>;
   archivedAt?: string;
+  // Skrytí moderátorem (správce skupiny) – vidí ho jen autor a správci skupiny, chat ho nezobrazuje
+  hiddenAt?: string;
+  hiddenById?: number;
 }

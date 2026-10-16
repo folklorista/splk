@@ -6,7 +6,7 @@ import { ITEM_CSV_HEADER, ItemFilter, buildItemRows, filterItemRows, itemCsvRows
 describe('items.utils', () => {
   let state: CostumeState;
   const members: Member[] = [
-    { id: 4, ensembleId: 1, userId: 40, firstName: 'Anna', lastName: 'Malá', nickname: 'Anička', groupIds: [], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
+    { id: 4, ensembleId: 1, userId: 40, firstName: 'Anna', lastName: 'Malá', nickname: 'Anička', groupIds: [], isActive: true, createdAt: '2020-01-01' },
   ];
   const ids = (filter: Partial<ItemFilter>) =>
     filterItemRows(buildItemRows(state, members), { query: '', ...filter }).map((r) => r.item.id);

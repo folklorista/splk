@@ -2,7 +2,7 @@ import { activeMentionQuery, encodeMentions, filterMentionCandidates, insertMent
 import { Member } from '../../../core/models/member.model';
 
 const member = (id: number, nickname: string): Member => ({
-  id, ensembleId: 1, userId: id, firstName: nickname, lastName: '', nickname, groupIds: [], isAdmin: false, isActive: true, createdAt: '',
+  id, ensembleId: 1, userId: id, firstName: nickname, lastName: '', nickname, groupIds: [], isActive: true, createdAt: '',
 });
 
 describe('mentions', () => {

@@ -10,6 +10,8 @@ import { MembersService } from '../members/members.service';
 import { User } from '../../core/auth/models/user.model';
 import { Member } from '../../core/models/member.model';
 import { AppEvent } from '../events/models/event.model';
+import { createTestAccess, testMandate } from '../../testing/access.testing';
+import { AccessService } from '../../core/access/access.service';
 
 describe('DashboardComponent', () => {
   let eventsSpy: jasmine.SpyObj<EventsService>;
@@ -21,8 +23,6 @@ describe('DashboardComponent', () => {
     id: 2,
     name: 'Vedoucí Souboru',
     email: 'vedouci@soubor.cz',
-    groupIds: [1],
-    roles: ['leader'],
   };
 
   // Member ID záměrně odlišné od User ID, aby test odhalil záměnu obou identifikátorů
@@ -35,7 +35,6 @@ describe('DashboardComponent', () => {
     nickname: 'Vedoucí Souboru',
     email: 'vedouci@soubor.cz',
     groupIds: [1],
-    isAdmin: false,
     isActive: true,
     createdAt: '2020-01-01',
   };
@@ -63,7 +62,10 @@ describe('DashboardComponent', () => {
     targetGroupIds: [99],
   };
 
+  let env: ReturnType<typeof createTestAccess>;
+
   function configure(): void {
+    env = env ?? createTestAccess(member);
     membersSpy = jasmine.createSpyObj('MembersService', ['getMembers']);
     membersSpy.getMembers.and.returnValue(of([member]));
 
@@ -81,6 +83,7 @@ describe('DashboardComponent', () => {
       providers: [
         provideRouter([]),
         { provide: AuthService, useValue: { currentUser: () => user } },
+        { provide: AccessService, useValue: env.access },
         { provide: EventsService, useValue: eventsSpy },
         { provide: PostsService, useValue: postsSpy },
         { provide: AttendanceService, useValue: attendanceSpy },
@@ -169,21 +172,25 @@ describe('DashboardComponent', () => {
     expect(pinned?.map((p) => p.id)).toEqual([1]);
   });
 
-  it('administrátorovi zobrazí připnuté příspěvky ze všech nástěnek, archivované ne', () => {
-    user.roles = ['member', 'admin'];
+  beforeEach(() => {
+    env = createTestAccess(member);
+  });
+
+  it('Správě souboru nezobrazí připnuté příspěvky cizích skupin, archivované ani skryté', () => {
+    env.mandates.set([testMandate(member.id, 'ensemble-admin')]);
     configure();
     postsSpy.getPosts.and.returnValue(
       of([
         { id: 1, title: 'Moje', body: '', publishedAt: '2026-01-01T00:00:00', isPinned: true, groupId: 1 } as any,
         { id: 2, title: 'Cizí', body: '', publishedAt: '2026-01-01T00:00:00', isPinned: true, groupId: 99 } as any,
         { id: 3, title: 'Archiv', body: '', publishedAt: '2026-01-01T00:00:00', isPinned: true, groupId: 1, archivedAt: '2026-02-01T00:00:00' } as any,
+        { id: 4, title: 'Skryté', body: '', publishedAt: '2026-01-01T00:00:00', isPinned: true, groupId: 1, hiddenAt: '2026-02-01T00:00:00' } as any,
       ]),
     );
 
     const fixture = TestBed.createComponent(DashboardComponent);
     fixture.detectChanges();
-    user.roles = ['leader'];
 
-    expect(fixture.componentInstance.pinnedPosts()?.map((p) => p.id).sort()).toEqual([1, 2]);
+    expect(fixture.componentInstance.pinnedPosts()?.map((p) => p.id)).toEqual([1]);
   });
 });

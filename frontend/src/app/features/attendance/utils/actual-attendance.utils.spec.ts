@@ -13,7 +13,7 @@ import { ActualAttendance } from '../models/actual-attendance.model';
 
 describe('actual-attendance.utils', () => {
   const member = (id: number, nickname: string, groupIds: number[], isActive = true): Member => ({
-    id, ensembleId: 1, userId: id, firstName: nickname, lastName: 'X', nickname, groupIds, isAdmin: false, isActive, createdAt: '2020-01-01',
+    id, ensembleId: 1, userId: id, firstName: nickname, lastName: 'X', nickname, groupIds, isActive, createdAt: '2020-01-01',
   });
   const event = (id: number, startsAt: string, targetGroupIds: number[], type: AppEvent['type'] = 'rehearsal', title = `Akce ${id}`): AppEvent => ({
     id, ensembleId: 1, title, type, startsAt, endsAt: startsAt, location: 'Sál', targetGroupIds,

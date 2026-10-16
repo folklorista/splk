@@ -18,14 +18,14 @@ describe('PostFormComponent', () => {
 
   const board: Group = { id: 2, ensembleId: 1, name: 'Kluci', slug: 'kluci' };
 
-  const authorUser: User = { id: 1, name: 'Jana', email: 'jana@soubor.cz', groupIds: [1], roles: ['member'] };
-  const otherMemberUser: User = { id: 2, name: 'Petr', email: 'petr@soubor.cz', groupIds: [1], roles: ['member'] };
-  const leaderUser: User = { id: 3, name: 'Eva', email: 'eva@soubor.cz', groupIds: [1], roles: ['leader'] };
+  const authorUser: User = { id: 1, name: 'Jana', email: 'jana@soubor.cz' };
+  const otherMemberUser: User = { id: 2, name: 'Petr', email: 'petr@soubor.cz' };
+  const leaderUser: User = { id: 3, name: 'Eva', email: 'eva@soubor.cz' };
 
   const members: Member[] = [
-    { id: 1, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: 'Nováková', nickname: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
-    { id: 2, ensembleId: 1, userId: 2, firstName: 'Petr', lastName: 'Novák', nickname: 'Petr Novák', email: 'petr@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
-    { id: 3, ensembleId: 1, userId: 3, firstName: 'Eva', lastName: 'Svobodová', nickname: 'Eva Svobodová', email: 'eva@soubor.cz', groupIds: [1], isAdmin: false, isActive: true, createdAt: '2020-01-01' },
+    { id: 1, ensembleId: 1, userId: 1, firstName: 'Jana', lastName: 'Nováková', nickname: 'Jana Nováková', email: 'jana@soubor.cz', groupIds: [1], isActive: true, createdAt: '2020-01-01' },
+    { id: 2, ensembleId: 1, userId: 2, firstName: 'Petr', lastName: 'Novák', nickname: 'Petr Novák', email: 'petr@soubor.cz', groupIds: [1], isActive: true, createdAt: '2020-01-01' },
+    { id: 3, ensembleId: 1, userId: 3, firstName: 'Eva', lastName: 'Svobodová', nickname: 'Eva Svobodová', email: 'eva@soubor.cz', groupIds: [1], isActive: true, createdAt: '2020-01-01' },
   ];
 
   const existingPost: Post = {
@@ -93,12 +93,12 @@ describe('PostFormComponent', () => {
     }));
   });
 
-  it('vedoucí smí upravit cizí příspěvek', () => {
+  it('ani správce skupiny cizí příspěvek nepřepisuje (jen moderuje)', () => {
     configure(leaderUser, { id: '7' });
     const fixture = TestBed.createComponent(PostFormComponent);
     fixture.detectChanges();
 
-    expect(fixture.componentInstance.notAllowed).toBeFalse();
+    expect(fixture.componentInstance.notAllowed).toBeTrue();
   });
 
   it('běžný člen nesmí upravit cizí příspěvek', () => {

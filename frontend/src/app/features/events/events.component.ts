@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AppEvent, EventType } from './models/event.model';
 import { AttendanceCounts, DEFAULT_EVENT_FILTERS, EventFilters, ResponseFilter, filterEvents, ownAttendanceStatus } from './utils/event-filters';
@@ -6,7 +6,8 @@ import { EventsService } from './events.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
 import { Member } from '../../core/models/member.model';
-import { isItemVisibleToUser, isLeaderOrAdmin } from '../../core/utils/visibility.utils';
+import { AccessService } from '../../core/access/access.service';
+import { canSeeEvent, canSeeEventResponses, isEventAudience } from '../../core/access/access.utils';
 import { SettingsService } from '../../core/settings/settings.service';
 import { AttendanceService } from '../attendance/attendance.service';
 import { AttendanceStatus } from '../attendance/models/attendance.model';
@@ -41,10 +42,11 @@ export class EventsComponent implements OnInit {
   visibleMonth = signal({ year: new Date().getFullYear(), month: new Date().getMonth() });
   selectedDateKey = signal(this.todayKey);
 
+  private access = inject(AccessService);
+
   visibleEvents = computed(() => {
-    const user = this.auth.currentUser();
-    if (!user) return [];
-    return this.events().filter(e => isItemVisibleToUser(e.targetGroupIds, user.groupIds));
+    const subject = this.access.subject();
+    return this.events().filter(e => canSeeEvent(subject, e));
   });
 
   // Seznam ukazuje jen nadcházející akce chronologicky – historie je dostupná v kalendáři
@@ -87,15 +89,14 @@ export class EventsComponent implements OnInit {
     filterEvents(this.upcomingEvents(), { type: 'all', response: 'pending' }, this.currentMemberId()).length,
   );
 
-  // Počty odpovědí vidí jen výbor
-  readonly isLeader = computed(() => this.auth.currentUser()?.roles.includes('leader') ?? false);
+  // Odkaz na přehled skutečné docházky – pověření Evidence docházky
+  readonly canViewAttendance = this.access.canViewAttendanceReport;
+  readonly canCreateEvents = this.access.canCreateEvents;
 
-  // Odkaz na přehled skutečné docházky (výbor, admin)
-  readonly canViewAttendance = computed(() => isLeaderOrAdmin(this.auth.currentUser()));
-
+  // Počty odpovědí vidí ten, kdo akci spravuje nebo eviduje její docházku
   attendanceCounts = (event: AppEvent): AttendanceCounts | null => {
-    if (!this.isLeader()) return null;
-    const visibleMembers = this.allMembers().filter((m) => m.isActive && isItemVisibleToUser(event.targetGroupIds, m.groupIds));
+    if (!canSeeEventResponses(this.access.subject(), event)) return null;
+    const visibleMembers = this.allMembers().filter((m) => isEventAudience(m, event));
     const counts: AttendanceCounts = { yes: 0, no: 0, maybe: 0, pending: 0 };
     for (const member of visibleMembers) {
       counts[event.attendance?.find((r) => r.memberId === member.id)?.status ?? 'pending']++;

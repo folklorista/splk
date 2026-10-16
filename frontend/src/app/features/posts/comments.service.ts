@@ -1,9 +1,14 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { PostComment } from './models/comment.model';
 import { MOCK_COMMENTS } from './data/mock-comments';
 import { demoStorageKey, loadDemoData, saveDemoData } from '../../core/data/demo-storage';
+import { AccessService } from '../../core/access/access.service';
+import { AccessDeniedError } from '../../core/access/mandate-rules';
+import { canPostInGroup } from '../../core/access/access.utils';
+import { PostsService } from './posts.service';
+import { GroupsService } from '../groups/groups.service';
 
 // Bez backendu je jediný způsob, jak si dvě záložky/přihlášení na stejném
 // zařízení mohou "poslat" nový komentář (a tedy i zmínku), sdílet stav přes
@@ -17,6 +22,10 @@ export class CommentsService {
   private commentsSubject = new BehaviorSubject<PostComment[]>(this.loadFromStorage());
 
   readonly comments$ = this.commentsSubject.asObservable();
+
+  private access = inject(AccessService);
+  private posts = inject(PostsService);
+  private groups = inject(GroupsService);
 
   constructor() {
     window.addEventListener('storage', (event) => {
@@ -44,7 +53,13 @@ export class CommentsService {
     return this.comments$.pipe(delay(300));
   }
 
+  // Komentovat smí jen člen skupiny příspěvku a jen sám za sebe (i při odpovědi z chatové karty)
   addComment(postId: number, authorId: number, body: string, mentionedMemberIds: number[]): Observable<PostComment> {
+    const post = this.posts.findPost(postId);
+    const group = post && this.groups.findGroup(post.groupId);
+    if (!group || authorId !== this.access.memberId() || !canPostInGroup(this.access.subject(), group)) {
+      return throwError(() => new AccessDeniedError('Komentovat mohou jen členové skupiny.'));
+    }
     const comments = this.commentsSubject.value;
     const newComment: PostComment = {
       id: Math.max(0, ...comments.map((c) => c.id)) + 1,

@@ -4,7 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { downloadCsv, formatDate, printPage } from '../../../../shared/export/export.utils';
 import { MembersService } from '../../../members/members.service';
-import { canManageCostumes } from '../../costume-permissions';
+import { AccessService } from '../../../../core/access/access.service';
 import { CostumesNavComponent } from '../../costumes-nav/costumes-nav.component';
 import { CostumesService } from '../../costumes.service';
 import { Borrower, Loan } from '../../models/costume.model';
@@ -70,12 +70,13 @@ import { LoanFilter, filterLoans, loanPieces, openLinesCsvRows, todayInputValue 
   styles: [LOAN_PAGE_STYLES],
 })
 export class CostumeLoansComponent {
+  private readonly accessService = inject(AccessService);
   private costumes = inject(CostumesService);
   private auth = inject(AuthService);
 
   readonly state = toSignal(this.costumes.state$, { requireSync: true });
   readonly members = toSignal(inject(MembersService).getMembers(), { initialValue: [] });
-  readonly canManage = computed(() => canManageCostumes(this.auth.currentUser()));
+  readonly canManage = this.accessService.canManageCostumes;
 
   readonly tabs: { value: LoanFilter; label: string }[] = [
     { value: 'open', label: 'Otevřené' },

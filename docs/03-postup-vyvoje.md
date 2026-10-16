@@ -35,6 +35,23 @@ Zbývá do V1.0 (vyžaduje backend nebo rozhodnutí, docs/07 kap. 63):
 - cílení akcí na jednotlivé hosty, notifikace (push nebo náhradní cesta),
 - doladit s krojárkami: seznam číselných řad, druhy neočíslovaných doplňků, podoba tiskových sestav (docs/06 kap. 13).
 
+## Skupiny, pověření a chat (docs/08) – stav k 2026-10-16
+
+Hotovo ve frontendu (demo, data v prohlížeči), etapy A–C z docs/08 kap. 12:
+
+- **Pověření místo rolí** (`core/models/mandate.model.ts`, `core/access/`): Správa souboru, hlavní správce / spolusprávce skupiny, Organizace akcí a Evidence docházky (rozsah soubor / skupina / akce), Správa krojů, Náhled do krojárky. Pravidla jsou čisté funkce v `access.utils.ts` (testy = akceptační scénáře 13.1), `AccessService` je vyhodnocuje živě. Přihlášení (`User`) nese jen identitu.
+- **Převod dřívějších rolí** (`features/mandates/data/mock-mandates.ts`): sloupec „administrátor“ → Správa souboru + Organizace akcí, Výbor → Evidence docházky + Náhled do krojárky, Sklad → Správa krojů, správci skupin podle docs/08 kap. 6.2. **Správa souboru už nevidí obsah cizích skupin.**
+- **Správa** `/app/manage` (Členové, Skupiny, Konfigurace, Historie) místo Administrace; akce se zakládají a upravují v modulu Akce (`/app/events/new`, `/:id/edit`), příspěvky upravuje jen autor, správce skupiny moderuje (připnout, skrýt, archivovat, obnovit).
+- **Členství** (`features/groups/membership.service.ts`): žádost, návrh člena, pozvánka, odchod, odebrání, předání hlavní správy; ochrana posledního správce souboru a hlavního správce skupiny; Správa souboru se do skupiny sama nepřidá, zásah do cizí skupiny je v historii zvýrazněn. Viditelnost skupin otevřená / soukromá / skrytá.
+- **Akce**: pořádající skupiny odděleně od cílení, jednotliví hosté (externisté), podstatné změny jdou do historie a chatu.
+- **Prostor skupiny** `/app/boards/:slug`: záložky Chat, Nástěnka, Členové, Správa (výchozí záložka podle skupiny).
+- **Chat** (`features/chat/`): časová osa zpráv, aktivity nástěnky a neutrálních systémových událostí; komentáře jen odkazuje a odpověď z karty ukládá pod příspěvek; **automatické seskupování** komentářů (výchozí 3 komentáře s pauzou do 10 min, nastavitelné v Konfiguraci); nový člen vidí chat od vstupu; přečtení chatu neoznačuje příspěvky.
+- Kontroly oprávnění jsou i v mock službách (jako bude backend), ne jen skrytím tlačítek.
+
+Výchozí rozhodnutí otevřených otázek docs/08 kap. 14 (k ověření): spolusprávce nepověřuje další správce a nemění název/viditelnost; organizátor konkrétní akce smí zapsat její docházku; spolusprávcem může být jen člen skupiny, technickým hlavním správcem i nečlen (bez přístupu k obsahu); do chatu jdou přidání/odebrání/odchod/vstup, změny správců, připnutí, nová a změněná akce; badge skupiny = nepřečtené příspěvky + zmínky + nepřečtené zprávy chatu (aktivita komentářů se nepočítá dvakrát).
+
+Zbývá (etapa D): volba upozornění pro skupinu (vše / zmínky / ztlumit), vyhledávání v povoleném obsahu, oznámení čekajících pozvánek na Přehledu; skutečné vynucení na serveru přijde s backendem.
+
 ## Základní strategie
 
 Vývoj má probíhat iterativně a po malých celcích.

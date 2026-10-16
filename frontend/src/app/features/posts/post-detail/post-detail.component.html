@@ -1,6 +1,6 @@
 <div class="page">
   @if (board(); as b) {
-    <a class="back-link" [routerLink]="['/app/boards', b.slug]">← Zpět na nástěnku {{ b.name }}</a>
+    <a class="back-link" [routerLink]="['/app/boards', b.slug]" [queryParams]="{ tab: 'board' }">← Zpět na nástěnku {{ b.name }}</a>
   } @else {
     <a class="back-link" routerLink="/app/boards">← Zpět na nástěnky</a>
   }
@@ -33,14 +33,38 @@
 
         <p class="detail__body">{{ p.body }}</p>
 
-        @if (canManage) {
-          <div class="attendance-actions">
-            <a class="attendance-btn" [routerLink]="['/app/posts', p.id, 'edit']">Upravit</a>
-            <button type="button" class="attendance-btn attendance-btn--clear" (click)="archivePost()">Archivovat</button>
-          </div>
+        @if (p.hiddenAt) {
+          <p class="badge">Skryto moderátorem – vidí jen autor a správci skupiny</p>
+        }
+        @if (p.archivedAt) {
+          <p class="badge">Archivováno</p>
         }
 
-        @if ((isLeader || isAdmin) && visibleMembers().length > 0) {
+        @if (isAuthor() || canArchive() || canModerate()) {
+          <div class="attendance-actions">
+            @if (isAuthor()) {
+              <a class="attendance-btn" [routerLink]="['/app/posts', p.id, 'edit']">Upravit</a>
+            }
+            @if (canModerate() && !p.archivedAt) {
+              <button type="button" class="attendance-btn" (click)="togglePinned()">{{ p.isPinned ? 'Odepnout' : 'Připnout' }}</button>
+            }
+            @if (canModerate()) {
+              <button type="button" class="attendance-btn" (click)="toggleHidden()">{{ p.hiddenAt ? 'Znovu zobrazit' : 'Skrýt' }}</button>
+            }
+            @if (canArchive()) {
+              @if (p.archivedAt) {
+                <button type="button" class="attendance-btn" (click)="restorePost()">Obnovit z archivu</button>
+              } @else {
+                <button type="button" class="attendance-btn attendance-btn--clear" (click)="archivePost()">Archivovat</button>
+              }
+            }
+          </div>
+        }
+        @if (actionError()) {
+          <p class="login-error" role="alert">{{ actionError() }}</p>
+        }
+
+        @if (canSeeReadStats() && visibleMembers().length > 0) {
           <section class="detail__section">
             <h2 class="detail__section-title">Přečteno</h2>
             <div class="member-columns">
@@ -78,7 +102,7 @@
           @if (comments().length) {
             <ul class="comment-list">
               @for (comment of comments(); track comment.id) {
-                <li class="comment-list__item">
+                <li class="comment-list__item" [id]="'comment-' + comment.id" [class.comment-list__item--target]="'comment-' + comment.id === targetFragment">
                   <div class="comment-list__meta">
                     <strong>{{ commentAuthorName(comment) }}</strong>
                     <span class="detail__meta-relative">{{ comment.createdAt | relativeTime }}</span>
@@ -99,6 +123,7 @@
             <p class="member-column__empty">Zatím žádné komentáře.</p>
           }
 
+          @if (canComment()) {
           <div class="comment-form">
             <div class="mention-input">
               <textarea
@@ -145,6 +170,7 @@
               Přidat komentář
             </button>
           </div>
+          }
         </section>
       </div>
     }

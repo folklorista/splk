@@ -5,10 +5,10 @@ import { CostumesNavComponent } from '../../costumes-nav/costumes-nav.component'
 import { CostumesService } from '../../costumes.service';
 import { MembersService } from '../../../members/members.service';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { canManageCostumes } from '../../costume-permissions';
+import { AccessService } from '../../../../core/access/access.service';
 import { KIT_COMPLETENESS_LABELS } from '../../utils/costume-logic';
 import { downloadCsv, printPage } from '../../../../shared/export/export.utils';
-import { ActionFeedback, COSTUME_PAGE_STYLES } from '../items/costume-ui';
+import { ActionFeedback } from '../items/costume-ui';
 import { buildKitRows, kitsCsvRows } from './kits.utils';
 
 @Component({
@@ -96,7 +96,6 @@ import { buildKitRows, kitsCsvRows } from './kits.utils';
     </div>
   `,
   styles: [
-    COSTUME_PAGE_STYLES,
     `
       .kits__new { margin-bottom: var(--spacing-md); }
       .kits__meta { display: flex; flex-wrap: wrap; gap: 2px var(--spacing-md); }
@@ -104,13 +103,14 @@ import { buildKitRows, kitsCsvRows } from './kits.utils';
   ],
 })
 export class CostumeKitsComponent {
+  private readonly accessService = inject(AccessService);
   private costumes = inject(CostumesService);
   private auth = inject(AuthService);
   private router = inject(Router);
 
   readonly state = toSignal(this.costumes.state$, { initialValue: this.costumes.snapshot });
   readonly members = toSignal(inject(MembersService).getMembers(), { initialValue: [] });
-  readonly canManage = computed(() => canManageCostumes(this.auth.currentUser()));
+  readonly canManage = this.accessService.canManageCostumes;
   readonly rows = computed(() => buildKitRows(this.state(), this.members()));
   readonly completenessLabels = KIT_COMPLETENESS_LABELS;
   readonly feedback = new ActionFeedback();

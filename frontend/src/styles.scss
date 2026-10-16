@@ -1,5 +1,7 @@
 @use 'styles/variables';
 @use 'styles/reset';
+@use 'styles/form-ui';
+@use 'styles/chat';
 
 // Login page
 .login-page {
@@ -2029,4 +2031,10 @@ a.mobile-header__user {
   table { border-collapse: collapse; width: 100%; }
   th, td { border: 1px solid #999; padding: 2px 4px; }
   .item-list__item { break-inside: avoid; }
+}
+
+// Komentář, na který vede odkaz z chatu
+.comment-list__item--target {
+  border-left: 3px solid var(--color-primary);
+  padding-left: var(--spacing-sm);
 }

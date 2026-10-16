@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CostumesNavComponent } from '../../costumes-nav/costumes-nav.component';
 import { CostumesService, ItemInput } from '../../costumes.service';
 import { itemCode, nextFreeNumber, partTypeName } from '../../utils/costume-logic';
-import { ActionFeedback, COSTUME_PAGE_STYLES } from '../items/costume-ui';
+import { ActionFeedback } from '../items/costume-ui';
 
 const toId = (value: string): number | undefined => (value === '' ? undefined : Number(value));
 
@@ -111,7 +111,6 @@ export function parseItemNumber(value: string): number | undefined {
     </div>
   `,
   styles: [
-    COSTUME_PAGE_STYLES,
     `
       .item-form { max-width: 560px; }
       .item-form__number { display: flex; gap: var(--spacing-sm); }

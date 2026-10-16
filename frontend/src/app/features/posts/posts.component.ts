@@ -1,22 +1,21 @@
-import { Component, OnInit, signal, computed, DestroyRef } from '@angular/core';
+import { Component, OnInit, signal, computed, DestroyRef, input, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
 import { Post } from './models/post.model';
 import { PostsService } from './posts.service';
-import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
-import { BoardsService } from '../boards/boards.service';
 import { Member } from '../../core/models/member.model';
 import { PostComment } from './models/comment.model';
 import { CommentsService } from './comments.service';
 import { getNewCommentsCount } from '../../core/utils/visibility.utils';
 import { Group } from '../../core/models/group.model';
 import { hasUnseenMention, sortArchivedPosts, sortBoardPosts } from './utils/board-posts';
+import { AccessService } from '../../core/access/access.service';
+import { canModerateGroup, canPostInGroup, canSeeReadStats } from '../../core/access/access.utils';
 
-// Nástěnka jedné skupiny (/app/boards/:slug)
+// Nástěnka jedné skupiny – záložka v prostoru skupiny (/app/boards/:slug)
 @Component({
   selector: 'app-posts',
   standalone: true,
@@ -24,18 +23,28 @@ import { hasUnseenMention, sortArchivedPosts, sortBoardPosts } from './utils/boa
   templateUrl: './posts.component.html',
 })
 export class PostsComponent implements OnInit {
-  board = signal<Group | null>(null);
+  readonly board = input.required<Group>();
+
+  private access = inject(AccessService);
   posts = signal<Post[]>([]);
   loading = signal(true);
-  currentMemberId = signal<number | null>(null);
   allMembers = signal<Member[]>([]);
   comments = signal<PostComment[]>([]);
+  readonly currentMemberId = this.access.memberId;
 
   showArchived = signal(false);
 
+  readonly canPost = computed(() => canPostInGroup(this.access.subject(), this.board()));
+  readonly canModerate = computed(() => canModerateGroup(this.access.subject(), this.board()));
+  // Statistiky čtenosti jen pro správce skupiny, který obsah čte (ne pro Správu souboru)
+  readonly canSeeReadStats = computed(() => canSeeReadStats(this.access.subject(), this.board()));
+
+  // Skrytý příspěvek vidí jen autor a moderátoři
   private boardPosts = computed(() => {
     const board = this.board();
-    return board ? this.posts().filter(p => p.groupId === board.id) : [];
+    return this.posts()
+      .filter((p) => p.groupId === board.id)
+      .filter((p) => !p.hiddenAt || p.authorId === this.currentMemberId() || this.canModerate());
   });
 
   visiblePosts = computed(() => sortBoardPosts(this.boardPosts().filter(p => !p.archivedAt)));
@@ -47,14 +56,6 @@ export class PostsComponent implements OnInit {
     const memberId = this.currentMemberId();
     return memberId ? !post.readers || !post.readers.includes(memberId) : false;
   };
-
-  get isLeader(): boolean {
-    return this.auth.currentUser()?.roles.includes('leader') ?? false;
-  }
-
-  get isAdmin(): boolean {
-    return this.auth.currentUser()?.roles.includes('admin') ?? false;
-  }
 
   newCommentsCount(post: Post): number {
     return getNewCommentsCount(this.comments(), post, this.currentMemberId());
@@ -77,48 +78,23 @@ export class PostsComponent implements OnInit {
   }
 
   constructor(
-    private route: ActivatedRoute,
     private postsService: PostsService,
-    private auth: AuthService,
     private membersService: MembersService,
-    private boardsService: BoardsService,
     private commentsService: CommentsService,
     private destroyRef: DestroyRef,
   ) {}
 
   ngOnInit(): void {
-    const user = this.auth.currentUser();
-    if (!user) {
-      this.loading.set(false);
-      return;
-    }
-
     // Živý stream – počty nových komentářů se aktualizují i bez znovunačtení stránky
     this.commentsService
       .getAllComments()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((comments) => this.comments.set(comments));
 
-    // Komponenta se při přechodu mezi nástěnkami znovu nevytváří, proto sledujeme změnu :slug
-    this.route.paramMap
-      .pipe(
-        map((params) => params.get('slug') ?? ''),
-        switchMap((slug) => {
-          this.loading.set(true);
-          return forkJoin([
-            this.boardsService.getBoardBySlug(slug),
-            this.membersService.getMembers(),
-            this.postsService.getPosts(),
-          ]);
-        }),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(([board, members, posts]) => {
-        this.board.set(board ?? null);
-        this.allMembers.set(members);
-        this.currentMemberId.set(members.find((m) => m.userId === user.id)?.id ?? null);
-        this.posts.set(posts);
-        this.loading.set(false);
-      });
+    forkJoin([this.membersService.getMembers(), this.postsService.getPosts()]).subscribe(([members, posts]) => {
+      this.allMembers.set(members);
+      this.posts.set(posts);
+      this.loading.set(false);
+    });
   }
 }
