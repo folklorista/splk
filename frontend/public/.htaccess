@@ -11,10 +11,11 @@ RewriteRule ^ - [L]
 # Vše ostatní na index.html
 RewriteRule ^ index.html [L]
 
-# Service worker a manifest se nesmí agresivně cachovat, jinak se aktualizace
-# aplikace k uživatelům nedostane
+# Service worker, manifest, index.html a informace o verzi se nesmí agresivně
+# cachovat, jinak se aktualizace aplikace k uživatelům nedostane (JS/CSS mají
+# hash v názvu, ty cachovat můžou)
 <IfModule mod_headers.c>
-  <FilesMatch "^(ngsw-worker\.js|ngsw\.json|manifest\.webmanifest)$">
+  <FilesMatch "^(index\.html|ngsw-worker\.js|ngsw\.json|manifest\.webmanifest|build-info\.json|changelog\.json)$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
 </IfModule>

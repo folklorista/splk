@@ -21,7 +21,7 @@ Běžný PHP hosting typicky neumožňuje pohodlně provozovat vlastní WebSocke
 
 Proto první verze nebude stavět na WebSocketu. Pro aktualizace dat se použije polling:
 
-- periodické načítání novinek,
+- periodické načítání novinek (stejná odpověď nese i aktuálně nasazenou verzi aplikace, aby šlo uživatele upozornit na novou verzi – viz docs/03 „Hlídání nové verze přes backend“),
 - ruční refresh,
 - později případně push notifikace nebo externí realtime služba.
 
