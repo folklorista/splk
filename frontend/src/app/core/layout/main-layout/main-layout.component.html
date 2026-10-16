@@ -6,6 +6,9 @@
         <a class="mobile-header__user" routerLink="/app/profile" title="Můj profil">{{ user.name }}</a>
       }
       <app-version-label />
+      <a class="settings-link" routerLink="/app/search" title="Hledat" aria-label="Hledat">
+        <app-icon name="search" [size]="18" />
+      </a>
       <a class="settings-link" routerLink="/app/settings" title="Nastavení" aria-label="Nastavení">
         <app-icon name="settings" [size]="18" />
       </a>

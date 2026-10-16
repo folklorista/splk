@@ -13,6 +13,8 @@ import { GroupSpaceTab, groupTabs, resolveGroupTab } from './group-tabs';
 import { GroupChatComponent } from '../../chat/group-chat/group-chat.component';
 import { ChatService } from '../../chat/chat.service';
 import { unreadChatCount } from '../../chat/utils/chat-timeline';
+import { GroupNotificationsService } from '../../../core/notifications/group-notifications.service';
+import { GROUP_NOTIFY_LABELS, GroupNotifyMode } from '../../../core/notifications/group-notifications';
 
 const TAB_LABELS: Record<GroupSpaceTab, string> = {
   chat: 'Chat',
@@ -37,6 +39,14 @@ const TAB_LABELS: Record<GroupSpaceTab, string> = {
           </h1>
           @if (!isMember()) {
             <span class="badge">Otevřená skupina – jen čtení</span>
+          } @else {
+            <label class="group-space__notify">
+              <select [value]="notifyMode()" (change)="setNotifyMode($any($event.target).value)" aria-label="Upozornění ze skupiny">
+                @for (option of notifyOptions; track option[0]) {
+                  <option [value]="option[0]" [selected]="notifyMode() === option[0]">🔔 {{ option[1] }}</option>
+                }
+              </select>
+            </label>
           }
         </div>
         @if (g.description) {
@@ -74,6 +84,7 @@ const TAB_LABELS: Record<GroupSpaceTab, string> = {
     .group-tabs__link { padding: 8px 12px; font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-muted); border-bottom: 2px solid transparent; white-space: nowrap; }
     .group-tabs__link:hover { color: var(--color-text); }
     .group-tabs__link--active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+    .group-space__notify select { padding: 4px 6px; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-surface); color: var(--color-text); font-size: var(--font-size-sm); }
     .group-tabs__badge { margin-left: 4px; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--color-primary); color: #fff; font-size: 11px; display: inline-block; text-align: center; }
   `],
 })
@@ -101,6 +112,15 @@ export class GroupSpaceComponent {
   readonly tab = computed(() => (this.group() ? resolveGroupTab(this.requestedTab(), this.group()!, this.canManage()) : 'members'));
 
   private chat = inject(ChatService);
+  private notify = inject(GroupNotificationsService);
+  readonly notifyOptions = Object.entries(GROUP_NOTIFY_LABELS) as [GroupNotifyMode, string][];
+  readonly notifyMode = computed(() => this.notify.modeFor(this.access.memberId(), this.group()?.id ?? 0));
+
+  setNotifyMode(mode: GroupNotifyMode): void {
+    const memberId = this.access.memberId();
+    const g = this.group();
+    if (memberId && g) this.notify.setMode(memberId, g.id, mode);
+  }
 
   // Nepřečtené zprávy chatu – jen běžné zprávy (aktivitu příspěvků ukazuje nástěnka)
   readonly unreadChat = computed(() => {

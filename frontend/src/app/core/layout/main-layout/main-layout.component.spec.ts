@@ -13,6 +13,7 @@ import { User } from '../../auth/models/user.model';
 import { Member } from '../../models/member.model';
 import { provideTestAccess } from '../../../testing/access.testing';
 import { NavigationService } from '../navigation.service';
+import { ActivityNotifierService } from '../../notifications/activity-notifier.service';
 
 describe('MainLayoutComponent', () => {
   const user: User = { id: 1, name: 'Staňa', email: 'stana@soubor.cz' };
@@ -45,6 +46,7 @@ describe('MainLayoutComponent', () => {
         { provide: EventsService, useValue: eventsSpy },
         { provide: NotificationService, useValue: notificationSpy },
         provideTestAccess(member),
+        { provide: ActivityNotifierService, useValue: { start: () => {} } },
         { provide: NavigationService, useValue: { start: () => {}, stop: () => {}, sections: () => [], bottomItems: () => [] } },
       ],
     });

@@ -1,6 +1,6 @@
 <div class="page settings">
   <h1 class="page__title">Nastavení</h1>
-  <p class="settings__intro">Platí jen pro toto zařízení.</p>
+  <p class="settings__intro">Vzhled a zobrazení platí jen pro toto zařízení.</p>
 
   <section class="settings__section">
     <h2 class="settings__title">Vzhled</h2>
@@ -54,13 +54,27 @@
     @if (!notificationsSupported) {
       <p class="state-note">Tento prohlížeč upozornění nepodporuje.</p>
     } @else if (notificationPermission() === 'granted') {
-      <p class="settings__ok">✓ Upozornění na zmínky v komentářích jsou povolená</p>
+      <p class="settings__ok">✓ Upozornění jsou povolená</p>
     } @else if (notificationPermission() === 'denied') {
       <p class="state-note">Upozornění jsou zablokovaná – povol je v nastavení prohlížeče.</p>
     } @else {
       <button type="button" class="attendance-btn attendance-btn--active" (click)="enableNotifications()">
-        Povolit upozornění na zmínky
+        Povolit upozornění
       </button>
+    }
+
+    @if (myGroups().length) {
+      <p class="settings__hint">Upozornění ze skupin: zmínka (&#64;) upozorní vždy, nový příspěvek pokud chat není ztlumený, ostatní zprávy jen v režimu „Všechny zprávy“. Platí pro váš účet.</p>
+      @for (group of myGroups(); track group.id) {
+        <div class="settings__row">
+          <span class="settings__label">{{ group.name }}</span>
+          <select class="settings__select" [attr.aria-label]="'Upozornění – ' + group.name" (change)="setNotifyMode(group.id, $any($event.target).value)">
+            @for (option of notifyOptions; track option[0]) {
+              <option [value]="option[0]" [selected]="notifyMode(group.id) === option[0]">{{ option[1] }}</option>
+            }
+          </select>
+        </div>
+      }
     }
   </section>
 </div>

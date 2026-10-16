@@ -1,6 +1,17 @@
 <div class="page">
   <h1 class="page__title">Přehled</h1>
 
+  @if (invitations()) {
+    <a class="events-pending" routerLink="/app/boards">
+      <strong>{{ invitations() }}</strong> {{ invitations() === 1 ? 'pozvánka do skupiny čeká' : 'pozvánky do skupin čekají' }} na vaši odpověď
+    </a>
+  }
+  @if (toDecide()) {
+    <a class="events-pending" routerLink="/app/boards">
+      Ve skupinách, které spravujete, čeká <strong>{{ toDecide() }}</strong> žádostí nebo návrhů na rozhodnutí
+    </a>
+  }
+
   @if (loading()) {
   <p class="state-note">Načítání…</p>
   } @else {
