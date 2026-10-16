@@ -1,5 +1,20 @@
 [
   {
+    "version": "v2026.10.5",
+    "releasedAt": "2026-10-16",
+    "dance": {
+      "url": "https://www.lidovakultura.cz/2019/07/23/e-4-sedlacka-borsicka-z-borsic-u-blatnice/",
+      "title": "Sedlácká (boršická) z Boršic u Blatnice",
+      "codename": "boršická",
+      "slug": "borsicka"
+    },
+    "changes": [
+      "Upozornění podle skupiny: všechny zprávy, jen zmínky a příspěvky, nebo ztlumit chat",
+      "Vyhledávání v příspěvcích, komentářích, chatu a akcích – jen v obsahu, který smíte číst",
+      "Přehled upozorní na pozvánky do skupin a žádosti čekající na rozhodnutí"
+    ]
+  },
+  {
     "version": "v2026.10.4",
     "releasedAt": "2026-10-16",
     "dance": {
