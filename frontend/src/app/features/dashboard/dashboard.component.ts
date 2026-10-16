@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { AppEvent } from '../events/models/event.model';
 import { Post } from '../posts/models/post.model';
 import { AttendanceStatus } from '../attendance/models/attendance.model';
@@ -15,6 +15,8 @@ import { myCostumeRows } from '../costumes/utils/costume-logic';
 import { AccessService } from '../../core/access/access.service';
 import { canReadGroupContent, isEventAudience } from '../../core/access/access.utils';
 import { GroupsService } from '../groups/groups.service';
+import { JoinRequestsService } from '../groups/join-requests.service';
+import { isGroupManager } from '../../core/access/access.utils';
 
 // Kolik nejbližších akcí se na přehledu zobrazí s rychlým potvrzením účasti
 export const DASHBOARD_EVENT_LIMIT = 5;
@@ -37,6 +39,17 @@ export class DashboardComponent implements OnInit {
   currentMemberId = signal<number | null>(null);
   // Sekce „Moje kroje“ se ukáže jen tomu, kdo má něco svěřeno
   hasCostumes = signal(false);
+
+  private requests = inject(JoinRequestsService);
+
+  // Pozvánky pro mě a žádosti/návrhy ve skupinách, které spravuji
+  readonly invitations = computed(() =>
+    this.requests.requests().filter((r) => r.status === 'awaiting-member' && r.memberId === this.access.memberId()).length,
+  );
+  readonly toDecide = computed(() => {
+    const s = this.access.subject();
+    return this.requests.requests().filter((r) => r.status === 'awaiting-manager' && isGroupManager(s, r.groupId)).length;
+  });
 
   isUnread = (post: Post): boolean => {
     const memberId = this.currentMemberId();

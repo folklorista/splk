@@ -9,6 +9,7 @@ import { JoinRequestsService } from '../../features/groups/join-requests.service
 import { isGroupManager } from '../access/access.utils';
 import { isPendingJoinRequest } from '../../features/groups/models/join-request.model';
 import { ChatService } from '../../features/chat/chat.service';
+import { GroupNotificationsService } from '../notifications/group-notifications.service';
 import { unreadChatCount } from '../../features/chat/utils/chat-timeline';
 
 export interface NavItem {
@@ -40,13 +41,15 @@ export class NavigationService {
     private eventsService: EventsService,
     private requestsService: JoinRequestsService,
     private chat: ChatService,
+    private notify: GroupNotificationsService,
   ) {}
 
   // Badge skupiny = nepřečtené příspěvky + neviděné zmínky (nástěnka) + nepřečtené zprávy chatu.
   // Aktivita komentářů v chatu se nezapočítává znovu (je už v nástěnce).
   private chatBadge(groupId: number): number {
     const member = this.access.currentMember();
-    if (!member) return 0;
+    // Ztlumený chat do badge nepočítáme (zprávy jsou dál vidět v záložce Chat)
+    if (!member || this.notify.modeFor(member.id, groupId) === 'muted') return 0;
     return unreadChatCount(this.chat.messages(), groupId, member.id, this.chat.lastReadAt(groupId, member.id), member.groupJoinedAt?.[groupId]);
   }
 
@@ -90,7 +93,7 @@ export class NavigationService {
 
   readonly sections = computed<NavSection[]>(() => [
     { items: [...this.mainItems(), ...this.groupItems(), ...this.moduleItems()] },
-    { label: 'Soubor', items: [this.groupsHub(), ...this.manageItems()] },
+    { label: 'Soubor', items: [this.groupsHub(), { path: '/app/search', label: 'Hledat', icon: 'search' }, ...this.manageItems()] },
   ]);
 
   // Lišta na mobilu: Přehled, Akce, skupiny, rozcestník skupin, Správa (posouvá se do strany)

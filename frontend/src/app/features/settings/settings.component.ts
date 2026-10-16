@@ -1,6 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { AppSettings, SettingsService } from '../../core/settings/settings.service';
 import { NotificationService } from '../../core/notifications/notification.service';
+import { GroupNotificationsService } from '../../core/notifications/group-notifications.service';
+import { GROUP_NOTIFY_LABELS, GroupNotifyMode } from '../../core/notifications/group-notifications';
+import { AccessService } from '../../core/access/access.service';
 
 interface Option<T> {
   value: T;
@@ -16,6 +19,19 @@ interface Option<T> {
 export class SettingsComponent {
   readonly settingsService = inject(SettingsService);
   private readonly notificationService = inject(NotificationService);
+  private readonly groupNotify = inject(GroupNotificationsService);
+  private readonly access = inject(AccessService);
+  readonly myGroups = this.access.myGroups;
+  readonly notifyOptions = Object.entries(GROUP_NOTIFY_LABELS) as [GroupNotifyMode, string][];
+
+  notifyMode(groupId: number): GroupNotifyMode {
+    return this.groupNotify.modeFor(this.access.memberId(), groupId);
+  }
+
+  setNotifyMode(groupId: number, mode: GroupNotifyMode): void {
+    const memberId = this.access.memberId();
+    if (memberId) this.groupNotify.setMode(memberId, groupId, mode);
+  }
 
   readonly settings = this.settingsService.settings;
   readonly notificationPermission = this.notificationService.permission;

@@ -2038,3 +2038,12 @@ a.mobile-header__user {
   border-left: 3px solid var(--color-primary);
   padding-left: var(--spacing-sm);
 }
+
+.settings__select {
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}

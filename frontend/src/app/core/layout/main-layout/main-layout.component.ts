@@ -10,6 +10,7 @@ import { AuthService } from '../../auth/auth.service';
 import { MembersService } from '../../../features/members/members.service';
 import { CommentsService } from '../../../features/posts/comments.service';
 import { NotificationService } from '../../notifications/notification.service';
+import { ActivityNotifierService } from '../../notifications/activity-notifier.service';
 import { Member } from '../../models/member.model';
 import { PostComment } from '../../../features/posts/models/comment.model';
 
@@ -26,6 +27,7 @@ export class MainLayoutComponent implements OnInit {
     private membersService: MembersService,
     private commentsService: CommentsService,
     private notificationService: NotificationService,
+    private activityNotifier: ActivityNotifierService,
   ) {}
 
   ngOnInit(): void {
@@ -37,6 +39,7 @@ export class MainLayoutComponent implements OnInit {
       if (!member) return;
 
       this.watchForNewMentions(member.id, members);
+      this.activityNotifier.start();
     });
   }
 

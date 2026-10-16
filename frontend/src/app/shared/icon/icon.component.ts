@@ -30,6 +30,7 @@ export type IconName =
   | 'drum'
   | 'mask'
   | 'close'
+  | 'search'
   | 'comment'
   | 'clipboard-check';
 
@@ -197,6 +198,10 @@ export const GROUP_ICON_OPTIONS: IconName[] = [
           <circle cx="9" cy="10" r="1.3" />
           <circle cx="15" cy="10" r="1.3" />
           <path d="M9 15c1 1 5 1 6 0" />
+        }
+        @case ('search') {
+          <circle cx="11" cy="11" r="7" />
+          <line x1="16.5" y1="16.5" x2="21" y2="21" />
         }
         @case ('close') {
           <line x1="5" y1="5" x2="19" y2="19" />
