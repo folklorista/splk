@@ -38,6 +38,11 @@ export class PostsService {
     return of(postsCache.find((p) => p.id === id)).pipe(delay(300));
   }
 
+  // Synchronní dotaz pro jiné služby (kontrola oprávnění u komentářů)
+  findPost(id: number): Post | undefined {
+    return postsCache.find((p) => p.id === id);
+  }
+
   private canModerate(post: Post): boolean {
     const group = this.groupsService.findGroup(post.groupId);
     return !!group && canModerateGroup(this.access.subject(), group);

@@ -170,9 +170,19 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Odkaz z chatové karty (#comment-ID) otevře správné místo diskuze
+  get targetFragment(): string | null {
+    return this.route.snapshot?.fragment ?? null;
+  }
+  private scrolledToTarget = false;
+
   private loadComments(postId: number, memberId: number): void {
     this.commentsService.getComments(postId).subscribe((comments) => {
       this.comments.set(comments);
+      if (this.targetFragment && !this.scrolledToTarget) {
+        this.scrolledToTarget = true;
+        setTimeout(() => document.getElementById(this.targetFragment!)?.scrollIntoView({ block: 'center' }));
+      }
       comments
         .filter((c) => c.mentionedMemberIds.includes(memberId) && !c.seenByMemberIds.includes(memberId))
         .forEach((c) => this.commentsService.markSeen(c.id, memberId).subscribe());

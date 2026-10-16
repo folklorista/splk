@@ -102,7 +102,7 @@
           @if (comments().length) {
             <ul class="comment-list">
               @for (comment of comments(); track comment.id) {
-                <li class="comment-list__item">
+                <li class="comment-list__item" [id]="'comment-' + comment.id" [class.comment-list__item--target]="'comment-' + comment.id === targetFragment">
                   <div class="comment-list__meta">
                     <strong>{{ commentAuthorName(comment) }}</strong>
                     <span class="detail__meta-relative">{{ comment.createdAt | relativeTime }}</span>

@@ -1,8 +1,9 @@
 import { Injectable, signal } from '@angular/core';
 import { AuditEntry } from './audit.model';
 import { loadDemoData, saveDemoData } from '../../core/data/demo-storage';
+import { seedAudit } from './data/mock-audit';
 
-let auditCache = loadDemoData<AuditEntry[]>('audit', () => []);
+let auditCache = loadDemoData<AuditEntry[]>('audit', seedAudit);
 
 // Auditní historie změn členství, pověření, skupin a moderace. Záznamy se jen přidávají.
 @Injectable({ providedIn: 'root' })
@@ -26,6 +27,7 @@ export class AuditService {
     return created;
   }
 
+  // Prázdná historie (testy); obnovení dema maže úložiště, takže se načte ukázková historie
   resetCache(): void {
     auditCache = [];
     this._entries.set(auditCache);

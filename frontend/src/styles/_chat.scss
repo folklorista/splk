@@ -1,0 +1,160 @@
+// Skupinový chat (features/chat). Log má vlastní posuvník, aby pole pro psaní zůstalo vidět
+// nad spodní navigací a klávesnicí (dvh se s klávesnicí zmenší).
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+
+  &__log {
+    height: calc(100dvh - 300px - var(--bottom-nav-height));
+    min-height: 240px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-surface-alt);
+
+    @media (min-width: 768px) {
+      height: calc(100dvh - 300px);
+    }
+  }
+
+  &__day {
+    align-self: center;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    text-transform: capitalize;
+    padding: 2px 10px;
+    margin-top: var(--spacing-sm);
+  }
+
+  &__new {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    color: var(--color-primary);
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      border-top: 1px solid var(--color-primary);
+    }
+  }
+
+  &__composer {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+.chat-msg {
+  max-width: min(85%, 560px);
+  align-self: flex-start;
+  padding: 6px 10px;
+  border-radius: 12px 12px 12px 4px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+
+  &--own {
+    align-self: flex-end;
+    border-radius: 12px 12px 4px 12px;
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  }
+
+  &--mention {
+    border-color: var(--color-primary);
+  }
+
+  &__meta {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+
+  &__body {
+    font-size: var(--font-size-base);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+
+    &--deleted {
+      font-style: italic;
+      color: var(--color-text-muted);
+    }
+  }
+
+  &__action {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    &:hover { color: var(--color-primary); }
+  }
+}
+
+.chat-system {
+  align-self: center;
+  max-width: 90%;
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.chat-card {
+  align-self: stretch;
+  max-width: 640px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-border);
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  &--new {
+    border-left-color: var(--color-primary);
+  }
+
+  &__meta {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+
+  &__title {
+    font-weight: 600;
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  &__link,
+  a.chat-card__title {
+    color: var(--color-primary);
+  }
+
+  &__preview {
+    font-size: var(--font-size-sm);
+    overflow-wrap: anywhere;
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-top: 4px;
+  }
+
+  &__action {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-primary);
+    &:hover { text-decoration: underline; }
+  }
+
+  &__reply {
+    margin-top: var(--spacing-sm);
+  }
+}

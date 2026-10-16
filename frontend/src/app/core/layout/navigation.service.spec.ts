@@ -8,11 +8,14 @@ import { EventsService } from '../../features/events/events.service';
 import { JoinRequestsService } from '../../features/groups/join-requests.service';
 import { JoinRequest } from '../../features/groups/models/join-request.model';
 import { createTestAccess, testMandate, testMember } from '../../testing/access.testing';
+import { ChatService } from '../../features/chat/chat.service';
+import { ChatMessage } from '../../features/chat/models/chat-message.model';
 
 describe('NavigationService', () => {
   const member = testMember({ id: 7, groupIds: [2] });
   let env: ReturnType<typeof createTestAccess>;
   const requests = signal<JoinRequest[]>([]);
+  const messages = signal<ChatMessage[]>([]);
 
   function create(): NavigationService {
     TestBed.configureTestingModule({
@@ -21,6 +24,7 @@ describe('NavigationService', () => {
         { provide: BoardsService, useValue: { getBoardBadges: () => of(new Map([[2, 3]])) } },
         { provide: EventsService, useValue: { getEvents: () => of([]) } },
         { provide: JoinRequestsService, useValue: { requests } },
+        { provide: ChatService, useValue: { messages, lastReadAt: () => '2026-01-01T00:00:00Z' } },
       ],
     });
     return TestBed.inject(NavigationService);
@@ -29,7 +33,19 @@ describe('NavigationService', () => {
   beforeEach(() => {
     env = createTestAccess(member);
     requests.set([]);
+    messages.set([]);
   });
+
+  it('badge skupiny zahrne i nepřečtené cizí zprávy chatu', fakeAsync(() => {
+    const msg = (id: number, authorId: number, createdAt: string): ChatMessage => ({ id, groupId: 2, authorId, body: '', mentionedMemberIds: [], createdAt });
+    messages.set([msg(1, 3, '2026-02-01T00:00:00Z'), msg(2, 7, '2026-02-01T00:00:00Z'), msg(3, 3, '2025-12-01T00:00:00Z')]);
+    const nav = create();
+    nav.start();
+    tick();
+    expect(nav.groupItems()[0].badge).toBe(4);
+    nav.stop();
+    discardPeriodicTasks();
+  }));
 
   it('v menu jsou jen skupiny, kde je člen členem, s badge', fakeAsync(() => {
     const nav = create();

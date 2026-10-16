@@ -2,12 +2,20 @@ import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { demoStorageKey } from '../../core/data/demo-storage';
 import { CommentsService } from './comments.service';
 import { PostComment } from './models/comment.model';
+import { AccessService } from '../../core/access/access.service';
+import { AccessDeniedError } from '../../core/access/mandate-rules';
 
 describe('CommentsService', () => {
   let service: CommentsService;
+  // Přihlášený autor je členem všech skupin (oprávnění testuje samostatný test níže)
+  let actor = 1;
+  let groupIds = [1, 2, 3, 4, 5, 6, 7];
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    actor = 1;
+    groupIds = [1, 2, 3, 4, 5, 6, 7];
+    const access = { memberId: () => actor, subject: () => ({ memberId: actor, groupIds, isExternal: false, mandates: [] }) };
+    TestBed.configureTestingModule({ providers: [{ provide: AccessService, useValue: access }] });
     service = TestBed.inject(CommentsService);
     service.resetCache();
   });
@@ -29,6 +37,7 @@ describe('CommentsService', () => {
 
   it('addComment přidá nový komentář se správnými zmínkami', fakeAsync(() => {
     let created: PostComment | undefined;
+    actor = 5;
     service.addComment(2, 5, 'Ahoj @Petr', [7]).subscribe((c) => (created = c));
     tick(300);
 
@@ -45,6 +54,7 @@ describe('CommentsService', () => {
 
   it('markSeen přidá člena mezi ty, kteří komentář viděli', fakeAsync(() => {
     let created: PostComment | undefined;
+    actor = 1;
     service.addComment(3, 1, 'Test @Osoba', [8]).subscribe((c) => (created = c));
     tick(300);
 
@@ -59,6 +69,7 @@ describe('CommentsService', () => {
 
   it('markSeen podruhé nepřidá člena duplicitně', fakeAsync(() => {
     let created: PostComment | undefined;
+    actor = 1;
     service.addComment(3, 1, 'Test @Osoba', [8]).subscribe((c) => (created = c));
     tick(300);
 
@@ -74,6 +85,7 @@ describe('CommentsService', () => {
   }));
 
   it('addComment uloží stav do localStorage, aby ho viděly i jiné záložky', fakeAsync(() => {
+    actor = 1;
     service.addComment(4, 1, 'Persistovaný komentář', []).subscribe();
     tick(300);
 
@@ -111,5 +123,17 @@ describe('CommentsService', () => {
     service.getComments(1).subscribe((c) => (comments = c));
     tick(300);
     expect(comments.length).toBe(before);
+  }));
+
+  it('nečlen skupiny ani cizím jménem komentovat nemůže', fakeAsync(() => {
+    let error: unknown;
+    groupIds = [];
+    service.addComment(1, 1, 'Ahoj', []).subscribe({ error: (e) => (error = e) });
+    expect(error).toEqual(jasmine.any(AccessDeniedError));
+
+    groupIds = [1, 2, 3, 4, 5, 6, 7];
+    error = undefined;
+    service.addComment(1, 99, 'Za někoho', []).subscribe({ error: (e) => (error = e) });
+    expect(error).toEqual(jasmine.any(AccessDeniedError));
   }));
 });

@@ -51,6 +51,11 @@ describe('MainLayoutComponent', () => {
 
     // Reálná CommentsService perzistuje do sdíleného localStorage – vyčistit před testem
     commentsService = TestBed.inject(CommentsService);
+    // Komentáře „od jiného člena“ – oprávnění autora tu netestujeme
+    spyOn(commentsService, 'addComment').and.callFake((postId, authorId, body, mentioned) => {
+      (commentsService as any).commentsSubject.next([...(commentsService as any).commentsSubject.value, { id: 999 + mentioned.length, postId, authorId, body, createdAt: new Date().toISOString(), mentionedMemberIds: mentioned, seenByMemberIds: [] }]);
+      return of(undefined as any);
+    });
     commentsService.resetCache();
   }
 

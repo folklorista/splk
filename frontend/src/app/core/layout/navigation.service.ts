@@ -8,6 +8,8 @@ import { getUnconfirmedEventsCount, hasBoard, hasChat } from '../utils/visibilit
 import { JoinRequestsService } from '../../features/groups/join-requests.service';
 import { isGroupManager } from '../access/access.utils';
 import { isPendingJoinRequest } from '../../features/groups/models/join-request.model';
+import { ChatService } from '../../features/chat/chat.service';
+import { unreadChatCount } from '../../features/chat/utils/chat-timeline';
 
 export interface NavItem {
   path: string;
@@ -37,7 +39,16 @@ export class NavigationService {
     private boardsService: BoardsService,
     private eventsService: EventsService,
     private requestsService: JoinRequestsService,
+    private chat: ChatService,
   ) {}
+
+  // Badge skupiny = nepřečtené příspěvky + neviděné zmínky (nástěnka) + nepřečtené zprávy chatu.
+  // Aktivita komentářů v chatu se nezapočítává znovu (je už v nástěnce).
+  private chatBadge(groupId: number): number {
+    const member = this.access.currentMember();
+    if (!member) return 0;
+    return unreadChatCount(this.chat.messages(), groupId, member.id, this.chat.lastReadAt(groupId, member.id), member.groupJoinedAt?.[groupId]);
+  }
 
   // Co čeká na mě: žádosti a návrhy ve skupinách, které spravuji, a pozvánky pro mě
   readonly pendingRequests = computed(() => {
@@ -53,7 +64,7 @@ export class NavigationService {
     this.access
       .myGroups()
       .filter((g) => hasBoard(g) || hasChat(g))
-      .map((g) => ({ path: `/app/boards/${g.slug}`, label: g.name, icon: g.icon ?? 'megaphone', badge: this.groupBadges().get(g.id) || undefined })),
+      .map((g) => ({ path: `/app/boards/${g.slug}`, label: g.name, icon: g.icon ?? 'megaphone', badge: (this.groupBadges().get(g.id) ?? 0) + (hasChat(g) ? this.chatBadge(g.id) : 0) || undefined })),
   );
 
   readonly mainItems = computed<NavItem[]>(() => {

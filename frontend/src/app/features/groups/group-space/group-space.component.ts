@@ -10,6 +10,9 @@ import { GroupMembersComponent } from './group-members.component';
 import { GroupAdminPanelComponent } from '../group-admin/group-admin-panel.component';
 import { IconComponent } from '../../../shared/icon/icon.component';
 import { GroupSpaceTab, groupTabs, resolveGroupTab } from './group-tabs';
+import { GroupChatComponent } from '../../chat/group-chat/group-chat.component';
+import { ChatService } from '../../chat/chat.service';
+import { unreadChatCount } from '../../chat/utils/chat-timeline';
 
 const TAB_LABELS: Record<GroupSpaceTab, string> = {
   chat: 'Chat',
@@ -23,7 +26,7 @@ const TAB_LABELS: Record<GroupSpaceTab, string> = {
 @Component({
   selector: 'app-group-space',
   standalone: true,
-  imports: [RouterLink, PostsComponent, GroupMembersComponent, GroupAdminPanelComponent, IconComponent],
+  imports: [RouterLink, GroupChatComponent, PostsComponent, GroupMembersComponent, GroupAdminPanelComponent, IconComponent],
   template: `
     <div class="page">
       @if (group(); as g) {
@@ -44,11 +47,15 @@ const TAB_LABELS: Record<GroupSpaceTab, string> = {
           @for (t of tabs(); track t) {
             <a class="group-tabs__link" [class.group-tabs__link--active]="tab() === t" [routerLink]="[]" [queryParams]="{ tab: t }" [attr.aria-current]="tab() === t ? 'page' : null">
               {{ label(t) }}
+              @if (t === 'chat' && tab() !== 'chat' && unreadChat()) {
+                <span class="group-tabs__badge">{{ unreadChat() }}</span>
+              }
             </a>
           }
         </nav>
 
         @switch (tab()) {
+          @case ('chat') { <app-group-chat [group]="g" /> }
           @case ('board') { <app-posts [board]="g" /> }
           @case ('members') { <app-group-members [group]="g" /> }
           @case ('manage') { <app-group-admin-panel [groupId]="g.id" /> }
@@ -67,6 +74,7 @@ const TAB_LABELS: Record<GroupSpaceTab, string> = {
     .group-tabs__link { padding: 8px 12px; font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-muted); border-bottom: 2px solid transparent; white-space: nowrap; }
     .group-tabs__link:hover { color: var(--color-text); }
     .group-tabs__link--active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+    .group-tabs__badge { margin-left: 4px; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--color-primary); color: #fff; font-size: 11px; display: inline-block; text-align: center; }
   `],
 })
 export class GroupSpaceComponent {
@@ -91,6 +99,16 @@ export class GroupSpaceComponent {
 
   readonly tabs = computed(() => (this.group() ? groupTabs(this.group()!, this.canManage()) : []));
   readonly tab = computed(() => (this.group() ? resolveGroupTab(this.requestedTab(), this.group()!, this.canManage()) : 'members'));
+
+  private chat = inject(ChatService);
+
+  // Nepřečtené zprávy chatu – jen běžné zprávy (aktivitu příspěvků ukazuje nástěnka)
+  readonly unreadChat = computed(() => {
+    const g = this.group();
+    const memberId = this.access.memberId();
+    if (!g || !memberId) return 0;
+    return unreadChatCount(this.chat.messages(), g.id, memberId, this.chat.lastReadAt(g.id), this.access.currentMember()?.groupJoinedAt?.[g.id]);
+  });
 
   label(tab: GroupSpaceTab): string {
     return TAB_LABELS[tab];

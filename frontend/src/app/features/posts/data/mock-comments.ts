@@ -42,6 +42,21 @@ const girl = otherDemoMember([holky], 3, [authorOf(9)]);
 const childrenLeader = otherDemoMember([malaVonica], 1, [authorOf(10)]);
 const seamstress = otherDemoMember([sklad], 1, [authorOf(11)]);
 
+// Živá diskuze z posledních minut – v chatu Holek se ukáže jako jedna souhrnná karta (docs/08 kap. 8.4)
+function recentComment(postId: number, author: Member | undefined, body: string, minutesAgo: number): PostComment[] {
+  if (!author) return [];
+  return [{
+    id: nextId++,
+    postId,
+    authorId: author.id,
+    body,
+    createdAt: new Date(Date.now() - minutesAgo * 60_000).toISOString(),
+    mentionedMemberIds: [],
+    seenByMemberIds: [],
+  }];
+}
+const holkyPool = MOCK_MEMBERS.filter((m) => m.isActive && m.groupIds.includes(holky));
+
 export const MOCK_COMMENTS: PostComment[] = [
   // comment() vrací pole – prázdné, když pro komentář není vhodný člen
   ...comment(1, camper, '{0} staví autobus i na zastávce u nádraží?', 5, 8, [committee]),
@@ -64,4 +79,13 @@ export const MOCK_COMMENTS: PostComment[] = [
   ...comment(10, childrenLeader, '15. listopadu nemůžu, vyměním si to s někým za 22.', 3, 17),
 
   ...comment(11, seamstress, 'Souhlas. Jen bych přidala ještě dvě zástěry, ty staré jsou už hodně sešlé.', 2, 18),
+
+  ...[
+    'Máme to zpívat dvojhlasně, nebo jen melodii?',
+    'Dvojhlasně, druhý hlas je v té složce taky.',
+    'Já se druhý hlas naučím do pátku.',
+    'Můžeme se sejít už v půl, projet to spolu?',
+    'Jo, v půl jsem tam.',
+    'Ano, vemte si všechny texty vytištěné.',
+  ].flatMap((text, i) => recentComment(9, holkyPool[(i + 2) % Math.max(holkyPool.length, 1)], text, 18 - i * 3)),
 ];

@@ -315,7 +315,8 @@ describe('PostDetailComponent s reálnou CommentsService (živý stream)', () =>
   };
 
   it('nepřidá právě odeslaný komentář dvakrát', fakeAsync(() => {
-    const postsSpy = jasmine.createSpyObj('PostsService', ['getPost', 'markAsRead', 'markVisited']);
+    const postsSpy = jasmine.createSpyObj('PostsService', ['getPost', 'markAsRead', 'markVisited', 'findPost']);
+    postsSpy.findPost.and.returnValue(post);
     postsSpy.markVisited.and.returnValue(of(undefined));
     postsSpy.getPost.and.returnValue(of(post));
     postsSpy.markAsRead.and.returnValue(of(undefined));
