@@ -1,11 +1,13 @@
 // Builds the frontend and uploads it over SFTP (moje.vonica.cz).
-// Usage: node scripts/deploy.mjs [--source working|commit|tag] [--demo] [--yes]
+// Usage: node scripts/deploy.mjs [--source working|commit|tag | --ref <tag|branch|commit>] [--demo] [--yes]
 //   working – current working copy incl. uncommitted changes (default)
 //   commit  – last commit of the current branch, built in a clean temporary worktree
-//   tag     – latest release tag on master, built in a clean temporary worktree
+//   tag     – latest release tag (v*) on master, built in a clean temporary worktree
+//   --ref   – the given tag (or unique tag prefix), branch or commit, built in a clean temporary worktree
 //   --demo  – real (masked) members from dev/local/clenove.tsv; requires Basic Auth
 //   --yes   – skip the confirmation prompt
-//   --dry-run – build and print the summary, upload nothing
+//   --dry-run – build and print the summary incl. the upload plan, upload nothing
+//   --status  – only print which version production serves now
 // Configuration: .env in the repository root (see .env.example).
 import fs from 'node:fs';
 import os from 'node:os';
@@ -22,15 +24,19 @@ const option = (name) => {
   const index = args.indexOf(name);
   return index !== -1 ? args[index + 1] : undefined;
 };
-const source = option('--source') ?? 'working';
+const refArg = option('--ref');
+const source = refArg ? 'ref' : option('--source') ?? 'working';
 const demo = args.includes('--demo');
 const assumeYes = args.includes('--yes');
 const dryRun = args.includes('--dry-run');
+const statusOnly = args.includes('--status');
 
 // Uploaded last, so clients never get an index.html pointing to chunks that are not there yet
 const UPLOAD_LAST = ['ngsw.json', 'index.html'];
 // Never deleted as "left over from an older version"
 const KEEP_REMOTE = ['.htaccess', '.htpasswd'];
+// Content-hashed build output (chunk-ABCD1234.js) – same name means same content, no need to upload again
+const HASHED_FILE = /-[A-Z0-9]{8}\.(js|css)$/;
 
 function fail(message) {
   console.error(`\n✖ ${message}`);
@@ -38,6 +44,24 @@ function fail(message) {
 }
 
 const git = (...gitArgs) => execFileSync('git', gitArgs, { cwd: rootDir, encoding: 'utf8' }).trim();
+const gitOk = (...gitArgs) => spawnSync('git', gitArgs, { cwd: rootDir, stdio: 'ignore' }).status === 0;
+
+// Resolves --ref to a commit and the branch name reported in the build info
+function resolveRef(ref) {
+  if (gitOk('show-ref', '--verify', '--quiet', `refs/heads/${ref}`)) return { ref, branch: ref };
+  let tag = gitOk('show-ref', '--verify', '--quiet', `refs/tags/${ref}`) ? ref : undefined;
+  if (!tag) {
+    const candidates = git('tag', '--list', `${ref}*`).split('\n').filter(Boolean);
+    if (candidates.length > 1) fail(`--ref ${ref} matches several tags: ${candidates.join(', ')}`);
+    tag = candidates[0];
+  }
+  const resolved = tag ?? ref;
+  if (!gitOk('rev-parse', '--verify', '--quiet', `${resolved}^{commit}`)) fail(`Unknown --ref ${ref} (no such tag, branch or commit)`);
+  const branch = gitOk('merge-base', '--is-ancestor', resolved, 'master')
+    ? 'master'
+    : git('branch', '--contains', resolved, '--format=%(refname:short)').split('\n').filter(Boolean)[0] ?? 'detached';
+  return { ref: resolved, branch };
+}
 
 function loadConfig() {
   const envPath = path.join(rootDir, '.env');
@@ -80,8 +104,10 @@ function build() {
     ref = 'HEAD';
     branch = git('rev-parse', '--abbrev-ref', 'HEAD');
   } else if (source === 'tag') {
-    ref = git('describe', '--tags', '--abbrev=0', '--match', 'v*-*', 'master');
+    ref = git('describe', '--tags', '--abbrev=0', '--match', 'v*', 'master');
     branch = 'master';
+  } else if (source === 'ref') {
+    ({ ref, branch } = resolveRef(refArg));
   } else {
     fail(`Unknown --source ${source} (working|commit|tag)`);
   }
@@ -135,62 +161,85 @@ function htaccessWithAuth(appHtaccess, config) {
   ].join('\n');
 }
 
-async function upload(config, distDir) {
-  const sftp = new SftpClient();
-  await sftp.connect(config.sftp);
-  const remote = (relative) => path.posix.join(config.remoteDir, relative);
-  try {
-    // 1) Protection first – real names must never be reachable, not even for a moment
-    if (config.auth) {
-      await sftp.put(Buffer.from(`${config.auth.user}:${apr1(config.auth.password)}\n`), remote('.htpasswd'));
-    }
-    const appHtaccess = fs.readFileSync(path.join(distDir, '.htaccess'), 'utf8');
-    await sftp.put(Buffer.from(htaccessWithAuth(appHtaccess, config)), remote('.htaccess'));
-    console.log(config.auth ? '✔ Basic Auth (.htpasswd, .htaccess)' : '✔ .htaccess (no Basic Auth)');
-
-    // 2) Application files, index.html and ngsw.json last
-    const files = listLocalFiles(distDir).filter((file) => file !== '.htaccess');
-    files.sort((a, b) => UPLOAD_LAST.indexOf(a) - UPLOAD_LAST.indexOf(b));
-    for (const file of files) {
-      const target = remote(file);
-      const dir = path.posix.dirname(target);
-      if (!(await sftp.exists(dir))) await sftp.mkdir(dir, true);
-      await sftp.put(path.join(distDir, file), target);
-    }
-    console.log(`✔ Uploaded ${files.length} files`);
-
-    // 3) Remove what is left over from older builds
-    const localFiles = new Set(files);
-    const localDirs = new Set(files.map((file) => path.posix.dirname(file)).filter((dir) => dir !== '.'));
-    const { files: remoteFiles, dirs: remoteDirs } = await listRemote(sftp, config.remoteDir);
-    const staleFiles = remoteFiles.filter((file) => !localFiles.has(file) && !KEEP_REMOTE.includes(file));
-    for (const file of staleFiles) await sftp.delete(remote(file));
-    const staleDirs = remoteDirs.filter((dir) => !localDirs.has(dir)).sort((a, b) => b.length - a.length);
-    for (const dir of staleDirs) await sftp.rmdir(remote(dir), true);
-    console.log(`✔ Removed ${staleFiles.length} stale files, ${staleDirs.length} stale directories`);
-  } finally {
-    await sftp.end();
-  }
+// Compares the build with the server: what to upload (hashed files already there are skipped) and what to delete
+async function planUpload(sftp, config, distDir) {
+  const files = listLocalFiles(distDir).filter((file) => file !== '.htaccess');
+  files.sort((a, b) => UPLOAD_LAST.indexOf(a) - UPLOAD_LAST.indexOf(b));
+  const { files: remoteFiles, dirs: remoteDirs } = await listRemote(sftp, config.remoteDir);
+  const remoteSet = new Set(remoteFiles);
+  const localFiles = new Set(files);
+  const localDirs = new Set(files.flatMap((file) => {
+    const parts = file.split('/').slice(0, -1);
+    return parts.map((_, i) => parts.slice(0, i + 1).join('/'));
+  }));
+  return {
+    upload: files.filter((file) => !(HASHED_FILE.test(file) && remoteSet.has(file))),
+    unchanged: files.filter((file) => HASHED_FILE.test(file) && remoteSet.has(file)),
+    staleFiles: remoteFiles.filter((file) => !localFiles.has(file) && !KEEP_REMOTE.includes(file)),
+    staleDirs: remoteDirs.filter((dir) => !localDirs.has(dir)).sort((a, b) => b.length - a.length),
+  };
 }
 
+async function upload(sftp, config, distDir, plan) {
+  const remote = (relative) => path.posix.join(config.remoteDir, relative);
+
+  // 1) Protection first – real names must never be reachable, not even for a moment
+  if (config.auth) {
+    await sftp.put(Buffer.from(`${config.auth.user}:${apr1(config.auth.password)}\n`), remote('.htpasswd'));
+  }
+  const appHtaccess = fs.readFileSync(path.join(distDir, '.htaccess'), 'utf8');
+  await sftp.put(Buffer.from(htaccessWithAuth(appHtaccess, config)), remote('.htaccess'));
+  console.log(config.auth ? '✔ Basic Auth (.htpasswd, .htaccess)' : '✔ .htaccess (no Basic Auth)');
+
+  // 2) Changed application files, index.html and ngsw.json last
+  for (const file of plan.upload) {
+    const target = remote(file);
+    const dir = path.posix.dirname(target);
+    if (!(await sftp.exists(dir))) await sftp.mkdir(dir, true);
+    await sftp.put(path.join(distDir, file), target);
+  }
+  console.log(`✔ Uploaded ${plan.upload.length} files (${plan.unchanged.length} unchanged skipped)`);
+
+  // 3) Remove what is left over from older builds
+  for (const file of plan.staleFiles) await sftp.delete(remote(file));
+  for (const dir of plan.staleDirs) await sftp.rmdir(remote(dir), true);
+  console.log(`✔ Removed ${plan.staleFiles.length} stale files, ${plan.staleDirs.length} stale directories`);
+}
+
+const authHeaders = (config) => config.auth
+  ? { Authorization: `Basic ${Buffer.from(`${config.auth.user}:${config.auth.password}`).toString('base64')}` }
+  : {};
+
+// Reads the build info <meta> tags (scripts/build.mjs) from the index.html production serves
+async function productionInfo(config) {
+  const response = await fetch(`${config.siteUrl}/`, { headers: authHeaders(config), cache: 'no-store' });
+  const html = await response.text();
+  const meta = (name) => html.match(new RegExp(`<meta name="${name}" content="([^"]*)"`))?.[1] ?? null;
+  return { status: response.status, version: meta('app-version'), revision: meta('app-revision'), builtAt: meta('app-built-at') };
+}
+
+const describeProduction = (info) => info.revision
+  ? `${info.version || '(no release tag)'} – ${info.revision}, built ${info.builtAt}`
+  : `unknown (HTTP ${info.status}, no build info in index.html)`;
+
 async function verify(config, expectedRevision) {
-  const withAuth = config.auth
-    ? { Authorization: `Basic ${Buffer.from(`${config.auth.user}:${config.auth.password}`).toString('base64')}` }
-    : {};
   if (config.auth) {
     const anonymous = await fetch(`${config.siteUrl}/`);
     if (anonymous.status !== 401) throw new Error(`Site answers ${anonymous.status} without password – expected 401!`);
     console.log('✔ Without password: 401');
   }
-  const response = await fetch(`${config.siteUrl}/`, { headers: withAuth });
-  const html = await response.text();
-  if (!response.ok || !html.includes(`content="${expectedRevision}"`)) {
-    throw new Error(`Deployed index.html does not report revision ${expectedRevision} (HTTP ${response.status})`);
+  const info = await productionInfo(config);
+  if (info.status !== 200 || info.revision !== expectedRevision) {
+    throw new Error(`Deployed index.html does not report revision ${expectedRevision} (HTTP ${info.status}, got ${info.revision})`);
   }
   console.log(`✔ ${config.siteUrl} serves ${expectedRevision}`);
 }
 
 const config = loadConfig();
+if (statusOnly) {
+  console.log(`Production (${config.siteUrl}): ${describeProduction(await productionInfo(config))}`);
+  process.exit(0);
+}
 if (source === 'working' && git('status', '--porcelain') !== '') {
   console.warn('\n⚠️  WARNING: deploying the working copy WITH UNCOMMITTED CHANGES – the build will be marked as dirty.\n');
 }
@@ -201,26 +250,43 @@ try {
   const info = JSON.parse(fs.readFileSync(path.join(distDir, 'build-info.json'), 'utf8'));
   const revision = `${info.branch}@${info.commit}${info.dirty ? '+dirty' : ''}`;
 
+  const production = await productionInfo(config);
+  const sftp = new SftpClient();
+  await sftp.connect(config.sftp);
+  let plan;
+  try {
+    plan = await planUpload(sftp, config, distDir);
+  } catch (error) {
+    await sftp.end();
+    throw error;
+  }
+
   console.log('\n──────── Deploy summary ────────');
-  console.log(`Source:     ${source}`);
+  console.log(`Production: ${describeProduction(production)}`);
+  console.log(`Source:     ${source}${refArg ? ` ${refArg}` : ''}`);
   console.log(`Version:    ${info.tag ?? '(no release tag)'}${info.dance ? ` – ${info.dance.codename}` : ''}`);
   console.log(`Revision:   ${revision}`);
   console.log(`Members:    ${demo ? 'REAL (demo build, masked surnames)' : 'fictional'}`);
   console.log(`Target:     ${config.sftp.username}@${config.sftp.host}:${config.remoteDir} → ${config.siteUrl}`);
   console.log(`Basic Auth: ${config.auth ? `yes (user ${config.auth.user})` : 'NO – site will be public'}`);
+  console.log(`Files:      ${plan.upload.length} to upload, ${plan.unchanged.length} unchanged, ${plan.staleFiles.length} stale to delete`);
   console.log('────────────────────────────────\n');
 
-  if (dryRun) {
-    console.log('Dry run – nothing uploaded.');
-  } else if (!assumeYes) {
-    const prompt = readline.createInterface({ input: process.stdin, output: process.stdout });
-    const answer = await prompt.question('Deploy? [y/N] ');
-    prompt.close();
-    if (answer.trim().toLowerCase() !== 'y') throw new Error('Cancelled.');
+  try {
+    if (dryRun) {
+      console.log('Dry run – nothing uploaded.');
+    } else if (!assumeYes) {
+      const prompt = readline.createInterface({ input: process.stdin, output: process.stdout });
+      const answer = await prompt.question('Deploy? [y/N] ');
+      prompt.close();
+      if (answer.trim().toLowerCase() !== 'y') throw new Error('Cancelled.');
+    }
+    if (!dryRun) await upload(sftp, config, distDir, plan);
+  } finally {
+    await sftp.end();
   }
 
   if (!dryRun) {
-    await upload(config, distDir);
     await verify(config, revision);
     console.log('\n✨ Deployed.');
   }

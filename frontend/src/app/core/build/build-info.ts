@@ -16,9 +16,10 @@ export interface BuildInfo {
   builtAt: string;
 }
 
-// Vydaná verze se označí tancem; build mimo release (nebo s necommitnutými změnami) revizí
+// Vydaná verze se označí tancem (verze bez tance tagem); build mimo release (nebo s necommitnutými změnami) revizí
 export function versionLabel(info: BuildInfo | null): string {
   if (!info) return 'vývojová verze';
   if (info.dance && !info.dirty) return info.dance.codename;
+  if (info.tag && !info.dirty) return info.tag;
   return `${info.branch}@${info.commit}${info.dirty ? '*' : ''}`;
 }

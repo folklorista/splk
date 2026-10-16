@@ -16,10 +16,11 @@ const git = (...args) => execFileSync('git', args, { cwd: rootDir, encoding: 'ut
 export function collectBuildInfo({ branch } = {}) {
   const commit = git('rev-parse', '--short', 'HEAD');
   const dirty = git('status', '--porcelain', '--untracked-files=no') !== '';
+  // Release tags: vRRRR.M.N-<dance slug> (scripts/release.mjs) or plain vX.Y[.Z]
   const releaseTag = git('tag', '--points-at', 'HEAD')
     .split('\n')
-    .find((tag) => /^v\d{4}\.\d{1,2}\.\d+-/.test(tag)) ?? null;
-  const version = releaseTag?.match(/^(v\d{4}\.\d{1,2}\.\d+)-/)[1] ?? null;
+    .find((tag) => /^v\d+(\.\d+)+(-|$)/.test(tag)) ?? null;
+  const version = releaseTag?.match(/^(v\d+(\.\d+)+)/)[1] ?? null;
   const changelog = fs.existsSync(changelogPath) ? JSON.parse(fs.readFileSync(changelogPath, 'utf8')) : [];
   const release = version ? changelog.find((entry) => entry.version === version) : undefined;
 

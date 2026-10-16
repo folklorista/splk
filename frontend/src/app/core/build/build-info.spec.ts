@@ -19,6 +19,10 @@ describe('versionLabel', () => {
     expect(versionLabel(release)).toBe('klátková');
   });
 
+  it('vydanou verzi bez tance označí tagem', () => {
+    expect(versionLabel({ ...release, tag: 'v1.0', version: 'v1.0', dance: null })).toBe('v1.0');
+  });
+
   it('build mimo release označí větví a commitem', () => {
     expect(versionLabel({ ...release, tag: null, version: null, dance: null, branch: 'feature/x' })).toBe('feature/x@abc1234');
   });

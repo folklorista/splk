@@ -76,10 +76,14 @@ npm run release -- "Změna 1" "Změna 2"      # verze vRRRR.M.N + tanec, changel
 npm run deploy -- --source tag --demo       # build posledního tagu a nahrání na web
 ```
 
-- `--source working|commit|tag` – pracovní kopie (i s necommitnutými změnami, s varováním), poslední commit aktuální větve, nebo poslední tag z `master`. `commit` a `tag` se sestaví v čistém dočasném `git worktree`.
+V Claude Code stačí `/deploy [tag|commit|větev|working]` (skill [`.claude/skills/deploy`](.claude/skills/deploy/SKILL.md)): zjistí verzi na produkci, připraví migrace (až bude backend), ukáže shrnutí, po potvrzení nasadí a ověří web.
+
+- `--source working|commit|tag` – pracovní kopie (i s necommitnutými změnami, s varováním), poslední commit aktuální větve, nebo poslední tag `v*` z `master`. `commit` a `tag` se sestaví v čistém dočasném `git worktree`.
+- `--ref <tag|commit|větev>` – konkrétní tag (stačí jednoznačný začátek názvu), commit nebo větev, také v dočasném worktree.
+- `--status` – jen vypíše, jakou verzi produkce právě servíruje.
 - `--demo` – reální členové z `dev/local/clenove.tsv` (příjmení zamaskovaná). Bez Basic Auth skript demo build odmítne nasadit.
 - `--dry-run` jen sestaví a vypíše shrnutí, `--yes` přeskočí potvrzení.
-- Skript nejdřív nahraje `.htpasswd` a `.htaccess` s Basic Auth, pak aplikaci (`index.html` a `ngsw.json` nakonec), smaže soubory ze starších verzí a ověří, že web bez hesla vrací 401 a s heslem novou revizi.
+- Skript nejdřív nahraje `.htpasswd` a `.htaccess` s Basic Auth, pak změněné soubory aplikace (chunky s hashem v názvu, které už na serveru jsou, přeskočí; `index.html` a `ngsw.json` nakonec), smaže soubory ze starších verzí a ověří, že web bez hesla vrací 401 a s heslem novou revizi.
 - Lokální produkční build bez nasazení: `npm run frontend:build` (`frontend:build:demo` s reálnými členy).
 
 ## Testy

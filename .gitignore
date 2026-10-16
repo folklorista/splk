@@ -63,8 +63,9 @@ baseline.json
 .filetreeignore
 file-structure.txt
 
-# Claude files
-.claude
+# Claude files (project skills are versioned)
+.claude/*
+!.claude/skills/
 
 # Local demo data with real member names (scripts/import-members.mjs)
 *.local.ts
