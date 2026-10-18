@@ -16,7 +16,9 @@ import { AccessService } from '../../core/access/access.service';
 import { canReadGroupContent, isEventAudience } from '../../core/access/access.utils';
 import { GroupsService } from '../groups/groups.service';
 import { JoinRequestsService } from '../groups/join-requests.service';
-import { isGroupManager } from '../../core/access/access.utils';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActualAttendanceService } from '../attendance/actual-attendance.service';
+import { PendingAction, attendanceRecordActions, costumeActions, eventResponseActions, groupRequestActions, sortPendingActions } from './pending-actions';
 
 // Kolik nejbližších akcí se na přehledu zobrazí s rychlým potvrzením účasti
 export const DASHBOARD_EVENT_LIMIT = 5;
@@ -31,6 +33,17 @@ export interface UpcomingEventRow {
   standalone: true,
   imports: [RouterLink, EventRsvpRowComponent, MyCostumesComponent],
   templateUrl: './dashboard.component.html',
+  styles: [`
+    .pending { margin-bottom: var(--spacing-lg); border-left: 4px solid var(--color-primary); background: var(--color-surface-alt); border-radius: 8px; padding: var(--spacing-sm) var(--spacing-md); }
+    .pending__title { font-size: var(--font-size-sm); font-weight: 700; margin: 0 0 var(--spacing-xs); }
+    .pending__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+    .pending__item { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-sm); flex-wrap: wrap; padding: 6px 0; border-top: 1px solid var(--color-border); }
+    .pending__item:first-child { border-top: none; }
+    .pending__link { display: flex; flex-direction: column; color: var(--color-text); text-decoration: none; min-width: 0; flex: 1 1 200px; }
+    .pending__link:hover .pending__text { color: var(--color-primary); }
+    .pending__detail { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+    .pending__actions { display: flex; gap: 6px; }
+  `],
 })
 export class DashboardComponent implements OnInit {
   upcomingEvents = signal<UpcomingEventRow[]>([]);
@@ -41,14 +54,23 @@ export class DashboardComponent implements OnInit {
   hasCostumes = signal(false);
 
   private requests = inject(JoinRequestsService);
+  private allEvents = signal<AppEvent[]>([]);
+  private costumeState = toSignal(inject(CostumesService).state$);
+  private actualAttendance = toSignal(inject(ActualAttendanceService).records$, { initialValue: [] });
 
-  // Pozvánky pro mě a žádosti/návrhy ve skupinách, které spravuji
-  readonly invitations = computed(() =>
-    this.requests.requests().filter((r) => r.status === 'awaiting-member' && r.memberId === this.access.memberId()).length,
-  );
-  readonly toDecide = computed(() => {
-    const s = this.access.subject();
-    return this.requests.requests().filter((r) => r.status === 'awaiting-manager' && isGroupManager(s, r.groupId)).length;
+  // „Čeká na vás“: povinnosti napříč moduly, nejdřív to, co hoří (docs/10 kap. 7.2)
+  readonly pendingActions = computed<PendingAction[]>(() => {
+    const member = this.access.currentMember();
+    const subject = this.access.subject();
+    if (!member) return [];
+    const modules = this.access.modules();
+    const state = this.costumeState();
+    return sortPendingActions([
+      ...(modules.events ? eventResponseActions(this.allEvents(), member) : []),
+      ...groupRequestActions(this.requests.requests(), subject, this.groupsService.groups()),
+      ...(modules.costumes && state ? costumeActions(state, member.id) : []),
+      ...(modules.events ? attendanceRecordActions(this.allEvents(), this.actualAttendance(), subject) : []),
+    ]);
   });
 
   isUnread = (post: Post): boolean => {
@@ -104,6 +126,7 @@ export class DashboardComponent implements OnInit {
 
       // Stream akcí obsahuje i účast, takže se po rychlém potvrzení řádky samy aktualizují
       this.eventsService.getEvents().subscribe((events) => {
+        this.allEvents.set(events);
         const now = new Date();
         this.upcomingEvents.set(
           events
