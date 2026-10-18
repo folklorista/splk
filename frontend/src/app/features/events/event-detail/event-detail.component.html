@@ -15,6 +15,9 @@
           @if (canEdit()) {
             <a class="attendance-btn" [routerLink]="['/app/events', ev.id, 'edit']">Upravit</a>
           }
+          @if (!ev.skippedReason) {
+            <button type="button" class="attendance-btn" (click)="downloadIcs()" title="Přidat do kalendáře (.ics)">Do kalendáře</button>
+          }
         </div>
 
         @if (ev.skippedReason) {

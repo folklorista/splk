@@ -12,6 +12,8 @@ export interface AppSettings {
   reduceMotion: boolean | null;
   // Osobní spodní lišta: klíče míst v pořadí (bez Přehledu); null = automatický návrh (docs/10 kap. 6.2)
   bottomBar: string[] | null;
+  // Export kalendáře (.ics): typy akcí a vynechané termíny série jako „NENÍ …“; null = výchozí (bez nácviků)
+  calendarExport: { types: string[]; skippedAsNotice: boolean } | null;
 }
 
 export const SETTINGS_STORAGE_KEY = 'splk.settings';
@@ -22,6 +24,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   eventsView: 'list',
   reduceMotion: null,
   bottomBar: null,
+  calendarExport: null,
 };
 
 function readStoredSettings(): AppSettings {

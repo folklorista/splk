@@ -36,6 +36,8 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
 
 import { isSoftDeadlinePassed, needsResponse } from '../utils/event-reminders';
 import { changeAcknowledgement, confirmedChange, viewedSinceChange } from '../utils/event-views';
+import { buildIcs, downloadIcs } from '../utils/ics';
+import { EnsembleSettingsService } from '../../ensemble/ensemble-settings.service';
 import { AvailabilityService } from '../../availability/availability.service';
 import { formatRange } from '../../availability/unavailability.utils';
 @Component({
@@ -140,6 +142,14 @@ export class EventDetailComponent implements OnInit {
     const event = this.event();
     return !!event && changeAcknowledgement(event, this.record()) === 'confirm';
   });
+
+  // Jedna akce do kalendáře (.ics)
+  private ensemble = inject(EnsembleSettingsService).settings;
+  downloadIcs(): void {
+    const event = this.event();
+    if (!event) return;
+    downloadIcs(buildIcs([event], { types: [event.type], skippedAsNotice: false, ensembleName: this.ensemble().name }), `akce-${event.id}.ics`);
+  }
 
   confirmChange(): void {
     const event = this.event();
