@@ -47,7 +47,7 @@ Dokument kombinuje výslovné požadavky, návrhy z diskuse a skutečný stav k�
 Pověření, se kterými kód pracuje (`mandate.model.ts`, docs/08 kap. 3):
 
 | Pověření | Rozsah | Otevírá |
-|---|---|---|
+| --- | --- | --- |
 | Správa souboru | soubor | Správa (osoby, skupiny, pověření, konfigurace, historie) – **bez čtení obsahu soukromých skupin** |
 | Hlavní správce / spolusprávce skupiny | skupina | záložka Správa ve skupině |
 | Organizace akcí | soubor / skupina / akce | zakládání a úprava akcí |
@@ -58,7 +58,7 @@ Pověření, se kterými kód pracuje (`mandate.model.ts`, docs/08 kap. 3):
 ## 3. Úrovně navigace
 
 | Úroveň | Úloha | Příklady | Orientační podoba |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1. Globální | Přepínání hlavních oblastí | Přehled, Akce, jednotlivé skupiny, Moje kroje, Správa krojů, Správa | Mobil: spodní lišta (Přehled pevně + 4 volitelné pozice, příp. „Více“); desktop: sidebar |
 | 2. Kontextová | Část oblasti nebo objektu | Akce: Seznam / Kalendář; skupina: Chat / Nástěnka / Členové / Správa; Správa krojů: Sklad / Krojové karty / Výpůjčky / Inventury / Nastavení | Záložky pod titulkem, přepínače |
 | 3. Detailní / procesní | Detail položky nebo krok práce | Inventura → režim Ve skladu → evidenční řada | Detail, filtr, **pracovní režim** (celá obrazovka s postupem), ne třetí řada záložek |
@@ -338,7 +338,7 @@ Principem je **typ × funkce × šablona** (docs/07 kap. 33): běžná zkouška 
   - **Detail akce** – sekce / záložky podle zapnutých funkcí:
 
 | Funkce akce | Co přidá do detailu | Typické použití |
-|---|---|---|
+| --- | --- | --- |
 | Účast (základ) ✅ | Moje účast, Účast | vše |
 | Skutečná docházka ✅ | Docházka | zkoušky, vystoupení |
 | **Program / dílčí akce** | záložka Program se seznamem dílčích bodů, každý s vlastní účastí | zájezd, hody, soustředění |
@@ -397,7 +397,7 @@ Vždy v hlavičce (jméno/avatar, lupa, ozubené kolo) ✅, nelze je odebrat ani
 Z docs/07 kap. VII–VIII. **Nejdřív využít stávající model** (skupina, nástěnka, příspěvek, přílohy, akce a její funkce, úkol). Nový modul ani položku menu zakládat teprve tehdy, když stávající model přestane stačit (docs/07 kap. 40). Žádná z oblastí nemá automaticky nárok na položku hlavního menu.
 
 | Oblast | Stav | Řešení ve stávajícím modelu / navrhované umístění |
-|---|---|---|
+| --- | --- | --- |
 | Dlouhodobá nedostupnost členů | **kandidát k realizaci** | Profil → Moje nedostupnost; informace v Účasti a ve formuláři akce (kap. 4.11) |
 | Úkoly | výhled V2 | Přehled („Čeká na vás“) + kontextové seznamy; globální položka až podle používání (kap. 4.9) |
 | Repertoár, choreografie | bez nového modulu | skupina „Repertoár“ nebo skupina tanečníků; **jeden příspěvek na choreografii** s videi, nahrávkami, notami a texty; připnutý rozcestník (docs/07 kap. 43) |
@@ -453,7 +453,7 @@ Ve všech případech jde o stejný detail `/events/:id` a stejný seznam účas
 Každý vidí jinou sadu míst podle členství a pověření. Pevné menu, které vyhoví všem, proto neexistuje. Navrhuji kostru ze čtyř pevných prvků a jedné **osobní, konfigurovatelné spodní lišty**:
 
 | Prvek | Obsah | Konfigurovatelné | Mobil | Desktop |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | **Přehled** | dashboard + rozcestník do všech míst (kap. 7) | ne – vždy první | 1. pozice lišty | 1. položka sidebaru |
 | **Osobní lišta** | 0–4 další místa, která si uživatel vybere z dostupných | ano | pozice 2–5 lišty, přebytek pod „Více“ | sidebar ukazuje vše, konfigurace jen řadí |
 | **Hlavička** | Hledat, Nastavení, Profil (avatar), později Upozornění | ne | vždy viditelná ✅ | vždy viditelná ✅ |
@@ -542,7 +542,7 @@ Další dostupná místa
 #### Pravidlo „do tří klepnutí“ – ověření
 
 | Úkon | Běžný člen | Vedení (sloučené skupiny) |
-|---|---|---|
+| --- | --- | --- |
 | Odpovědět na nejbližší akci | 1 (Přehled) | 1 |
 | Odpovědět na jinou akci | 2–3 (Akce → akce → odpověď) | 2–3 |
 | Kdo přijde na akci | 2 | 2 |
@@ -715,7 +715,7 @@ Navrhované nové routy `[?]`: `/app/messages[/new|/:conversationId]`, `/app/tas
 ## 11. Otevřená rozhodnutí – s doporučením
 
 | # | Otázka | Doporučení | Stav |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | Primární menu | Osobní lišta: Přehled pevně + 4 volitelná místa, přetečení pod „Více“; automatický výchozí návrh (skupiny přímo, při nedostatku místa sloučené do Skupiny); Nastavení vždy v hlavičce; Přehled → Moje místa jako záloha | směr schválen, detaily k ověření |
 | 2 | Nástěnka | Jen skupinové nástěnky + připnutí na Přehled | rozhodnuto implementací |
 | 3 | Adresář členů | Ano, jako položka „Více“ s rozsahem údajů podle souhlasu | k rozhodnutí |
@@ -739,7 +739,7 @@ Navrhované nové routy `[?]`: `/app/messages[/new|/:conversationId]`, `/app/tas
 ### 11.1 Názvosloví – návrh
 
 | Pojem | Doporučeno | Nepoužívat | Poznámka |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | osobní kroje | **Moje kroje** (v liště zkráceně **Kroje**) | Kroje (pro fond) | |
 | agenda / položka menu pro práci s krojovým fondem | **Správa krojů** (pracovně, k potvrzení) | Krojárna, Krojárka | shoduje se s názvem pověření; v UI dnes „Krojárna“ – přejmenovat |
 | osoba pověřená správou krojů | **krojařka** | krojárka | |

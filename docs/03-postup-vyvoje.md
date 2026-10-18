@@ -12,7 +12,20 @@ Při příštím plánování rozlišit:
 4. **Komunikace a soubory:** konfigurace historie skupinového chatu, archivace před smazáním skupiny, sdílené neměnné přílohy po jejich druhém použití, nahlášení zpráv dostupné všem členům.
 5. **Provozní základy:** omezené offline čtení textů (ETag / IndexedDB, kontrola cca po 10 minutách při aktivní aplikaci), bez offline zápisů; denní zálohy poskytovatele + plánovaný týdenní externí šifrovaný archiv a test obnovy.
 
-**Nevyřešené před implementací:** detailní 2FA a přepínání účtů na sdíleném zařízení; bezpečná pravidla DM nezletilých a řešení hlášení; definitivní retenční lhůty a mazání osobních údajů; záložní exportní technologie (hosting `mysqldump` není potvrzen) a cílové úložiště. Neuvedené termíny dokončení neslibovat.
+**Nevyřešené před implementací:**
+
+1. Detaily 2FA, důvěryhodných zařízení a bezpečného přepínání několika přihlášených účtů v jednom prohlížeči.
+2. Bezpečnostní politiky DM nezletilých, osoba přijímající hlášení, střet zájmů, blokování a krizový postup.
+3. Přesné retenční lhůty osobních údajů, IP a bezpečnostních logů, proces anonymizace a žádostí o výmaz.
+4. Rozsah ukládané historie skupinového chatu offline a délka platnosti lokálních dat.
+5. Implementace správy odkazů na sdílené přílohy a ochrany před souběžným přepsáním.
+6. Kalendářový ICS feed: tokeny, správa odběrů a reálné chování synchronizace klientů.
+7. Exportní cesta databáze na hostingu bez ověřeného `mysqldump`, volba externího úložiště a test obnovy.
+8. Časová a prioritní roadmapa implementace rozhodnutých funkcí.
+
+Neuvedené termíny dokončení neslibovat.
+
+**Známé rozdíly kódu a dokumentace (k 18. 10. 2026):** skupinu lze ve Správě smazat bez archivace (cíl: `08` kap. 10.5); chat má pevně historii od vstupu (cíl: volba režimu, `08` kap. 10.3); badge akcí nerespektuje předstih výzvy (`07` kap. 18); UI používá název „Krojárna“ a záložku „Sklad“ pro všechny kusy (cíl: „Správa krojů“ a „Součástky“, `10` kap. 11.1); dlouhodobá nedostupnost členů je schválená k realizaci, zatím neimplementovaná (`07`, `10` kap. 4.11).
 
 ## Aktuální stav (2026-10-15)
 
@@ -51,7 +64,7 @@ Zbývá do V1.0 (vyžaduje backend nebo rozhodnutí, docs/07 kap. 63):
 
 ## Krojárna, Moje kroje a inventury – stav k 2026-10-17 (v UI „Krojárna“, cílový název „Správa krojů“ – viz docs/10 kap. 11.1)
 
-Podle `zadani-pro-robota-krojarna-inventury.md` (nahrazuje fyzické komplety a hromadné neočíslované kusy z docs/06). Frontend + mock, bez backendu:
+Podle implementačního zadání, které je od 18. 10. 2026 zapracované do `06` verze 0.4 (fyzický kus + evidenční řada, komplet jako šablona, inventura ve dvou režimech; nahradilo fyzické komplety a množstevní doplňky verze 0.3). Frontend + mock, bez backendu:
 
 - **Dvě oddělené sekce:** „Moje kroje“ (`/app/costumes`, všichni členové, jen čtení, inventurní výzvy a rezervace termínu) a „Krojárna“ (`/app/wardrobe`: Sklad / Krojové karty / Výpůjčky / Inventury / Nastavení; prohlížení s pověřením Náhled do krojárky, zápis jen Správa krojů – ověřuje i služba).
 - **Model:** konfigurovatelná klasifikace (pohlaví, region, varianty), evidenční řada = kombinace klasifikace (varianta v klíči řady nebo jako atribut kusu), fyzický kus se stabilním ID a číslem v řadě, čísla vyřazených kusů se bez výslovného pravidla řady nerecyklují; výpůjčka = jeden kus jednomu držiteli s historií; pracovní úkoly; komplet = šablona druhů součástek (jen upozornění na chybějící druh). Umístění, stav, vydatelnost, zápůjčka, ověření v inventuře a stav návštěvy jsou oddělené.

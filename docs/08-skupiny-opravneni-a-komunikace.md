@@ -16,7 +16,7 @@ Tento dokument popisuje rozhodnutí přijatá při návrhu **Správy, skupin, op
 
 - Navazuje na `07-souborovy-system-vize-funkce-roadmapa.md` a zachovává jeho motivaci: jedno místo pro akce, docházku, komunikaci, kroje a dohledatelnou historii.
 - Navazuje na `06-specifikace-krojoveho-skladu.md`; **nemění pravidlo, že skutečné změny v krojové evidenci provádějí pouze pověřené krojařky**.
-- Navazuje na interaktivní prototyp `splk-simulator-opravneni.html`, v němž lze proklikávat osoby, skupiny a pověření. Je to **UX reference**, nikoli autoritativní implementace bezpečnostních pravidel.
+- Vychází z interaktivního prototypu oprávnění (dříve `docs/splk-simulator-opravneni.html`, dnes jen v historii repozitáře). Jeho chování je implementované v sekci **Správa** aplikace, která je nyní **UX referencí**, nikoli autoritativní implementací bezpečnostních pravidel.
 - **Nahrazuje starší návrh pevně děděných systémových rolí** „host → člen → vedoucí → administrátor → superadministrátor“. Dokument `07` byl při konsolidaci 18. 10. 2026 sjednocen: organizační funkce jsou označení osob, oprávnění vznikají samostatnými pověřeními.
 - V1.0 Souborového systému už byla vydána. Následující požadavky jsou **rozšířením a úpravou běžící aplikace**, nikoli zpětně novou podmínkou jejího prvního vydání.
 
@@ -485,7 +485,7 @@ Doporučené pořadí je rozdělené na malé ověřitelné kroky. **Není cíle
 1. Zavést rozdíl mezi členstvím ve skupině, organizační funkcí a pověřením s rozsahem.
 2. Zajistit backendové kontroly pro všechny citlivé operace.
 3. Nahradit uživatelsky sekci Administrace sekcí Správa: Členové, Skupiny, Konfigurace.
-4. Přenést zkušenost ze `splk-simulator-opravneni.html`: propojený detail osoby/skupiny, správa hlavního správce a spolusprávců, náhled skutečných přístupů.
+4. Přenést zkušenost z prototypu oprávnění (implementováno ve Správě): propojený detail osoby/skupiny, správa hlavního správce a spolusprávců, náhled skutečných přístupů.
 5. Zachovat nejméně jednoho aktivního správce souboru.
 6. Migrovat dosavadní role a oprávnění **bez nechtěného rozšíření přístupu do soukromých skupin**.
 7. V kontextu akce, nástěnky a Správy krojů ukazovat příslušné ovládání jen osobám s oprávněním.
@@ -585,7 +585,7 @@ Vývoj lze začít bez definitivní odpovědi na všechny detaily, ale změny je
 
 ## 15. Stručné zadání pro implementační AI
 
-> V existujícím SPLK postupně nahraď pevnou logiku systémových rolí pověřeními se správným rozsahem (soubor / skupina / akce / modul), bez automatického průniku do soukromé komunikace. Dosavadní „Administraci“ převeď na „Správu“ s obrazovkami Členové, Skupiny a Konfigurace podle UX principů z `splk-simulator-opravneni.html`. Zachovej obousměrně konzistentní správu členství, hlavních správců a spolusprávců, výchozí ochranu proti odebrání posledního správce a možnost schvalovat žádosti o členství. Všechny citlivé operace musí kontrolovat backend.
+> V existujícím SPLK postupně nahraď pevnou logiku systémových rolí pověřeními se správným rozsahem (soubor / skupina / akce / modul), bez automatického průniku do soukromé komunikace. Dosavadní „Administraci“ převeď na „Správu“ s obrazovkami Členové, Skupiny a Konfigurace podle UX principů prototypu oprávnění (dnes implementovaných ve Správě). Zachovej obousměrně konzistentní správu členství, hlavních správců a spolusprávců, výchozí ochranu proti odebrání posledního správce a možnost schvalovat žádosti o členství. Všechny citlivé operace musí kontrolovat backend.
 >
 > Následně zaveď skupinový chat **ve všech stávajících skupinách Vonice současně**. Skupina má volitelný chat a nástěnku s konfigurovatelnou výchozí záložkou. Chat zobrazuje běžné zprávy, bezpečné systémové události a aktivitu příspěvků. Komentář pod nástěnkovým příspěvkem má jeden originál, ale zobrazuje se i v chatu; lze z něj přejít do původní diskuze a odpovídat do ní. **Při vyšší aktivitě komentářů stejného příspěvku je automaticky seskup do jedné aktualizované souhrnné karty**. Zachovej oddělené stavy přečtení, soukromí a možnost pozdějších push notifikací. Implementuj po malých ověřitelných blocích bez zbytečného refaktoringu a bez ztráty existujících dat.
 
