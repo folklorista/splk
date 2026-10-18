@@ -18,6 +18,7 @@ const POLL_MS = 5000;
 // Upozornění na novou aktivitu ve skupinách (chat, příspěvky, komentáře) podle volby u skupiny.
 // Bez serveru jen během běhu aplikace a jen pro aktivitu, která přibyla po spuštění (ne staré zprávy).
 // Zmínky v komentářích hlásí MainLayoutComponent, tady se proto přeskakují.
+import { isGroupArchived } from '../models/group.model';
 @Injectable({ providedIn: 'root' })
 export class ActivityNotifierService {
   private access = inject(AccessService);
@@ -70,7 +71,8 @@ export class ActivityNotifierService {
     for (const item of fresh) {
       const a = activity(item);
       const group = this.groups.findGroup(a.groupId);
-      const canRead = !!group && canReadGroupContent(this.access.subject(), group);
+      // Archivovaná skupina neposílá upozornění
+      const canRead = !!group && !isGroupArchived(group) && canReadGroupContent(this.access.subject(), group);
       if (shouldNotify(a, me, canRead, this.prefs.modeFor(me, a.groupId))) {
         // Do upozornění nedáváme obsah soukromé zprávy, jen kdo a kde
         this.notifications.notify(group?.name ?? 'Skupina', text(item));

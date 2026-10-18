@@ -2,6 +2,7 @@ import { Injectable, computed, signal } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import { AccessService } from '../access/access.service';
 import { IconName } from '../../shared/icon/icon.component';
+import { isGroupArchived } from '../models/group.model';
 import { BoardsService } from '../../features/boards/boards.service';
 import { EventsService } from '../../features/events/events.service';
 import { getUnconfirmedEventsCount, hasBoard, hasChat } from '../utils/visibility.utils';
@@ -66,7 +67,7 @@ export class NavigationService {
   readonly groupItems = computed<NavItem[]>(() =>
     this.access
       .myGroups()
-      .filter((g) => hasBoard(g) || hasChat(g))
+      .filter((g) => (hasBoard(g) || hasChat(g)) && !isGroupArchived(g))
       .map((g) => ({ path: `/app/boards/${g.slug}`, label: g.name, icon: g.icon ?? 'megaphone', badge: (this.groupBadges().get(g.id) ?? 0) + (hasChat(g) ? this.chatBadge(g.id) : 0) || undefined })),
   );
 

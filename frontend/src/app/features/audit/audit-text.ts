@@ -30,6 +30,8 @@ export function auditText(entry: AuditEntry, ctx: AuditTextContext): string {
     'mandate-revoked': `${who}: odebráno pověření ${mandate}${scope}`,
     'group-created': `Založena skupina ${group}`,
     'group-updated': `Změněno nastavení skupiny ${group}${entry.details ? ` (${entry.details})` : ''}`,
+    'group-archived': `Skupina ${group} archivována (jen ke čtení)`,
+    'group-restored': `Skupina ${group} obnovena z archivu`,
     'group-deleted': `Smazána skupina ${group}`,
     'person-created': `Založena osoba ${who}`,
     'person-updated': `Upraveny údaje osoby ${who}`,

@@ -52,6 +52,9 @@ const TAB_LABELS: Record<GroupSpaceTab, string> = {
         @if (g.description) {
           <p class="group-space__description">{{ g.description }}</p>
         }
+        @if (g.archivedAt) {
+          <p class="group-space__archived" role="status">Archivovaná skupina – jen ke čtení. Nepřibývají zprávy ani příspěvky a skupina neposílá upozornění.</p>
+        }
 
         <nav class="group-tabs" aria-label="Části skupiny">
           @for (t of tabs(); track t) {
@@ -78,6 +81,7 @@ const TAB_LABELS: Record<GroupSpaceTab, string> = {
   `,
   styles: [`
     .group-space__header { margin-bottom: 0; }
+    .group-space__archived { font-size: var(--font-size-sm); padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid var(--color-text-muted); background: var(--color-surface-alt); border-radius: 6px; margin-bottom: var(--spacing-md); }
     .group-space__header .page__title { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); }
     .group-space__description { color: var(--color-text-muted); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm); }
     .group-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--color-border); margin-bottom: var(--spacing-md); overflow-x: auto; }

@@ -1,4 +1,4 @@
-import { Group } from '../models/group.model';
+import { Group, isGroupArchived } from '../models/group.model';
 import { Mandate, MandateKind } from '../models/mandate.model';
 import { EnsembleSettings } from '../models/ensemble-settings.model';
 import { Member } from '../models/member.model';
@@ -79,13 +79,14 @@ export function canReadGroupContent(s: AccessSubject | null, group: Group): bool
   return group.visibility === 'open' && !s.isExternal;
 }
 
+// Archivovaná skupina je jen ke čtení – nikdo do ní nepíše ani ji nemoderuje
 export function canPostInGroup(s: AccessSubject | null, group: Group): boolean {
-  return isGroupMember(s, group.id);
+  return isGroupMember(s, group.id) && !isGroupArchived(group);
 }
 
 // Moderovat (připnout, skrýt, archivovat cizí příspěvek) smí správce skupiny, který obsah oprávněně čte
 export function canModerateGroup(s: AccessSubject | null, group: Group): boolean {
-  return isGroupManager(s, group.id) && canReadGroupContent(s, group);
+  return isGroupManager(s, group.id) && canReadGroupContent(s, group) && !isGroupArchived(group);
 }
 
 // Statistiky čtenosti patří k obsahu – jen správce skupiny, který obsah čte
@@ -112,22 +113,27 @@ export function canAssignGroupManagers(s: AccessSubject | null, groupId: number)
   return isEnsembleAdmin(s) || groupRole(s, groupId) === 'owner';
 }
 
-export function canDeleteGroup(s: AccessSubject | null): boolean {
-  return isEnsembleAdmin(s);
+// Archivovat a obnovit smí hlavní správce a Správa souboru; smazat jen Správa souboru a jen archivovanou skupinu
+export function canArchiveGroup(s: AccessSubject | null, groupId: number): boolean {
+  return canEditGroupMetadata(s, groupId);
+}
+
+export function canDeleteGroup(s: AccessSubject | null, group?: Group): boolean {
+  return isEnsembleAdmin(s) && (!group || isGroupArchived(group));
 }
 
 // Do otevřené skupiny lze vstoupit hned, do soukromé jen žádostí, do skryté jen na pozvání
 export function canJoinDirectly(s: AccessSubject | null, group: Group): boolean {
-  return !!s && !s.isExternal && group.visibility === 'open' && !isGroupMember(s, group.id);
+  return !!s && !s.isExternal && group.visibility === 'open' && !isGroupMember(s, group.id) && !isGroupArchived(group);
 }
 
 export function canRequestToJoin(s: AccessSubject | null, group: Group): boolean {
-  return !!s && !s.isExternal && (group.visibility ?? 'private') === 'private' && !isGroupMember(s, group.id);
+  return !!s && !s.isExternal && (group.visibility ?? 'private') === 'private' && !isGroupMember(s, group.id) && !isGroupArchived(group);
 }
 
 // Navrhnout nového člena smí kterýkoli člen skupiny; rozhoduje správce a pak pozvaný
 export function canProposeMember(s: AccessSubject | null, group: Group): boolean {
-  return isGroupMember(s, group.id);
+  return isGroupMember(s, group.id) && !isGroupArchived(group);
 }
 
 // --- Akce ---

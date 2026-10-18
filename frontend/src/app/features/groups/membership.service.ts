@@ -9,7 +9,7 @@ import {
   groupLeaveProblem,
   mandateRevocationProblem,
 } from '../../core/access/mandate-rules';
-import { Group } from '../../core/models/group.model';
+import { Group, isGroupArchived } from '../../core/models/group.model';
 import { Mandate, MandateKind } from '../../core/models/mandate.model';
 import { Member } from '../../core/models/member.model';
 import { MembersService } from '../members/members.service';
@@ -19,6 +19,9 @@ import { JoinRequestsService } from './join-requests.service';
 import { AuditService } from '../audit/audit.service';
 import { AuditAction } from '../audit/audit.model';
 import { JoinRequest, isPendingJoinRequest } from './models/join-request.model';
+import { PostsService } from '../posts/posts.service';
+import { CommentsService } from '../posts/comments.service';
+import { ChatService } from '../chat/chat.service';
 
 export type GroupPatch = Partial<Omit<Group, 'id' | 'ensembleId'>>;
 
@@ -39,6 +42,9 @@ export class MembershipService {
     private mandatesService: MandatesService,
     private requestsService: JoinRequestsService,
     private audit: AuditService,
+    private posts: PostsService,
+    private comments: CommentsService,
+    private chat: ChatService,
   ) {}
 
   // --- pomocné ---
@@ -60,6 +66,13 @@ export class MembershipService {
   private group(id: number): Group {
     const group = this.groupsService.findGroup(id);
     if (!group) throw new RuleViolationError('Skupina neexistuje.');
+    return group;
+  }
+
+  // Archivovaná skupina je jen ke čtení – členství ani nastavení se v ní nemění
+  private activeGroup(id: number): Group {
+    const group = this.group(id);
+    if (isGroupArchived(group)) throw new RuleViolationError('Skupina je archivovaná – je jen ke čtení. Nejdřív ji obnovte.');
     return group;
   }
 
@@ -142,7 +155,7 @@ export class MembershipService {
   updateGroup(groupId: number, patch: GroupPatch): Observable<Group> {
     return this.perform(() => {
       const s = this.actor();
-      const group = this.group(groupId);
+      const group = this.activeGroup(groupId);
       const changed = (Object.keys(patch) as (keyof Group)[]).filter((k) => patch[k as keyof GroupPatch] !== group[k]);
       if (changed.some((k) => METADATA_FIELDS.includes(k))) {
         this.require(access.canEditGroupMetadata(s, groupId), 'Název, ikonu a viditelnost mění hlavní správce nebo Správa souboru.');
@@ -158,11 +171,43 @@ export class MembershipService {
     });
   }
 
+  archiveGroup(groupId: number): Observable<Group> {
+    return this.perform(() => {
+      const s = this.actor();
+      this.require(access.canArchiveGroup(s, groupId), 'Archivovat skupinu smí hlavní správce nebo Správa souboru.');
+      const group = this.group(groupId);
+      if (isGroupArchived(group)) return group;
+      const updated: Group = { ...group, archivedAt: new Date().toISOString() };
+      this.groupsService.replace(updated);
+      this.log('group-archived', s.memberId, { groupIds: [groupId] });
+      return updated;
+    });
+  }
+
+  restoreGroup(groupId: number): Observable<Group> {
+    return this.perform(() => {
+      const s = this.actor();
+      this.require(access.canArchiveGroup(s, groupId), 'Obnovit skupinu smí hlavní správce nebo Správa souboru.');
+      const group = this.group(groupId);
+      if (!isGroupArchived(group)) return group;
+      const { archivedAt: _, ...rest } = group;
+      this.groupsService.replace(rest);
+      this.log('group-restored', s.memberId, { groupIds: [groupId] });
+      return rest;
+    });
+  }
+
+  // Skutečné smazání jen archivované skupiny: odstraní její výlučný obsah (příspěvky, komentáře, chat,
+  // žádosti). Docházka, akce a krojová evidence jsou nezávislé záznamy a zůstávají (docs/08 kap. 10.5).
   deleteGroup(groupId: number): Observable<void> {
     return this.perform(() => {
       const s = this.actor();
-      this.require(access.canDeleteGroup(s));
-      this.group(groupId);
+      const group = this.group(groupId);
+      this.require(access.isEnsembleAdmin(s), 'Smazat skupinu smí jen Správa souboru.');
+      if (!isGroupArchived(group)) throw new RuleViolationError('Smazat lze jen archivovanou skupinu. Nejdřív ji archivujte.');
+      this.comments.purgePosts(this.posts.purgeGroup(groupId));
+      this.chat.purgeGroup(groupId);
+      this.requestsService.removeForGroup(groupId);
       this.membersService.members().filter((m) => m.groupIds.includes(groupId)).forEach((m) => this.membersService.setGroupMembership(m.id, groupId, false));
       this.mandatesService.mandates().filter((m) => m.groupId === groupId).forEach((m) => this.mandatesService.remove(m.id));
       this.groupsService.remove(groupId);
@@ -176,7 +221,7 @@ export class MembershipService {
   addMember(groupId: number, memberId: number): Observable<void> {
     return this.perform(() => {
       const s = this.actor();
-      this.group(groupId);
+      this.activeGroup(groupId);
       this.require(access.canManageGroupMembership(s, groupId));
       if (memberId === s.memberId && !access.isGroupManager(s, groupId)) {
         throw new AccessDeniedError('Do skupiny se nemůžete přidat sami – požádejte o vstup jejího správce.');
@@ -250,7 +295,7 @@ export class MembershipService {
   invite(groupId: number, memberId: number, message?: string): Observable<JoinRequest> {
     return this.perform(() => {
       const s = this.actor();
-      const group = this.group(groupId);
+      const group = this.activeGroup(groupId);
       const manages = access.canManageGroupMembership(s, groupId);
       this.require(manages || access.canProposeMember(s, group));
       const member = this.member(memberId);
@@ -288,6 +333,7 @@ export class MembershipService {
       const s = this.actor();
       const request = this.pending(requestId);
       this.require(request.status === 'awaiting-manager' && access.canManageGroupMembership(s, request.groupId));
+      this.activeGroup(request.groupId);
       if (request.kind === 'request') {
         this.requestsService.update(request.id, { approvedById: s.memberId });
         this.log('request-approved', s.memberId, { groupIds: [request.groupId], memberId: request.memberId });
@@ -328,6 +374,7 @@ export class MembershipService {
       const s = this.actor();
       const request = this.pending(requestId);
       this.require(request.kind === 'invitation' && request.status === 'awaiting-member' && request.memberId === s.memberId);
+      this.activeGroup(request.groupId);
       this.join(request.groupId, s.memberId, s.memberId, 'member-joined');
     });
   }
@@ -348,7 +395,7 @@ export class MembershipService {
   setGroupRole(groupId: number, memberId: number, role: access.GroupRole | null): Observable<void> {
     return this.perform(() => {
       const s = this.actor();
-      this.group(groupId);
+      this.activeGroup(groupId);
       this.require(access.canAssignGroupManagers(s, groupId), 'Správce skupiny určuje hlavní správce nebo Správa souboru.');
       const member = this.member(memberId);
       if (!member.isActive) throw new RuleViolationError('Bývalý člen nemůže spravovat skupinu.');

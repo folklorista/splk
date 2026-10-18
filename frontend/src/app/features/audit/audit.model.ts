@@ -17,6 +17,8 @@ export type AuditAction =
   | 'mandate-revoked'
   | 'group-created'
   | 'group-updated'
+  | 'group-archived'
+  | 'group-restored'
   | 'group-deleted'
   | 'person-created'
   | 'person-updated'

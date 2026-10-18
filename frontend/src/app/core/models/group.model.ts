@@ -21,6 +21,12 @@ export interface Group {
   chatEnabled?: boolean;
   // Která záložka se otevře, když má skupina chat i nástěnku; chybějící = nástěnka
   defaultTab?: GroupTab;
+  // Archivovaná skupina: jen ke čtení, bez upozornění, mimo menu; smazat lze jen archivovanou (docs/08 kap. 10.5)
+  archivedAt?: string;
+}
+
+export function isGroupArchived(group: Pick<Group, 'archivedAt'> | undefined): boolean {
+  return !!group?.archivedAt;
 }
 
 export const GROUP_VISIBILITY_LABELS: Record<GroupVisibility, string> = {
