@@ -1,5 +1,7 @@
 import { getBoardBadgeCount, getNewCommentsCount, getUnconfirmedEventsCount, getUnseenMentionsCount, hasBoard, hasChat } from './visibility.utils';
 import { AccessSubject } from '../access/access.utils';
+import { AppEvent } from '../../features/events/models/event.model';
+import { AttendanceStatus } from '../../features/attendance/models/attendance.model';
 
 describe('visibility.utils', () => {
   const currentMemberId = 10;
@@ -36,47 +38,50 @@ describe('visibility.utils', () => {
   });
 
   describe('getUnconfirmedEventsCount', () => {
-    const FUTURE = '2099-01-01T18:00:00';
+    const inDays = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+    const SOON = inDays(3);
+    const ev = (extra: Partial<AppEvent> = {}): AppEvent => ({ id: 1, ensembleId: 1, title: 'Akce', type: 'rehearsal', startsAt: SOON, endsAt: SOON, location: '', targetGroupIds: [], attendance: [], ...extra });
+    const answer = (status: AttendanceStatus) => [{ eventId: 1, memberId: currentMemberId, status }];
 
     it('vrátí 0 bez přihlášeného člena', () => {
-      const events = [{ startsAt: FUTURE, targetGroupIds: [], attendance: [] }];
-      expect(getUnconfirmedEventsCount(events, null)).toBe(0);
+      expect(getUnconfirmedEventsCount([ev()], null)).toBe(0);
     });
 
-    it('nezapočítá akci, kde už člen vyjádřil účast', () => {
-      const events = [
-        { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'yes' }] },
-        { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'no' }] },
-        { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'maybe' }] },
-      ];
+    it('nezapočítá akci, kde už člen odpověděl', () => {
+      const events = [ev({ attendance: answer('yes') }), ev({ attendance: answer('no') }), ev({ attendance: answer('maybe') })];
       expect(getUnconfirmedEventsCount(events, subject)).toBe(0);
     });
 
     it('započítá akci bez záznamu účasti nebo se stavem pending', () => {
-      const events = [
-        { startsAt: FUTURE, targetGroupIds: [], attendance: [] },
-        { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: currentMemberId, status: 'pending' }] },
-        { startsAt: FUTURE, targetGroupIds: [], attendance: [{ memberId: 999, status: 'yes' }] },
-      ];
+      const events = [ev(), ev({ attendance: answer('pending') }), ev({ attendance: [{ eventId: 1, memberId: 999, status: 'yes' }] })];
       expect(getUnconfirmedEventsCount(events, subject)).toBe(3);
     });
 
     it('nezapočítá akci, která není určena pro skupiny uživatele', () => {
-      const events = [{ startsAt: FUTURE, targetGroupIds: [99], attendance: [] }];
-      expect(getUnconfirmedEventsCount(events, subject)).toBe(0);
+      expect(getUnconfirmedEventsCount([ev({ targetGroupIds: [99] })], subject)).toBe(0);
     });
 
     it('započítá akci, kam je člen pozván jako host, ale ne akci pro celý soubor u externisty', () => {
-      const events = [
-        { startsAt: FUTURE, targetGroupIds: [99], guestMemberIds: [currentMemberId], attendance: [] },
-        { startsAt: FUTURE, targetGroupIds: [], attendance: [] },
-      ];
+      const events = [ev({ targetGroupIds: [99], guestMemberIds: [currentMemberId] }), ev()];
       expect(getUnconfirmedEventsCount(events, { ...subject, isExternal: true })).toBe(1);
     });
 
     it('nezapočítá proběhlou akci bez odpovědi', () => {
-      const events = [{ startsAt: '2000-01-01T18:00:00', targetGroupIds: [], attendance: [] }];
-      expect(getUnconfirmedEventsCount(events, subject)).toBe(0);
+      expect(getUnconfirmedEventsCount([ev({ startsAt: '2000-01-01T18:00:00' })], subject)).toBe(0);
+    });
+
+    it('počítá jen v předstihu výzvy: nácvik 7 dní, vystoupení 14 dní, vlastní předstih akce', () => {
+      expect(getUnconfirmedEventsCount([ev({ startsAt: inDays(10) })], subject)).toBe(0);
+      expect(getUnconfirmedEventsCount([ev({ startsAt: inDays(10), type: 'performance' })], subject)).toBe(1);
+      expect(getUnconfirmedEventsCount([ev({ startsAt: inDays(20), type: 'performance' })], subject)).toBe(0);
+      expect(getUnconfirmedEventsCount([ev({ startsAt: inDays(200), reminderLeadDays: 365 })], subject)).toBe(1);
+    });
+
+    it('po měkké uzávěrce čeká na odpověď i MOŽNÁ, ale ne ANO/NE', () => {
+      const deadline = inDays(-1);
+      expect(getUnconfirmedEventsCount([ev({ attendance: answer('maybe'), responseDeadline: inDays(1) })], subject)).toBe(0);
+      expect(getUnconfirmedEventsCount([ev({ attendance: answer('maybe'), responseDeadline: deadline })], subject)).toBe(1);
+      expect(getUnconfirmedEventsCount([ev({ attendance: answer('yes'), responseDeadline: deadline })], subject)).toBe(0);
     });
   });
 

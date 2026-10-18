@@ -17,5 +17,9 @@ export interface AppEvent {
   // Kdo akci pořádá – oddělené od cílení; správu akce dává až pověření (Mandate 'events')
   organizerGroupIds?: number[];
   requiresAction?: boolean;
+  // Předstih výzvy k odpovědi ve dnech; chybí = podle typu (nácvik 7, vystoupení 14), max. 365 (docs/07 kap. 18)
+  reminderLeadDays?: number;
+  // Nepovinná měkká uzávěrka: po ní se výzva zopakuje nerozhodnutým (MOŽNÁ / bez odpovědi)
+  responseDeadline?: string;
   attendance?: AttendanceRecord[];
 }

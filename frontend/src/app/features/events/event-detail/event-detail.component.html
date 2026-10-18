@@ -62,6 +62,9 @@
         @if (isAudience()) {
         <section class="detail__section">
           <h2 class="detail__section-title">Moje účast</h2>
+          @if (deadlineText(); as text) {
+            <p class="detail__deadline" [class.detail__deadline--due]="needsMyResponse()">{{ text }}</p>
+          }
           <div class="attendance-actions">
             @for (status of statuses; track status) {
               <button

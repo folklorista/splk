@@ -34,11 +34,13 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
   pending: 'Nezadáno',
 };
 
+import { isSoftDeadlinePassed, needsResponse } from '../utils/event-reminders';
 @Component({
   selector: 'app-event-detail',
   standalone: true,
   imports: [CommonModule, DatePipe, RouterLink, FormsModule, IconComponent],
   templateUrl: './event-detail.component.html',
+  styles: [`.detail__deadline { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--spacing-sm); } .detail__deadline--due { color: var(--color-primary); font-weight: 600; }`],
 })
 export class EventDetailComponent implements OnInit {
   event = signal<AppEvent | null>(null);
@@ -69,6 +71,18 @@ export class EventDetailComponent implements OnInit {
     const event = this.event();
     if (!event) return [];
     return this.allMembers().filter((m) => isEventAudience(m, event));
+  });
+
+  // Měkká uzávěrka a aktivní výzva (docs/07 kap. 18)
+  readonly needsMyResponse = computed(() => {
+    const event = this.event();
+    return !!event && needsResponse(event, this.record()?.status ?? 'pending');
+  });
+  readonly deadlineText = computed(() => {
+    const event = this.event();
+    if (!event?.responseDeadline || new Date(event.startsAt) < new Date()) return '';
+    const date = new Date(event.responseDeadline).toLocaleString('cs-CZ', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return isSoftDeadlinePassed(event) ? `Termín definitivní odpovědi (${date}) uplynul – odpověď lze stále změnit.` : `Odpovězte prosím definitivně (Přijdu / Nepřijdu) do ${date}.`;
   });
 
   // Členové rozdělení podle stavu účasti – chybějící záznam se počítá jako "pending"

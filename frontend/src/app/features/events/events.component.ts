@@ -84,7 +84,7 @@ export class EventsComponent implements OnInit {
 
   filteredEvents = computed(() => filterEvents(this.upcomingEvents(), this.filters(), this.currentMemberId()));
 
-  // Upozornění v záhlaví – jen nadcházející akce bez mé odpovědi
+  // Upozornění v záhlaví – akce s aktivní výzvou k odpovědi (předstih nastal)
   pendingCount = computed(() =>
     filterEvents(this.upcomingEvents(), { type: 'all', response: 'pending' }, this.currentMemberId()).length,
   );

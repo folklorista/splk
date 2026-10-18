@@ -9,6 +9,7 @@ import { GroupsService } from '../../groups/groups.service';
 import { AccessService } from '../../../core/access/access.service';
 import { canEditEvent, eventOrganizerScope, isEventAudience } from '../../../core/access/access.utils';
 import { AppEvent, EventType } from '../models/event.model';
+import { MAX_REMINDER_LEAD_DAYS, defaultReminderLeadDays } from '../utils/event-reminders';
 import { AttendanceRecord, AttendanceStatus } from '../../attendance/models/attendance.model';
 import { Member } from '../../../core/models/member.model';
 import { ActionFeedback } from '../../../shared/ui/form-ui';
@@ -74,6 +75,22 @@ export const EVENT_TYPE_OPTIONS: [EventType, string][] = [
             <span>Popis</span>
             <textarea rows="3" [value]="description()" (input)="description.set($any($event.target).value)"></textarea>
           </label>
+
+          <fieldset class="event-form__fieldset">
+            <legend>Výzva k odpovědi</legend>
+            <div class="cs-form__row">
+              <label class="cs-field">
+                <span>Vyzvat dní předem</span>
+                <input type="number" min="0" [max]="maxLeadDays" [placeholder]="defaultLeadDays()" [value]="leadDays()" (input)="leadDays.set($any($event.target).value)" />
+                <span class="cs-hint">Prázdné = výchozí pro typ akce ({{ defaultLeadDays() }} dní). Odpovědět lze kdykoli, výzva a badge se objeví až v předstihu.</span>
+              </label>
+              <label class="cs-field">
+                <span>Odpovědět definitivně do</span>
+                <input type="datetime-local" [value]="responseDeadline()" (input)="responseDeadline.set($any($event.target).value)" />
+                <span class="cs-hint">Nepovinné. Po termínu se výzva zopakuje těm, kdo odpověděli MOŽNÁ nebo vůbec. Změnit odpověď jde i potom.</span>
+              </label>
+            </div>
+          </fieldset>
 
           <fieldset class="event-form__fieldset">
             <legend>Pořádá</legend>
@@ -204,6 +221,10 @@ export class EventFormComponent implements OnInit {
   readonly endsAt = signal('');
   readonly location = signal('');
   readonly description = signal('');
+  readonly leadDays = signal('');
+  readonly responseDeadline = signal('');
+  readonly maxLeadDays = MAX_REMINDER_LEAD_DAYS;
+  readonly defaultLeadDays = computed(() => defaultReminderLeadDays(this.type()));
   readonly targetGroupIds = signal<number[]>([]);
   readonly organizerGroupIds = signal<number[]>([]);
   readonly guestMemberIds = signal<number[]>([]);
@@ -270,12 +291,22 @@ export class EventFormComponent implements OnInit {
       this.endsAt.set(event.endsAt.slice(0, 16));
       this.location.set(event.location);
       this.description.set(event.description ?? '');
+      this.leadDays.set(event.reminderLeadDays !== undefined ? String(event.reminderLeadDays) : '');
+      this.responseDeadline.set(event.responseDeadline?.slice(0, 16) ?? '');
       this.targetGroupIds.set([...(event.targetGroupIds ?? [])]);
       this.organizerGroupIds.set([...(event.organizerGroupIds ?? [])]);
       this.guestMemberIds.set([...(event.guestMemberIds ?? [])]);
       this.records.set(event.attendance ?? []);
       this.loaded.set(true);
     });
+  }
+
+  // Prázdné = výchozí podle typu; jinak 0–365 dní
+  private parsedLeadDays(): number | undefined {
+    const value = String(this.leadDays()).trim();
+    if (!value) return undefined;
+    const days = Math.round(Number(value));
+    return Number.isFinite(days) ? Math.min(Math.max(0, days), MAX_REMINDER_LEAD_DAYS) : undefined;
   }
 
   backLink(): string[] {
@@ -322,6 +353,8 @@ export class EventFormComponent implements OnInit {
       endsAt: this.endsAt(),
       location: this.location().trim(),
       description: this.description().trim() || undefined,
+      reminderLeadDays: this.parsedLeadDays(),
+      responseDeadline: this.responseDeadline() || undefined,
       targetGroupIds: this.targetGroupIds(),
       organizerGroupIds: this.organizerGroupIds().length ? this.organizerGroupIds() : undefined,
       guestMemberIds: this.guestMemberIds().length ? this.guestMemberIds() : undefined,
