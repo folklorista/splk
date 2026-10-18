@@ -3,7 +3,7 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AccessService } from '../../../core/access/access.service';
 import * as access from '../../../core/access/access.utils';
-import { GROUP_VISIBILITY_LABELS, Group, GroupTab, GroupVisibility, isGroupArchived } from '../../../core/models/group.model';
+import { CHAT_HISTORY_LABELS, ChatHistoryMode, GROUP_VISIBILITY_LABELS, Group, GroupTab, GroupVisibility, isGroupArchived } from '../../../core/models/group.model';
 import { Member } from '../../../core/models/member.model';
 import { getFullName } from '../../../core/utils/member.utils';
 import { GROUP_ICON_OPTIONS, IconComponent, IconName } from '../../../shared/icon/icon.component';
@@ -111,6 +111,17 @@ interface MemberRow {
                 </div>
                 @if (draft().chatEnabled === false && draft().boardEnabled === false) {
                   <p class="cs-hint">Bez chatu i nástěnky je skupina jen organizační (cílení akcí, pověření).</p>
+                }
+                @if (draft().chatEnabled !== false) {
+                  <label class="cs-field">
+                    <span>Historie chatu pro nové členy</span>
+                    <select (change)="patch({ chatHistory: $any($event.target).value })">
+                      @for (option of chatHistoryOptions; track option[0]) {
+                        <option [value]="option[0]" [selected]="(draft().chatHistory ?? 'open') === option[0]">{{ option[1] }}</option>
+                      }
+                    </select>
+                    <span class="cs-hint">Změna platí od teď: zprávy z období „od vstupu“ zůstanou skryté i po přepnutí na otevřenou historii.</span>
+                  </label>
                 }
               }
               <div class="cs-form__actions">
@@ -289,6 +300,7 @@ export class GroupAdminPanelComponent {
   readonly feedback = new ActionFeedback();
   readonly iconOptions = GROUP_ICON_OPTIONS;
   readonly visibilityOptions = Object.entries(GROUP_VISIBILITY_LABELS) as [GroupVisibility, string][];
+  readonly chatHistoryOptions = Object.entries(CHAT_HISTORY_LABELS) as [ChatHistoryMode, string][];
   readonly candidateId = signal<number | null>(null);
   readonly fullName = getFullName;
 
@@ -416,7 +428,7 @@ export class GroupAdminPanelComponent {
       ? { name: d.name.trim(), slug: d.slug.trim(), icon: d.icon as IconName | undefined, description: d.description?.trim() || undefined, visibility: d.visibility }
       : {};
     const communication = this.canEditCommunication()
-      ? { chatEnabled: d.chatEnabled !== false, boardEnabled: d.boardEnabled !== false, defaultTab: (d.defaultTab ?? 'board') as GroupTab }
+      ? { chatEnabled: d.chatEnabled !== false, boardEnabled: d.boardEnabled !== false, defaultTab: (d.defaultTab ?? 'board') as GroupTab, chatHistory: d.chatHistory ?? 'open' }
       : {};
     this.feedback.run(this.membership.updateGroup(group.id, { ...patch, ...communication }), (g) => this.draft.set(g));
   }

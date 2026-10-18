@@ -25,6 +25,7 @@ const TAB_LABELS: Record<GroupSpaceTab, string> = {
 
 // Prostor skupiny (/app/boards/:slug): Chat, Nástěnka, Členové a Správa skupiny (jen správcům).
 // Výchozí záložku určuje nastavení skupiny; záložka je v URL (?tab=), aby šla sdílet a vrátit se na ni.
+import { chatVisibility } from '../../chat/utils/chat-history';
 @Component({
   selector: 'app-group-space',
   standalone: true,
@@ -131,7 +132,7 @@ export class GroupSpaceComponent {
     const g = this.group();
     const memberId = this.access.memberId();
     if (!g || !memberId) return 0;
-    return unreadChatCount(this.chat.messages(), g.id, memberId, this.chat.lastReadAt(g.id), this.access.currentMember()?.groupJoinedAt?.[g.id]);
+    return unreadChatCount(this.chat.messages(), g.id, memberId, this.chat.lastReadAt(g.id), chatVisibility(g, this.access.currentMember() ?? undefined));
   });
 
   label(tab: GroupSpaceTab): string {

@@ -20,13 +20,14 @@ import { AuditService } from '../audit/audit.service';
 import { AuditAction } from '../audit/audit.model';
 import { JoinRequest, isPendingJoinRequest } from './models/join-request.model';
 import { PostsService } from '../posts/posts.service';
+import { withChatHistoryChange } from '../chat/utils/chat-history';
 import { CommentsService } from '../posts/comments.service';
 import { ChatService } from '../chat/chat.service';
 
 export type GroupPatch = Partial<Omit<Group, 'id' | 'ensembleId'>>;
 
 const METADATA_FIELDS: (keyof Group)[] = ['name', 'slug', 'icon', 'description', 'visibility'];
-const COMMUNICATION_FIELDS: (keyof Group)[] = ['chatEnabled', 'boardEnabled', 'defaultTab'];
+const COMMUNICATION_FIELDS: (keyof Group)[] = ['chatEnabled', 'boardEnabled', 'defaultTab', 'chatHistory'];
 
 export type PersonInput = Pick<Member, 'firstName' | 'lastName' | 'nickname' | 'email' | 'phone' | 'functionTitle' | 'isExternal'>;
 
@@ -156,7 +157,7 @@ export class MembershipService {
     return this.perform(() => {
       const s = this.actor();
       const group = this.activeGroup(groupId);
-      const changed = (Object.keys(patch) as (keyof Group)[]).filter((k) => patch[k as keyof GroupPatch] !== group[k]);
+      const changed = (Object.keys(patch) as (keyof Group)[]).filter((k) => patch[k as keyof GroupPatch] !== (k === 'chatHistory' ? (group.chatHistory ?? 'open') : group[k]));
       if (changed.some((k) => METADATA_FIELDS.includes(k))) {
         this.require(access.canEditGroupMetadata(s, groupId), 'Název, ikonu a viditelnost mění hlavní správce nebo Správa souboru.');
       }
@@ -164,7 +165,10 @@ export class MembershipService {
         this.require(access.canEditGroupCommunication(s, groupId));
       }
       if (patch.slug) this.assertUniqueSlug(patch.slug, groupId);
-      const updated: Group = { ...group, ...patch };
+      const { chatHistory, ...rest } = patch;
+      // Změna režimu historie chatu se zapisuje do záznamu, aby dřívější období zůstala pod původním pravidlem
+      const history = chatHistory ? withChatHistoryChange(group, chatHistory, new Date().toISOString()) : {};
+      const updated: Group = { ...group, ...rest, ...history };
       this.groupsService.replace(updated);
       if (changed.length) this.log('group-updated', s.memberId, { groupIds: [groupId], details: changed.join(', ') });
       return updated;

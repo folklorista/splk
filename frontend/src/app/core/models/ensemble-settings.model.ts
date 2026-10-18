@@ -1,4 +1,4 @@
-import { GroupTab, GroupVisibility } from './group.model';
+import { GroupTab, GroupVisibility, ChatHistoryMode } from './group.model';
 
 // Kdo smí zakládat skupiny (docs/08 kap. 4.3); „návrh a schválení“ přijde později
 export type GroupCreationPolicy = 'admins' | 'members';
@@ -16,6 +16,8 @@ export interface EnsembleSettings {
     chatEnabled: boolean;
     boardEnabled: boolean;
     defaultTab: GroupTab;
+    // Chybí = otevřená historie chatu
+    chatHistory?: ChatHistoryMode;
   };
   // Seskupování komentářů v chatu: od kolika komentářů jednoho příspěvku, mezi nimiž není delší pauza
   chatGrouping: {
@@ -28,6 +30,6 @@ export const DEFAULT_ENSEMBLE_SETTINGS: EnsembleSettings = {
   name: 'Vonica',
   modules: { events: true, costumes: true },
   groupCreation: 'admins',
-  newGroupDefaults: { visibility: 'private', chatEnabled: true, boardEnabled: true, defaultTab: 'chat' },
+  newGroupDefaults: { visibility: 'private', chatEnabled: true, boardEnabled: true, defaultTab: 'chat', chatHistory: 'open' },
   chatGrouping: { minComments: 3, windowMinutes: 10 },
 };

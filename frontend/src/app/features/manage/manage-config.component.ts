@@ -3,7 +3,7 @@ import { EnsembleSettingsService } from '../ensemble/ensemble-settings.service';
 import { AuditService } from '../audit/audit.service';
 import { AccessService } from '../../core/access/access.service';
 import { EnsembleSettings, GroupCreationPolicy } from '../../core/models/ensemble-settings.model';
-import { GroupTab, GroupVisibility } from '../../core/models/group.model';
+import { CHAT_HISTORY_LABELS, ChatHistoryMode, GroupTab, GroupVisibility } from '../../core/models/group.model';
 import { ActionFeedback } from '../../shared/ui/form-ui';
 import { of } from 'rxjs';
 
@@ -68,6 +68,14 @@ import { of } from 'rxjs';
         <label class="cs-field cs-field--inline">
           <input type="checkbox" [checked]="draft().newGroupDefaults.boardEnabled" (change)="patchDefaults({ boardEnabled: $any($event.target).checked })" /> Nástěnka
         </label>
+        <label class="cs-field">
+          <span>Historie chatu pro nové členy</span>
+          <select (change)="patchDefaults({ chatHistory: $any($event.target).value })">
+            @for (option of chatHistoryOptions; track option[0]) {
+              <option [value]="option[0]" [selected]="(draft().newGroupDefaults.chatHistory ?? 'open') === option[0]">{{ option[1] }}</option>
+            }
+          </select>
+        </label>
         <p class="cs-hint">Chat a nástěnku jednotlivé skupiny zapíná a vypíná její správce – nezaměňovat s vypnutím modulu.</p>
       </fieldset>
 
@@ -111,6 +119,7 @@ export class ManageConfigComponent {
     ['admins', 'Jen Správa souboru (výchozí pro Vonici)'],
     ['members', 'Všichni aktivní členové'],
   ];
+  readonly chatHistoryOptions = Object.entries(CHAT_HISTORY_LABELS) as [ChatHistoryMode, string][];
   readonly visibilityOptions: [GroupVisibility, string][] = [
     ['private', 'Soukromá'],
     ['open', 'Otevřená'],
@@ -125,7 +134,7 @@ export class ManageConfigComponent {
     this.draft.update((d) => ({ ...d, modules: { ...d.modules, ...change } }));
   }
 
-  patchDefaults(change: Partial<{ visibility: GroupVisibility; defaultTab: GroupTab; chatEnabled: boolean; boardEnabled: boolean }>): void {
+  patchDefaults(change: Partial<{ visibility: GroupVisibility; defaultTab: GroupTab; chatEnabled: boolean; boardEnabled: boolean; chatHistory: ChatHistoryMode }>): void {
     this.draft.update((d) => ({ ...d, newGroupDefaults: { ...d.newGroupDefaults, ...change } }));
   }
 

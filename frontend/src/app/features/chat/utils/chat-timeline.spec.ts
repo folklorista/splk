@@ -77,11 +77,11 @@ describe('chat-timeline', () => {
     expect(buildGroupTimeline(input({ posts: [{ ...post, archivedAt: at(1) }], comments }))).toEqual([]);
   });
 
-  it('nový člen vidí chat jen od svého vstupu', () => {
+  it('skryté období chatu (např. před vstupem) se nezobrazí ani v náhledech komentářů', () => {
     const items = buildGroupTimeline(input({
       messages: [message(1, 5), message(2, 40)],
       comments: [comment(1, 10), comment(2, 45)],
-      visibleFrom: at(30),
+      isVisible: (iso) => iso >= at(30),
     }));
     expect(items.map((i) => (i.kind === 'message' ? `m${i.message.id}` : i.kind === 'comment' ? `c${i.comment.id}` : i.kind))).toEqual(['m2', 'c2']);
   });
@@ -104,6 +104,6 @@ describe('chat-timeline', () => {
     const messages = [message(1, 5), message(2, 20), message(3, 21, VIEWER), { ...message(4, 22), deletedAt: at(23) }, message(5, 25)];
     expect(unreadChatCount(messages, GROUP, VIEWER)).toBe(3);
     expect(unreadChatCount(messages, GROUP, VIEWER, at(10))).toBe(2);
-    expect(unreadChatCount(messages, GROUP, VIEWER, undefined, at(21))).toBe(1);
+    expect(unreadChatCount(messages, GROUP, VIEWER, undefined, (iso) => iso > at(21))).toBe(1);
   });
 });

@@ -72,7 +72,7 @@ describe('MembershipService', () => {
     as(1);
     run(service.approve(request.id));
     expect(members.findMember(4)!.groupIds).toContain(HOLKY);
-    expect(members.findMember(4)!.groupJoinedAt?.[HOLKY]).toBeTruthy();
+    expect(members.findMember(4)!.groupIntervals?.[HOLKY]?.[0].from).toBeTruthy();
     expect(requests.find(request.id)!.status).toBe('accepted');
     const joined = audit.entries().find((e) => e.action === 'member-joined')!;
     expect(joined.actorId).toBe(1);

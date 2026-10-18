@@ -140,7 +140,7 @@ export class ManageGroupComponent {
     const d = this.settings().newGroupDefaults;
     this.feedback.run(
       this.membership.createGroup(
-        { name: this.name().trim(), slug: slugify(this.slug()), icon: this.icon(), visibility: d.visibility, chatEnabled: d.chatEnabled, boardEnabled: d.boardEnabled, defaultTab: d.defaultTab },
+        { name: this.name().trim(), slug: slugify(this.slug()), icon: this.icon(), visibility: d.visibility, chatEnabled: d.chatEnabled, boardEnabled: d.boardEnabled, defaultTab: d.defaultTab, chatHistory: d.chatHistory ?? 'open' },
         this.ownerId() ?? undefined,
       ),
       (group) => this.router.navigate(['/app/manage/groups', group.id]),

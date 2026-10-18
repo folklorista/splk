@@ -29,6 +29,7 @@ const BADGE_REFRESH_MS = 2000;
 
 // Menu podle skutečných přístupů a zapnutých modulů (docs/08 kap. 4) – společné pro sidebar i spodní lištu.
 // Skupiny jen ty, kde je uživatel členem; Správa jen se pověřením Správa souboru.
+import { chatVisibility } from '../../features/chat/utils/chat-history';
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
   private eventsBadge = signal(0);
@@ -51,7 +52,8 @@ export class NavigationService {
     const member = this.access.currentMember();
     // Ztlumený chat do badge nepočítáme (zprávy jsou dál vidět v záložce Chat)
     if (!member || this.notify.modeFor(member.id, groupId) === 'muted') return 0;
-    return unreadChatCount(this.chat.messages(), groupId, member.id, this.chat.lastReadAt(groupId, member.id), member.groupJoinedAt?.[groupId]);
+    const group = this.access.myGroups().find((g) => g.id === groupId);
+    return unreadChatCount(this.chat.messages(), groupId, member.id, this.chat.lastReadAt(groupId, member.id), group ? chatVisibility(group, member) : undefined);
   }
 
   // Co čeká na mě: žádosti a návrhy ve skupinách, které spravuji, a pozvánky pro mě

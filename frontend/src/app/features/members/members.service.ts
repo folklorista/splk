@@ -105,13 +105,15 @@ export class MembersService {
     if (index === -1) return undefined;
     const member = membersCache[index];
     if (member.groupIds.includes(groupId) === isMember) return member;
-    const groupJoinedAt = { ...member.groupJoinedAt };
-    if (isMember) groupJoinedAt[groupId] = at;
-    else delete groupJoinedAt[groupId];
+    // Vstup otevře nový interval, odchod ho uzavře; staré intervaly zůstávají kvůli historii chatu
+    const intervals = [...(member.groupIntervals?.[groupId] ?? [])];
+    if (isMember) intervals.push({ from: at });
+    else if (intervals.length && !intervals[intervals.length - 1].to) intervals[intervals.length - 1] = { ...intervals[intervals.length - 1], to: at };
+    else intervals.push({ from: new Date(0).toISOString(), to: at });
     const updated: Member = {
       ...member,
       groupIds: isMember ? [...member.groupIds, groupId] : member.groupIds.filter((g) => g !== groupId),
-      groupJoinedAt,
+      groupIntervals: { ...member.groupIntervals, [groupId]: intervals },
     };
     const next = [...membersCache];
     next[index] = updated;
