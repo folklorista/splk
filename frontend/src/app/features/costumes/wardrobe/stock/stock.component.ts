@@ -22,7 +22,7 @@ import { WardrobeNavComponent } from '../shared/wardrobe-nav.component';
 import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
 import { EMPTY_STOCK_FILTER, StockFilter, filterStock, groupBySeries } from './stock.utils';
 
-// Sklad – všechny fyzické součástky po evidenčních řadách (řada + číslo), s filtry podle klasifikace
+// Součástky – všechny fyzické součástky po evidenčních řadách (řada + číslo), s filtry podle klasifikace
 @Component({
   selector: 'app-wardrobe-stock',
   standalone: true,
@@ -31,10 +31,10 @@ import { EMPTY_STOCK_FILTER, StockFilter, filterStock, groupBySeries } from './s
     <div class="page">
       <app-wardrobe-nav />
       <div class="page__header">
-        <h1 class="page__title">Krojárna – sklad</h1>
+        <h1 class="page__title">Správa krojů – součástky</h1>
       </div>
       @if (!canManage()) {
-        <p class="info-box">Fond můžete prohlížet; změny zapisují pověřené krojárky.</p>
+        <p class="info-box">Fond můžete prohlížet; změny zapisují pověřené krojařky.</p>
       }
 
       @if (summary(); as s) {

@@ -206,7 +206,7 @@ export class LoginComponent {
   // V demu pomáhá vybrat profil podle toho, co smí: souborová funkce, případně hlavní pověření
   demoLabel(member: Member): string {
     const kinds = this.mandatesService.mandates().filter((m) => m.memberId === member.id).map((m) => m.kind);
-    const main = kinds.includes('ensemble-admin') ? MANDATE_LABELS['ensemble-admin'] : kinds.includes('costumes') ? 'Krojárna' : undefined;
+    const main = kinds.includes('ensemble-admin') ? MANDATE_LABELS['ensemble-admin'] : kinds.includes('costumes') ? 'Správa krojů' : undefined;
     const label = [member.functionTitle, main].filter(Boolean).join(', ');
     return label ? `${member.nickname} (${label})` : member.nickname;
   }

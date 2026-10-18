@@ -5,7 +5,7 @@ import { CostumesService } from '../../costumes.service';
 import { InventoryService } from '../../inventory.service';
 import { CONDITION_LABELS, CostumeItem, CostumeLoan, CostumeState, ItemCondition } from '../../models/costume.model';
 import { Inventory } from '../../models/inventory.model';
-import { itemLabel } from '../../utils/costume-logic';
+import { defaultCostumeOf, itemLabel } from '../../utils/costume-logic';
 import { activeChecks, exchangeCandidates, isInTarget, itemInventoryState } from '../../utils/inventory-logic';
 import { ItemPickerComponent } from './item-picker.component';
 import { WorkOrderFormComponent } from './work-order-form.component';
@@ -14,7 +14,7 @@ import { WARDROBE_STYLES } from './wardrobe.styles';
 
 type Mode = 'none' | 'return' | 'exchange' | 'work-order';
 
-// Běžné operace krojárny nad jednou zápůjčkou: vrátit, vyměnit, založit úkol.
+// Běžné operace krojařky nad jednou zápůjčkou: vrátit, vyměnit, založit úkol.
 // Stejná komponenta slouží v krojové kartě i při inventurní návštěvě (s kontextem inventury).
 @Component({
   selector: 'app-loan-actions',
@@ -41,7 +41,7 @@ type Mode = 'none' | 'return' | 'exchange' | 'work-order';
         <label class="check"><input type="checkbox" [checked]="issuable()" (change)="issuable.set($any($event.target).checked)" /> Lze znovu vydat</label>
         <input class="input" placeholder="Poznámka k vrácení" [value]="note()" (input)="note.set($any($event.target).value)" />
         @if (inventoryCheckApplies()) {
-          <p class="muted">Kus je fyzicky v rukou krojárny – vrácení zároveň zapíše jeho ověření v inventuře.</p>
+          <p class="muted">Kus je fyzicky v rukou krojařky – vrácení zároveň zapíše jeho ověření v inventuře.</p>
         }
         <div class="row">
           <button type="button" class="btn-primary btn-primary--sm" [disabled]="busy()" (click)="doReturn()">Potvrdit vrácení</button>
@@ -61,7 +61,7 @@ type Mode = 'none' | 'return' | 'exchange' | 'work-order';
           <div class="warn-box">Původní kus se neoznačí jako vrácený ani ověřený – zůstane u držitele jako otevřená položka.</div>
         }
         <span class="muted">Náhrada – vyberte existující dostupný kus (nejdřív ze stejné řady):</span>
-        <app-item-picker [state]="state" [items]="candidates()" [selected]="newItemId() ? [newItemId()!] : []" (selectedChange)="newItemId.set($event.length ? $event[0] : null)" />
+        <app-item-picker [state]="state" [items]="candidates()" [preferredGenderId]="preferredGender()" [selected]="newItemId() ? [newItemId()!] : []" (selectedChange)="newItemId.set($event.length ? $event[0] : null)" />
         @if (newInTarget()) {
           <label class="check">
             <input type="checkbox" [checked]="newChecked()" (change)="newChecked.set($any($event.target).checked)" />
@@ -107,6 +107,8 @@ export class LoanActionsComponent {
   readonly busy = signal(false);
   readonly error = signal('');
 
+  // Výměna nabízí nejdřív kusy podle výchozího kroje držitele
+  preferredGender = () => defaultCostumeOf(this.state, this.loan.borrower);
   readonly candidates = computed(() => (this.mode() === 'exchange' ? exchangeCandidates(this.state, this.item) : []));
   readonly newInTarget = computed(() => !!this.inventory && !!this.newItemId() && isInTarget(this.inventory, this.newItemId()!));
 

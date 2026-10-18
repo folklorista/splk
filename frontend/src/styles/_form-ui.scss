@@ -1,4 +1,4 @@
-// Společné prvky formulářových stránek (Krojárna, Správa, akce, skupiny). Třídy mají historicky prefix cs-.
+// Společné prvky formulářových stránek (Správa krojů, Správa, akce, skupiny). Třídy mají historicky prefix cs-.
 .cs-toolbar { display: flex; flex-wrap: wrap; gap: var(--spacing-sm); align-items: center; margin-bottom: var(--spacing-md); }
   .cs-toolbar__spacer { flex: 1; }
   .cs-btn {

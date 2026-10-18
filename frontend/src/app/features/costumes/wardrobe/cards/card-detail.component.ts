@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -9,6 +9,8 @@ import { CONDITION_LABELS, CostumeItem } from '../../models/costume.model';
 import {
   borrowerLabel,
   cardGroups,
+  defaultCostumeOf,
+  matchesDefaultCostume,
   holdingsOf,
   isLoanOverdue,
   itemLabel,
@@ -22,6 +24,7 @@ import {
 import { WardrobeNavComponent } from '../shared/wardrobe-nav.component';
 import { LoanActionsComponent } from '../shared/loan-actions.component';
 import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
+import { errorMessage } from '../shared/wardrobe-ui';
 
 // Krojová karta držitele: jednotlivě zapůjčené kusy seskupené podle kroje (jen pro čitelnost),
 // upozornění na chybějící druhy podle šablon kompletů, operace vrátit/vyměnit/úkol a historie.
@@ -38,6 +41,20 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
           <h1 class="page__title">{{ v.label }}</h1>
           @if (canManage()) { <a class="btn-primary btn-primary--sm no-print" routerLink="/app/wardrobe/loans/new" [queryParams]="{ borrower: key }">+ Vydat kusy</a> }
         </div>
+        <div class="default-costume no-print">
+          @if (canEditProfile()) {
+            <label class="field">Výchozí kroj
+              <select class="input" (change)="setDefault($any($event.target).value)" [disabled]="busy()">
+                <option value="" [selected]="!v.defaultCostume">neurčeno – nabízet vše</option>
+                @for (g of state()!.classification.genders; track g.id) { <option [value]="g.id" [selected]="g.id === v.defaultCostume">{{ g.label }}</option> }
+              </select>
+            </label>
+            <p class="muted">Při vydávání se nejdřív nabízejí kusy výchozího kroje; ostatní jsou o klepnutí dál.</p>
+          } @else {
+            <p class="muted">Výchozí kroj: {{ v.defaultCostumeLabel || 'neurčeno' }}</p>
+          }
+          @if (error()) { <div class="error-box" role="alert">{{ error() }}</div> }
+        </div>
         @if (!v.groups.length) { <p class="state-note">Nemá zapůjčený žádný kus.</p> }
         @for (group of v.groups; track group.key) {
           <h2 class="group-title">{{ group.title }}</h2>
@@ -52,6 +69,7 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
                   <span class="item-list__badges">
                     @if (h.item.condition !== 'ok') { <span class="badge badge--warn">{{ conditionLabels[h.item.condition] }}</span> }
                     @if (overdue(h.loan)) { <span class="badge badge--alert">Po termínu</span> }
+                    @if (offDefault(h.item)) { <span class="badge">Mimo výchozí kroj</span> }
                   </span>
                 </div>
                 <div class="item-list__meta">řada {{ series(h.item) }}@if (h.item.size) { · vel. {{ h.item.size }} } · od {{ h.loan.issuedAt | date: 'd. M. yyyy' }} · {{ h.loan.dueAt ? 'vrátit do ' + (h.loan.dueAt | date: 'd. M. yyyy') : 'dlouhodobě' }}</div>
@@ -75,12 +93,18 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
       }
     </div>
   `,
-  styles: [WARDROBE_STYLES],
+  styles: [WARDROBE_STYLES, `.default-costume { margin-bottom: var(--spacing-md); max-width: 360px; }`],
 })
 export class WardrobeCardDetailComponent {
   private members = inject(MembersService).members;
-  readonly canManage = inject(AccessService).canManageCostumes;
-  readonly state = toSignal(inject(CostumesService).state$);
+  private costumes = inject(CostumesService);
+  private access = inject(AccessService);
+  readonly canManage = this.access.canManageCostumes;
+  // Výchozí kroj smí nastavit krojařka i Správa souboru (docs/06 kap. 5.1a)
+  readonly canEditProfile = computed(() => this.access.canManageCostumes() || this.access.isEnsembleAdmin());
+  readonly state = toSignal(this.costumes.state$);
+  readonly busy = signal(false);
+  readonly error = signal('');
   readonly key = inject(ActivatedRoute).snapshot.paramMap.get('key') ?? '';
   readonly conditionLabels = CONDITION_LABELS;
 
@@ -88,8 +112,11 @@ export class WardrobeCardDetailComponent {
     const state = this.state();
     const borrower = parseBorrowerKey(this.key);
     if (!state || !borrower) return null;
+    const defaultCostume = defaultCostumeOf(state, borrower);
     return {
       label: borrowerLabel(borrower, this.members(), state.externals),
+      defaultCostume,
+      defaultCostumeLabel: state.classification.genders.find((g) => g.id === defaultCostume)?.label,
       groups: cardGroups(state, holdingsOf(state, borrower)),
       history: state.loans
         .filter((l) => l.endedAt && sameBorrower(l.borrower, borrower))
@@ -97,6 +124,19 @@ export class WardrobeCardDetailComponent {
         .map((loan) => ({ loan, label: itemLabel(state, state.items.find((i) => i.id === loan.itemId)!) })),
     };
   });
+
+  offDefault = (item: CostumeItem) => !matchesDefaultCostume(this.state()!, item, this.view()?.defaultCostume);
+
+  setDefault(genderId: string): void {
+    const borrower = parseBorrowerKey(this.key);
+    if (!borrower) return;
+    this.busy.set(true);
+    this.error.set('');
+    this.costumes.setDefaultCostume(borrower, genderId || undefined).subscribe({
+      next: () => this.busy.set(false),
+      error: (e) => { this.busy.set(false); this.error.set(errorMessage(e)); },
+    });
+  }
 
   part = (item: CostumeItem) => itemPartLabel(this.state()!, item);
   number = itemNumberLabel;

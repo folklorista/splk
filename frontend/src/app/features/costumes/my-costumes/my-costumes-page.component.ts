@@ -13,7 +13,7 @@ import { errorMessage } from '../wardrobe/shared/wardrobe-ui';
 import { WARDROBE_STYLES } from '../wardrobe/shared/wardrobe.styles';
 
 // „Moje kroje“ – osobní krojová karta přihlášeného člena (jen ke čtení) a inventurní výzvy.
-// Samostatná stránka; správa fondu je v Krojárně (/app/wardrobe).
+// Samostatná stránka; správa fondu je ve Správě krojů (/app/wardrobe).
 @Component({
   selector: 'app-my-costumes-page',
   standalone: true,
@@ -23,7 +23,7 @@ import { WARDROBE_STYLES } from '../wardrobe/shared/wardrobe.styles';
       <div class="page__header">
         <h1 class="page__title">Moje kroje</h1>
         @if (canViewWardrobe()) {
-          <a class="btn-secondary no-print" routerLink="/app/wardrobe">Krojárna →</a>
+          <a class="btn-secondary no-print" routerLink="/app/wardrobe">Správa krojů →</a>
         }
       </div>
 
@@ -37,7 +37,7 @@ import { WARDROBE_STYLES } from '../wardrobe/shared/wardrobe.styles';
               @if (inv.toBring.length) { Ještě je potřeba donést: }
             </p>
           } @else {
-            <p>Krojárna kontroluje kroje. Přineste prosím na zvolený termín tyto kusy:</p>
+            <p>Krojařky kontrolují kroje. Přineste prosím na zvolený termín tyto kusy:</p>
           }
           @if (inv.toBring.length) {
             <ul class="bring-list">
@@ -59,7 +59,7 @@ import { WARDROBE_STYLES } from '../wardrobe/shared/wardrobe.styles';
           @if (inv.toBring.length && inv.visit?.status !== 'in-progress') {
             <h3 class="group-title">{{ inv.visit?.status === 'booked' ? 'Změnit termín' : 'Vyberte termín' }}</h3>
             @if (!inv.slots.length) {
-              <p class="state-note">Krojárna zatím nevypsala žádné termíny.</p>
+              <p class="state-note">Krojařky zatím nevypsaly žádné termíny.</p>
             }
             <ul class="item-list">
               @for (s of inv.slots; track s.slot.id) {
@@ -104,9 +104,9 @@ import { WARDROBE_STYLES } from '../wardrobe/shared/wardrobe.styles';
             </ul>
           }
         } @else {
-          <p class="state-note">Nemáte zapůjčenou žádnou součástku kroje. Když vám krojárna něco vydá, uvidíte to tady.</p>
+          <p class="state-note">Nemáte zapůjčenou žádnou součástku kroje. Když vám krojařka něco vydá, uvidíte to tady.</p>
         }
-        <p class="muted">Každý kus je zapůjčen samostatně a označen řadou a číslem. Změnu nebo vrácení zapisuje krojárna – pokud něco předáte jinému členovi bez jejího vědomí, odpovídáte za to dál vy.</p>
+        <p class="muted">Každý kus je zapůjčen samostatně a označen řadou a číslem. Změnu nebo vrácení zapisuje krojařka – pokud něco předáte jinému členovi bez jejího vědomí, odpovídáte za to dál vy.</p>
       }
     </div>
   `,

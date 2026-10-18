@@ -22,6 +22,7 @@ import {
   parseBorrowerKey,
   seriesLabel,
   sortItems,
+  defaultCostumeOf,
 } from '../../utils/costume-logic';
 import {
   activeChecks,
@@ -39,7 +40,7 @@ import { errorMessage } from '../shared/wardrobe-ui';
 import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
 
 // Inventurní návštěva (režim „Podle lidí“): krojová karta filtrovaná na cílové kusy inventury,
-// potvrzení předložení a stavu, běžné operace krojárny (vrátit, vyměnit, vydat, úkol) a rekapitulace.
+// potvrzení předložení a stavu, běžné operace krojařky (vrátit, vyměnit, vydat, úkol) a rekapitulace.
 // Dokončená návštěva neznamená, že jsou všechny kusy ověřené.
 @Component({
   selector: 'app-wardrobe-inventory-visit',
@@ -121,7 +122,7 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
           @if (issuing()) {
             <div class="panel stack">
               <strong>Nové vydání</strong>
-              <app-item-picker [state]="state()!" [items]="available()" [multiple]="true" [selected]="issueIds()" (selectedChange)="issueIds.set($event)" />
+              <app-item-picker [state]="state()!" [items]="available()" [preferredGenderId]="preferredGender()" [multiple]="true" [selected]="issueIds()" (selectedChange)="issueIds.set($event)" />
               <button type="button" class="btn-primary btn-primary--sm" [disabled]="!issueIds().length" (click)="issue()">Vydat {{ issueIds().length }} ks</button>
             </div>
           }
@@ -207,6 +208,10 @@ export class WardrobeInventoryVisitComponent {
     };
   });
 
+  readonly preferredGender = computed(() => {
+    const state = this.state();
+    return state ? defaultCostumeOf(state, this.borrower) : undefined;
+  });
   readonly available = computed(() => {
     const state = this.state();
     return state ? sortItems(state, state.items.filter((i) => itemAvailability(state, i) === 'available')) : [];
@@ -218,7 +223,7 @@ export class WardrobeInventoryVisitComponent {
   label = (item: CostumeItem) => itemLabel(this.state()!, item);
   itemName = (id: number) => this.label(this.state()!.items.find((i) => i.id === id)!);
   names = (items: CostumeItem[]) => items.map((i) => `${this.part(i)} ${this.number(i)}`).join(', ');
-  name = (id: number | undefined) => memberName(this.members(), id) || 'krojárna';
+  name = (id: number | undefined) => memberName(this.members(), id) || 'krojařka';
 
   setNote(itemId: number, note: string): void {
     this.notes.update((n) => ({ ...n, [itemId]: note }));

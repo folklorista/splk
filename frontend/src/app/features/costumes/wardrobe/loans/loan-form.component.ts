@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CostumesService } from '../../costumes.service';
 import { MembersService } from '../../../members/members.service';
 import { Borrower } from '../../models/costume.model';
-import { borrowerKey, borrowerLabel, dateInputToIso, itemAvailability, matchesSearch, parseBorrowerKey, sortItems } from '../../utils/costume-logic';
+import { borrowerKey, borrowerLabel, dateInputToIso, defaultCostumeOf, itemAvailability, matchesSearch, parseBorrowerKey, sortItems } from '../../utils/costume-logic';
 import { WardrobeNavComponent } from '../shared/wardrobe-nav.component';
 import { ItemPickerComponent } from '../shared/item-picker.component';
 import { errorMessage } from '../shared/wardrobe-ui';
@@ -32,7 +32,7 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
         </section>
         <section class="detail stack section">
           <h2 class="detail__section-title">Které kusy ({{ itemIds().length }})</h2>
-          <app-item-picker [state]="st" [items]="available()" [multiple]="true" [selected]="itemIds()" (selectedChange)="itemIds.set($event)" />
+          <app-item-picker [state]="st" [items]="available()" [preferredGenderId]="preferredGender()" [multiple]="true" [selected]="itemIds()" (selectedChange)="itemIds.set($event)" />
         </section>
         <section class="detail stack section">
           <div class="fields">
@@ -73,6 +73,10 @@ export class WardrobeLoanFormComponent {
       .sort((a, b) => a.label.localeCompare(b.label, 'cs'));
   });
   readonly selectedLabel = computed(() => this.borrowerOptions().find((o) => o.key === this.borrowerKey())?.label);
+  readonly preferredGender = computed(() => {
+    const state = this.state();
+    return state ? defaultCostumeOf(state, parseBorrowerKey(this.borrowerKey())) : undefined;
+  });
   readonly available = computed(() => {
     const state = this.state();
     return state ? sortItems(state, state.items.filter((i) => itemAvailability(state, i) === 'available')) : [];

@@ -115,7 +115,7 @@ describe('access.utils', () => {
   });
 
   describe('kroje', () => {
-    it('krojárka spravuje kroje bez Správy souboru a bez cizích skupin', () => {
+    it('krojařka spravuje kroje bez Správy souboru a bez cizích skupin', () => {
       const luckaS = subject([7], [testMandate(1, 'costumes')]);
       expect(access.canManageCostumes(luckaS)).toBeTrue();
       expect(access.isEnsembleAdmin(luckaS)).toBeFalse();

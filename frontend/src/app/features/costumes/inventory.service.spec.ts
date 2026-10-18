@@ -17,6 +17,7 @@ describe('CostumesService + InventoryService', () => {
   let store: CostumeStoreService;
   let canManage = true;
   let memberId = 9;
+  let isAdmin = false;
 
   const state = () => store.snapshot;
   const itemId = (seriesId: number, number: number) => state().items.find((i) => i.seriesId === seriesId && i.number === number && !i.retired)!.id;
@@ -34,8 +35,9 @@ describe('CostumesService + InventoryService', () => {
     clearDemoData();
     canManage = true;
     memberId = 9;
+    isAdmin = false;
     TestBed.configureTestingModule({
-      providers: [{ provide: AccessService, useValue: { memberId: () => memberId, canManageCostumes: () => canManage } }],
+      providers: [{ provide: AccessService, useValue: { memberId: () => memberId, canManageCostumes: () => canManage, isEnsembleAdmin: () => isAdmin } }],
     });
     costumes = TestBed.inject(CostumesService);
     inventories = TestBed.inject(InventoryService);
@@ -48,6 +50,16 @@ describe('CostumesService + InventoryService', () => {
     canManage = false;
     expect(run(costumes.createItem({ seriesId: 1, number: 50 })).error).toEqual(jasmine.any(AccessDeniedError));
     expect(run(inventories.recordCheck({ inventoryId: kopanice().id, itemId: itemId(18, 10), presented: true, mode: 'stock' })).error).toEqual(jasmine.any(AccessDeniedError));
+  }));
+
+  it('výchozí kroj smí nastavit i Správa souboru, ale ne běžný člen; vydávat kusy Správa souboru nesmí', fakeAsync(() => {
+    const borrower = { kind: 'member' as const, memberId: 4 };
+    canManage = false;
+    expect(run(costumes.setDefaultCostume(borrower, 'female')).error).toEqual(jasmine.any(AccessDeniedError));
+    isAdmin = true;
+    expect(run(costumes.setDefaultCostume(borrower, 'female')).error).toBeUndefined();
+    expect(state().defaultCostumes['member-4']).toBe('female');
+    expect(run(costumes.issueItems({ borrower, itemIds: [itemId(1, 1)] })).error).toEqual(jasmine.any(AccessDeniedError));
   }));
 
   it('číslo vyřazeného kusu nelze bez pravidla řady znovu přidělit', fakeAsync(() => {

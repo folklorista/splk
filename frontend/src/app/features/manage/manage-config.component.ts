@@ -27,7 +27,7 @@ import { of } from 'rxjs';
         </label>
         <label class="cs-field cs-field--inline">
           <input type="checkbox" [checked]="draft().modules.costumes" (change)="patchModules({ costumes: $any($event.target).checked })" />
-          Kroje a Krojárna
+          Kroje a správa krojů
         </label>
         <p class="cs-hint">Vypnutý modul zmizí z menu všem; data zůstanou. Skupiny a členství patří do jádra a vypnout nejdou.</p>
       </fieldset>

@@ -2,7 +2,7 @@ import { Member } from '../../../core/models/member.model';
 import { MOCK_MEMBERS } from './mock-members';
 
 // Autoři ukázkového obsahu (příspěvky, komentáře) se vybírají podle skupin, ne pevným ID –
-// v demu s reálnými členy tak oznámení výboru píše někdo z výboru, na kroje odpovídá Sklad atd.
+// v demu s reálnými členy tak oznámení výboru píše někdo z výboru, na kroje odpovídají Krojařky atd.
 // Výběr je deterministický (n-tý vhodný člen), aby data byla při každém načtení stejná.
 
 const activeMembers = (): Member[] => MOCK_MEMBERS.filter((m) => m.isActive);

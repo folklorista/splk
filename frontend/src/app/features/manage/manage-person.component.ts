@@ -19,6 +19,8 @@ const EMPTY_PERSON: PersonInput = { firstName: '', lastName: '', nickname: '', e
 
 // Správa → Členové → detail osoby: údaje, stav členství, skupiny, pověření a náhled skutečných přístupů.
 // Změny členství se okamžitě promítnou i do detailu skupiny (sdílený živý stav).
+import { CostumesService } from '../costumes/costumes.service';
+import { defaultCostumeOf } from '../costumes/utils/costume-logic';
 @Component({
   selector: 'app-manage-person',
   standalone: true,
@@ -69,6 +71,19 @@ const EMPTY_PERSON: PersonInput = { firstName: '', lastName: '', nickname: '', e
         </details>
 
         @if (member(); as m) {
+          @if (costumeGenders().length) {
+            <section class="mp__section">
+              <h3 class="mp__heading">Kroje</h3>
+              <label class="cs-field mp__costume">
+                <span>Výchozí kroj</span>
+                <select (change)="setDefaultCostume(m, $any($event.target).value)">
+                  <option value="" [selected]="!defaultCostume()">neurčeno – nabízet vše</option>
+                  @for (g of costumeGenders(); track g.id) { <option [value]="g.id" [selected]="g.id === defaultCostume()">{{ g.label }}</option> }
+                </select>
+                <span class="cs-hint">Krojařce se při vydávání nejdřív nabízejí kusy tohoto kroje. Jen preference, ne omezení.</span>
+              </label>
+            </section>
+          }
           <section class="mp__section">
             <h3 class="mp__heading">Skupiny</h3>
             <ul class="mp__list">
@@ -173,7 +188,7 @@ const EMPTY_PERSON: PersonInput = { firstName: '', lastName: '', nickname: '', e
                 <dt>Docházka</dt>
                 <dd>{{ scopeText(overview().attendance, 'eviduje') }}</dd>
                 <dt>Kroje</dt>
-                <dd>{{ overview().costumes === 'manage' ? 'spravuje Krojárnu' : overview().costumes === 'view' ? 'prohlíží Krojárnu' : 'jen vlastní kroje' }}</dd>
+                <dd>{{ overview().costumes === 'manage' ? 'spravuje kroje' : overview().costumes === 'view' ? 'prohlíží správu krojů' : 'jen vlastní kroje' }}</dd>
               </dl>
             }
           </section>
@@ -217,6 +232,14 @@ export class ManagePersonComponent {
   private membership = inject(MembershipService);
   private accessService = inject(AccessService);
   private events = toSignal(inject(EventsService).getEvents(), { initialValue: [] });
+  private costumes = inject(CostumesService);
+  private costumeState = toSignal(this.costumes.state$);
+  // Výchozí kroj osoby (docs/06 kap. 5.1a) – jen se zapnutým modulem Kroje
+  readonly costumeGenders = computed(() => (this.accessService.modules().costumes ? (this.costumeState()?.classification.genders ?? []) : []));
+  readonly defaultCostume = computed(() => {
+    const state = this.costumeState();
+    return state && this.personId ? defaultCostumeOf(state, { kind: 'member', memberId: this.personId }) : undefined;
+  });
 
   readonly feedback = new ActionFeedback();
   readonly grantable = GRANTABLE;
@@ -301,6 +324,10 @@ export class ManagePersonComponent {
     } else {
       this.feedback.run(this.membership.createPerson(input), (m) => this.router.navigate(['/app/manage/members', m.id]), 'Osoba založena');
     }
+  }
+
+  setDefaultCostume(member: Member, genderId: string): void {
+    this.feedback.run(this.costumes.setDefaultCostume({ kind: 'member', memberId: member.id }, genderId || undefined), undefined, 'Výchozí kroj uložen');
   }
 
   addToGroup(member: Member, select: HTMLSelectElement): void {

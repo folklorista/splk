@@ -232,7 +232,7 @@ export class WardrobeInventoryDetailComponent {
   readonly slotStart = signal('');
   readonly slotEnd = signal('');
   readonly slotCapacity = signal(this.state()?.inventories.find((i) => i.id === this.id)?.slotCapacity ?? 3);
-  readonly slotPlace = signal('Krojárna');
+  readonly slotPlace = signal('Sklad');
   readonly addSearch = signal('');
   readonly addItemId = signal<number | null>(null);
   readonly addNote = signal('');
@@ -295,7 +295,7 @@ export class WardrobeInventoryDetailComponent {
     return status === 'not-booked' ? 'Neobjednán' : VISIT_STATUS_LABELS[status];
   }
 
-  name = (id: number) => memberName(this.members(), id) || 'krojárna';
+  name = (id: number) => memberName(this.members(), id) || 'krojařka';
   label = (item: CostumeItem) => itemLabel(this.state()!, item);
   itemName = (id: number) => this.label(this.state()!.items.find((i) => i.id === id)!);
 

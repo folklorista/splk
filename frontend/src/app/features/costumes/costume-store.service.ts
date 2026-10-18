@@ -34,11 +34,13 @@ export class CostumeStoreService {
     return this.subject.value;
   }
 
-  // `self` = zápis člena za sebe (rezervace termínu); jinak jen pověřené krojárky (Správa krojů)
-  mutate<T>(change: (state: CostumeState, ctx: OpContext) => T, options: { self?: boolean } = {}): Observable<T> {
+  // `self` = zápis člena za sebe (rezervace termínu); `profile` = údaj o osobě (výchozí kroj), smí i Správa
+  // souboru; jinak jen pověřené krojařky (Správa krojů)
+  mutate<T>(change: (state: CostumeState, ctx: OpContext) => T, options: { self?: boolean; profile?: boolean } = {}): Observable<T> {
     const actorId = this.access.memberId();
-    if (options.self ? actorId === null : !this.access.canManageCostumes()) {
-      return throwError(() => new AccessDeniedError('Krojový fond mění jen pověřené krojárky.'));
+    const allowed = options.self ? actorId !== null : this.access.canManageCostumes() || (!!options.profile && this.access.isEnsembleAdmin());
+    if (!allowed) {
+      return throwError(() => new AccessDeniedError('Krojový fond mění jen pověřené krojařky.'));
     }
     const draft: CostumeState = structuredClone(this.subject.value);
     try {

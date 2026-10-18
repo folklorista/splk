@@ -96,7 +96,34 @@ export function parseBorrowerKey(key: string): Borrower | undefined {
   return match[1] === 'member' ? { kind: 'member', memberId: id } : { kind: 'external', externalId: id };
 }
 
-// Krojárky potřebují jednoznačně identifikovat držitele – u členů přezdívka i jméno
+// --- Výchozí kroj osoby (docs/06 kap. 5.1a) ---
+
+// Pohlaví kroje kusu je dané jeho evidenční řadou
+export function itemGenderId(state: CostumeState, item: CostumeItem): string | undefined {
+  return findSeries(state, item.seriesId)?.genderId;
+}
+
+export function defaultCostumeOf(state: CostumeState, borrower: Borrower | undefined): string | undefined {
+  return borrower ? state.defaultCostumes?.[borrowerKey(borrower)] : undefined;
+}
+
+// Neurčený výchozí kroj = odpovídá vše. Jde jen o řazení nabídky, nikdy o zákaz.
+export function matchesDefaultCostume(state: CostumeState, item: CostumeItem, genderId: string | undefined): boolean {
+  return !genderId || itemGenderId(state, item) === genderId;
+}
+
+// Převažující pohlaví držených kusů (odhad pro demo data); při shodě neurčeno
+export function inferDefaultCostume(state: CostumeState, borrower: Borrower): string | undefined {
+  const counts = new Map<string, number>();
+  for (const { item } of holdingsOf(state, borrower)) {
+    const genderId = itemGenderId(state, item);
+    if (genderId) counts.set(genderId, (counts.get(genderId) ?? 0) + 1);
+  }
+  const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  return ranked.length && (ranked.length === 1 || ranked[0][1] > ranked[1][1]) ? ranked[0][0] : undefined;
+}
+
+// Krojařky potřebují jednoznačně identifikovat držitele – u členů přezdívka i jméno
 export function borrowerLabel(borrower: Borrower, members: Member[], externals: ExternalPerson[]): string {
   if (borrower.kind === 'member') {
     const member = members.find((m) => m.id === borrower.memberId);
@@ -303,7 +330,7 @@ export interface LastSeen {
   inventoryId?: number;
 }
 
-// Napříč inventurami a pohyby (vrácení/vydání = kus prošel rukama krojárky)
+// Napříč inventurami a pohyby (vrácení/vydání = kus prošel rukama krojařky)
 export function lastSeen(state: CostumeState, itemId: number): LastSeen | undefined {
   const candidates: LastSeen[] = [
     ...state.inventoryChecks

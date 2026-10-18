@@ -1,4 +1,4 @@
-// Společné styly stránek Krojárny a Mých krojů (přes CSS proměnné, aby fungoval tmavý režim)
+// Společné styly stránek Správy krojů a Mých krojů (přes CSS proměnné, aby fungoval tmavý režim)
 export const WARDROBE_STYLES = `
   .toolbar { display: flex; flex-wrap: wrap; gap: var(--spacing-sm); align-items: center; margin-bottom: var(--spacing-md); }
   .toolbar__spacer { flex: 1; }

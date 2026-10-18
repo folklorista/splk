@@ -139,7 +139,7 @@ export const routes: Routes = [
         canActivate: [moduleGuard('costumes')],
         loadComponent: () => import('./features/costumes/my-costumes/my-costumes-page.component').then((m) => m.MyCostumesPageComponent),
       },
-      // Krojárna – správa fondu (prohlížení: Náhled do krojárky, zápis: Správa krojů)
+      // Správa krojů – správa fondu (prohlížení: Náhled do správy krojů, zápis: Správa krojů)
       { path: 'wardrobe', pathMatch: 'full', redirectTo: 'wardrobe/stock' },
       {
         path: 'wardrobe/stock',

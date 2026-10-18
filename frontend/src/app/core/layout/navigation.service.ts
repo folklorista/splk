@@ -83,7 +83,7 @@ export class NavigationService {
     this.access.modules().costumes
       ? [
           { path: '/app/costumes', label: 'Moje kroje', icon: 'shirt' },
-          ...(this.access.canViewCostumeStock() ? [{ path: '/app/wardrobe', label: 'Krojárna', icon: 'clipboard-check' as IconName }] : []),
+          ...(this.access.canViewCostumeStock() ? [{ path: '/app/wardrobe', label: 'Správa krojů', icon: 'clipboard-check' as IconName }] : []),
         ]
       : [],
   );

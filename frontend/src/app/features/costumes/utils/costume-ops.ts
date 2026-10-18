@@ -10,9 +10,9 @@ import {
 import { CheckMode, Inventory, InventoryCheck } from '../models/inventory.model';
 import { CONDITION_LABELS } from '../models/costume.model';
 import { isInTarget } from './inventory-logic';
-import { issueBlocker, itemLabel } from './costume-logic';
+import { borrowerKey, issueBlocker, itemLabel } from './costume-logic';
 
-// Doménové operace nad (pracovní kopií) stavu. Používá je běžná práce krojárny i inventura –
+// Doménové operace nad (pracovní kopií) stavu. Používá je běžná práce krojařky i inventura –
 // výdej, vrácení a výměna mají jedinou implementaci. Porušení pravidel = CostumeRuleError.
 
 export class CostumeRuleError extends Error {}
@@ -202,3 +202,14 @@ export function recordCheck(state: CostumeState, ctx: OpContext, op: CheckOp): I
   return check;
 }
 
+
+// Výchozí kroj osoby – jen preference pro nabídku kusů; prázdná hodnota = neurčeno
+export function setDefaultCostume(state: CostumeState, borrower: Borrower, genderId: string | undefined): void {
+  const key = borrowerKey(borrower);
+  if (!genderId) {
+    delete state.defaultCostumes[key];
+    return;
+  }
+  if (!state.classification.genders.some((g) => g.id === genderId)) throw new CostumeRuleError('Neznámé pohlaví kroje.');
+  state.defaultCostumes[key] = genderId;
+}

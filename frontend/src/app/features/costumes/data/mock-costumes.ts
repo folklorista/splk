@@ -3,8 +3,9 @@ import { GROUP_IDS } from '../../../core/data/mock-groups';
 import { MOCK_MEMBERS } from '../../members/data/mock-members';
 import { Borrower, CostumeItem, CostumeLoan, CostumeSeries, CostumeState, CostumeWorkOrder } from '../models/costume.model';
 import { Inventory, InventoryCheck, InventorySlot, InventoryVisit, emptyScope } from '../models/inventory.model';
+import { borrowerKey, borrowersWithHoldings, inferDefaultCostume } from '../utils/costume-logic';
 
-// Demo krojový fond Vonice (docs/zadani-pro-robota-krojarna-inventury.md kap. 5):
+// Demo krojový fond Vonice (docs/06 kap. 11):
 // mužské i ženské součástky více regionů, varianty v klíči řady i jako atribut kusu, nesouvislá čísla
 // a vyřazené kusy; osoby ve více skupinách s více rozdílně očíslovanými kusy; nezapůjčené kusy ve skladu,
 // kus v opravě a u švadleny; rozběhnutá inventura „Ženské Kopanice“ s plným termínem a dokončená
@@ -193,9 +194,9 @@ export function seedCostumeState(members: Member[] = MOCK_MEMBERS): CostumeState
     scopeLabel: 'Ženské / Kopanice', startedAt: daysFromNow(-6), startedByMemberId: 0, targetItemIds: kopanice, holders: holdersOf(kopanice), additions: [], slotCapacity: 3,
   });
   slots.push(
-    { id: 1, inventoryId: 2, startsAt: daysFromNow(2, 17), endsAt: daysFromNow(2, 19), capacity: 3, place: 'Krojárna, sokolovna' },
-    { id: 2, inventoryId: 2, startsAt: daysFromNow(4, 17), endsAt: daysFromNow(4, 19), capacity: 3, place: 'Krojárna, sokolovna' },
-    { id: 3, inventoryId: 2, startsAt: daysFromNow(9, 10), endsAt: daysFromNow(9, 12), capacity: 2, place: 'Krojárna, sokolovna' },
+    { id: 1, inventoryId: 2, startsAt: daysFromNow(2, 17), endsAt: daysFromNow(2, 19), capacity: 3, place: 'Sklad, sokolovna' },
+    { id: 2, inventoryId: 2, startsAt: daysFromNow(4, 17), endsAt: daysFromNow(4, 19), capacity: 3, place: 'Sklad, sokolovna' },
+    { id: 3, inventoryId: 2, startsAt: daysFromNow(9, 10), endsAt: daysFromNow(9, 12), capacity: 2, place: 'Sklad, sokolovna' },
   );
   // Plný první termín: první tři dotčené holky (čtvrtá se už nevejde)
   [g1, g2, g3].filter(Boolean).forEach((b) => visits.push({ id: visits.length + 1, inventoryId: 2, borrower: b!, slotId: 1, status: 'booked', bookedAt: daysFromNow(-5), bookedByMemberId: 0 }));
@@ -229,7 +230,7 @@ export function seedCostumeState(members: Member[] = MOCK_MEMBERS): CostumeState
 
   const series: CostumeSeries[] = SERIES.map(({ numbers, retired, itemVariants, ...s }) => ({ ...s, ensembleId: ENSEMBLE }));
 
-  return {
+  const state: CostumeState = {
     classification: {
       ensembleId: ENSEMBLE,
       genders: [
@@ -276,10 +277,17 @@ export function seedCostumeState(members: Member[] = MOCK_MEMBERS): CostumeState
       { id: 5, ensembleId: ENSEMBLE, name: 'Kopaničký ženský kroj', genderId: 'female', regionId: 'kopanice', partTypeIds: [P.rukavce, P.spodnica, P.fertuska, P.satka] },
     ],
     events: [],
+    defaultCostumes: {},
     defaultSlotCapacity: 3,
     inventories,
     inventorySlots: slots,
     inventoryVisits: visits,
     inventoryChecks: checks,
   };
+  // Výchozí kroj demo držitelů odhadnutý z držených kusů
+  for (const borrower of borrowersWithHoldings(state)) {
+    const genderId = inferDefaultCostume(state, borrower);
+    if (genderId) state.defaultCostumes[borrowerKey(borrower)] = genderId;
+  }
+  return state;
 }

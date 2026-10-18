@@ -39,7 +39,7 @@ function post(
 }
 
 // Každá skupina má nástěnku pro svou interní komunikaci. Autoři podle role v dané skupině:
-// oznámení pro celý soubor (Taneční) píše výbor, kroje řeší Sklad (krojařky).
+// oznámení pro celý soubor (Taneční) píše výbor, kroje řeší Krojařky.
 export const MOCK_POSTS: Post[] = [
   // Taneční – společné informace pro celý soubor
   post(1, tanecni, demoMember([vybor, tanecni]).id, 'Důležité informace k soustředění',
@@ -83,7 +83,7 @@ export const MOCK_POSTS: Post[] = [
     'Posílám návrh, kdo vede které úterní zkoušky v listopadu. Kdo nemůže, napište a vyměníme se.',
     4),
 
-  // Sklad – krojařky, nákupy a údržba krojů
+  // Krojařky – nákupy a údržba krojů
   post(11, sklad, demoMember([sklad]).id, 'Nákup na zimu – sukně a šátky',
     'Z rozpočtu na kroje zbývá na 4 nové spodnice a 6 šátků. Navrhuju objednat u stejné švadleny jako loni. Souhlasíte?',
     3, { requiresAction: true }),
