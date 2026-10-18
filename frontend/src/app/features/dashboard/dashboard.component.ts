@@ -20,7 +20,7 @@ import { GroupsService } from '../groups/groups.service';
 import { JoinRequestsService } from '../groups/join-requests.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActualAttendanceService } from '../attendance/actual-attendance.service';
-import { PendingAction, attendanceRecordActions, costumeActions, eventResponseActions, groupRequestActions, sortPendingActions } from './pending-actions';
+import { PendingAction, attendanceRecordActions, costumeActions, eventChangeActions, eventResponseActions, groupRequestActions, sortPendingActions } from './pending-actions';
 
 // Kolik nejbližších akcí se na přehledu zobrazí s rychlým potvrzením účasti
 export const DASHBOARD_EVENT_LIMIT = 5;
@@ -76,6 +76,7 @@ export class DashboardComponent implements OnInit {
     const modules = this.access.modules();
     const state = this.costumeState();
     return sortPendingActions([
+      ...(modules.events ? eventChangeActions(this.allEvents(), member) : []),
       ...(modules.events ? eventResponseActions(this.allEvents(), member) : []),
       ...groupRequestActions(this.requests.requests(), subject, this.groupsService.groups()),
       ...(modules.costumes && state ? costumeActions(state, member.id) : []),

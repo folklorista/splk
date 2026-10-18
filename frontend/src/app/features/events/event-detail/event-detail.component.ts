@@ -35,6 +35,7 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
 };
 
 import { isSoftDeadlinePassed, needsResponse } from '../utils/event-reminders';
+import { changeAcknowledgement, confirmedChange, viewedSinceChange } from '../utils/event-views';
 import { AvailabilityService } from '../../availability/availability.service';
 import { formatRange } from '../../availability/unavailability.utils';
 @Component({
@@ -42,7 +43,7 @@ import { formatRange } from '../../availability/unavailability.utils';
   standalone: true,
   imports: [CommonModule, DatePipe, RouterLink, FormsModule, IconComponent],
   templateUrl: './event-detail.component.html',
-  styles: [`.detail__deadline { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--spacing-sm); } .detail__deadline--due { color: var(--color-primary); font-weight: 600; } .member-unavailable { font-size: var(--font-size-xs); color: var(--color-text-muted); border: 1px dashed var(--color-border); border-radius: 4px; padding: 0 4px; margin-left: 4px; white-space: nowrap; }`],
+  styles: [`.detail__deadline { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--spacing-sm); } .detail__deadline--due { color: var(--color-primary); font-weight: 600; } .detail__change { margin: var(--spacing-sm) 0 var(--spacing-md); padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid #e0a800; background: var(--color-surface-alt); border-radius: 6px; display: flex; flex-wrap: wrap; gap: var(--spacing-sm); align-items: center; } .detail__change--confirm { border-left-color: var(--color-primary); } .detail__change-ok { color: #2e7d32; font-weight: 600; } .member-unavailable { font-size: var(--font-size-xs); color: var(--color-text-muted); border: 1px dashed var(--color-border); border-radius: 4px; padding: 0 4px; margin-left: 4px; white-space: nowrap; }`],
 })
 export class EventDetailComponent implements OnInit {
   event = signal<AppEvent | null>(null);
@@ -118,17 +119,38 @@ export class EventDetailComponent implements OnInit {
     };
   });
 
-  // Kdo si akci alespoň zobrazil (bez ohledu na to, jestli už vyjádřil účast) – jen pro admina
+  // Kdo otevřel detail (po poslední důležité změně, je-li nějaká) a kdo ji potvrdil – pro organizátory
   readonly viewedStatus = computed(() => {
+    const event = this.event();
     const records = this.eventRecords();
     const viewed: Member[] = [];
     const notViewed: Member[] = [];
+    const confirmed: Member[] = [];
     for (const member of this.visibleMembers()) {
       const record = records.find((r) => r.memberId === member.id);
-      (record?.firstViewedAt ? viewed : notViewed).push(member);
+      if (!event) continue;
+      (viewedSinceChange(event, record) ? viewed : notViewed).push(member);
+      if (confirmedChange(event, record)) confirmed.push(member);
     }
-    return { viewed, notViewed };
+    return { viewed, notViewed, confirmed };
   });
+
+  // Moje potvrzení důležité zprávy
+  readonly needsConfirmation = computed(() => {
+    const event = this.event();
+    return !!event && changeAcknowledgement(event, this.record()) === 'confirm';
+  });
+
+  confirmChange(): void {
+    const event = this.event();
+    const memberId = this.access.memberId();
+    if (!event || !memberId) return;
+    const at = new Date().toISOString();
+    this.attendanceService.confirmImportantChange(event.id, memberId, at).subscribe(() => {
+      const current = this.record() ?? { eventId: event.id, memberId, status: 'pending' as const };
+      this.record.set({ ...current, confirmedAt: at });
+    });
+  }
 
   // Skutečná docházka – zapisuje výbor/admin od začátku akce, nahlášenou účast nemění
   private actualAttendanceService = inject(ActualAttendanceService);

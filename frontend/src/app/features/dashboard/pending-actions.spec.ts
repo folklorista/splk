@@ -4,7 +4,7 @@ import { AccessSubject } from '../../core/access/access.utils';
 import { testMandate } from '../../testing/access.testing';
 import { seedCostumeState } from '../costumes/data/mock-costumes';
 import { MOCK_MEMBERS } from '../members/data/mock-members';
-import { attendanceRecordActions, costumeActions, eventResponseActions, groupRequestActions, sortPendingActions } from './pending-actions';
+import { attendanceRecordActions, costumeActions, eventChangeActions, eventResponseActions, groupRequestActions, sortPendingActions } from './pending-actions';
 import { invitationsFor } from '../costumes/utils/inventory-logic';
 
 describe('pending-actions', () => {
@@ -55,5 +55,14 @@ describe('pending-actions', () => {
       { key: 'a', kind: 'loan-overdue', title: '', link: [], sortAt: day(-3) },
     ]);
     expect(sorted.map((a) => a.key)).toEqual(['a', 'b']);
+  });
+
+  it('důležitá změna: připomínka, dokud člen detail neotevře; s potvrzením, dokud nepotvrdí', () => {
+    const change = { at: day(-1), note: 'Sraz dřív' };
+    expect(eventChangeActions([ev(7, { importantChange: change })], member, now).length).toBe(1);
+    const viewed = [{ eventId: 7, memberId: 10, status: 'yes' as const, lastViewedAt: day(0) }];
+    expect(eventChangeActions([ev(7, { importantChange: change, attendance: viewed })], member, now)).toEqual([]);
+    const confirm = { ...change, requiresConfirmation: true };
+    expect(eventChangeActions([ev(7, { importantChange: confirm, attendance: viewed })], member, now)[0].title).toContain('potvrďte');
   });
 });

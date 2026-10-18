@@ -1,5 +1,6 @@
 import { AppEvent } from '../events/models/event.model';
 import { needsResponse } from '../events/utils/event-reminders';
+import { changeAcknowledgement } from '../events/utils/event-views';
 import { AccessSubject, canRecordAttendance, isEventAudience, isGroupManager } from '../../core/access/access.utils';
 import { Member } from '../../core/models/member.model';
 import { JoinRequest } from '../groups/models/join-request.model';
@@ -12,7 +13,7 @@ import { ActualAttendance } from '../attendance/models/actual-attendance.model';
 // „Čeká na vás“ na Přehledu (docs/10 kap. 7.2): jeden seznam povinností napříč moduly.
 // Každá oblast dodává své položky; zmizí, jakmile je věc vyřízená.
 
-export type PendingActionKind = 'event-response' | 'group-invitation' | 'group-requests' | 'inventory-booking' | 'loan-overdue' | 'attendance-record';
+export type PendingActionKind = 'event-response' | 'event-change' | 'group-invitation' | 'group-requests' | 'inventory-booking' | 'loan-overdue' | 'attendance-record';
 
 export interface PendingAction {
   key: string;
@@ -44,6 +45,22 @@ export function eventResponseActions(events: AppEvent[], member: Member, now = n
       link: ['/app/events', e.id],
       sortAt: e.startsAt,
       eventId: e.id,
+    }));
+}
+
+// Důležitá změna nadcházející akce, kterou člen ještě neotevřel nebo nepotvrdil
+export function eventChangeActions(events: AppEvent[], member: Member, now = new Date()): PendingAction[] {
+  return events
+    .filter((e) => Date.parse(e.startsAt) >= now.getTime() && isEventAudience(member, e))
+    .map((e) => ({ event: e, need: changeAcknowledgement(e, e.attendance?.find((a) => a.memberId === member.id)) }))
+    .filter((x) => x.need)
+    .map(({ event, need }) => ({
+      key: `change-${event.id}`,
+      kind: 'event-change' as const,
+      title: `${event.title} – ${need === 'confirm' ? 'potvrďte přečtení důležité zprávy' : 'důležitá změna'}`,
+      detail: event.importantChange!.note,
+      link: ['/app/events', event.id],
+      sortAt: event.importantChange!.at,
     }));
 }
 

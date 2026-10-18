@@ -2,6 +2,13 @@ export type EventType = 'rehearsal' | 'performance' | 'camp' | 'meeting' | 'othe
 
 import { AttendanceRecord } from '../../attendance/models/attendance.model';
 
+export interface EventImportantChange {
+  at: string;
+  note: string;
+  // Výjimečná zpráva, jejíž přečtení má člen výslovně potvrdit
+  requiresConfirmation?: boolean;
+}
+
 export interface AppEvent {
   id: number;
   ensembleId: number;
@@ -21,5 +28,7 @@ export interface AppEvent {
   reminderLeadDays?: number;
   // Nepovinná měkká uzávěrka: po ní se výzva zopakuje nerozhodnutým (MOŽNÁ / bez odpovědi)
   responseDeadline?: string;
+  // Poslední důležitá změna (organizátor ji výslovně označil): kdy, co a zda vyžaduje potvrzení přečtení
+  importantChange?: EventImportantChange;
   attendance?: AttendanceRecord[];
 }

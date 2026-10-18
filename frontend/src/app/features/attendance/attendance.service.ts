@@ -29,22 +29,26 @@ export class AttendanceService {
     );
   }
 
-  // Zaznamená první otevření detailu akce daným členem, beze změny stavu účasti
-  markViewed(eventId: number, memberId: number): Observable<void> {
+  // Otevření detailu akce: první a poslední zobrazení (jediný údaj osoba × akce), beze změny účasti.
+  // Rychlá odpověď ze seznamu se sem nevolá – není to zobrazení detailu.
+  markViewed(eventId: number, memberId: number, at = new Date().toISOString()): Observable<void> {
+    this.patchRecord(eventId, memberId, (r) => ({ ...r, firstViewedAt: r.firstViewedAt ?? at, lastViewedAt: at }));
+    return of(undefined).pipe(delay(300));
+  }
+
+  // Výslovné potvrzení důležité změny akce
+  confirmImportantChange(eventId: number, memberId: number, at = new Date().toISOString()): Observable<void> {
+    this.patchRecord(eventId, memberId, (r) => ({ ...r, confirmedAt: at, lastViewedAt: r.lastViewedAt && r.lastViewedAt > at ? r.lastViewedAt : at }));
+    return of(undefined).pipe(delay(300));
+  }
+
+  private patchRecord(eventId: number, memberId: number, change: (record: AttendanceRecord) => AttendanceRecord): void {
     const records = this.recordsSubject.value;
     const index = records.findIndex((r) => r.eventId === eventId && r.memberId === memberId);
-    if (index !== -1 && records[index].firstViewedAt) {
-      return of(undefined).pipe(delay(300));
-    }
-
     const updated = [...records];
-    if (index !== -1) {
-      updated[index] = { ...updated[index], firstViewedAt: new Date().toISOString() };
-    } else {
-      updated.push({ eventId, memberId, status: 'pending', firstViewedAt: new Date().toISOString() });
-    }
+    if (index !== -1) updated[index] = change(updated[index]);
+    else updated.push(change({ eventId, memberId, status: 'pending' }));
     this.recordsSubject.next(updated);
-    return of(undefined).pipe(delay(300));
   }
 
   // Rychlá změna stavu (přehled, kalendář) – poznámka a firstViewedAt zůstávají zachované

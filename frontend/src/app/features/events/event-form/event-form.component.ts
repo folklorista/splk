@@ -85,6 +85,25 @@ export const EVENT_TYPE_OPTIONS: [EventType, string][] = [
             <textarea rows="3" [value]="description()" (input)="description.set($any($event.target).value)"></textarea>
           </label>
 
+          @if (eventId) {
+            <fieldset class="event-form__fieldset">
+              <legend>Druh změny</legend>
+              @for (option of changeOptions; track option[0]) {
+                <label class="cs-field cs-field--inline">
+                  <input type="radio" name="changeKind" [checked]="changeKind() === option[0]" (change)="changeKind.set(option[0])" />
+                  {{ option[1] }}
+                </label>
+              }
+              @if (changeKind() !== 'minor') {
+                <label class="cs-field">
+                  <span>Co se změnilo *</span>
+                  <input type="text" required placeholder="např. sraz se posouvá na 17:30" [value]="changeNote()" (input)="changeNote.set($any($event.target).value)" />
+                  <span class="cs-hint">Členové uvidí zprávu v detailu akce a v „Čeká na vás“; u vás bude vidět, kdo detail po změně otevřel{{ changeKind() === 'confirm' ? ' a kdo přečtení potvrdil' : '' }}.</span>
+                </label>
+              }
+            </fieldset>
+          }
+
           <fieldset class="event-form__fieldset">
             <legend>Výzva k odpovědi</legend>
             <div class="cs-form__row">
@@ -232,6 +251,14 @@ export class EventFormComponent implements OnInit {
   readonly location = signal('');
   readonly description = signal('');
   readonly leadDays = signal('');
+  // Drobná změna bez upozornění / důležitá (nové sledování zobrazení) / výjimečná s potvrzením
+  readonly changeKind = signal<'minor' | 'important' | 'confirm'>('minor');
+  readonly changeNote = signal('');
+  readonly changeOptions: ['minor' | 'important' | 'confirm', string][] = [
+    ['minor', 'Drobná úprava – bez upozornění'],
+    ['important', 'Důležitá změna – upozornit členy a sledovat, kdo detail otevřel'],
+    ['confirm', 'Výjimečná zpráva – členové ji mají výslovně potvrdit'],
+  ];
   readonly responseDeadline = signal('');
   readonly maxLeadDays = MAX_REMINDER_LEAD_DAYS;
   readonly defaultLeadDays = computed(() => defaultReminderLeadDays(this.type()));
@@ -291,7 +318,8 @@ export class EventFormComponent implements OnInit {
   readonly valid = computed(() => {
     const scope = this.scope();
     const organizerOk = scope.ensembleWide || !!this.eventId || this.organizerGroupIds().some((g) => scope.groupIds.includes(g));
-    return !!this.title().trim() && !!this.startsAt() && !!this.endsAt() && !!this.location().trim() && this.endsAt() >= this.startsAt() && organizerOk;
+    const changeOk = this.changeKind() === 'minor' || !!this.changeNote().trim();
+    return !!this.title().trim() && !!this.startsAt() && !!this.endsAt() && !!this.location().trim() && this.endsAt() >= this.startsAt() && organizerOk && changeOk;
   });
 
   ngOnInit(): void {
@@ -376,6 +404,9 @@ export class EventFormComponent implements OnInit {
       location: this.location().trim(),
       description: this.description().trim() || undefined,
       reminderLeadDays: this.parsedLeadDays(),
+      importantChange: this.changeKind() === 'minor'
+        ? this.original()?.importantChange
+        : { at: new Date().toISOString(), note: this.changeNote().trim(), requiresConfirmation: this.changeKind() === 'confirm' || undefined },
       responseDeadline: this.responseDeadline() || undefined,
       targetGroupIds: this.targetGroupIds(),
       organizerGroupIds: this.organizerGroupIds().length ? this.organizerGroupIds() : undefined,

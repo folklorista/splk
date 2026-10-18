@@ -17,6 +17,19 @@
           }
         </div>
 
+        @if (ev.importantChange; as change) {
+          <div class="detail__change" [class.detail__change--confirm]="needsConfirmation()" role="status">
+            <strong>Důležitá změna</strong> ({{ change.at | date: 'd. M. HH:mm' }}): {{ change.note }}
+            @if (change.requiresConfirmation) {
+              @if (needsConfirmation()) {
+                <button type="button" class="attendance-btn attendance-btn--active" (click)="confirmChange()">Potvrzuji, že jsem si to přečetl/a</button>
+              } @else if (record()?.confirmedAt) {
+                <span class="detail__change-ok">✓ Potvrzeno</span>
+              }
+            }
+          </div>
+        }
+
         <dl class="detail__meta">
           <dt><app-icon class="detail__meta-icon" name="arrow-start" /> Začátek</dt>
           <dd>{{ ev.startsAt | date: 'd. M. yyyy, HH:mm' }}</dd>
@@ -195,10 +208,13 @@
 
         @if (canSeeResponses() && visibleMembers().length > 0) {
           <section class="detail__section">
-            <h2 class="detail__section-title">Zobrazení</h2>
+            <h2 class="detail__section-title">Zobrazení{{ ev.importantChange ? ' po důležité změně' : '' }}</h2>
+            @if (ev.importantChange?.requiresConfirmation) {
+              <p class="detail__deadline">Potvrdilo přečtení: {{ viewedStatus().confirmed.length }} z {{ visibleMembers().length }}</p>
+            }
             <div class="member-columns">
               <div class="member-column">
-                <div class="member-column__header">Zobrazili ({{ viewedStatus().viewed.length }})</div>
+                <div class="member-column__header">{{ ev.importantChange ? 'Otevřeli po změně' : 'Zobrazili' }} ({{ viewedStatus().viewed.length }})</div>
                 @if (viewedStatus().viewed.length) {
                   <ul class="member-column__list">
                     @for (m of viewedStatus().viewed; track m.id) {
@@ -210,7 +226,7 @@
                 }
               </div>
               <div class="member-column">
-                <div class="member-column__header">Nezobrazili ({{ viewedStatus().notViewed.length }})</div>
+                <div class="member-column__header">{{ ev.importantChange ? 'Neotevřeli po změně' : 'Nezobrazili' }} ({{ viewedStatus().notViewed.length }})</div>
                 @if (viewedStatus().notViewed.length) {
                   <ul class="member-column__list">
                     @for (m of viewedStatus().notViewed; track m.id) {
