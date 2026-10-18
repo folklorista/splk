@@ -15,9 +15,9 @@
 Tento dokument popisuje rozhodnutí přijatá při návrhu **Správy, skupin, oprávnění, členství, nástěnek a skupinového chatu**. Je určen také vývojové AI jako podklad pro postupnou úpravu existující aplikace.
 
 - Navazuje na `07-souborovy-system-vize-funkce-roadmapa.md` a zachovává jeho motivaci: jedno místo pro akce, docházku, komunikaci, kroje a dohledatelnou historii.
-- Navazuje na `06-specifikace-krojoveho-skladu.md`; **nemění pravidlo, že skutečné změny v krojové evidenci provádějí pouze pověřené krojárky**.
+- Navazuje na `06-specifikace-krojoveho-skladu.md`; **nemění pravidlo, že skutečné změny v krojové evidenci provádějí pouze pověřené krojařky**.
 - Navazuje na interaktivní prototyp `splk-simulator-opravneni.html`, v němž lze proklikávat osoby, skupiny a pověření. Je to **UX reference**, nikoli autoritativní implementace bezpečnostních pravidel.
-- **Nahrazuje starší návrh pevně děděných systémových rolí** „host → člen → vedoucí → administrátor → superadministrátor“ v dokumentu 07. Starší dokument 07 může obsahovat jiné formulace; v oblastech upravených zde má přednost tento dokument, dokud se 07 nesjednotí.
+- **Nahrazuje starší návrh pevně děděných systémových rolí** „host → člen → vedoucí → administrátor → superadministrátor“. Dokument `07` byl při konsolidaci 18. 10. 2026 sjednocen: organizační funkce jsou označení osob, oprávnění vznikají samostatnými pověřeními.
 - V1.0 Souborového systému už byla vydána. Následující požadavky jsou **rozšířením a úpravou běžící aplikace**, nikoli zpětně novou podmínkou jejího prvního vydání.
 
 ### 1.1 Co je závazně dohodnuto
@@ -37,7 +37,7 @@ Tento dokument popisuje rozhodnutí přijatá při návrhu **Správy, skupin, op
 
 ### 1.2 Co je návrhem či potřebuje upřesnění
 
-Konkrétní prahy pro automatické seskupení komentářů, režim zobrazování starší historie nově přijatému členovi, pravidla veřejných/skrytých skupin, delegování delegace a politika notifikací vyžadují ještě doladění. Dokument navrhuje bezpečné výchozí chování, aby na něm vývoj mohl začít; **tyto parametry nejsou bez další dohody definitivními organizačními pravidly**.
+Konkrétní prahy pro automatické seskupení komentářů, pravidla veřejných/skrytých skupin, delegování delegace a technické podrobnosti notifikací vyžadují ještě doladění. **Volbu otevřené historie chatu nebo historie od vstupu člena jsme již schválili** (viz § 10.3). Dokument navrhuje bezpečné výchozí chování, aby na něm vývoj mohl začít; **tyto parametry nejsou bez další dohody definitivními organizačními pravidly**.
 
 ---
 
@@ -57,11 +57,17 @@ Konkrétní prahy pro automatické seskupení komentářů, režim zobrazování
 | **Spolusprávce skupiny** | Pověřený zástupce hlavního správce | Kuba D u skupiny Kluci |
 | **Organizátor akce** | Osoba pověřená konkrétní akcí, nikoliv všemi akcemi | Organizátor Katerinských hodů |
 
-**Souborová funkce není systémová role.** „Vedoucí souboru“, „organizační vedoucí“, „vedoucí taneční složky“, „vedoucí skupiny“, „ekonom“, „kronikář“, „hospodář/krojárka“ či „vedoucí propagace“ jsou pozice v organizační struktuře. Jejich pravomoci v aplikaci vznikají samostatným pověřením, případně členstvím ve skupinách.
+**Souborová funkce není systémová role.** „Vedoucí souboru“, „organizační vedoucí“, „vedoucí taneční složky“, „vedoucí skupiny“, „ekonom“, „kronikář“, „hospodář/krojařka“ či „vedoucí propagace“ jsou pozice v organizační struktuře. Jejich pravomoci v aplikaci vznikají samostatným pověřením, případně členstvím ve skupinách.
 
 **Členství není pověření.** Člověk může být členem Výboru bez správcovského přístupu a může technicky spravovat nastavení skupiny, aniž by směl číst její soukromou komunikaci. Pokud má někdo moderovat její obsah, musí mít i oprávněný přístup k příslušnému obsahu.
 
 ---
+
+### Rodiče, děti a samostatné soubory – doplnění
+
+Globální osoba může být současně členem dospělé Vonice, vedoucím Malé Vonice a zákonným zástupcem dítěte; **jde o nezávislé vztahy a pověření**. Matka potvrzuje účast dítěte **svým účtem** a evidence zachová aktéra i zastupovanou osobu. Předškolák používá zastupování, žák 1. stupně může mít omezený účet bez chatu, žák 2. stupně chat podle politiky Malé Vonice a povinnou rodičovskou vazbu, středoškolák plnohodnotný účet a případně rodiče dobrovolně. Výchozí profily jsou konfigurovatelné; rodičovská vazba sama o sobě **není oprávněním číst DM dítěte**.
+
+Každý folklorní soubor si nastavuje **vlastní komunikační politiku nezletilých**; skupina může pravidla jen zpřísnit. Nastavení DM jako celek rozvádí `09`.
 
 ## 3. Model oprávnění – bez hierarchie systémových rolí
 
@@ -107,10 +113,10 @@ Pro prvotní jednoduchou verzi zástupce **nemůže dále pověřovat další z�
 
 ### 3.4 Pověření pro odborný modul
 
-- **Správa krojů (Krojárka)** umožňuje evidovat součásti, komplety, zápůjčky, vrácení a inventury.
+- **Správa krojů (Krojařka)** umožňuje evidovat součásti, komplety, zápůjčky, vrácení a inventury.
 - Běžný člen vidí pouze vlastní svěřené kroje, pokud má příslušný přístup k modulu.
 - Člověk s pověřením Správa souboru nedostává automaticky správu krojů.
-- Krojárka nemusí mít pověření ke Správě souboru ani číst jiné skupinové konverzace.
+- Krojařka nemusí mít pověření ke Správě souboru ani číst jiné skupinové konverzace.
 - Do budoucna půjde obdobně doplnit pověření pro kroniku, finance a další oblasti bez nových celosystémových rolí.
 
 ### 3.5 Praktické pravidlo vyhodnocování přístupu
@@ -139,7 +145,7 @@ Dosavadní sekci **Administrace** nahradit sekcí **Správa**. Nejde o přidán�
 | **Docházka** | Pověřené osoby | Skutečná docházka, přehledy proběhlých akcí |
 | **Skupinové nástěnky / skupiny** | Členové příslušných skupin a další výslovně oprávnění | Chat, nástěnka, členové, správa skupiny dle pověření |
 | **Kroje / Moje kroje** | Člověk s vlastní zápůjčkou nebo povoleným přístupem | Vlastní přidělené součásti a komplety |
-| **Krojárka** | Správci krojů | Přehled, Součásti, Komplety, Zápůjčky, Lidé, Inventury |
+| **Správa krojů** | Krojařky (pověření Správa krojů / Náhled) | Sklad (cílově Součástky), Krojové karty, Výpůjčky, Inventury, Nastavení (viz `10`) |
 | **Správa** | Správce souboru | Členové, Skupiny, Konfigurace |
 | **Nastavení** | Každý přihlášený | Vlastní vzhled, výchozí zobrazení, notifikace |
 
@@ -165,7 +171,7 @@ Menu je **dynamické podle skutečných přístupů** a zapnutých modulů. Zobr
 ### 4.3 Správa → Konfigurace
 
 - Konfigurace souboru, výchozí volby pro nové osoby/skupiny a moduly.
-- Moduly minimálně: **Akce + docházka**, **Kroje + Krojárka**. Skupiny a jejich členství patří do jádra.
+- Moduly minimálně: **Akce + docházka**, **Kroje + Správa krojů**. Skupiny a jejich členství patří do jádra.
 - Pravidlo, kdo zakládá skupiny: výchozí `pouze správci souboru`; volitelně `všichni aktivní členové`; budoucí `člen navrhne a správce schválí`.
 - Volby komunikace na úrovni skupin (chat/nástěnka/default) nezaměňovat s globálním vypínáním modulu.
 
@@ -203,7 +209,7 @@ Správce souboru smí provést inicializační kroky a nastavit odpovědné osob
 | **Áďa** | Kronikářka |
 | **Tezi** | Umělecká vedoucí |
 | **Staňa** | Vedoucí kluků |
-| **Lucka Š** | Krojárka (pověření Správa krojů) |
+| **Lucka Š** | Krojařka (pověření Správa krojů) |
 | **Ivoš** | Hlavní vedoucí |
 | **Marci** | Vedoucí dětského souboru |
 | **Lucka Z** | Ekonomka |
@@ -409,11 +415,16 @@ Badge skupiny může vyjadřovat nové aktivity, ale má mít jasný a jednotný
 
 Přidání/odebrání člena či změna správce se uchovává v auditní historii, včetně aktéra a času. Vybrané změny se promítnou jako **neutrální systémové události do chatu**; důvody a citlivé interní poznámky zůstávají jen v oprávněné správě.
 
-### 10.3 Historie nově přijatých členů – bezpečný návrh
+### 10.3 Historie nově přijatých členů – schválený konfigurovatelný režim
 
-**Navržený výchozí režim:** nově přijatý člen soukromé skupiny vidí běžný chat **od okamžiku vstupu**, nikoliv automaticky kompletní historii skupinové konverzace. Dříve publikované nástěnkové příspěvky mohou být dostupné podle pravidel nástěnky skupiny.
+Skupina může mít jeden z režimů:
 
-Pokud se toto pravidlo schválí, musí se konzistentně aplikovat také na **historické náhledy komentářů a systémových událostí v chatu**, vyhledávání i notifikace. Nesmí se stát, že přímé otevření starého odkazu obejde omezení. Historická data přitom zůstávají zachována pro oprávněné osoby.
+1. **Otevřená historie:** nový člen uvidí dřívější skupinový chat, pokud jeho obsah byl zveřejněn s odpovídajícími pravidly. Vhodné jako výchozí pro běžné organizační skupiny.
+2. **Historie od vstupu:** člověk vidí jen zprávy z časových úseků, kdy byl členem skupiny. Při odchodu a novém přijetí se nepřístupné období mezi členstvími **neodemkne**.
+
+**Přepnutí režimu zpětně nezveřejní obsah**, který byl dříve chráněn omezeným přístupem. Potřebujeme proto uložit bezpečné hranice viditelnosti pro jednotlivé úseky komunikace (např. intervaly členství či sekvenční čísla), nikoli jen aktuální hodnotu přepínače.
+
+Pravidlo platí také pro výsledky vyhledávání, citované komentáře v časové ose, náhledy, přímé odkazy a notifikace. **Nástěnka skupiny není totožná s chatem:** starší, nadále platné příspěvky a dokumenty mohou být novým členům dostupné podle vlastních pravidel nástěnky.
 
 ### 10.4 Dětský soubor
 
@@ -421,9 +432,21 @@ Pro budoucí Malou Vonicu neplatí automaticky stejná komunikační práva jako
 
 ---
 
+### 10.5 Životní cyklus organizační skupiny – schválená pravidla
+
+**Aktivní → Archivovaná → Smazaná.** Archivovaná skupina je přístupná oprávněným členům pouze pro čtení, nepřijímá nové zprávy a neposílá upozornění. Je možné ji znovu aktivovat.
+
+**Smazat lze pouze již archivovanou skupinu.** Provádí to oprávněný správce *souboru* po výslovném potvrzení. Smazání je skutečně destruktivní: odstraní skupinu, její chat, nástěnku, ankety a počítačové přílohy, které nejsou použity nikde jinde. Nesmí odstranit nezávislé záznamy autoritativního skladu, docházky ani počítačové soubory odkazované z jiné skupiny či modulu. Případné zákonné retenční výjimky a obnova záloh jsou samostatná politika.
+
+**Rozlišit od `09`:** zde jde o **organizační skupinu** s nástěnkou a chatem. Soukromá **skupinová DM konverzace** má vlastní správce a zvláštní životní cyklus; pravidla „nejprve archivovat organizační skupinu“ se na ni automaticky nepřenášejí.
+
+### 10.6 Přílohy a přehled souborů skupiny
+
+Skupina nabízí přehled počítačových souborů přiložených v její komunikaci. Nejde o samostatné úložiště typu Drive: jedna fyzická příloha může být kromě chatu odkazována například příspěvkem choreografie v repertoárové skupině. Autor smí přepsat obsah pouze při jediném použití; po sdílení na více místech se soubor zamkne a upravuje se **odkaz** na případně novou verzi. Obsah se nikdy nezpřístupní jen díky znalosti URL. Při smazání skupiny přežijí data používaná v jiném modulu.
+
 ## 11. Notifikace a aktivní komunikace
 
-Aplikace má časem nahradit podstatnou část dosavadního Messengeru a WhatsAppu, proto musí upozornění řešit promyšleně.
+Aplikace je dobrovolnou a přehlednější **alternativou** online komunikace v Messengeru a WhatsAppu, nikoliv povinnou náhradou všech soukromých domluv. Upozornění proto mají být aktivní u důležitých věcí, ale nezahlcující.
 
 ### 11.1 Minimální preference pro chat
 
@@ -447,6 +470,12 @@ Zpracování notifikací musí respektovat:
 
 ---
 
+### 11.3 Upozornění na akce a nahlášení problémů
+
+Zobrazení detailu akce se zaznamenává jako jediné `last_viewed_at` pro osobu × akci; po důležité změně organizátor podle času pozná, kdo detail otevřel znovu. **Potvrzení účasti ze seznamu není zobrazením detailu.** Závažnou informaci lze výjimečně explicitně potvrdit; nejde o automatické čtení.
+
+**Nahlášení zprávy** bude dostupné členům **všech folklorních souborů**, včetně dospělých, a předá jen vybraný obsah s nezbytným kontextem samostatně pověřené osobě. Nenastává automatický trest a správci se tím neotevírá celý cizí chat nebo DM. Konkrétní postup pro nezletilé, střet zájmů a nouzový zásah dokončit před spuštěním dětských DM.
+
 ## 12. Implementační postup pro vývojovou AI
 
 Doporučené pořadí je rozdělené na malé ověřitelné kroky. **Není cílem vše jedním velkým refaktorem přepsat.** Zachovat existující data, URL a hotové uživatelské scénáře všude, kde to dává smysl.
@@ -459,7 +488,7 @@ Doporučené pořadí je rozdělené na malé ověřitelné kroky. **Není cíle
 4. Přenést zkušenost ze `splk-simulator-opravneni.html`: propojený detail osoby/skupiny, správa hlavního správce a spolusprávců, náhled skutečných přístupů.
 5. Zachovat nejméně jednoho aktivního správce souboru.
 6. Migrovat dosavadní role a oprávnění **bez nechtěného rozšíření přístupu do soukromých skupin**.
-7. V kontextu akce, nástěnky a Krojárky ukazovat příslušné ovládání jen osobám s oprávněním.
+7. V kontextu akce, nástěnky a Správy krojů ukazovat příslušné ovládání jen osobám s oprávněním.
 
 ### Etapa B – žádosti o členství a audit
 
@@ -530,7 +559,7 @@ Výše je **návrh pořadí**, nikoli závazné očíslování produktových ver
 
 - [ ] Akce a potvrzování účasti fungují jako před změnami.
 - [ ] Evidence skutečné docházky zůstává funkční a přístupná pouze pověřeným.
-- [ ] Krojárky mohou spravovat zápůjčky a inventury; běžní členové pouze své kroje.
+- [ ] Krojařky mohou spravovat zápůjčky a inventury; běžní členové pouze své kroje.
 - [ ] Dosavadní příspěvky, komentáře, jejich autoři a stavy přečtení se migrací neztratí.
 - [ ] Nedojde k nechtěnému zpřístupnění dosud soukromého obsahu.
 
@@ -542,7 +571,7 @@ Vývoj lze začít bez definitivní odpovědi na všechny detaily, ale změny je
 
 1. Přesné limity pro seskupení komentářů (výchozí návrh 3 komentáře / 10 minut) a zda se kombinují aktivity oddělené delší prodlevou.
 2. Které systémové události se v chatu zobrazují členům a které jsou pouze v historii správy.
-3. Zda nově přijatý člen skutečně uvidí chat jen od okamžiku vstupu, jak dlouho zůstávají dostupné archivované příspěvky a kdo je může vyhledávat.
+3. **Rozhodnuto:** skupina umožňuje otevřenou historii nebo historii od vstupu (§ 10.3). **Dopracovat technicky:** hranice viditelnosti při přepnutí režimu, archivovaných příspěvcích a vyhledávání bez nečekaného zveřejnění.
 4. Zda a jak výjimečně umožnit hlavnímu správci pověřit osobu nečlena technickou správou skupiny bez práva číst obsah.
 5. Má zakládání skupin v konfiguraci skutečně nabízet hned režim „všichni aktivní členové“, nebo stačí připravit tuto volbu a zapnout později? Pro Vonici je výchozí režim „Správa souboru“.
 6. Jak detailně se liší práva hlavního správce a spolusprávce skupiny a kdo smí pověřovat další osoby.

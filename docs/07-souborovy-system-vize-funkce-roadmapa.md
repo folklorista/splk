@@ -18,7 +18,7 @@ Tento dokument slouží současně jako:
 2. **Produktový popis systému** – jaké problémy řeší, jaké oblasti propojuje a jak by měl fungovat při běžné práci.
 3. **Vymezení první provozní verze** – co musí skutečně fungovat před nasazením a co jej nesmí zbytečně zdržovat.
 4. **Dlouhodobá vize** – co by aplikace jednou mohla umět, aniž by to dnes bylo slíbeno nebo naplánováno k realizaci.
-5. **Podklad pro konzultace** – s vedoucími, krojárkami, muzikanty, členy výboru a později s dalšími soubory.
+5. **Podklad pro konzultace** – s vedoucími, krojařkami, muzikanty, členy výboru a později s dalšími soubory.
 
 **Rozlišujeme čtyři stupně závaznosti:**
 
@@ -43,10 +43,16 @@ Tento dokument slouží současně jako:
 - **X. Další soubory** – možnosti využití systému v jiných organizacích.
 - **XI. Použitelnost a provoz** – soukromí, spolehlivost, technologie jako prostředek.
 - **XII. Verze a priority** – hranice V1.0, pilot, kritéria spuštění a plán rozvoje.
-- **XIII. Otevřené otázky** – podklady pro schvalování s vedením a krojárkami.
+- **XIII. Otevřené otázky** – podklady pro schvalování s vedením a krojařkami.
 - **XIV. Představení projektu** – text pro prezentaci členům.
 
 ---
+
+## Konsolidace produktových rozhodnutí z 18. 10. 2026
+
+Následující doplnění po kapitolách představují **odsouhlasený cílový model**, ne tvrzení o dokončené implementaci. Starší harmonogram a označení V1.0 v tomto dokumentu jsou **historický návrh**; dokument `08` zaznamenává, že V1.0 již byla vydána. Při plánování rozlišit existující mock/frontend, současný backend a budoucí požadavky.
+
+**Autoritativní témata:** detailní krojová evidence `06`, pověření a skupinová komunikace `08`, soukromé DM `09`, navigace `10`, produkční technologie a offline/zálohy `01`.
 
 # I. Proč Souborový systém vzniká
 
@@ -69,7 +75,7 @@ Současná evidence docházky navíc neplní svůj účel: do sdílených tabule
 
 **Souborový systém má vytvořit jedno spolehlivé místo pro každodenní život souboru.**
 
-Člen otevře telefon a zjistí, co se chystá, co je nového, zda má něco potvrdit a které kroje mu byly oficiálně svěřeny. Vedoucí uvidí, kdo reagoval na akci, kdo přišel na zkoušku a které organizační záležitosti zbývá dořešit. Krojárka zjistí, kde mají být jednotlivé předměty, které komplety jsou úplné a co musí při inventuře zkontrolovat.
+Člen otevře telefon a zjistí, co se chystá, co je nového, zda má něco potvrdit a které kroje mu byly oficiálně svěřeny. Vedoucí uvidí, kdo reagoval na akci, kdo přišel na zkoušku a které organizační záležitosti zbývá dořešit. Krojařka zjistí, kde mají být jednotlivé předměty, které komplety jsou úplné a co musí při inventuře zkontrolovat.
 
 Časem bude možné propojit také úkoly, kroniku, fotografie, repertoár a další agendy. **Výhodou nemá být jen seznam funkcí, ale především jejich vzájemné vazby a dohledatelná historie.**
 
@@ -88,7 +94,7 @@ Nejde především o počet vytvořených modulů. Úspěch bude znamenat např�
 - členové vědí, kde hledat oficiální informace a termíny;
 - většina členů potvrzuje účast přímo v aplikaci;
 - vedoucí získají použitelný přehled plánované i skutečné účasti;
-- krojárky dokážou průběžně evidovat zápůjčky a provést inventuru;
+- krojařky dokážou průběžně evidovat zápůjčky a provést inventuru;
 - důležitá rozhodnutí a souvislosti se dají zpětně dohledat;
 - aplikace funguje především z telefonu, bez nutnosti používat počítač;
 - její používání je jednodušší než dosavadní souběh tabulek a komunikačních kanálů.
@@ -124,9 +130,13 @@ Založení obyčejné zkoušky nemá vyžadovat vyplnění desítek polí. Rozš
 
 Totéž platí pro role: běžný člen nemá být zahlcen přehledy a administračními nástroji určenými vedoucím. Naopak osoba, která má něco skutečně zařídit, musí dostat potřebné informace a odpovídající oprávnění.
 
+### Nepovinná digitalizace (rozhodnuto)
+
+Souborový systém není povinným deníkem všech osobních domluv. Dohoda na zkoušce, v hospodě, po telefonu nebo přes externí messenger je v pořádku. Aplikace má být **pohodlnější než WhatsApp skupiny, Google Formuláře a tabulky**, když už se něco řeší online, nikoliv novou administrativní povinností. Výjimkou je **autoritativní krojový sklad**, který musí zachytit skutečné předání a odpovědnost; docházka zůstává orientační, nikoliv sankční.
+
 ## 8. Vlastní odpovědnost a jasné pravomoci
 
-Člověk může být členem více skupin a mít různé povinnosti, aniž by se stal administrátorem celého systému. Například krojárka potřebuje upravovat krojovou evidenci, kronikář pracovat s historickými záznamy a organizátor vystoupení řešit jeho přípravu.
+Člověk může být členem více skupin a mít různé povinnosti, aniž by se stal administrátorem celého systému. Například krojařka potřebuje upravovat krojovou evidenci, kronikář pracovat s historickými záznamy a organizátor vystoupení řešit jeho přípravu.
 
 **Odpovědnost za určitou oblast nemá automaticky znamenat neomezený přístup do všech ostatních oblastí.**
 
@@ -158,11 +168,11 @@ Má nejvyšší technické pravomoci, může provádět mimořádné zásahy a v
 
 ### Pověřené osoby
 
-Jde například o krojárky, ekonoma, kronikáře, organizátora konkrétní akce nebo vedoucí dětské složky. Jejich kompetence se určují podle konkrétní činnosti.
+Jde například o krojařky, ekonoma, kronikáře, organizátora konkrétní akce nebo vedoucí dětské složky. Jejich kompetence se určují podle konkrétní činnosti.
 
 ### Bývalí členové a externisté
 
-**Člověk nemusí být aktuálním členem souboru, aby byl v systému veden.** Krojárka může evidovat výpůjčku bývalému členovi nebo externistovi; kvůli tomu mu není třeba zřizovat přihlašovací účet ani jej zařazovat do interních skupin.
+**Člověk nemusí být aktuálním členem souboru, aby byl v systému veden.** Krojařka může evidovat výpůjčku bývalému členovi nebo externistovi; kvůli tomu mu není třeba zřizovat přihlašovací účet ani jej zařazovat do interních skupin.
 
 Záznam bývalého člena zůstane zachován kvůli minulým akcím, docházce, svěřeným krojům a dalším historickým vazbám. **Ukončení členství odebere aktuální oprávnění, ale nemaže osobu ani historii.** Otevřené zápůjčky zůstávají dohledatelné.
 
@@ -172,15 +182,7 @@ Externista může současně vystupovat jako **host jedné akce** nebo jako **do
 
 **Role určuje, co člověk smí dělat. Skupina určuje zejména, kam patří a které informace jsou pro něj určené.** Samostatnou otázkou je **stav vztahu k souboru** (aktivní člen, bývalý člen, externista/host) a **existence přihlašovacího účtu**. Tyto věci se nesmějí zaměňovat.
 
-V současném demu se používají základní role **administrátor, vedoucí a běžný uživatel**. Pro V1.0 je navrženo rozlišit **hosta, člena, vedoucího, administrátora a superadministrátora**. Tato označení představují srozumitelné výchozí úrovně pravomocí, nikoli bezpodmínečný žebříček, v němž každá vyšší role automaticky smí vidět vše, co vidí nižší role.
-
-- **Host:** čte výslovně hostům zpřístupněný obsah a jemu cíleně přístupné akce.
-- **Člen:** čte obsah vlastních skupin, může v povoleném rozsahu psát příspěvky a komentáře a archivovat své vlastní příspěvky.
-- **Vedoucí:** má svěřené organizační pravomoci a statistiky účasti či čtenosti **pouze v rozsahu obsahu a akcí, ke kterým má oprávněný přístup**.
-- **Administrátor:** zakládá a konfiguruje osoby, skupiny a základní nastavení, ale **nemá automatické právo číst soukromý skupinový obsah**.
-- **Superadministrátor:** má úplné technické pravomoci včetně možnosti mimořádného zásahu do obsahu; nemá se používat jako běžná provozní role.
-
-Role se doplňují o nezávislá **oprávnění ke konkrétní skupině, akci nebo agendě**. Například správkyně skupiny Tanečnice nemusí být administrátorkou aplikace, krojárka nepotřebuje číst cizí diskuse a správce uživatelů nepotřebuje přístup do interních nástěnek Muziky. V běžném provozu se doporučuje svěřit širokou systémovou administraci nejvýše jedné či dvěma osobám; správu skupin a odborných agend lze bezpečně delegovat.
+**Aktuální pravidlo:** v demu mohou stále existovat označení admin/vedoucí/uživatel, ale **cílový autorizační model netvoří hierarchie pevných rolí**. Organizační funkce jsou lidské názvy, pravomoc vzniká až samostatným **pověřením** pro soubor, skupinu, akci či odborný modul (viz `08`, které nahrazuje starší návrh rolí). Správce souboru automaticky nečte soukromé skupiny a neovládá krojový sklad. Přístup musí v každém konkrétním objektu kontrolovat server. Když se funkce odvolá, původní členství ve skupinách tím samo o sobě nezaniká; když člověk soubor opustí, historie zůstane, ale přístup končí.
 
 Příklady skupin Vonice:
 
@@ -300,6 +302,10 @@ Dashboard nemá být další zahlcená stránka se vším, co systém zná. Má 
 
 Do budoucna se zde mohou zobrazovat vlastní úkoly, ale není nutné je programovat před prvním nasazením.
 
+### Osobní přehled a kontext souboru
+
+Na `moje.vonica.cz` se člen přihlašuje **jediným globálním účtem**. Dospělá Vonica a Malá Vonica jsou samostatné folklorní soubory: oddělené skupiny, chaty, akce, sklady i nastavení. Uživatel může přepnout souborový kontext, současně ale vidí **společný osobní přehled** svých relevantních akcí, upozornění, nevyřízených odpovědí a osobně svěřených krojů napříč soubory. Zápůjčka ze skladu jiného souboru neuděluje členství ani přístup do jeho prostředí. Přepínání **uživatelských účtů na sdíleném zařízení** je jiná funkce než přepnutí souboru.
+
 ## 16. Nástěnky a oznámení
 
 Každá skupina může mít svůj komunikační prostor. Člen vidí ty nástěnky a příspěvky, ke kterým má přístup. Příspěvek může být určen konkrétní skupině či více skupinám a může obsahovat důležité organizační sdělení.
@@ -343,6 +349,14 @@ Akce může mít hlavní organizující skupinu, ale **nemusí být povinně pod
 
 **Externista nebo bývalý člen může být pozván například na jediný zájezd či vystoupení.** Cílem V1.0 je umožnit jednoduché a kontrolované zpřístupnění konkrétní akce nebo informací určené skupiny, pokud má daná osoba účet. Rozsáhlé workflow hostování, automatické pozvánky a samoobslužné žádosti o účast mohou přijít později. Pokud externista účet nemá, lze jej evidovat jako účastníka podle pravomocí organizátora, ale nemůže se v aplikaci sám přihlásit ani odpovídat.
 
+### Opakování, výjimky a osobní kalendář (rozhodnuto)
+
+- Akce je viditelná po vytvoření/zveřejnění; **není potřeba samostatné plánované `published_at`**.
+- Série nácviků má rozsah datumů, opakovací pravidlo a čas. Každý výskyt má **vlastní akci**, účast a docházku. Úprava jednoho výskytu nesmí nechtěně měnit celou sérii či historii minulých zkoušek.
+- Při založení série lze **jednorázově předvyplnit** výjimky podle českých svátků, školních prázdnin a okresu (včetně režimu celý prázdninový týden), zkontrolovat náhled a uložit vynechané termíny **se stavem „Vynecháno“ a uvedeným důvodem**. Automatická pravidla později tiše nepřepočítávají existující sérii. Mimo období série (např. letní prázdniny) **žádná akce nevzniká**.
+- Předem plánované vynechání je pouze informační. Dodatečné zrušení plánované zkoušky aktivně upozorní dotčené členy.
+- Osobní odběr **ICS/iCalendar** je pouze pro čtení a může kombinovat relevantní akce více souborů a zastupovaných dětí. Člen filtruje typy; výchozí preference **neexportovat běžné týdenní nácviky**, ale exportovat ostatní akce a volitelně **„NENÍ VONICA – důvod“** u vynechaných/zrušených termínů v rámci série. Tyto negativní položky se exportují jako viditelné informační události, ne skryté `STATUS:CANCELLED`. Aktualizace odběru není zaručeně okamžitá, urgentní změny jdou také vlastní notifikací.
+
 ## 18. Potvrzování účasti
 
 Každý oslovený člen může jednoduše zvolit:
@@ -355,6 +369,13 @@ Každý oslovený člen může jednoduše zvolit:
 Podle potřeby může doplnit poznámku, například důvod omluvy nebo informaci o pozdním příchodu. Odpověď musí jít změnit, pokud se situace změní; vedoucí uvidí aktuální stav.
 
 Vhodné je umožnit reagovat přímo ze seznamu akcí, bez otevírání detailu. Neodpovězené akce mají být dobře rozpoznatelné, ale aplikace by neměla neustále naléhavě upozorňovat na termíny, které jsou ještě velmi vzdálené.
+
+### Časování odpovědí a zobrazení detailu (rozhodnuto)
+
+- Odpovědět lze **kdykoliv od zveřejnění akce**. V badge a aktivních výzvách se objeví pouze akce, u kterých nastal předstih připomínky. Výchozí předstih: **nácvik 7 dní**, **vystoupení 14 dní**, ruční úprava až na **365 dní** např. při poptávce vystoupení.
+- Odpovědi ANO/NE jsou pro plánování definitivní, MOŽNÁ a BEZ ODPOVĚDI nikoliv. **Nepovinný termín definitivní odpovědi** vytvoří dodatečnou výzvu právě nerozhodnutým; uzávěrka je **měkká**, pozdější změny jsou možné a dohledatelné.
+- Jediný údaj `last_viewed_at` pro **člověka × akci** se aktualizuje při **každém otevření detailu**, nikoliv při odpovědi ze seznamu. S `important_changed_at` lze rozlišit poslední otevření před/po důležité změně; nejde o právní důkaz přečtení.
+- Organizátor při úpravě volí drobnou změnu bez výzvy, **důležitou změnu** s notifikací a novým sledováním zobrazení, nebo výjimečnou zprávu vyžadující **výslovné potvrzení**. To je jiný údaj než pouhé zobrazení.
 
 ## 19. Skutečná docházka – výslovný požadavek V1.0
 
@@ -401,13 +422,13 @@ Systém ukazuje, co do kompletu patří, co je skutečně pohromadě a co je sam
 
 Některé kroje mají členové doma dlouhodobě, jiné si půjčují jen na vystoupení. Musí jít oficiálně předat jednotlivý díl, více dílů i celý komplet a také je vracet postupně.
 
-**Změny zápůjček a přidělení zapisují pouze pověřené krojárky.** Zápůjčky lze vést také u externistů a bývalých členů, aniž by jim tím vznikl přístup k interním akcím nebo skupinám. Při vrácení kompletu může krojárka u každé součásti zvlášť napsat například „vrácena nevypraná“. Poznámka zůstane v historii a převzatou, ale nepřipravenou věc lze dočasně vyřadit z nabídky pro nové půjčení.
+**Změny zápůjček a přidělení zapisují pouze pověřené krojařky.** Zápůjčky lze vést také u externistů a bývalých členů, aniž by jim tím vznikl přístup k interním akcím nebo skupinám. Při vrácení kompletu může krojařka u každé součásti zvlášť napsat například „vrácena nevypraná“. Poznámka zůstane v historii a převzatou, ale nepřipravenou věc lze dočasně vyřadit z nabídky pro nové půjčení.
 
-Pokud Anička bez domluvy s krojárkou půjčí Lojzovi šátek ze svého kompletu, v oficiální evidenci se nic nezmění. Za šátek dál evidenčně odpovídá Anička. Případné předání odpovědnosti musí krojárka zaznamenat.
+Pokud Anička bez domluvy s krojařkou půjčí Lojzovi šátek ze svého kompletu, v oficiální evidenci se nic nezmění. Za šátek dál evidenčně odpovídá Anička. Případné předání odpovědnosti musí krojařka zaznamenat.
 
 ### 20.5 Inventura
 
-Krojárka může zahájit kontrolu skladu, kompletu nebo vybrané části evidence a postupně označovat ověřené očíslované předměty i počty neočíslovaných doplňků. U věcí svěřených členům nebo externistům postačí osobní kontrola a potvrzení krojárky. Musí vidět:
+Krojařka může zahájit kontrolu skladu, kompletu nebo vybrané části evidence a postupně označovat ověřené očíslované předměty i počty neočíslovaných doplňků. U věcí svěřených členům nebo externistům postačí osobní kontrola a potvrzení krojařky. Musí vidět:
 
 - co již bylo zkontrolováno;
 - co ještě čeká na kontrolu;
@@ -437,6 +458,12 @@ Aplikace má umožnit základní osobní nastavení, například preferovaný vz
 
 Tyto doplňky jsou užitečné, ale samy o sobě nejsou hlavním důvodem spuštění systému.
 
+### Rozšíření skladové agendy – napříč soubory
+
+Krojový sklad je **autoritativní evidence**. Přímá osobní výpůjčka z Malé Vonice dospělé Ádě se zobrazí v jejích globálních **Moje kroje**, ale Áďa **není členkou Malé Vonice** ani nesmí prohlížet její sklad. Jde o individuální zpřístupnění vlastního závazku.
+
+Při **hromadném předání** např. deseti kompletů Malá Vonica → Vonica je přípustné, aby Malá Vonica vydala externistovi „Vonica“ a dospělá Vonica samostatně převzala stejné cizí komplety do **dočasné skladové evidence** a rozdělovala je členům. Týž model platí při příjmu od externího souboru mimo aplikaci. Zachovat původní evidenční čísla, interní ID a rozdíl vlastník / evidující sklad / aktuální držitel. Není požadovaná automatická synchronizace těchto skladů; viz `06`.
+
 ## 21. Základní administrace
 
 Oprávněné osoby musí zvládat běžné úkony bez zásahu programátora:
@@ -464,6 +491,10 @@ Preferovaným řešením jsou **webové push notifikace**. Pro webovou aplikaci 
 **Rozhodnutí před ostrým spuštěním:** pokud push notifikace nebudou připravené, musí existovat ověřený náhradní způsob doručení důležitých sdělení (například e-mail nebo dočasné upozornění v původním kanálu). Nelze tiše předpokládat, že všichni členové nové zprávy sami najdou.
 
 Běžné diskusní reakce nesmějí uživatele zavalit notifikacemi. Později bude možné nastavit jejich četnost a priority podrobněji.
+
+### Aktivní notifikace, nikoli zahlcení
+
+Interní upozornění, web push a e-mail jsou **oddělené kanály**. Hosting má pro e-mailové odesílání ověřenou provozní zkušenost. Není požadováno posílat každou zprávu všemi kanály. Příjemce musí rozlišit odeslání/doručení upozornění, **otevření detailu po důležité změně** a výslovné potvrzení. Uživatel dostává relevantní notifikace **napříč soubory**, nezávisle na právě zvoleném kontextu. Nové oznámení samo o sobě není administrativní povinností.
 
 ## 23. Historie a vyhledávání
 
@@ -656,11 +687,17 @@ Možnosti zahrnují fotografie ze zkoušek, festivalů a soustředění, organiz
 
 Otázky do budoucna: velikost úložiště, kvalita fotografií, kdo smí nahrávat a mazat, komu jsou fotografie přístupné, pravidla zveřejňování a uchování.
 
+### Souborové přílohy, galerie a životnost dat
+
+Počítačový `file` se ukládá **jednou**; chatová příloha, příloha příspěvku choreografie a dokument jsou **samostatné odkazy k témuž obsahu**. Muzikant může opravit přílohu ve zprávě, **dokud má pouze jedno použití**. Po připojení ke druhému místu (např. k příspěvku choreografie) se její obsah uzamkne; případná náhrada vytvoří nový soubor a mění příslušný odkaz, nikoliv obsah používaný na jiném místě. Každá skupina má přehled vlastních příloh, nikoliv plnohodnotnou náhradu Google Drive. Po odstranění skupiny musí soubor nadále používaný v galerii zůstat. Přístup k souboru se kontroluje podle oprávněného kontextu, ne podle znalosti URL.
+
 ## 43. Repertoár a choreografie
 
 Evidence tanců a programových čísel může později obsahovat názvy, popisy, poznámky k obsazení, potřebné kroje a instruktážní videa choreografií.
 
 To by pomohlo při opakování zapomenutých tanců a při přípravě vystoupení. Práce s videi musí respektovat oprávnění a případné autorské nebo osobnostní nároky.
+
+**Preferovaný jednoduchý přístup pro Vonici (bez nového modulu):** repertoár lze zpočátku vést ve stávajících skupinách a na jejich nástěnkách. Každá choreografie bude mít vlastní příspěvek s popisem, videi, hudebními nahrávkami, notami a dalšími přílohami. Může vzniknout samostatná skupina „Repertoár“, nebo se obsah povede v existující skupině tanečníků; výběr je organizační rozhodnutí. Příspěvky by mělo jít snadno dohledat (například jednotným názvem a připnutým rozcestníkem). **Samostatnou evidenci repertoáru nyní neplánujeme**; odůvodněná by byla až tehdy, kdyby příspěvky a přílohy přestaly dostačovat, například kvůli strukturovanému hledání nebo vazbám na program vystoupení.
 
 ## 44. Texty písní a hudební databanka
 
@@ -691,6 +728,27 @@ Potenciálně užitečné mohou být například:
 - jednoduché ankety a potvrzení přečtení důležitých instrukcí.
 
 Každý námět se posoudí samostatně podle přínosu a náročnosti.
+
+### Dlouhodobá dostupnost členů – kandidát k realizaci
+
+Člen (případně rodič jednající za dítě) si může zaznamenat delší období, kdy není dostupný pro zkoušky a vystoupení, například dovolenou, studijní pobyt nebo rekonvalescenci. Při plánování akcí se tato skutečnost může zobrazit oprávněným organizátorům a upozornit na kolizi s termínem. **Nejde o automatickou omluvenku ani náhradu potvrzení účasti na konkrétní akci**. Preferovat jednoduché zadání intervalu od–do, volitelnou poznámku a přiměřené soukromí důvodu. Podrobné chování je potřeba teprve navrhnout; jde o jediný nově vybraný námět z níže uvedeného seznamu pro možnou implementaci.
+
+### Nezávazný zásobník námětů pro jiné soubory
+
+Následující myšlenky **nejsou v plánu realizace pro Vonici**. Ponecháváme je pouze jako inspiraci při případném nasazení systému v jiném souboru. Nezakládají požadavek na nový modul, položku menu ani úpravu datového modelu:
+
+- samostatný zpěvník, audiobanka a videobanka (místo příloh a příspěvků);
+- obecný inventář hudebních nástrojů, techniky a rekvizit mimo krojový sklad;
+- rezervace zkušeben a dalších prostor;
+- narozeniny, výročí a jubilea členů;
+- veřejná náborová přihláška pro zájemce o členství;
+- formální členská hlasování, například výroční;
+- osobní cestovní údaje pro zahraniční výjezdy (s důrazem na minimalizaci citlivých dat);
+- souhrnné roční statistiky činnosti a účasti;
+- historie kontaktů s pořadateli a organizátory vystoupení;
+- veřejná prezentace vybraných akcí a fotografií na webu.
+
+Externí výpůjčky krojů, kalendářové exporty ICS, finanční agenda a základní evidence repertoáru jsou již popsané jinde v tomto dokumentu; tímto seznamem je znovu nezadáváme.
 
 ---
 
@@ -731,6 +789,19 @@ Možné bezpečnější nastavení:
 
 Před nasazením se musí stanovit pravidla ochrany osobních údajů, přístupů k fotografiím, kontaktům, údajům o dětech a proces správy rodičovských oprávnění. Nelze je považovat za kosmetické nastavení.
 
+### Konfigurovatelné profily samostatnosti a politika komunikace
+
+| Kategorie | Účet dítěte | Chat | Rodičovské zastupování |
+| --- | --- | --- | --- |
+| Předškoláci | Bez vlastní potřeby účtu | Ne | Povinné, jedná rodič |
+| 1. stupeň ZŠ | Volitelný omezený účet | Bez chatu | Povinné |
+| 2. stupeň ZŠ | Vlastní účet | Skupinový chat dle politiky; DM konfigurovat | Povinné |
+| Středoškoláci | Plnohodnotný účet | Dle pravidel souboru | Volitelné |
+
+Jde o **konfigurovatelné profily**, nikoliv neměnné hardcoded věkové hranice. Jedno dítě mohou zastupovat dva rodiče, rodič může zastupovat více dětí; rodič jedná **svým účtem** s evidencí aktéra a dítěte. Rodič může být zároveň vedoucí či člen jiného souboru, žádné pověření se automaticky nepřenáší. Pro jednotlivé soubory lze politiku DM nastavit různě, skupina ji smí pouze zpřísnit. **Zastupování automaticky nezpřístupňuje DM dítěte.**
+
+**Nahlášení zprávy je dostupné všem členům**, dospělým i nezletilým, a zpřístupní pověřené osobě jen nahlášený obsah a nezbytný kontext. Samotné nahlášení nevede automaticky k trestu ani plošnému čtení DM. Konkrétní bezpečnostní postupy při hlášeních a DM nezletilých je nutné dokončit před jejich nasazením (viz `09`).
+
 ## 51. Úkoly a docházka dětí
 
 Na rozdíl od dospělého souboru se od dětských členů neočekává rozsáhlé samostatné zadávání úkolů nebo organizační rozhodování.
@@ -739,7 +810,7 @@ Na rozdíl od dospělého souboru se od dětských členů neočekává rozsáhl
 
 ## 52. Organizační autonomie
 
-Vedení Malé Vonice může mít vlastní skupiny, termíny, odpovědné osoby a schvalovací pravidla. Je třeba rozhodnout, jak úzce bude dětský soubor organizačně propojen s dospělou Vonicí a které údaje mají zůstat oddělené.
+**Rozhodnuto:** Malá Vonica a dospělá Vonica jsou dvě relativně samostatné organizační jednotky na stejné doméně se společnou globální identitou. Mají vlastní skupiny, akce, sklad a komunikační politiku. I společné vystoupení může být samostatnou akcí v každém souboru, s vlastním časem srazu a pokyny. Společná „nadřazená“ organizace ani automatická synchronizace skladů není podmínkou.
 
 **Rozšíření o dětský soubor není součástí V1.0.** Není však vhodné budovat první verzi na předpokladu, že všichni uživatelé jsou dospělí se stejnými komunikačními právy.
 
@@ -775,7 +846,7 @@ Naopak není vhodné předem vytvářet univerzální prostředí, ve kterém si
 
 ## 55. Oddělení organizací
 
-Pokud aplikaci později bude využívat více souborů, každý musí mít vlastní členy, skupiny, události, krojovou evidenci i nastavení. Přístup mezi organizacemi nesmí vznikat náhodně.
+Provoz dospělé Vonice a Malé Vonice počítá se samostatnými soubory již jako **cílový model**; každý má vlastní členy, skupiny, události, krojovou evidenci i nastavení. Přístup mezi organizacemi nesmí vznikat náhodně. Výjimkou je úzce omezený osobní pohled na **vlastní zápůjčku z cizího skladu**, který neuděluje přístup k obsahu cizího souboru.
 
 Jeden člověk však může být členem více souborů. Jeho přístup a pravomoci se pak vyhodnocují pro každý soubor zvlášť.
 
@@ -807,6 +878,12 @@ Pro první reálný provoz jsou podstatné:
 - použitelnost na běžném telefonu;
 - provoz, který nemusí každý týden ručně opravovat jeho autor.
 
+### Offline provoz a zálohy – provozní kompromis
+
+Aplikace je **online-first**. Offline slouží pouze ke čtení poslední uložené kopie **aktivních textových dat a metadat**, bez fotografií, audia a videa; při ztrátě spojení se viditelně oznámí offline režim a **všechny zápisy se zakážou**. Lokální IndexedDB cache se při aktivní online aplikaci aktualizuje přibližně každých **10 minut**, okamžitě při otevření detailu nebo potvrzené změně. Datové sady se srovnávají po modulech přes **ETag**; bez změnového kurzorového deníku a bez fronty offline zápisů. Cache odděluje účty a při obnovení spojení zohlední aktuální oprávnění. Již stažená offline data však nelze na odpojeném zařízení okamžitě odvolat.
+
+Hosting provádí denní zálohy MySQL a souborů s maximálně **14denní historií** (u MySQL větší než 2 GB uvádí jen týdenní zálohování). Jako dodatečnou ochranu plánujeme **týdenní šifrovaný export mimo hosting** včetně příloh a klíčů nutných k obnově DM. Při úplné ztrátě poskytovatele může být ztráta dat až cca **týden**, denní zálohy poskytovatele samy o sobě nezaručují hodinové RPO. Konkrétní exportní a obnovovací postup musí být otestován (viz `01`).
+
 ## 58. Osobní údaje a soukromí
 
 Aplikace bude obsahovat údaje o konkrétních lidech, jejich členství, kontaktech, účasti, přečtení příspěvků či svěřených předmětech. U budoucích dětských skupin může jít navíc o údaje nezletilých.
@@ -814,6 +891,17 @@ Aplikace bude obsahovat údaje o konkrétních lidech, jejich členství, kontak
 Před spuštěním je nutné určit správce údajů, účely zpracování, kdo smí které údaje vidět, pravidla uchování, postup při ukončení členství a způsob řešení žádostí členů. Práva přístupu nelze nahradit pouhým schováním tlačítka ve frontendu. **Ani vedoucí, ani administrátor nesmějí jen díky své roli číst cizí soukromé skupinové diskuse.** Administrátor nesmí získávat přístup tichým přidáním sebe sama do skupiny; členství a zásahy do skupin musí být transparentní a dohledatelné. Superadministrátorský přístup se používá jen výjimečně a je chráněn odpovídajícími provozními opatřeními.
 
 Podrobný právní a bezpečnostní režim bude samostatnou provozní otázkou; tento produktový dokument jej nenahrazuje.
+
+### Životní cyklus osob a skupin (rozhodnuto)
+
+**Člověk, globální účet, členství v konkrétním souboru a pověření jsou různé entity.** Dobrovolný odchod, vyloučení, úmrtí ani deaktivace dlouhodobě neaktivního účtu **automaticky nemažou historickou osobu** či záznamy autoritativní evidence.
+
+- **Bývalý člen:** globální účet a omezený osobní přehled zejména otevřených zápůjček zůstane, ale souborová interní komunikace, skupiny, seznam členů a nové akce se znepřístupní. V jiném souboru může být nadále aktivní. Dřívější obsah zachován; bývalý člen jej už sám zpětně neupravuje ani nemaže. Zákonné žádosti o výmaz posuzovat individuálně.
+- **Vyloučení:** okamžité odebrání dotčeného souborového přístupu bez automatického zásahu do jiných členství; otevřené závazky se neuzavírají. Možný zvláštní celosystémový bezpečnostní blok.
+- **Úmrtí:** zneplatnit relace, znemožnit přihlášení a zastavit notifikace, zachovat potřebnou historii. „Zesnulý člen“ lze na profilu **volitelně zveřejnit pouze vědomým rozhodnutím** oprávněného správce; neotevírat DM pozůstalým automaticky.
+- **Návrat:** obnovit členství téže osoby bez automatického obnovení někdejších pověření.
+- **Dlouhodobá neaktivita:** u bývalého člena bez dalších aktivních rolí či závazků lze po orientačně **3–5 letech** předem avizovanou e-mailovou výzvou deaktivovat účet. Zachovat nezbytnou osobní historii. Konkrétní lhůty výmazu/kontaktů/IP samostatně posoudit.
+- **Skupiny:** aktivní → archivovaná (read-only, bez notifikací) → skutečně smazaná. **Smazat lze pouze archivovanou skupinu** a jen oprávněným správcem s potvrzením. Odstraní výlučně skupinové zprávy, nástěnku, ankety a výlučné přílohy; nezávislé evidenční záznamy a jinde používané počítačové soubory zůstávají. Archiv lze znovu aktivovat.
 
 ## 59. Webová aplikace, technologie a hosting – pouze směr
 
@@ -840,7 +928,7 @@ Výjimkou mohou být jen funkce, bez nichž by nebylo možné splnit původní d
 | Etapa | Zaměření | Podmínky / výsledek |
 | --- | --- | --- |
 | **Současné demo** | Frontendový prototyp a testování obrazovek | Ověřování uživatelských postupů, mock data, připomínky |
-| **0.9 – pilot** | První skutečná data a omezený provoz | Reálné účty, akce, nástěnky, docházka, použitelný krojový sklad a základ inventury; ověření záznamů externistů, soukromí skupin, správců a omezení přístupu; test s vybranými členy a krojárkami |
+| **0.9 – pilot** | První skutečná data a omezený provoz | Reálné účty, akce, nástěnky, docházka, použitelný krojový sklad a základ inventury; ověření záznamů externistů, soukromí skupin, správců a omezení přístupu; test s vybranými členy a krojařkami |
 | **1.0 – první provoz** | Běžné používání dospělou Vonicí | Ověřené postupy, spolehlivé ukládání, práva, zálohy, použitelná mobilní aplikace a vyřešené upozorňování |
 | **1.x – stabilizace** | Zlepšování podle pilotu | Opravy, přehledy, drobné usnadnění práce, případně lepší exporty a notifikace |
 | **2.0 – úkoly** | Delegování odpovědnosti | Osobní, přiřazené, skupinové a organizační úkoly s vazbou na akce; konkrétní rozsah se upřesní |
@@ -868,7 +956,7 @@ Vedoucí založí zkoušku → člen ji uvidí → potvrdí účast → vedoucí
 
 ### Scénář B: krojový sklad
 
-Krojárka zaeviduje číslovaný díl i neočíslované doplňky → zařadí je do kompletu → předá komplet členovi či externistovi → u částečného vrácení doplní poznámku ke konkrétní součásti → provede inventuru → vidí zjištěné nesrovnalosti a historii.
+Krojařka zaeviduje číslovaný díl i neočíslované doplňky → zařadí je do kompletu → předá komplet členovi či externistovi → u částečného vrácení doplní poznámku ke konkrétní součásti → provede inventuru → vidí zjištěné nesrovnalosti a historii.
 
 ### Scénář C: komunikace
 
@@ -876,7 +964,7 @@ Vedoucí zveřejní oznámení pro určené skupiny → oprávnění členové j
 
 ### Scénář D: host na jednom vystoupení
 
-Krojárka zaeviduje externistu jako vypůjčitele bez nutnosti zřídit mu účet → organizátor jej případně přizve k jednomu zájezdu a udělí mu potřebný přístup → host nevidí interní akce ani nástěnky jiných skupin → po skončení spolupráce může být přístup odebrán, ale zápůjčka a účast zůstanou dohledatelné.
+Krojařka zaeviduje externistu jako vypůjčitele bez nutnosti zřídit mu účet → organizátor jej případně přizve k jednomu zájezdu a udělí mu potřebný přístup → host nevidí interní akce ani nástěnky jiných skupin → po skončení spolupráce může být přístup odebrán, ale zápůjčka a účast zůstanou dohledatelné.
 
 Tyto scénáře mají být prověřeny **od začátku do konce s reálnými daty a tam, kde je nutné přihlášení, také s účty**, nikoli pouze klikáním v demu.
 
@@ -892,10 +980,10 @@ Tyto scénáře mají být prověřeny **od začátku do konce s reálnými daty
 - [ ] Vedoucí bez zásahu vývojáře založí a upraví akci i důležité oznámení.
 - [ ] Členové jednoduše potvrzují účast na telefonu.
 - [ ] Vedoucí zaznamená skutečnou docházku, odlišnou od původní odpovědi člena.
-- [ ] Krojárky samostatně evidují díly, komplety, zápůjčky a vrácení.
-- [ ] Krojárky ověřily skutečný inventurní postup na reálných předmětech včetně neočíslovaných doplňků.
+- [ ] Krojařky samostatně evidují díly, komplety, zápůjčky a vrácení.
+- [ ] Krojařky ověřily skutečný inventurní postup na reálných předmětech včetně neočíslovaných doplňků.
 - [ ] Při vrácení kompletu fungují poznámky ke konkrétním součástem a rozlišení převzatých, ale nepřipravených věcí.
-- [ ] K dispozici jsou základní tiskové nebo exportní přehledy pro krojárky.
+- [ ] K dispozici jsou základní tiskové nebo exportní přehledy pro krojařky.
 - [ ] Recyklace evidenčních čísel nezaměňuje historické záznamy.
 - [ ] Data se spolehlivě ukládají a existuje ověřená záloha i obnova.
 - [ ] Významná oznámení mají reálně fungující doručovací nebo upozorňovací cestu.
@@ -948,7 +1036,7 @@ Zejména:
 - Které informace se musí členům skutečně doručit jako upozornění?
 - Jaká část komunikace může zatím zůstat na původních kanálech?
 
-## 67. Pro krojárky
+## 67. Pro krojařky
 
 - Jaký je konečný seznam názvů číselných řad pro jednotlivé druhy krojů?
 - Jaké neočíslované zaměnitelné doplňky a jejich požadované počty je nutné evidovat?
@@ -956,7 +1044,7 @@ Zejména:
 - Má být při předání části kompletu vždy nutné potvrdit výjimky výslovně?
 - Vyhovuje jednoduché označení „nepřipraveno k zapůjčení“ s volnou poznámkou?
 
-Podrobněji viz dokument `06-specifikace-krojoveho-skladu.md`, určený přímo ke schválení krojárkami.
+Podrobněji viz dokument `06-specifikace-krojoveho-skladu.md`, určený přímo ke schválení krojařkami.
 
 ## 68. Pro budoucí rozšíření
 
@@ -976,7 +1064,7 @@ Podrobněji viz dokument `06-specifikace-krojoveho-skladu.md`, určený přímo 
 
 Souborový systém vzniká proto, že dnes řešíme organizaci souboru na příliš mnoha různých místech. Termíny jsou na Facebooku, domluvy v Messengeru nebo WhatsAppu, docházka v tabulkách a část informací se časem ztrácí. Chceme jedno společné místo, kde člen na telefonu najde důležité zprávy, akce, potvrzení účasti a informace o svých krojích.
 
-Vedoucím systém pomůže s plánováním a skutečnou docházkou, krojárkám s evidencí zápůjček a inventurou. Postupně může přidat také úkoly, kroniku, fotografie, repertoár nebo další organizační nástroje. Nejde o to všechno vytvořit najednou. Jde o to začít funkcemi, které nám konkrétně pomohou už dnes, a na nich rozumně stavět.
+Vedoucím systém pomůže s plánováním a skutečnou docházkou, krojařkám s evidencí zápůjček a inventurou. Postupně může přidat také úkoly, kroniku, fotografie, repertoár nebo další organizační nástroje. Nejde o to všechno vytvořit najednou. Jde o to začít funkcemi, které nám konkrétně pomohou už dnes, a na nich rozumně stavět.
 
 ## 70. Jedna věta, ke které se chceme vracet
 
@@ -994,7 +1082,7 @@ Tento dokument sjednocuje a rozvíjí dřívější podklady; nenahrazuje detail
 - `03-postup-vyvoje.md` – iterativní vývoj a původní MVP;
 - `04-styl-prace.md` – zásady rozhodování a přístup k vývoji;
 - `05-motivace-a-vize.md` – stručný motivační text;
-- `06-specifikace-krojoveho-skladu.md` – detailní uživatelská specifikace ke schválení krojárkami.
+- `06-specifikace-krojoveho-skladu.md` – detailní uživatelská specifikace ke schválení krojařkami.
 
 **Poznámka k návaznosti:** Dřívější dokumenty 02 a 03 počítaly s menším rozsahem první verze. Tento souhrnný dokument odráží novější rozhodnutí: **skutečná docházka a použitelná inventura krojů patří do V1.0**, včetně evidence externistů, neočíslovaných doplňků, poznámek při vracení a základních exportů; úkoly a specializované funkce akcí až do následného rozvoje. Původní úvahy o technologiích zůstávají možnostmi, nikoli automaticky potvrzeným konečným výběrem.
 

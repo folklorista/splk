@@ -128,6 +128,16 @@ Nevhodné zadání:
 - „Udělej univerzální systém pro všechny budoucí potřeby.“
 - „Vymysli všechny tabulky dokonale dopředu.“
 
+## Produktová kritéria ověřená v říjnu 2026
+
+- **Nejdřív využít stávající model, nový modul až když přestane stačit.** Repertoár, texty písní nebo nahrávky lze vést jako příspěvky s přílohami ve skupině, sezónní akci jako akci se zapnutými funkcemi, dočasnou koordinaci jako dočasnou skupinu. Nový modul, entita nebo položka menu potřebuje konkrétní důvod (strukturované hledání, výpočet, kontrola), viz `07` kap. 40.
+- Neusilovat o elektronizaci všech domluv; **pokud už se věc řeší online**, má být jednodušší ji vyřídit uvnitř aplikace než přes externí chat, formulář nebo tabulku. Nepřidávat administrativu jen kvůli tomu, že ji systém umí evidovat.
+- **Rozlišovat evidenční zdroj pravdy a komunikační pomůcku:** krojové pohyby oficiálně evidovat; účast je orientační, ale uchovávat historii změn odpovědí pro provozní řešení opakovaných nesouladů.
+- Uživatelské funkce neztotožňovat s oprávněním: přepnutí folklorního souboru, přepnutí přihlašovacího účtu a zastupování dítěte jsou tři různé děje.
+- Nastavení pro děti a jednotlivé soubory mají být **parametry domény**, nikoliv kopie aplikace či nový univerzální permission builder. Pro vysoce citlivé operace stanovit bezpečné serverové hranice.
+- Výchozí „offline“ politika: **prohlížení omezeného uloženého textu, žádné zápisy** a žádná fronta pozdější synchronizace. Při neúspěšném requestu neslibovat, že se změna uložila.
+- Produktová specifikace popisuje odsouhlasené chování; **stav implementace a prioritizace se evidují samostatně**. Starší kapitoly označit jako historický záznam, pokud už jejich předpoklady neplatí.
+
 ## Dlouhodobý směr
 
 První verze má běžet jednoduše na PHP/MySQL hostingu.

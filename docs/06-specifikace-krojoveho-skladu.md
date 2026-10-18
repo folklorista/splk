@@ -1,7 +1,7 @@
-# Krojový sklad – funkční specifikace pro krojárky
+# Krojový sklad – funkční specifikace pro krojařky
 
 **Souborový systém · Verze 0.3 · 15. 10. 2026**  
-**Stav:** Upraveno podle zpětné vazby krojárky a navazující diskuse o neočíslovaných doplňcích a vracení; podklad ke schválení.
+**Stav:** Upraveno podle zpětné vazby krojařky a navazující diskuse o neočíslovaných doplňcích a vracení; podklad ke schválení.
 
 ## 1. Proč krojový sklad digitalizujeme
 
@@ -15,10 +15,10 @@ Aplikace má být použitelná na mobilu přímo u krojů a současně umožňov
 2. **Číselné řady jsou samostatné pro konkrétní druhy krojů.** Číslo `1` tak může současně označovat „horňácká černá 1“, „kopaničká 1“ a „slovenská stará 1“. Identifikaci tvoří společně číselná řada a číslo.
 3. **Evidenční čísla se mohou znovu použít.** Po vyřazení součásti je číslo v její řadě opět volné. Historie původního předmětu zůstane zachována a nikdy se nesmí spojit s historií nové součásti se stejným číslem.
 4. **Komplet má určený seznam součástí, ale jeho složení lze měnit.** Trvalé změny složení se zaznamenávají, aby bylo zpětně dohledatelné, co do kompletu patřilo dříve.
-5. **Komplet se při práci chová jako samostatný držitel součástí.** Krojárka do něj součásti zařazuje a může je z něj přesouvat nebo půjčovat. Není to však přihlášený uživatel ani člověk nesoucí osobní odpovědnost.
+5. **Komplet se při práci chová jako samostatný držitel součástí.** Krojařka do něj součásti zařazuje a může je z něj přesouvat nebo půjčovat. Není to však přihlášený uživatel ani člověk nesoucí osobní odpovědnost.
 6. **Komplet může být neúplný.** Samostatné zapůjčení šátku neznamená, že šátek přestal do kompletu patřit.
 7. **Existují dlouhodobá přidělení i krátkodobé zápůjčky.** Termín vrácení nemusí být u dlouhodobých přidělení vyplněn.
-8. **Zápůjčky, vrácení, převody, změny kompletů a vyřazení zapisují pouze pověřené krojárky.** Běžní členové nemohou evidenci sami měnit.
+8. **Zápůjčky, vrácení, převody, změny kompletů a vyřazení zapisují pouze pověřené krojařky.** Běžní členové nemohou evidenci sami měnit.
 9. **Odpovědnost se řídí oficiální evidencí.** Neohlášené předání mezi členy odpovědnost nepřenáší.
 10. **Zápůjčky mohou mít i externisté a bývalí členové.** Jejich identita a historie musí zůstat dohledatelná, i když nejsou aktivními členy souboru.
 11. **Poznámky lze zapisovat k součásti, k zápůjčce a také při vrácení ke každé konkrétní vracené součásti.** Historická poznámka při vrácení se zachová i po pozdějším vyprání či opravě.
@@ -38,7 +38,7 @@ U samostatně číslované součásti chceme zaznamenat:
 - kdo ji má aktuálně oficiálně svěřenou, nebo zda je ve skladu,
 - historii zápůjček, vrácení, kontrol a případného vyřazení.
 
-**Pro první verzi nejsou potřeba povinné předem dané stavy typu „čisté / špinavé / poškozené“.** Krojárkám zatím stačí textové poznámky. Později lze přidat strukturované stavy, pokud se ukáže, že jsou užitečné.
+**Pro první verzi nejsou potřeba povinné předem dané stavy typu „čisté / špinavé / poškozené“.** Krojařkám zatím stačí textové poznámky. Později lze přidat strukturované stavy, pokud se ukáže, že jsou užitečné.
 
 Je potřeba snadno vyhledávat podle **číselné řady a evidenčního čísla**, druhu kroje či součásti, kompletu a osoby, které je předmět svěřen.
 
@@ -48,7 +48,7 @@ Některé drobné doplňky není účelné jednotlivě označovat. Například v
 
 U takové položky stačí evidovat **druh, požadovaný počet, aktuálně přítomný počet a případnou poznámku**. Pokud je požadován jeden kus, rozhraní může ukazovat prosté **přítomno / chybí**. Pokud má komplet obsahovat dvě mašle, musí být možné zapsat i stav **1 ze 2**.
 
-Při předání a vrácení se sleduje počet odpovídajících kusů, nikoliv jejich nezaměnitelná fyzická identita. Systém si může vést vlastní neviditelné označení záznamu, ale **krojárka nemusí předmět očíslovat, označovat ho štítkem ani ověřovat virtuální číslo na každém vráceném kusu**. Historie zápůjček zachytí druh a počet kusů, které byly vydány a vráceny.
+Při předání a vrácení se sleduje počet odpovídajících kusů, nikoliv jejich nezaměnitelná fyzická identita. Systém si může vést vlastní neviditelné označení záznamu, ale **krojařka nemusí předmět očíslovat, označovat ho štítkem ani ověřovat virtuální číslo na každém vráceném kusu**. Historie zápůjček zachytí druh a počet kusů, které byly vydány a vráceny.
 
 Je důležité rozlišit součást **záměrně bez čísla** od jedinečného předmětu, kterému fyzické číslo zatím chybí a má ho teprve dostat.
 
@@ -66,11 +66,11 @@ U každého kompletu musí být vidět:
 
 ### 4.1 Trvalá změna složení
 
-Krojárka může součást do kompletu přidat, trvale ji odebrat nebo ji přesunout do jiného kompletu. Systém zachová informaci, **kdy a kdo složení změnil**, a původní zápůjčky a inventury se tím zpětně nezmění. K dispozici může být volitelná poznámka s vysvětlením změny.
+Krojařka může součást do kompletu přidat, trvale ji odebrat nebo ji přesunout do jiného kompletu. Systém zachová informaci, **kdy a kdo složení změnil**, a původní zápůjčky a inventury se tím zpětně nezmění. K dispozici může být volitelná poznámka s vysvětlením změny.
 
 ### 4.2 Dočasná zápůjčka z kompletu
 
-Pokud krojárka půjčí samostatně šátek z kompletu, **šátek zůstává součástí jeho určeného složení**, ale označí se jako dočasně nepřítomný. Kompletu se tak zobrazí chybějící díl i osoba, které byl šátek oficiálně svěřen.
+Pokud krojařka půjčí samostatně šátek z kompletu, **šátek zůstává součástí jeho určeného složení**, ale označí se jako dočasně nepřítomný. Kompletu se tak zobrazí chybějící díl i osoba, které byl šátek oficiálně svěřen.
 
 Když se šátek řádně vrátí do kompletu, jeho dostupnost se opět obnoví.
 
@@ -78,17 +78,17 @@ Když se šátek řádně vrátí do kompletu, jeho dostupnost se opět obnoví.
 
 ### 5.1 Jednotlivá součást
 
-Krojárka vybere předmět, osobu, které ho předává, a datum předání. Může doplnit předpokládané vrácení a **poznámku přímo k této konkrétní zápůjčce** – například „na vystoupení“, „předáno bez knoflíku“ nebo „vrátit po Katerinkách“.
+Krojařka vybere předmět, osobu, které ho předává, a datum předání. Může doplnit předpokládané vrácení a **poznámku přímo k této konkrétní zápůjčce** – například „na vystoupení“, „předáno bez knoflíku“ nebo „vrátit po Katerinkách“.
 
 Při vrácení zaznamená skutečné převzetí a může doplnit **samostatnou poznámku právě k vrácení této součásti**, například „vrácena nevypraná“. Historie původní zápůjčky i tato poznámka se zachovají. Vrácení věci automaticky neznamená, že je připravená k další zápůjčce.
 
 ### 5.2 Celý komplet jedním krokem
 
-Krojárka vybere komplet, zobrazí se jeho aktuální seznam dostupných součástí a systém nabídne předání **všech těchto součástí najednou**. Před potvrzením lze snadno zkontrolovat výjimky a případně konkrétní položku z předání vynechat.
+Krojařka vybere komplet, zobrazí se jeho aktuální seznam dostupných součástí a systém nabídne předání **všech těchto součástí najednou**. Před potvrzením lze snadno zkontrolovat výjimky a případně konkrétní položku z předání vynechat.
 
 **Pokud šátek do kompletu patří, ale je právě samostatně půjčený někomu jinému, do nové zápůjčky celého kompletu se nezahrne.** Aplikace na tuto neúplnost upozorní, ale nesmí zaznamenat předání šátku, který nový vypůjčitel nepřevzal.
 
-U zápůjčky kompletu se uloží přesný seznam předaných číslovaných součástí a druhy a množství předaných neočíslovaných doplňků **v okamžiku předání**. Když krojárka později upraví složení kompletu, seznam dříve zapůjčených věcí zůstane stejný.
+U zápůjčky kompletu se uloží přesný seznam předaných číslovaných součástí a druhy a množství předaných neočíslovaných doplňků **v okamžiku předání**. Když krojařka později upraví složení kompletu, seznam dříve zapůjčených věcí zůstane stejný.
 
 ### 5.3 Částečné vrácení a poznámky k jednotlivým součástem
 
@@ -103,11 +103,11 @@ Při vrácení kompletu musí jít jedním krokem potvrdit převzetí většiny 
 
 Poznámka z vrácení se uchová jako **historická informace o konkrétním předání/vrácení**, nikoli jako text, který se přepíše při další zápůjčce. Vedle toho lze upravit aktuální poznámku na kartě součásti. U zaměnitelných doplňků je poznámka vztažena k druhu a počtu kusů v dané zápůjčce.
 
-Krojárka musí mít možnost označit převzatou součást **dočasně nepřipravenou k dalšímu zapůjčení**, například kvůli praní nebo opravě. Pro v1.0 stačí jednoduchá dostupnost a textová poznámka; není nutný podrobný seznam typů závad.
+Krojařka musí mít možnost označit převzatou součást **dočasně nepřipravenou k dalšímu zapůjčení**, například kvůli praní nebo opravě. Pro v1.0 stačí jednoduchá dostupnost a textová poznámka; není nutný podrobný seznam typů závad.
 
 ### 5.4 Odpovědnost za svěřené věci
 
-Pokud má Anička zapůjčený komplet a bez vědomí krojárky dá šátek Lojzovi, systém dál eviduje odpovědnost Aničky. Změní se pouze tehdy, když krojárka oficiální předání zaznamená. Neformální domluva mezi členy evidenci sama o sobě nemění.
+Pokud má Anička zapůjčený komplet a bez vědomí krojařky dá šátek Lojzovi, systém dál eviduje odpovědnost Aničky. Změní se pouze tehdy, když krojařka oficiální předání zaznamená. Neformální domluva mezi členy evidenci sama o sobě nemění.
 
 ## 6. Kdo si může kroje půjčovat
 
@@ -115,11 +115,34 @@ Pokud má Anička zapůjčený komplet a bez vědomí krojárky dá šátek Lojz
 
 **Bývalý člen:** Když odejde ze souboru, přestane být aktivním členem a nebude dál patřit do příslušných aktivních skupin. **Jeho záznam se ale nesmí smazat** – kvůli historii členství, akcí, zápůjček, odpovědnosti i dohledávání krojů. Pokud má stále něco zapůjčeného, musí být nadále dohledatelný jako vypůjčitel. Ukončení členství samo o sobě zápůjčku neuzavírá.
 
-**Externista:** Krojárka může zapůjčit kroj i člověku, který členem souboru není a nemusí mít přístup do aplikace. Stačí možnost jej jednoznačně evidovat jako vypůjčitele a podle potřeby doplnit kontaktní údaj. Není nutné jej kvůli zápůjčce zařazovat do některé ze souborových skupin.
+**Externista:** Krojařka může zapůjčit kroj i člověku, který členem souboru není a nemusí mít přístup do aplikace. Stačí možnost jej jednoznačně evidovat jako vypůjčitele a podle potřeby doplnit kontaktní údaj. Není nutné jej kvůli zápůjčce zařazovat do některé ze souborových skupin.
 
 **Externista se však může stát také hostem konkrétní akce** nebo po určitou dobu spolupracovat se souborem. V takovém případě může dostat účet a cílený přístup ke konkrétní akci či určené skupině; samotná evidence zápůjčky mu jej automaticky nedává. Podrobnější pravidla řeší celková specifikace systému `07-souborovy-system-vize-funkce-roadmapa.md`.
 
 Přístup bývalých členů k ostatním částem aplikace bude určen pravidly členství a oprávnění. Zachování historie **neznamená automaticky zachování přístupu**.
+
+## 6A. Osobní zápůjčka napříč folklorními soubory (doplnění 18. 10. 2026)
+
+**Sklad je autoritativní evidencí pohybů.** Jednotlivé folklorní soubory mají vlastní, navzájem oddělené skladové agendy. Zápůjčka se může týkat osoby, která **není členem skladu vydávajícího souboru**.
+
+- Příklad: krojařka Malé Vonice vydá Ádě z dospělé Vonice „Záleský komplet Z12“. Ve skladu Malé Vonice je Áďa externí vypůjčitelka. **Členství ani přepnutí kontextu Malé Vonice jí nevzniká.**
+- Pokud je externí vypůjčitel spolehlivě propojen s již existující **globální osobou**, zápůjčka se mu zobrazí v osobním přehledu **Moje kroje** s původem „Zapůjčeno z Malé Vonice“. Vidí jen své svěřené věci, součásti, termíny a pokyny určené vypůjčiteli, nikoliv další položky ani členy cizího skladu.
+- Externistu je možné vést **bez účtu**; dodatečné propojení s globální identitou musí proběhnout bezpečně, bez obecného seznamu všech účtů pro krojařku cizího souboru a bez náhodného propojení stejnojmenných osob.
+- Přímá osobní zápůjčka **nezakládá duplicitní skladovou položku** v dospělé Vonici. Autoritativní evidence je u vydávajícího skladu.
+- Po odchodu člena z jeho domovského souboru zůstává osobní přehled nevrácených krojů přístupný v omezeném rozsahu, aniž by se tím vracela oprávnění k souboru.
+
+## 6B. Dočasný příjem cizích krojů a hromadné předání
+
+Kromě výdeje vlastních krojů systém musí umět také **převzít cizí komplety či součásti do dočasné správy** od jiného folklorního souboru, který může, ale nemusí aplikaci používat.
+
+- Příjem obsahuje vlastníka/zapůjčitele (organizace nebo externí osoba), datum převzetí, případný termín vrácení, stav, původní evidenční čísla a aktuálního držitele. **Původní čísla se nepřečíslují** do vlastní číselné řady; interní ID se vytváří zvlášť, i kdyby cizí číslo kolidovalo s místním.
+- Dvě úrovně podrobnosti: **celý komplet jako jedna evidovaná jednotka**, nebo detailní evidence jeho součástí. Krojařka nemá povinnost rozepisovat stovky dílů jen kvůli krátké výpůjčce.
+- Převzaté komplety lze ve vlastním skladu dále **přidělit členům**. Je nutné rozlišovat **vlastníka**, **evidující sklad** a **aktuálního držitele**. Dočasný příjem nekončí, dokud nebylo vrácení či chybějící části vypořádáno; lze částečně vracet a dokumentovat nesrovnalosti.
+- Po vrácení vlastníkovi položka přestává být **aktivním inventářem**, ale evidenční historie předání a vypořádání zůstává.
+- Příklad interního předání **10 kompletů z Malé Vonice dospělé Vonici bez určení tanečníků**: sklad Malé Vonice zaznamená výdej externímu vypůjčiteli „Vonica“; sklad dospělé Vonice **samostatně** zaznamená dočasný příjem od „Malé Vonice“ a následná přidělení jednotlivým tanečníkům. Jde o dvě autoritativní evidence **různých etap odpovědnosti**, nikoliv o automatickou synchronizaci stejných skladových položek.
+- Až později lze nabídnout **import/export předávacího seznamu** pro úsporu přepisování, bez povinného propojení databází.
+
+**Provozní pravidlo:** skutečný přesun odpovědnosti či věcí musí být zaznamenán příslušnou krojařkou. Dohoda mimo aplikaci sama záznam nenahrazuje.
 
 ## 7. Inventura
 
@@ -127,10 +150,10 @@ Inventura musí umožňovat ověřovat jednotlivé číslované předměty, **po
 
 Navržený postup:
 
-1. Krojárka zahájí inventuru celého skladu nebo jeho vybrané části.
+1. Krojařka zahájí inventuru celého skladu nebo jeho vybrané části.
 2. Postupně prochází krojové součásti, případně celé komplety, a zaznamenává výsledky fyzické kontroly.
 3. U předmětů ve skladu potvrdí, že je skutečně viděla a zkontrolovala.
-4. **U věcí svěřených členům nebo externistům stačí osobní kontrola a potvrzení krojárky.** Samotné tvrzení vypůjčitele bez takového ověření není inventurní kontrolou.
+4. **U věcí svěřených členům nebo externistům stačí osobní kontrola a potvrzení krojařky.** Samotné tvrzení vypůjčitele bez takového ověření není inventurní kontrolou.
 5. Aplikace rozlišuje zkontrolované, dosud nezkontrolované a problémové položky. Zvlášť ukazuje věci, které jsou podle evidence mimo sklad.
 6. Lze poznamenat nesrovnalost, poškození či jiný komentář zjištěný při kontrole.
 7. Výsledek inventury se uloží a je dostupný pro pozdější porovnání. Pozdější změny zápůjček ho zpětně nepřepisují.
@@ -152,7 +175,7 @@ Pokud je předmět stále evidován jako zapůjčený, systém musí na tuto sku
 
 ## 9. Viditelnost a oprávnění
 
-**Krojárky** mohou zapisovat a upravovat krojové součásti, komplety, zápůjčky, vrácení, inventury a vyřazení. Mohou rovněž používat všechny potřebné přehledy, tisk a export.
+**Krojařky** mohou zapisovat a upravovat krojové součásti, komplety, zápůjčky, vrácení, inventury a vyřazení. Mohou rovněž používat všechny potřebné přehledy, tisk a export.
 
 **Běžný člen** může vidět vlastní oficiálně svěřené kroje a související údaje. Nemůže sám převádět součásti mezi lidmi nebo měnit oficiální evidenci.
 
@@ -177,25 +200,37 @@ Konkrétní podobu tiskových sestav a exportní formáty ještě doladíme. U e
 
 **A. Číselné řady:** „Horňácká černá 1“, „kopaničká 1“ a „slovenská stará 1“ mohou být tři různé košile. Po vyřazení lze číslo v dané řadě použít znovu bez záměny historie.
 
-**B. Doplnění kompletu:** Krojárka přidá novou součást ke kompletu. Od toho okamžiku do něj patří, ale starší zápůjčky kompletu se zpětně nedoplňují.
+**B. Doplnění kompletu:** Krojařka přidá novou součást ke kompletu. Od toho okamžiku do něj patří, ale starší zápůjčky kompletu se zpětně nedoplňují.
 
 **C. Dočasné vypůjčení šátku:** Šátek patří do kompletu, ale je oficiálně půjčen Lojzovi. Komplet je neúplný; ostatní dostupné části lze půjčit společně.
 
-**D. Předání neúplného kompletu:** Krojárka jedním úkonem půjčí všechny aktuálně dostupné součásti kompletu Aničce. Šátek u Lojzy se do této zápůjčky nezahrne.
+**D. Předání neúplného kompletu:** Krojařka jedním úkonem půjčí všechny aktuálně dostupné součásti kompletu Aničce. Šátek u Lojzy se do této zápůjčky nezahrne.
 
 **E. Částečné vrácení:** Anička vrátí všechno kromě jedné součásti. Zápůjčka zůstává pro tuto součást otevřená a dohledatelná.
 
-**F. Externista:** Pověřená krojárka zapůjčí kroj člověku mimo soubor, aniž by jej musela zakládat jako aktivního člena.
+**F. Externista:** Pověřená krojařka zapůjčí kroj člověku mimo soubor, aniž by jej musela zakládat jako aktivního člena.
 
 **G. Odchod člena:** Člen odejde ze souboru, ale jeho historie i případné otevřené zápůjčky zůstanou v evidenci.
 
-**H. Osobní kontrola:** Krojárka osobně ověří kroj držený bývalým členem a označí jej v inventuře jako zkontrolovaný.
+**H. Osobní kontrola:** Krojařka osobně ověří kroj držený bývalým členem a označí jej v inventuře jako zkontrolovaný.
 
-**I. Výpis do tisku:** Krojárka připraví seznam kompletů nebo zapůjčených věcí pro kontrolu mimo aplikaci.
+**I. Výpis do tisku:** Krojařka připraví seznam kompletů nebo zapůjčených věcí pro kontrolu mimo aplikaci.
 
-**J. Mašle bez čísla:** Komplet má obsahovat dvě úzké mašle. Předány jsou dvě, vrácena jedna; krojárka eviduje stav 1 ze 2 bez kontroly konkrétního kusu nebo virtuálního čísla.
+**J. Mašle bez čísla:** Komplet má obsahovat dvě úzké mašle. Předány jsou dvě, vrácena jedna; krojařka eviduje stav 1 ze 2 bez kontroly konkrétního kusu nebo virtuálního čísla.
 
-**K. Vrácení nevyprané košile:** Při vrácení celého kompletu krojárka zapíše ke košili „vrácena nevypraná“. Zápůjčka košile se ukončí, její historická poznámka zůstane a košile zatím není připravená k další zápůjčce.
+**K. Vrácení nevyprané košile:** Při vrácení celého kompletu krojařka zapíše ke košili „vrácena nevypraná“. Zápůjčka košile se ukončí, její historická poznámka zůstane a košile zatím není připravená k další zápůjčce.
+
+### Doplněné akceptační scénáře pro zápůjčky mezi soubory
+
+**L. Přímá osobní výpůjčka z jiného skladu:** Malá Vonica půjčí Z12 Ádě; Áďa jej vidí v „Moje kroje“, ale nezískává členství, přepínač ani čtení skladu Malé Vonice.
+
+**M. Neznámý externí vypůjčitel:** Krojařka zapíše skutečnou externí osobu bez účtu; zápůjčka je evidovatelná i bez pozvánky do aplikace.
+
+**N. Dočasný příjem od cizí organizace:** Vonica převezme deset kompletů s původními čísly, rozdělí je členům, částečně vrátí a dohledá historii.
+
+**O. Hromadné předání Malá Vonica → Vonica:** Výdej a příjem jsou samostatné operace dvou skladů; nepředpokládá se znalost konkrétních držitelů v okamžiku prvního výdeje.
+
+**P. Odstranění člena:** Ukončení členství neuzavře zápůjčky ani nevymaže jejich historickou odpovědnost; osoba může mít nadále omezený osobní přehled.
 
 ## 12. Co může počkat na další verze
 
@@ -206,15 +241,15 @@ Konkrétní podobu tiskových sestav a exportní formáty ještě doladíme. U e
 - pokročilé sledování oprav a související úkoly,
 - rozsáhlý obrazový archiv krojů,
 - podrobné statistiky využívání,
-- samoobslužné žádosti členů o zápůjčku (systém evidenci nikdy automaticky nepřevede bez schválení krojárkou).
+- samoobslužné žádosti členů o zápůjčku (systém evidenci nikdy automaticky nepřevede bez schválení krojařkou).
 
 ## 13. Zbývající upřesnění před definitivním schválením
 
 1. **Číselné řady:** Je potvrzeno, že se řady rozlišují podle konkrétního druhu kroje (například „horňácká černá“ či „kopaničká“). Před zavedením dat se ještě doplní přesný seznam používaných názvů řad.
 2. **Tisk a export:** Jaké konkrétní sestavy a formáty potřebujete při první inventuře? Stačí tisková stránka a export do tabulky, nebo už používáte formulář, který má aplikace napodobit?
-3. **Výjimky v předání:** Návrh počítá s možností vypůjčit jen část aktuálně dostupného obsahu kompletu; krojárky mohou potvrdit, zda má být vždy vyžadováno výslovné označení výjimek.
+3. **Výjimky v předání:** Návrh počítá s možností vypůjčit jen část aktuálně dostupného obsahu kompletu; krojařky mohou potvrdit, zda má být vždy vyžadováno výslovné označení výjimek.
 
-Ostatní pravidla vycházejí z poskytnutých odpovědí krojárky. Tento dokument není technickým návrhem databáze ani implementace.
+Ostatní pravidla vycházejí z poskytnutých odpovědí krojařky. Tento dokument není technickým návrhem databáze ani implementace.
 
 ## 14. Schválení
 

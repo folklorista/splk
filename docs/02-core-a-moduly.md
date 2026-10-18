@@ -28,7 +28,7 @@ Moduly řeší konkrétní oblasti:
 
 ## Multi-tenant připravenost
 
-I když první verze poběží jen pro jeden soubor, má být od začátku připravená na více souborů.
+První provozní zaměření zůstává dospělá Vonica, ale cílový model počítá s dospělou Vonicí a samostatnou Malou Vonicí na **jedné doméně a se společným přihlášením**.
 
 Proto má být v modelu pojem:
 
@@ -48,7 +48,7 @@ Příklady entit s vazbou na soubor:
 - dokumenty,
 - nastavení.
 
-Smyslem není hned implementovat složité rozhraní pro více organizací. Smyslem je nepřijít později na to, že se musí doplnit `ensemble_id` do celé aplikace.
+Souborový kontext se musí přepínat v rozhraní i kontrolovat na serveru. Osobní přehled agreguje údaje napříč přístupnými soubory; společné vystoupení může být samostatnou akcí v každém z nich. Nezavádět povinné sdílené skladové položky ani „nadřazenou organizaci“ jen kvůli společné doméně.
 
 ## Skupiny jako základ pravidel
 
@@ -82,26 +82,41 @@ Skupiny se budou používat pro:
 První návrh core entit:
 
 ```text
-ensembles
+persons
 users
-ensemble_members
+user_person_links
+ensembles
+ensemble_memberships
+parent_child_links
 groups
-group_members
-roles
-member_roles
+group_memberships
+mandates
+mandate_assignments
 ensemble_modules
+sessions
 ```
 
 Význam:
 
-- `ensembles` – jednotlivé soubory / organizace,
-- `users` – přihlašovací účty,
-- `ensemble_members` – členství uživatele v konkrétním souboru,
-- `groups` – skupiny uvnitř souboru,
-- `group_members` – zařazení členů do skupin,
-- `roles` – role typu admin, vedoucí, člen,
-- `member_roles` – role člena v konkrétním souboru,
-- `ensemble_modules` – zapnuté moduly a jejich nastavení.
+- `persons` – evidované fyzické osoby, včetně dětí, bývalých členů a externích vypůjčitelů bez účtu;
+- `users`, `user_person_links` – přihlašovací účty a bezpečná vazba na osobu;
+- `ensembles`, `ensemble_memberships` – samostatné folklorní soubory a historizované členství osoby v konkrétním souboru;
+- `parent_child_links` – rodičovské/zástupcovské vazby a rozsah jednání za dítě;
+- `groups`, `group_memberships` – skupiny daného souboru a intervaly členství;
+- `mandates`, `mandate_assignments` – **nezávislá pověření** pro soubor, skupinu, akci či modul (nikoli pevně děděná hierarchie admin/vedoucí/člen; viz `08`);
+- `ensemble_modules` – zapnuté moduly a jejich nastavení;
+- `sessions` – serverem spravované, odvolatelné přihlašovací relace.
+
+Jde o **logické entity, nikoli definitivně schválená jména tabulek**. Přesná implementace se přizpůsobí existujícím modelům po revizi kódu.
+
+## Průřezové vztahy a pravidla
+
+- **Rodičovské zastupování:** předškolák jedná přes zástupce; žák 1. stupně může mít omezený účet bez chatu; 2. stupeň se skupinovým chatem podle politiky souboru a povinným rodičovským účtem; středoškolák s plným účtem a nepovinnou vazbou rodiče. Jde o nastavitelné profily samostatnosti, ne automatické věkové soudy.
+- **Politiky souborů:** pravidla komunikace nezletilých a výchozí parametry akcí jsou specifická pro folklorní soubor; skupina smí bezpečnostní politiku zpřísnit, nikoli obejít.
+- **Osobní agendy napříč soubory:** `Moje kroje` mohou obsahovat zápůjčku ze skladu, v němž osoba nemá členství, **bez přístupu do jeho evidence**. Autoritativní sklad vlastníka a případný dočasný příjem jiným souborem jsou oddělené záznamy.
+- **Životní cyklus:** odchod, vyloučení, úmrtí, návrat a deaktivace dlouho neaktivního účtu jsou odlišné operace; potřebné historické záznamy zůstávají. Archivovat lze skupinu, smazat pouze již archivovanou skupinu (obsah skupiny se skutečně odstraní; nezávislá evidence ne).
+- **Přílohy:** jeden počítačový soubor (`file`) a více kontextových odkazů (`attachment`) v chatu, nástěnce a galeriích. Nelze zpřístupňovat soukromé soubory pouhým uhodnutím jejich URL.
+- **Offline:** pouze lokálně nacachovaný aktivní text a metadata, žádné zápisy; aktuální snímky po modulech s ETag (viz `01`).
 
 ## První moduly
 
@@ -128,7 +143,7 @@ Typický obsah:
 
 ## Nástěnka
 
-Modul nástěnky slouží pro oznámení a interní sdělení. Každá skupina má jednu vlastní nástěnku, kterou vidí jen její členové (a administrátor).
+Modul nástěnky slouží pro oznámení a interní sdělení. Každá skupina může mít vlastní nástěnku a chat; obsah vidí jen osoby s příslušným obsahovým oprávněním. **Správa souboru sama o sobě nezpřístupňuje soukromý obsah skupiny** (viz `08`).
 
 Základní funkce:
 
