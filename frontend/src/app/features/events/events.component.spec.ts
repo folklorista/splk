@@ -125,10 +125,14 @@ describe('EventsComponent', () => {
     expect(fixture.componentInstance.ownStatus(fixture.componentInstance.events()[0])).toBe('no');
   });
 
-  it('upozornění počítá nadcházející akce bez mé odpovědi a kliknutí zapne filtr nepotvrzených', () => {
+  it('upozornění počítá akce s aktivní výzvou bez mé odpovědi a kliknutí zapne filtr', () => {
     configure({ view: 'calendar' });
-    const answered: AppEvent = { ...upcoming, id: 4, attendance: [{ eventId: 4, memberId: 1, status: 'yes' }] };
-    eventsSpy.getEvents.and.returnValue(of([event, upcoming, answered, foreign]));
+    const soon = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
+    const due: AppEvent = { ...upcoming, startsAt: soon, endsAt: soon };
+    const answered: AppEvent = { ...due, id: 4, attendance: [{ eventId: 4, memberId: 1, status: 'yes' }] };
+    // Vzdálená akce (2099) ještě nevyzývá – do upozornění se nepočítá
+    const far: AppEvent = { ...upcoming, id: 5 };
+    eventsSpy.getEvents.and.returnValue(of([event, due, answered, foreign, far]));
     const fixture = TestBed.createComponent(EventsComponent);
     fixture.detectChanges();
     const component = fixture.componentInstance;

@@ -77,6 +77,30 @@ export class EventsService {
     return of(newEvent).pipe(delay(300));
   }
 
+  // Série nácviků: každý výskyt jako samostatná akce, vynechané se stavem „Vynecháno + důvod“.
+  // Do historie (a chatu skupiny) jde jediný záznam za celou sérii.
+  createSeries(base: Omit<AppEvent, 'id'>, occurrences: { startsAt: string; endsAt: string; skippedReason?: string }[]): Observable<AppEvent[]> {
+    const scope = eventOrganizerScope(this.access.subject());
+    const allowed = scope.ensembleWide || (base.organizerGroupIds ?? []).some((g) => scope.groupIds.includes(g));
+    if (!allowed) return throwError(() => new AccessDeniedError('Akce zakládá pověřený organizátor.'));
+    if (!occurrences.length) return throwError(() => new Error('Série nemá žádný termín.'));
+    const current = this.eventsSubject.value;
+    const firstId = Math.max(...current.map((e) => e.id), 0) + 1;
+    const seriesId = Math.max(...current.map((e) => e.seriesId ?? 0), 0) + 1;
+    const created: AppEvent[] = occurrences.map((o, i) => ({ ...base, id: firstId + i, seriesId, startsAt: o.startsAt, endsAt: o.endsAt, skippedReason: o.skippedReason }));
+    this.eventsSubject.next([...current, ...created]);
+    const skipped = created.filter((e) => e.skippedReason).length;
+    const first = created.find((e) => !e.skippedReason) ?? created[0];
+    this.audit.record({
+      action: 'series-created',
+      actorId: this.access.memberId() ?? 0,
+      eventId: first.id,
+      groupIds: eventGroupIds(first),
+      details: `${created.length} termínů${skipped ? `, z toho ${skipped} vynecháno` : ''}`,
+    });
+    return of(created).pipe(delay(300));
+  }
+
   updateEvent(id: number, event: Omit<AppEvent, 'id'>): Observable<AppEvent | undefined> {
     const current = this.eventsSubject.value;
     const index = current.findIndex((e) => e.id === id);

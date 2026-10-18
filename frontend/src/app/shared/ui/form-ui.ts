@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { Observable } from 'rxjs';
 
-// Zpětná vazba k akcím na formulářových stránkách (Krojárna, Správa, akce).
+// Zpětná vazba k akcím na formulářových stránkách (Správa krojů, Správa, akce).
 // Styly tříd cs-* jsou globální: src/styles/_form-ui.scss.
 
 export function errorMessage(error: unknown): string {

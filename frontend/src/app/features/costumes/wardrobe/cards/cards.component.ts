@@ -43,7 +43,7 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
           <h2 class="detail__section-title">Externisté</h2>
           @if (canManage()) { <button type="button" class="btn-secondary no-print" (click)="adding.set(!adding())">+ Přidat externistu</button> }
         </div>
-        <p class="info-box">Externista je člověk mimo soubor, kterému krojárna zapůjčila kroj. Nedostává účet ani členství ve skupinách.</p>
+        <p class="info-box">Externista je člověk mimo soubor, kterému krojařka zapůjčila kroj. Nedostává účet ani členství ve skupinách.</p>
         @if (error()) { <div class="error-box">{{ error() }}</div> }
         @if (adding()) {
           <div class="panel stack">

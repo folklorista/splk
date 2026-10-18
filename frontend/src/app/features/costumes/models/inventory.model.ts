@@ -69,7 +69,7 @@ export interface InventoryVisit {
   id: number;
   inventoryId: number;
   borrower: Borrower;
-  // Chybí = návštěva bez rezervace (krojárna odbavila člověka, který přišel bez termínu)
+  // Chybí = návštěva bez rezervace (krojařka odbavila člověka, který přišel bez termínu)
   slotId?: number;
   status: VisitStatus;
   bookedAt: string;

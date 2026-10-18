@@ -1,3 +1,4 @@
+import { chatVisibility } from '../chat/utils/chat-history';
 import { AccessSubject, canModerateGroup, canReadGroupContent, canSeeEvent } from '../../core/access/access.utils';
 import { Group } from '../../core/models/group.model';
 import { Member } from '../../core/models/member.model';
@@ -26,7 +27,7 @@ export interface SearchHit {
 export interface SearchInput {
   query: string;
   subject: AccessSubject;
-  viewer: Pick<Member, 'groupJoinedAt'>;
+  viewer: Pick<Member, 'groupIntervals' | 'groupIds'>;
   groups: Group[];
   posts: Post[];
   comments: PostComment[];
@@ -84,8 +85,7 @@ export function searchContent(input: SearchInput): SearchHit[] {
 
   for (const message of input.messages) {
     if (message.deletedAt || !readable.has(message.groupId) || !inGroup(message.groupId) || !inPeriod(message.createdAt)) continue;
-    const joined = input.viewer.groupJoinedAt?.[message.groupId];
-    if (joined && message.createdAt < joined) continue;
+    if (!chatVisibility(readable.get(message.groupId)!, input.viewer)(message.createdAt)) continue;
     const text = plain(message.body);
     if (matches(text)) {
       const group = readable.get(message.groupId)!;

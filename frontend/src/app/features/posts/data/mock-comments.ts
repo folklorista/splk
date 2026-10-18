@@ -26,7 +26,7 @@ function comment(postId: number, author: Member | undefined, body: string, creat
 const authorOf = (postId: number) => MOCK_POSTS.find((p) => p.id === postId)!.authorId;
 
 
-// Taneční: dotaz k soustředění, žádosti o výměnu krojových součástek → odpovídá Sklad
+// Taneční: dotaz k soustředění, žádosti o výměnu krojových součástek → odpovídají Krojařky
 const camper = otherDemoMember([tanecni], 4, [authorOf(1)]);
 const committee = otherDemoMember([vybor, tanecni], 0, [camper?.id ?? 0]);
 const swapper = otherDemoMember([tanecni], 6, [authorOf(4)]);
@@ -38,7 +38,7 @@ const musicians = MOCK_MEMBERS.filter((m) => m.isActive && m.groupIds.includes(m
 const boy = otherDemoMember([kluci], 2, [authorOf(8)]);
 // Holky: zpěvy
 const girl = otherDemoMember([holky], 3, [authorOf(9)]);
-// Malá Vonica, Sklad: domluva uvnitř skupiny
+// Malá Vonica, Krojařky: domluva uvnitř skupiny
 const childrenLeader = otherDemoMember([malaVonica], 1, [authorOf(10)]);
 const seamstress = otherDemoMember([sklad], 1, [authorOf(11)]);
 

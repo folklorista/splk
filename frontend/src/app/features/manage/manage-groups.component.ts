@@ -32,6 +32,7 @@ import { IconComponent } from '../../shared/icon/icon.component';
             </span>
             <div class="item-list__badges">
               <span class="badge">{{ visibilityLabel(row.group) }}</span>
+              @if (row.group.archivedAt) { <span class="badge">Archivovaná</span> }
               @if (row.pending) { <span class="badge badge--requires-action">{{ row.pending }} čeká</span> }
               @if (!row.owner) { <span class="badge badge--requires-action">bez správce</span> }
             </div>

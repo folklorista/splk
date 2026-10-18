@@ -79,7 +79,7 @@ export function slugify(name: string): string {
         <div class="mg__danger">
           @if (feedback.error()) { <p class="cs-error" role="alert">{{ feedback.error() }}</p> }
           <button type="button" class="cs-btn cs-btn--danger" (click)="remove(g.id, g.name)">Smazat skupinu</button>
-          <span class="cs-hint">Členové o skupinu přijdou, její příspěvky a chat zůstanou jen v datech. Pro dočasné skupiny raději skupinu skryjte.</span>
+          <span class="cs-hint">Smazání je nevratné: odstraní příspěvky, komentáře a chat skupiny a členové o ni přijdou. Akce, docházka a krojová evidence zůstanou.</span>
         </div>
       }
     } @else {
@@ -112,7 +112,7 @@ export class ManageGroupComponent {
   private groupId = Number(this.route.snapshot.paramMap.get('id'));
   readonly group = computed(() => this.groupsService.groups().find((g) => g.id === this.groupId));
   readonly canRead = computed(() => !!this.group() && canReadGroupContent(this.access.subject(), this.group()!));
-  readonly canDelete = computed(() => canDeleteGroup(this.access.subject()));
+  readonly canDelete = computed(() => canDeleteGroup(this.access.subject(), this.group()));
   readonly isAdmin = this.access.isEnsembleAdmin;
 
   readonly iconOptions = GROUP_ICON_OPTIONS;
@@ -140,7 +140,7 @@ export class ManageGroupComponent {
     const d = this.settings().newGroupDefaults;
     this.feedback.run(
       this.membership.createGroup(
-        { name: this.name().trim(), slug: slugify(this.slug()), icon: this.icon(), visibility: d.visibility, chatEnabled: d.chatEnabled, boardEnabled: d.boardEnabled, defaultTab: d.defaultTab },
+        { name: this.name().trim(), slug: slugify(this.slug()), icon: this.icon(), visibility: d.visibility, chatEnabled: d.chatEnabled, boardEnabled: d.boardEnabled, defaultTab: d.defaultTab, chatHistory: d.chatHistory ?? 'open' },
         this.ownerId() ?? undefined,
       ),
       (group) => this.router.navigate(['/app/manage/groups', group.id]),
@@ -148,7 +148,7 @@ export class ManageGroupComponent {
   }
 
   remove(id: number, name: string): void {
-    if (!confirm(`Opravdu smazat skupinu ${name}?`)) return;
+    if (!confirm(`Opravdu nevratně smazat archivovanou skupinu ${name} včetně příspěvků a chatu?`)) return;
     this.feedback.run(this.membership.deleteGroup(id), () => this.router.navigate(['/app/manage/groups']));
   }
 }

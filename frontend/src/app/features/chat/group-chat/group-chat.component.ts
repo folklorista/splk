@@ -29,6 +29,7 @@ const PREVIEW_LENGTH = 140;
 
 // Chat skupiny: jedna časová osa se zprávami, aktivitou nástěnky a systémovými událostmi.
 // Komentáře jen odkazuje (originál je pod příspěvkem) a odpověď z karty ukládá do diskuze příspěvku.
+import { chatVisibility } from '../utils/chat-history';
 @Component({
   selector: 'app-group-chat',
   standalone: true,
@@ -171,7 +172,7 @@ export class GroupChatComponent implements OnInit, OnDestroy {
   readonly canPost = computed(() => canPostInGroup(this.access.subject(), this.group()));
   private canModerate = computed(() => canModerateGroup(this.access.subject(), this.group()));
 
-  private visibleFrom = computed(() => this.access.currentMember()?.groupJoinedAt?.[this.group().id]);
+  private isVisible = computed(() => chatVisibility(this.group(), this.access.currentMember() ?? undefined));
 
   readonly items = computed<TimelineItem[]>(() => {
     const viewerId = this.me();
@@ -184,7 +185,7 @@ export class GroupChatComponent implements OnInit, OnDestroy {
       comments: this.comments(),
       audit: this.audit.entries(),
       grouping: this.settings().chatGrouping,
-      visibleFrom: this.visibleFrom(),
+      isVisible: this.isVisible(),
     });
   });
 

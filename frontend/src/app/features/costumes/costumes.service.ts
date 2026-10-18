@@ -32,6 +32,7 @@ import {
   issueItem,
   nextId,
   returnLoan,
+  setDefaultCostume,
 } from './utils/costume-ops';
 import { findSeries, isNumberTaken, isWorkOrderOpen, itemLabel, openLoanFor, seriesLabel } from './utils/costume-logic';
 
@@ -192,6 +193,11 @@ export class CostumesService {
         issueItem(state, ctx, { itemId, borrower: input.borrower, dueAt: input.dueAt, note: input.note, inventoryId: input.inventoryId, visitId: input.visitId }),
       );
     });
+  }
+
+  // Výchozí kroj osoby (krojová karta, detail osoby ve Správě)
+  setDefaultCostume(borrower: Borrower, genderId: string | undefined): Observable<void> {
+    return this.store.mutate((state) => setDefaultCostume(state, borrower, genderId), { profile: true });
   }
 
   returnLoan(loanId: number, op: ReturnOp = {}): Observable<CostumeLoan> {

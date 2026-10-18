@@ -107,6 +107,10 @@ export const routes: Routes = [
           import('./features/search/search.component').then((m) => m.SearchComponent),
       },
       {
+        path: 'more',
+        loadComponent: () => import('./features/more/more.component').then((m) => m.MoreComponent),
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('./features/settings/settings.component').then(
@@ -139,7 +143,7 @@ export const routes: Routes = [
         canActivate: [moduleGuard('costumes')],
         loadComponent: () => import('./features/costumes/my-costumes/my-costumes-page.component').then((m) => m.MyCostumesPageComponent),
       },
-      // Krojárna – správa fondu (prohlížení: Náhled do krojárky, zápis: Správa krojů)
+      // Správa krojů – správa fondu (prohlížení: Náhled do správy krojů, zápis: Správa krojů)
       { path: 'wardrobe', pathMatch: 'full', redirectTo: 'wardrobe/stock' },
       {
         path: 'wardrobe/stock',

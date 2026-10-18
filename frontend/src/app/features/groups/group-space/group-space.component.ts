@@ -25,6 +25,7 @@ const TAB_LABELS: Record<GroupSpaceTab, string> = {
 
 // Prostor skupiny (/app/boards/:slug): Chat, Nástěnka, Členové a Správa skupiny (jen správcům).
 // Výchozí záložku určuje nastavení skupiny; záložka je v URL (?tab=), aby šla sdílet a vrátit se na ni.
+import { chatVisibility } from '../../chat/utils/chat-history';
 @Component({
   selector: 'app-group-space',
   standalone: true,
@@ -52,6 +53,9 @@ const TAB_LABELS: Record<GroupSpaceTab, string> = {
         @if (g.description) {
           <p class="group-space__description">{{ g.description }}</p>
         }
+        @if (g.archivedAt) {
+          <p class="group-space__archived" role="status">Archivovaná skupina – jen ke čtení. Nepřibývají zprávy ani příspěvky a skupina neposílá upozornění.</p>
+        }
 
         <nav class="group-tabs" aria-label="Části skupiny">
           @for (t of tabs(); track t) {
@@ -78,6 +82,7 @@ const TAB_LABELS: Record<GroupSpaceTab, string> = {
   `,
   styles: [`
     .group-space__header { margin-bottom: 0; }
+    .group-space__archived { font-size: var(--font-size-sm); padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid var(--color-text-muted); background: var(--color-surface-alt); border-radius: 6px; margin-bottom: var(--spacing-md); }
     .group-space__header .page__title { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); }
     .group-space__description { color: var(--color-text-muted); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm); }
     .group-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--color-border); margin-bottom: var(--spacing-md); overflow-x: auto; }
@@ -127,7 +132,7 @@ export class GroupSpaceComponent {
     const g = this.group();
     const memberId = this.access.memberId();
     if (!g || !memberId) return 0;
-    return unreadChatCount(this.chat.messages(), g.id, memberId, this.chat.lastReadAt(g.id), this.access.currentMember()?.groupJoinedAt?.[g.id]);
+    return unreadChatCount(this.chat.messages(), g.id, memberId, this.chat.lastReadAt(g.id), chatVisibility(g, this.access.currentMember() ?? undefined));
   });
 
   label(tab: GroupSpaceTab): string {

@@ -12,6 +12,13 @@ import { EnsembleSettingsService } from '../ensemble/ensemble-settings.service';
 import { AccessDeniedError, RuleViolationError } from '../../core/access/mandate-rules';
 import { Mandate, MandateKind } from '../../core/models/mandate.model';
 import { isChatSystemEvent } from '../audit/audit-text';
+import { GroupsService } from './groups.service';
+import { PostsService } from '../posts/posts.service';
+import { CommentsService } from '../posts/comments.service';
+import { ChatService } from '../chat/chat.service';
+import { canPostInGroup, canRequestToJoin } from '../../core/access/access.utils';
+import { AccessService } from '../../core/access/access.service';
+import { firstValueFrom } from 'rxjs';
 
 // Vymyšlení členové (mock-members.ts): 1 Jana [2,5], 3 Admin [1,2,5], 4 Péťa [2,4], 7 Evička [2,5,6], 9 Maky [2,5,7]
 const HOLKY = 5;
@@ -65,7 +72,7 @@ describe('MembershipService', () => {
     as(1);
     run(service.approve(request.id));
     expect(members.findMember(4)!.groupIds).toContain(HOLKY);
-    expect(members.findMember(4)!.groupJoinedAt?.[HOLKY]).toBeTruthy();
+    expect(members.findMember(4)!.groupIntervals?.[HOLKY]?.[0].from).toBeTruthy();
     expect(requests.find(request.id)!.status).toBe('accepted');
     const joined = audit.entries().find((e) => e.action === 'member-joined')!;
     expect(joined.actorId).toBe(1);
@@ -190,5 +197,64 @@ describe('MembershipService', () => {
     as(7);
     expect(run(service.updateGroup(HOLKY, { defaultTab: 'board' })).error).toBeUndefined();
     expect(run(service.updateGroup(HOLKY, { name: 'Děvčata' })).error).toEqual(jasmine.any(AccessDeniedError));
+  });
+
+  describe('archivace a smazání skupiny (docs/08 kap. 10.5)', () => {
+    let groups: GroupsService;
+    beforeEach(() => (groups = TestBed.inject(GroupsService)));
+    afterEach(() => {
+      groups.resetCache();
+      TestBed.inject(PostsService).resetCache();
+      TestBed.inject(CommentsService).resetCache();
+      TestBed.inject(ChatService).resetCache();
+      members.resetCache();
+      requests.resetCache();
+    });
+
+    it('archivovat smí hlavní správce i Správa souboru, běžný člen ne; obnovit lze', () => {
+      as(7);
+      expect(run(service.archiveGroup(HOLKY)).error).toEqual(jasmine.any(AccessDeniedError));
+      as(1);
+      expect(run(service.archiveGroup(HOLKY)).value!.archivedAt).toBeTruthy();
+      expect(audit.entries().some((e) => e.action === 'group-archived')).toBeTrue();
+      as(3);
+      expect(run(service.restoreGroup(HOLKY)).value!.archivedAt).toBeUndefined();
+    });
+
+    it('archivovaná skupina je jen ke čtení: nepíše se, nevstupuje, nemění se členství', () => {
+      as(1);
+      run(service.archiveGroup(HOLKY));
+      const access = TestBed.inject(AccessService);
+      const group = groups.findGroup(HOLKY)!;
+      expect(canPostInGroup(access.subject(), group)).toBeFalse();
+      as(4);
+      expect(canRequestToJoin(access.subject(), group)).toBeFalse();
+      as(1);
+      expect(run(service.addMember(HOLKY, 4)).error).toEqual(jasmine.any(RuleViolationError));
+      expect(run(service.invite(HOLKY, 4)).error).toEqual(jasmine.any(RuleViolationError));
+      expect(run(service.updateGroup(HOLKY, { name: 'Jiné' })).error).toEqual(jasmine.any(RuleViolationError));
+    });
+
+    it('smazat lze jen archivovanou skupinu a jen Správou souboru; odstraní příspěvky, komentáře i chat', async () => {
+      const posts = TestBed.inject(PostsService);
+      const chat = TestBed.inject(ChatService);
+      const comments = TestBed.inject(CommentsService);
+      const holkyPosts = (await firstValueFrom(posts.getPosts())).filter((p) => p.groupId === HOLKY).map((p) => p.id);
+      expect(holkyPosts.length).toBeGreaterThan(0);
+
+      as(3);
+      expect(run(service.deleteGroup(HOLKY)).error).toEqual(jasmine.any(RuleViolationError));
+      as(1);
+      run(service.archiveGroup(HOLKY));
+      expect(run(service.deleteGroup(HOLKY)).error).toEqual(jasmine.any(AccessDeniedError));
+
+      as(3);
+      expect(run(service.deleteGroup(HOLKY)).error).toBeUndefined();
+      expect(groups.findGroup(HOLKY)).toBeUndefined();
+      expect((await firstValueFrom(posts.getPosts())).some((p) => p.groupId === HOLKY)).toBeFalse();
+      expect(chat.messages().some((m) => m.groupId === HOLKY)).toBeFalse();
+      expect((await firstValueFrom(comments.getAllComments())).some((c) => holkyPosts.includes(c.postId))).toBeFalse();
+      expect(members.findMember(1)!.groupIds).not.toContain(HOLKY);
+    });
   });
 });

@@ -17,7 +17,7 @@ describe('searchContent', () => {
   const input = (extra: Partial<SearchInput> = {}): SearchInput => ({
     query: 'kroj',
     subject: { memberId: 1, groupIds: [1], isExternal: false, mandates: [] },
-    viewer: {},
+    viewer: { groupIds: [1] },
     groups,
     posts: [post(1, 1), post(2, 2), post(3, 1, { hiddenAt: '2026-10-11T00:00:00' })],
     comments: [{ id: 1, postId: 2, authorId: 9, body: 'kroje mám', createdAt: '2026-10-10T11:00:00', mentionedMemberIds: [], seenByMemberIds: [] }],
@@ -35,9 +35,11 @@ describe('searchContent', () => {
     expect(hits.map((h) => `${h.kind}${h.id}`).sort()).toEqual(['message1', 'post1']);
   });
 
-  it('chat jen od vstupu do skupiny', () => {
-    const hits = searchContent(input({ viewer: { groupJoinedAt: { 1: '2026-10-05T00:00:00' } } }));
-    expect(hits.some((h) => h.kind === 'message')).toBeFalse();
+  it('chat z období „od vstupu“ jen od vstupu do skupiny; otevřená historie i starší zprávy', () => {
+    const viewer = { groupIds: [1], groupIntervals: { 1: [{ from: '2026-10-05T00:00:00' }] } };
+    const fromJoin = groups.map((g) => (g.id === 1 ? { ...g, chatHistory: 'from-join' as const } : g));
+    expect(searchContent(input({ viewer, groups: fromJoin })).some((h) => h.kind === 'message')).toBeFalse();
+    expect(searchContent(input({ viewer })).some((h) => h.kind === 'message')).toBeTrue();
   });
 
   it('Správa souboru neodemyká obsah cizí skupiny ve vyhledávání', () => {

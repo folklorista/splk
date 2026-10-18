@@ -46,7 +46,7 @@ type Panel = 'none' | 'condition' | 'location' | 'work-order' | 'retire';
   template: `
     <div class="page">
       <app-wardrobe-nav />
-      <a routerLink="/app/wardrobe/stock" class="back-link no-print">← Sklad</a>
+      <a routerLink="/app/wardrobe/stock" class="back-link no-print">← Součástky</a>
       @if (!view()) {
         <p class="state-note">Součástka nebyla nalezena.</p>
       }
@@ -246,7 +246,7 @@ export class WardrobeItemDetailComponent {
 
   borrower = (b: Parameters<typeof borrowerLabel>[0]) => borrowerLabel(b, this.members(), this.state()!.externals);
   key = borrowerKey;
-  name = (id: number) => memberName(this.members(), id) || 'krojárna';
+  name = (id: number) => memberName(this.members(), id) || 'krojařka';
   inventoryName = (id: number | undefined) => this.state()?.inventories.find((i) => i.id === id)?.name ?? '';
 
   open(panel: Panel): void {

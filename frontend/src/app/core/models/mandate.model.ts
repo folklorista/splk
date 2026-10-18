@@ -10,7 +10,7 @@ export type MandateKind =
   | 'events'
   // Evidence skutečné docházky – celý soubor, akce skupiny (groupId) nebo jedna akce (eventId)
   | 'attendance'
-  // Správa krojů (Krojárka) a jen náhled do ní
+  // Správa krojů (krojařka) a jen náhled do ní
   | 'costumes'
   | 'costumes-view';
 
@@ -33,7 +33,7 @@ export const MANDATE_LABELS: Record<MandateKind, string> = {
   events: 'Organizace akcí',
   attendance: 'Evidence docházky',
   costumes: 'Správa krojů',
-  'costumes-view': 'Náhled do krojárky',
+  'costumes-view': 'Náhled do správy krojů',
 };
 
 // Pověření s volitelným rozsahem (soubor / skupina / akce); ostatní mají pevný rozsah

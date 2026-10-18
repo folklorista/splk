@@ -25,7 +25,7 @@ Při příštím plánování rozlišit:
 
 Neuvedené termíny dokončení neslibovat.
 
-**Známé rozdíly kódu a dokumentace (k 18. 10. 2026):** skupinu lze ve Správě smazat bez archivace (cíl: `08` kap. 10.5); chat má pevně historii od vstupu (cíl: volba režimu, `08` kap. 10.3); badge akcí nerespektuje předstih výzvy (`07` kap. 18); UI používá název „Krojárna“ a záložku „Sklad“ pro všechny kusy (cíl: „Správa krojů“ a „Součástky“, `10` kap. 11.1); dlouhodobá nedostupnost členů je schválená k realizaci, zatím neimplementovaná (`07`, `10` kap. 4.11); výchozí kroj osoby pro nabídku kusů při vydávání zatím chybí (`06` kap. 5.1a).
+**Známé rozdíly kódu a dokumentace (po vlnách 4 a 5, 18. 10. 2026):** jednorázová nabídka „přidat novou skupinu do lišty“ (`10` kap. 6.2) zatím chybí; průběžný ICS odběr s tokenem a push/e-mail upozornění čekají na backend; jarní, podzimní a pololetní prázdniny zadává organizátor série ručně; dodatečné zrušení výskytu série řeší zatím důležitá změna akce, ne samostatný stav „Zrušeno“.
 
 ## Aktuální stav (2026-10-15)
 
@@ -357,6 +357,26 @@ Implementace: `posts/utils/mentions.ts` (token `@[member:ID]`, vykreslení po se
 - **Nastavení – notifikace**: zapínání notifikací přesunout z `/app/profile` do `/app/settings`.
 - **Nastavení – vzhled**: světlý / tmavý / automatický režim. Barvy přes CSS proměnné, volba uložená v zařízení.
 - **Nastavení – další**: velikost písma (normální / větší / největší), výchozí zobrazení stránky Akce (seznam / kalendář), omezení animací (`prefers-reduced-motion`). Volbu fontu nedoporučuji.
+
+### Vlna 4 – dorovnání dema s dokumentací (hotovo 2026-10-18)
+
+Frontend + mock, bez backendu. Otázky pro krojařky (`06` kap. 13) zůstávají otevřené, vlna na nich nezávisí. Po dokončení vln 4 a 5 nasadit na produkci.
+
+1. **Správa krojů – názvy a výchozí kroj:** „Krojárna“ → „Správa krojů“, záložka „Sklad“ → „Součástky“, pověření „Náhled do správy krojů“, popisek modulu. Výchozí kroj osoby a nabídka kusů podle něj (`06` kap. 5.1a).
+2. **Archivace skupin:** aktivní → archivovaná → smazaná, smazat jen archivovanou (`08` kap. 10.5).
+3. **Režim historie chatu:** otevřená / od vstupu, intervaly členství (`08` kap. 10.3).
+4. **Předstih výzev u akcí:** nácvik 7 dní, vystoupení 14 dní, úprava u akce; měkká uzávěrka (`07` kap. 18).
+5. **Dlouhodobá nedostupnost:** Profil → Moje nedostupnost, štítek v Účasti, upozornění ve formuláři akce (`07`, `10` kap. 4.11).
+6. **„Čeká na vás“ na Přehledu:** jeden blok povinností napříč moduly (`10` kap. 7.2).
+7. **Osobní spodní lišta:** Přehled + 4 volitelná místa, „Více“, Nastavení → Spodní lišta, „Moje místa“ (`10` kap. 6–7.4).
+
+### Vlna 5 – rozšíření akcí (hotovo 2026-10-18)
+
+1. **Zobrazení detailu a důležité změny:** `last_viewed_at`, drobná / důležitá / potvrzovaná změna (`07` kap. 18, `08` kap. 11.3).
+2. **Série nácviků:** výskyty jako samostatné akce, výjimky „Vynecháno + důvod“ (`07` kap. 17).
+3. **Export kalendáře:** jednorázový `.ics` (odběr s tokenem až s backendem).
+
+Implementace: `core/layout/bottom-bar.ts` (výchozí návrh, rozdělení na lištu a „Více“), `features/more`, `features/settings/bottom-bar-settings.component.ts` a `calendar-export.component.ts`, `features/dashboard/pending-actions.ts` (Čeká na vás), `features/availability` (dlouhodobá nedostupnost), `features/chat/utils/chat-history.ts` (režim historie, intervaly členství `Member.groupIntervals`), `features/events/utils/event-reminders.ts`, `event-views.ts`, `event-series.ts`, `ics.ts`, `CostumeState.defaultCostumes` (výchozí kroj), `Group.archivedAt` a `MembershipService.archiveGroup/restoreGroup`. `DEMO_DATA_VERSION` 8.
 
 ### Potom
 

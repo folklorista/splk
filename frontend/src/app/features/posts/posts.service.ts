@@ -155,6 +155,14 @@ export class PostsService {
     return this.changeState(id, (p) => this.isAuthor(p) || this.canModerate(p), () => ({ archivedAt: undefined }), 'post-restored');
   }
 
+  // Smazání archivované skupiny: odstraní její příspěvky (oprávnění ověřuje MembershipService)
+  purgeGroup(groupId: number): number[] {
+    const removed = postsCache.filter((p) => p.groupId === groupId).map((p) => p.id);
+    postsCache = postsCache.filter((p) => p.groupId !== groupId);
+    persist();
+    return removed;
+  }
+
   resetCache(): void {
     resetPostsCache();
   }

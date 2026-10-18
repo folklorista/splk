@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
+import { MyUnavailabilityComponent } from '../availability/my-unavailability.component';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
 import { MembersService, NicknameTakenError } from '../members/members.service';
@@ -9,7 +10,7 @@ import { getFullName } from '../../core/utils/member.utils';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [ReactiveFormsModule, MyUnavailabilityComponent],
   templateUrl: './profile.component.html',
   styles: [`
     .profile-page {

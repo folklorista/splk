@@ -3,7 +3,7 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AccessService } from '../../../core/access/access.service';
 import * as access from '../../../core/access/access.utils';
-import { GROUP_VISIBILITY_LABELS, Group, GroupTab, GroupVisibility } from '../../../core/models/group.model';
+import { CHAT_HISTORY_LABELS, ChatHistoryMode, GROUP_VISIBILITY_LABELS, Group, GroupTab, GroupVisibility, isGroupArchived } from '../../../core/models/group.model';
 import { Member } from '../../../core/models/member.model';
 import { getFullName } from '../../../core/utils/member.utils';
 import { GROUP_ICON_OPTIONS, IconComponent, IconName } from '../../../shared/icon/icon.component';
@@ -42,6 +42,14 @@ interface MemberRow {
           <p class="cs-success" role="status">{{ feedback.success() }}</p>
         }
 
+        @if (isArchived()) {
+          <div class="ga__archived" role="status">
+            <p><strong>Skupina je archivovaná</strong> (od {{ g.archivedAt | date: 'd. M. yyyy' }}) – je jen ke čtení, neposílá upozornění a není v menu. Členství ani nastavení se nemění.</p>
+            @if (canArchive()) {
+              <button type="button" class="cs-btn" (click)="restore()">Obnovit skupinu</button>
+            }
+          </div>
+        } @else {
         @if (canEditMetadata() || canEditCommunication()) {
           <details class="cs-panel" [open]="openSettings()">
             <summary>Nastavení skupiny</summary>
@@ -103,6 +111,17 @@ interface MemberRow {
                 </div>
                 @if (draft().chatEnabled === false && draft().boardEnabled === false) {
                   <p class="cs-hint">Bez chatu i nástěnky je skupina jen organizační (cílení akcí, pověření).</p>
+                }
+                @if (draft().chatEnabled !== false) {
+                  <label class="cs-field">
+                    <span>Historie chatu pro nové členy</span>
+                    <select (change)="patch({ chatHistory: $any($event.target).value })">
+                      @for (option of chatHistoryOptions; track option[0]) {
+                        <option [value]="option[0]" [selected]="(draft().chatHistory ?? 'open') === option[0]">{{ option[1] }}</option>
+                      }
+                    </select>
+                    <span class="cs-hint">Změna platí od teď: zprávy z období „od vstupu“ zůstanou skryté i po přepnutí na otevřenou historii.</span>
+                  </label>
                 }
               }
               <div class="cs-form__actions">
@@ -216,6 +235,8 @@ interface MemberRow {
             </ul>
           </section>
 
+        }
+
           <details class="cs-panel">
             <summary>Historie skupiny</summary>
             <div class="cs-panel__body">
@@ -233,12 +254,21 @@ interface MemberRow {
               </ul>
             </div>
           </details>
+
+          @if (!isArchived() && canArchive()) {
+            <div class="ga__archive">
+              <button type="button" class="cs-btn" (click)="archive()">Archivovat skupinu</button>
+              <span class="cs-hint">Pro skupiny, které už neslouží (zájezd, soustředění). Zůstane jen ke čtení, bez upozornění a mimo menu; lze ji obnovit. Smazat jde jen archivovanou skupinu.</span>
+            </div>
+          }
         }
       </div>
     }
   `,
   styles: [
     `
+      .ga__archived { padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid var(--color-text-muted); background: var(--color-surface-alt); border-radius: 6px; display: flex; flex-direction: column; gap: var(--spacing-sm); align-items: flex-start; margin-bottom: var(--spacing-md); }
+      .ga__archive { margin-top: var(--spacing-lg); display: flex; flex-direction: column; gap: var(--spacing-xs); align-items: flex-start; }
       .ga { display: flex; flex-direction: column; gap: var(--spacing-md); }
       .ga__section { display: flex; flex-direction: column; gap: var(--spacing-sm); }
       .ga__title { font-size: var(--font-size-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-muted); }
@@ -270,6 +300,7 @@ export class GroupAdminPanelComponent {
   readonly feedback = new ActionFeedback();
   readonly iconOptions = GROUP_ICON_OPTIONS;
   readonly visibilityOptions = Object.entries(GROUP_VISIBILITY_LABELS) as [GroupVisibility, string][];
+  readonly chatHistoryOptions = Object.entries(CHAT_HISTORY_LABELS) as [ChatHistoryMode, string][];
   readonly candidateId = signal<number | null>(null);
   readonly fullName = getFullName;
 
@@ -284,6 +315,8 @@ export class GroupAdminPanelComponent {
   readonly canEditCommunication = computed(() => access.canEditGroupCommunication(this.subject(), this.groupId()));
   readonly canManageMembership = computed(() => access.canManageGroupMembership(this.subject(), this.groupId()));
   readonly canAssignManagers = computed(() => access.canAssignGroupManagers(this.subject(), this.groupId()));
+  readonly canArchive = computed(() => access.canArchiveGroup(this.subject(), this.groupId()));
+  readonly isArchived = computed(() => isGroupArchived(this.group()));
   readonly extraordinary = computed(() => this.isEnsembleAdmin() && !access.isGroupManager(this.subject(), this.groupId()));
 
   private groupMandates = computed(() => this.mandatesService.mandates().filter((m) => m.groupId === this.groupId()));
@@ -369,6 +402,17 @@ export class GroupAdminPanelComponent {
     }
   }
 
+  archive(): void {
+    const g = this.group();
+    if (!g || !confirm(`Archivovat skupinu ${g.name}? Zůstane jen ke čtení, bez upozornění a zmizí z menu.`)) return;
+    this.feedback.run(this.membership.archiveGroup(g.id), undefined, 'Skupina archivována');
+  }
+
+  restore(): void {
+    const g = this.group();
+    if (g) this.feedback.run(this.membership.restoreGroup(g.id), undefined, 'Skupina obnovena');
+  }
+
   patch(change: Partial<Group>): void {
     this.draft.update((d) => ({ ...d, ...change }));
   }
@@ -384,7 +428,7 @@ export class GroupAdminPanelComponent {
       ? { name: d.name.trim(), slug: d.slug.trim(), icon: d.icon as IconName | undefined, description: d.description?.trim() || undefined, visibility: d.visibility }
       : {};
     const communication = this.canEditCommunication()
-      ? { chatEnabled: d.chatEnabled !== false, boardEnabled: d.boardEnabled !== false, defaultTab: (d.defaultTab ?? 'board') as GroupTab }
+      ? { chatEnabled: d.chatEnabled !== false, boardEnabled: d.boardEnabled !== false, defaultTab: (d.defaultTab ?? 'board') as GroupTab, chatHistory: d.chatHistory ?? 'open' }
       : {};
     this.feedback.run(this.membership.updateGroup(group.id, { ...patch, ...communication }), (g) => this.draft.set(g));
   }

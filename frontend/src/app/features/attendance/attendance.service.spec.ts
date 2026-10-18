@@ -140,4 +140,18 @@ describe('AttendanceService', () => {
 
     expect(result).toEqual([{ eventId: 9999, memberId: 1, status: 'maybe' }]);
   }));
+
+  it('markViewed při každém otevření posune lastViewedAt a firstViewedAt ponechá; potvrzení je zvlášť', fakeAsync(() => {
+    service.markViewed(4242, 8, '2026-10-01T10:00:00Z').subscribe();
+    service.markViewed(4242, 8, '2026-10-05T10:00:00Z').subscribe();
+    service.confirmImportantChange(4242, 8, '2026-10-06T10:00:00Z').subscribe();
+    tick(300);
+    let records: AttendanceRecord[] = [];
+    service.getAttendance(4242).subscribe((r) => (records = r));
+    tick(300);
+    expect(records[0].firstViewedAt).toBe('2026-10-01T10:00:00Z');
+    expect(records[0].lastViewedAt).toBe('2026-10-06T10:00:00Z');
+    expect(records[0].confirmedAt).toBe('2026-10-06T10:00:00Z');
+    expect(records[0].status).toBe('pending');
+  }));
 });

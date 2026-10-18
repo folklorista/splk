@@ -17,6 +17,8 @@ export type AuditAction =
   | 'mandate-revoked'
   | 'group-created'
   | 'group-updated'
+  | 'group-archived'
+  | 'group-restored'
   | 'group-deleted'
   | 'person-created'
   | 'person-updated'
@@ -30,6 +32,7 @@ export type AuditAction =
   | 'post-archived'
   | 'post-restored'
   | 'event-created'
+  | 'series-created'
   | 'event-updated'
   | 'settings-updated';
 

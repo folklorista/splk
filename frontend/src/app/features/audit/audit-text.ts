@@ -30,6 +30,8 @@ export function auditText(entry: AuditEntry, ctx: AuditTextContext): string {
     'mandate-revoked': `${who}: odebráno pověření ${mandate}${scope}`,
     'group-created': `Založena skupina ${group}`,
     'group-updated': `Změněno nastavení skupiny ${group}${entry.details ? ` (${entry.details})` : ''}`,
+    'group-archived': `Skupina ${group} archivována (jen ke čtení)`,
+    'group-restored': `Skupina ${group} obnovena z archivu`,
     'group-deleted': `Smazána skupina ${group}`,
     'person-created': `Založena osoba ${who}`,
     'person-updated': `Upraveny údaje osoby ${who}`,
@@ -43,6 +45,7 @@ export function auditText(entry: AuditEntry, ctx: AuditTextContext): string {
     'post-archived': `Příspěvek archivován ve skupině ${group}`,
     'post-restored': `Příspěvek obnoven z archivu ve skupině ${group}`,
     'event-created': `Založena akce ${ctx.eventTitle(entry.eventId)}`,
+    'series-created': `Založena série ${ctx.eventTitle(entry.eventId)}${entry.details ? ` (${entry.details})` : ''}`,
     'event-updated': `Změna akce ${ctx.eventTitle(entry.eventId)}${entry.details ? `: ${entry.details}` : ''}`,
     'settings-updated': `Změněna konfigurace souboru${entry.details ? ` (${entry.details})` : ''}`,
   };
@@ -51,7 +54,7 @@ export function auditText(entry: AuditEntry, ctx: AuditTextContext): string {
 
 // Které události historie se jako neutrální systémové zprávy promítnou do chatu skupiny.
 // Žádosti, zamítnutí ani interní poznámky do chatu nepatří (docs/08 kap. 8.2, 8.5).
-const CHAT_ACTIONS: AuditAction[] = ['member-added', 'member-removed', 'member-left', 'member-joined', 'post-pinned', 'event-created', 'event-updated'];
+const CHAT_ACTIONS: AuditAction[] = ['member-added', 'member-removed', 'member-left', 'member-joined', 'post-pinned', 'event-created', 'series-created', 'event-updated'];
 
 export function isChatSystemEvent(entry: AuditEntry, groupId: number): boolean {
   if (!entry.groupIds.includes(groupId)) return false;
@@ -80,6 +83,8 @@ export function chatSystemText(entry: AuditEntry, ctx: AuditTextContext): string
       return `${actor} připnul/a příspěvek`;
     case 'event-created':
       return `Nová akce ${ctx.eventTitle(entry.eventId)}`;
+    case 'series-created':
+      return `Nová série ${ctx.eventTitle(entry.eventId)}${entry.details ? ` – ${entry.details}` : ''}`;
     case 'event-updated':
       return `Změna akce ${ctx.eventTitle(entry.eventId)}: ${entry.details ?? ''}`.trim();
     default:

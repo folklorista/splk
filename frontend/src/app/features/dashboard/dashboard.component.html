@@ -1,15 +1,26 @@
 <div class="page">
   <h1 class="page__title">Přehled</h1>
 
-  @if (invitations()) {
-    <a class="events-pending" routerLink="/app/boards">
-      <strong>{{ invitations() }}</strong> {{ invitations() === 1 ? 'pozvánka do skupiny čeká' : 'pozvánky do skupin čekají' }} na vaši odpověď
-    </a>
-  }
-  @if (toDecide()) {
-    <a class="events-pending" routerLink="/app/boards">
-      Ve skupinách, které spravujete, čeká <strong>{{ toDecide() }}</strong> žádostí nebo návrhů na rozhodnutí
-    </a>
+  @if (pendingActions().length) {
+    <section class="pending" aria-labelledby="pending-title">
+      <h2 class="pending__title" id="pending-title">Čeká na vás</h2>
+      <ul class="pending__list">
+        @for (action of pendingActions(); track action.key) {
+          <li class="pending__item">
+            <a class="pending__link" [routerLink]="action.link" [queryParams]="action.queryParams">
+              <span class="pending__text">{{ action.title }}</span>
+              @if (action.detail) { <span class="pending__detail">{{ action.detail }}</span> }
+            </a>
+            @if (action.eventId) {
+              <span class="pending__actions">
+                <button type="button" class="attendance-btn" (click)="setStatus(action.eventId, 'yes')">Přijdu</button>
+                <button type="button" class="attendance-btn" (click)="setStatus(action.eventId, 'no')">Nepřijdu</button>
+              </span>
+            }
+          </li>
+        }
+      </ul>
+    </section>
   }
 
   @if (loading()) {
@@ -66,6 +77,20 @@
       <a class="dashboard__more" routerLink="/app/costumes">Moje kroje →</a>
     </section>
     }
+
+    <section class="dashboard__section places" aria-labelledby="places-title">
+      <h2 class="dashboard__section-title" id="places-title">Moje místa</h2>
+      <div class="places__grid">
+        @for (place of places(); track place.key) {
+          <a class="places__tile" [routerLink]="place.path">
+            <app-icon [name]="place.icon" [size]="20" />
+            <span class="places__label">{{ place.label }}</span>
+            @if (place.badge) { <span class="places__badge">{{ place.badge }}</span> }
+          </a>
+        }
+      </div>
+      <a class="dashboard__more" routerLink="/app/settings" fragment="spodni-lista">Upravit spodní lištu →</a>
+    </section>
 
   </div>
   }

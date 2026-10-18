@@ -102,7 +102,7 @@ export class InventoryService {
     });
   }
 
-  // Rezervace termínu. Člen za sebe (bez pověření), krojárka za kohokoli dotčeného.
+  // Rezervace termínu. Člen za sebe (bez pověření), krojařka za kohokoli dotčeného.
   bookSlot(inventoryId: number, slotId: number, borrower?: Borrower): Observable<InventoryVisit> {
     const self = !borrower;
     return this.store.mutate(

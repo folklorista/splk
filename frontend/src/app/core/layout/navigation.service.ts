@@ -1,7 +1,13 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { Subscription, interval } from 'rxjs';
 import { AccessService } from '../access/access.service';
 import { IconName } from '../../shared/icon/icon.component';
+import { isGroupArchived } from '../models/group.model';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CostumesService } from '../../features/costumes/costumes.service';
+import { myCostumeRows } from '../../features/costumes/utils/costume-logic';
+import { SettingsService } from '../settings/settings.service';
+import { GROUPS_HUB_KEY, Place, orderPlaces, resolveBar, sumBadges } from './bottom-bar';
 import { BoardsService } from '../../features/boards/boards.service';
 import { EventsService } from '../../features/events/events.service';
 import { getUnconfirmedEventsCount, hasBoard, hasChat } from '../utils/visibility.utils';
@@ -26,8 +32,9 @@ export interface NavSection {
 
 const BADGE_REFRESH_MS = 2000;
 
-// Menu podle skutečných přístupů a zapnutých modulů (docs/08 kap. 4) – společné pro sidebar i spodní lištu.
-// Skupiny jen ty, kde je uživatel členem; Správa jen se pověřením Správa souboru.
+// Menu podle skutečných přístupů a zapnutých modulů (docs/08 kap. 4, docs/10 kap. 6) – společné pro sidebar,
+// spodní lištu, stránku Více a „Moje místa“. Skupiny jen ty, kde je uživatel členem; agendy jen s pověřením.
+import { chatVisibility } from '../../features/chat/utils/chat-history';
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
   private eventsBadge = signal(0);
@@ -50,7 +57,8 @@ export class NavigationService {
     const member = this.access.currentMember();
     // Ztlumený chat do badge nepočítáme (zprávy jsou dál vidět v záložce Chat)
     if (!member || this.notify.modeFor(member.id, groupId) === 'muted') return 0;
-    return unreadChatCount(this.chat.messages(), groupId, member.id, this.chat.lastReadAt(groupId, member.id), member.groupJoinedAt?.[groupId]);
+    const group = this.access.myGroups().find((g) => g.id === groupId);
+    return unreadChatCount(this.chat.messages(), groupId, member.id, this.chat.lastReadAt(groupId, member.id), group ? chatVisibility(group, member) : undefined);
   }
 
   // Co čeká na mě: žádosti a návrhy ve skupinách, které spravuji, a pozvánky pro mě
@@ -66,7 +74,7 @@ export class NavigationService {
   readonly groupItems = computed<NavItem[]>(() =>
     this.access
       .myGroups()
-      .filter((g) => hasBoard(g) || hasChat(g))
+      .filter((g) => (hasBoard(g) || hasChat(g)) && !isGroupArchived(g))
       .map((g) => ({ path: `/app/boards/${g.slug}`, label: g.name, icon: g.icon ?? 'megaphone', badge: (this.groupBadges().get(g.id) ?? 0) + (hasChat(g) ? this.chatBadge(g.id) : 0) || undefined })),
   );
 
@@ -83,7 +91,7 @@ export class NavigationService {
     this.access.modules().costumes
       ? [
           { path: '/app/costumes', label: 'Moje kroje', icon: 'shirt' },
-          ...(this.access.canViewCostumeStock() ? [{ path: '/app/wardrobe', label: 'Krojárna', icon: 'clipboard-check' as IconName }] : []),
+          ...(this.access.canViewCostumeStock() ? [{ path: '/app/wardrobe', label: 'Správa krojů', icon: 'clipboard-check' as IconName }] : []),
         ]
       : [],
   );
@@ -94,18 +102,71 @@ export class NavigationService {
     this.access.isEnsembleAdmin() ? [{ path: '/app/manage', label: 'Správa', icon: 'settings' }] : [],
   );
 
-  readonly sections = computed<NavSection[]>(() => [
-    { items: [...this.mainItems(), ...this.groupItems(), ...this.moduleItems()] },
-    { label: 'Soubor', items: [this.groupsHub(), { path: '/app/search', label: 'Hledat', icon: 'search' }, ...this.manageItems()] },
-  ]);
+  // --- Osobní spodní lišta a pořadí míst (docs/10 kap. 6) ---
 
-  // Lišta na mobilu: Přehled, Akce, skupiny, rozcestník skupin, Správa (posouvá se do strany)
-  readonly bottomItems = computed<NavItem[]>(() => [
-    ...this.mainItems().filter((i) => i.path !== '/app/attendance'),
-    ...this.groupItems(),
-    this.groupsHub(),
-    ...this.manageItems(),
-  ]);
+  private settings = inject(SettingsService);
+  private costumeState = toSignal(inject(CostumesService).state$);
+  // Moje kroje navrhujeme do lišty jen tomu, kdo má něco zapůjčeno
+  private hasCostumeLoan = computed(() => {
+    const state = this.costumeState();
+    const memberId = this.access.memberId();
+    return !!state && !!memberId && myCostumeRows(state, memberId).length > 0;
+  });
+
+  // Všechna místa, kam smí přihlášený vstoupit (kromě Přehledu) – nabídka pro lištu, sidebar a „Moje místa“
+  readonly places = computed<Place[]>(() => {
+    const modules = this.access.modules();
+    const groups = this.access.myGroups().filter((g) => (hasBoard(g) || hasChat(g)) && !isGroupArchived(g));
+    return [
+      ...(modules.events ? [{ key: 'events', path: '/app/events', label: 'Akce', icon: 'calendar' as IconName, badge: this.eventsBadge() || undefined, category: 'main' as const }] : []),
+      ...groups.map((g): Place => ({
+        key: `group-${g.id}`,
+        path: `/app/boards/${g.slug}`,
+        label: g.name,
+        icon: g.icon ?? 'megaphone',
+        badge: (this.groupBadges().get(g.id) ?? 0) + (hasChat(g) ? this.chatBadge(g.id) : 0) || undefined,
+        category: 'group',
+      })),
+      { key: GROUPS_HUB_KEY, path: '/app/boards', label: 'Skupiny', icon: 'users', badge: this.pendingRequests() || undefined, category: 'hub' },
+      ...(modules.costumes ? [{ key: 'costumes', path: '/app/costumes', label: 'Moje kroje', icon: 'shirt' as IconName, category: 'costumes' as const, suggest: this.hasCostumeLoan() }] : []),
+      ...(modules.events && this.access.canViewAttendanceReport() ? [{ key: 'attendance', path: '/app/attendance', label: 'Docházka', icon: 'clipboard-check' as IconName, category: 'agenda' as const, writes: true }] : []),
+      ...(modules.costumes && this.access.canViewCostumeStock() ? [{ key: 'wardrobe', path: '/app/wardrobe', label: 'Správa krojů', icon: 'clipboard-check' as IconName, category: 'agenda' as const, writes: this.access.canManageCostumes() }] : []),
+      ...(this.access.isEnsembleAdmin() ? [{ key: 'manage', path: '/app/manage', label: 'Správa', icon: 'settings' as IconName, category: 'agenda' as const }] : []),
+      { key: 'search', path: '/app/search', label: 'Hledat', icon: 'search', category: 'tool' },
+    ];
+  });
+
+  private chosenBar = computed(() => this.settings.settings().bottomBar ?? null);
+
+  readonly resolvedBar = computed(() => resolveBar(this.places(), this.chosenBar()));
+
+  // Místa v pořadí lišty a pak ostatní (sidebar, „Moje místa“ na Přehledu)
+  readonly orderedPlaces = computed(() => orderPlaces(this.places(), this.chosenBar()));
+
+  readonly sections = computed<NavSection[]>(() => {
+    const ordered = this.orderedPlaces();
+    const dashboard: NavItem = { path: '/app/dashboard', label: 'Přehled', icon: 'home' };
+    const agendas = ordered.filter((p) => p.category === 'agenda');
+    return [
+      { items: [dashboard, ...ordered.filter((p) => p.category === 'main' || p.category === 'group' || p.category === 'costumes')] },
+      ...(agendas.length ? [{ label: 'Agendy', items: agendas }] : []),
+      { label: 'Soubor', items: ordered.filter((p) => p.category === 'hub' || p.category === 'tool') },
+    ];
+  });
+
+  // Lišta na mobilu: Přehled + osobní výběr (nejvýš 4 pozice), přetečení pod „Více“. Neposouvá se.
+  readonly bottomItems = computed<NavItem[]>(() => {
+    const { bar, overflow } = this.resolvedBar();
+    const inBar = new Set(bar.map((p) => p.key));
+    // Skupiny mimo lištu se propisují do badge rozcestníku Skupiny
+    const hiddenGroups = this.places().filter((p) => p.category === 'group' && !inBar.has(p.key));
+    const items: NavItem[] = bar.map((p) => (p.key === GROUPS_HUB_KEY ? { ...p, badge: (p.badge ?? 0) + sumBadges(hiddenGroups) || undefined } : p));
+    return [
+      { path: '/app/dashboard', label: 'Přehled', icon: 'home' },
+      ...items,
+      ...(overflow.length ? [{ path: '/app/more', label: 'Více', icon: 'menu' as IconName, badge: sumBadges(overflow) || undefined }] : []),
+    ];
+  });
 
   // Počítání badge běží, dokud je zobrazená aspoň jedna navigace
   start(): void {

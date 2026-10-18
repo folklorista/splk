@@ -72,7 +72,7 @@ Seznam obsahuje i obrazovky dosažitelné jen ze souvisejících míst, nejen p�
 ### 4.1 Přehled ✅ `/dashboard`
 
 - **Přehled**
-  - **Čeká na vás** ◐ – dnes jen pozvánky do skupin a nepotvrzené účasti jako pruhy nahoře; viz návrh v kap. 7.2
+  - **Čeká na vás** ✅ – jeden seznam povinností napříč moduly (kap. 7.2)
     - Pozvánky do skupin ✅ → Skupiny
     - Žádosti o členství ke schválení (správci skupin) `[?]` → Skupina → Správa
     - Nepotvrzené účasti ✅ → Akce
@@ -91,7 +91,7 @@ Seznam obsahuje i obrazovky dosažitelné jen ze souvisejících míst, nejen p�
   - **Novinky z mých skupin** `[?]` – nepřečtené zprávy a příspěvky; dnes jen jako badge v menu
   - **Moje úkoly** `[?]` (až s modulem Úkoly)
   - **Aktuální sezónní téma** `[?]` → zastřešující akce (kap. 4.10)
-  - **Moje místa** `[?]` – dlaždice všech míst, kam uživatel smí, s badge; záložní rozcestník pro místa vyřazená z lišty (kap. 7.4)
+  - **Moje místa** ✅ – dlaždice všech míst, kam uživatel smí, s badge; záložní rozcestník pro místa vyřazená z lišty (kap. 7.4)
     - Upravit lištu → Nastavení → Spodní lišta
 
 ### 4.1a Globální osobní přehled a přepnutí kontextu `[?]`
@@ -114,13 +114,15 @@ Seznam obsahuje i obrazovky dosažitelné jen ze souvisejících míst, nejen p�
     - Popis: název, termín, místo, popis, pokyny ✅
     - **Moje účast** ✅ – odpověď, poznámka, zrušení odpovědi
     - **Účast** ✅ – kdo přijde / nepřijde / neodpověděl; → Detail osoby `[?]`
-      - štítek „nedostupný od–do“ u členů s dlouhodobou nedostupností v termínu akce `[?]` – jen pro pověřené organizátory, informativní (nenahrazuje odpověď)
+      - štítek „nedostupný od–do“ u členů s dlouhodobou nedostupností v termínu akce ✅ – jen pro pověřené organizátory, informativní (nenahrazuje odpověď)
     - **Skutečná docházka** ✅ `(Evidence docházky)`
     - Komentáře k akci `[?]` – doporučení: nevytvářet nový typ chatu, viz kap. 8.1
     - Další sekce podle zapnutých **funkcí akce** `[?]` – Program, Otázky, Pobyt, Obsazení tanců, Úkoly, Kroje k akci, Doprava, Dokumenty a fotky (kap. 4.10)
     - → Napsat účastníkům `[?]` (kap. 4.8)
-    - Úprava akce ✅ `/events/:id/edit` `(Organizace akcí)` – při volbě termínu upozornění „X členů cílových skupin je nedostupných“ `[?]`
-  - Nová akce ✅ `/events/new` `(Organizace akcí)`
+    - Úprava akce ✅ `/events/:id/edit` `(Organizace akcí)` – při volbě termínu upozornění „X členů cílových skupin je nedostupných“ ✅; druh změny drobná / důležitá / s potvrzením ✅
+  - Nová akce ✅ `/events/new` `(Organizace akcí)` – předstih výzvy a měkká uzávěrka ✅, **opakovaná série** s předvyplněnými výjimkami ✅
+  - Důležitá změna a zobrazení detailu ✅ – pruh v detailu, potvrzení přečtení, kdo otevřel po změně
+  - Do kalendáře (.ics) ✅ – jedna akce z detailu, mé akce v Nastavení → Kalendář; průběžný odběr až s backendem
   - **Nastavení modulu Akce** `[?]` `(Organizace akcí v rozsahu souboru)` – kategorie/typy akcí, šablony akcí (docs/07 kap. 33). Dnes jsou kategorie jen v mock datech a žádná obrazovka je nespravuje.
 
 #### Produktové doplnění akcí (18. 10. 2026)
@@ -180,8 +182,7 @@ Docházka je dnes samostatná položka hlavního menu jen pro pověřené. Dopor
 Skutečná podoba se liší od původního návrhu (Součástky / Komplety / Lidé). Komplety nejsou samostatná evidence, ale **šablona v Nastavení**; „Lidé“ se jmenují **Krojové karty**.
 
 - **Správa krojů**
-  - **Sklad** ✅ `/wardrobe/stock` – všechny fyzické kusy podle evidenčních řad
-    - ⚠ Záložka ukazuje **všechny** kusy včetně zapůjčených, ne jen ty ve skladu. Doporučuji ji přejmenovat na **Součástky** (nebo *Evidence*) a „ve skladu“ používat jen jako stav/umístění kusu a filtr. Režim inventury „Ve skladu“ je naopak pojmenovaný správně.
+  - **Součástky** ✅ `/wardrobe/stock` – všechny fyzické kusy podle evidenčních řad (dříve záložka „Sklad“; „ve skladu“ je jen umístění kusu a režim inventury)
     - Filtry podle klasifikace (druh, region, varianta, pohlaví), tisk, export CSV ✅
     - **Detail kusu** ✅ `/wardrobe/stock/:id`
       - Stav, umístění, aktuální držitel / zápůjčka
@@ -192,7 +193,7 @@ Skutečná podoba se liší od původního návrhu (Součástky / Komplety / Lid
     - Nový kus ✅ `/wardrobe/stock/new`, úprava ✅ `/wardrobe/stock/:id/edit`
   - **Krojové karty** ✅ `/wardrobe/cards` – kdo má co zapůjčeno
     - Karta osoby ✅ `/wardrobe/cards/:key` – vydat, vrátit, vyměnit kus, úkol
-      - Výchozí kroj osoby (mužský / ženský / neurčeno) `[?]` – výběr kusu při vydávání primárně nabízí odpovídající součástky, „zobrazit všechny kusy“ jedním klepnutím (`06` kap. 5.1a)
+      - Výchozí kroj osoby (mužský / ženský / neurčeno) ✅ – výběr kusu při vydávání primárně nabízí odpovídající součástky, „zobrazit všechny kusy“ jedním klepnutím (`06` kap. 5.1a)
     - Externisté (držitelé mimo soubor) ✅
   - **Výpůjčky** ✅ `/wardrobe/loans` – jeden řádek = jeden kus u jednoho držitele; historie, export CSV
     - Nová výpůjčka ✅ `/wardrobe/loans/new`
@@ -230,7 +231,7 @@ Správa = **jádro souboru**: osoby, skupiny, pověření, moduly a jejich audit
     - **Detail osoby** ✅ `/manage/members/:id`
       - Osobní údaje: jméno, příjmení, přezdívka, e-mail, telefon ✅
       - Souborová funkce (kronikářka, ekonomka…) – jen informativní ✅
-      - Výchozí kroj `[?]` – stejný údaj jako na krojové kartě (`06` kap. 5.1a)
+      - Výchozí kroj ✅ – stejný údaj jako na krojové kartě (`06` kap. 5.1a)
       - **Členství v souboru** – ukončit / obnovit aktivní členství (historie zůstává) ✅
       - **Skupiny** – přidat do skupiny / odebrat ✅ (sebe přidat nelze – ochrana soukromí skupin)
       - **Pověření** – přidělit / odebrat, s rozsahem soubor / skupina / akce ✅; přechodná pověření označená ✅
@@ -248,8 +249,8 @@ Správa = **jádro souboru**: osoby, skupiny, pověření, moduly a jejich audit
       - Přidat hned / pozvat ✅
       - Čekající žádosti a pozvánky – schválit, zamítnout, zrušit ✅
       - Historie skupiny ✅
-      - **Archivovat / obnovit skupinu** `[?]` – jen ke čtení, bez notifikací, mimo lištu (docs/08 kap. 10.5)
-      - **Smazat skupinu** ◐ – dnes jde smazat přímo; cílově **jen archivovanou skupinu**, po výslovném potvrzení, správcem souboru. Odstraní výlučný obsah skupiny, ne evidenci krojů, docházku ani přílohy používané jinde
+      - **Archivovat / obnovit skupinu** ✅ – jen ke čtení, bez notifikací, mimo lištu (docs/08 kap. 10.5)
+      - **Smazat skupinu** ✅ – **jen archivovanou skupinu**, po výslovném potvrzení, správcem souboru. Odstraní výlučný obsah skupiny, ne evidenci krojů, docházku ani přílohy používané jinde
   - **Pověření** `[?]` – přehled „kdo co smí“ napříč souborem (dnes jen v detailu každé osoby)
     - Seznam podle druhu pověření: kdo spravuje kroje, kdo eviduje docházku, kdo organizuje akce, správci skupin
     - Přechodná pověření k vyřešení
@@ -384,10 +385,11 @@ Až budou upozornění chodit z více modulů (zmínky, DM, úkoly, změna akce,
 Vždy v hlavičce (jméno/avatar, lupa, ozubené kolo) ✅, nelze je odebrat ani přesunout do lišty:
 
 - **Můj profil** ✅ `/profile` – osobní údaje, odhlášení
-  - **Moje nedostupnost** `[?]` (kandidát k realizaci, docs/07) – období od–do s volitelnou poznámkou; přidat / upravit / smazat; rodič zadává za dítě svým účtem. Důvod vidí jen člen a pověření organizátoři
+  - **Moje nedostupnost** ✅ – období od–do s volitelnou poznámkou; přidat / upravit / smazat; rodič zadává za dítě svým účtem. Důvod vidí jen člen a pověření organizátoři
   - Moje skupiny a pověření `[?]` (náhled vlastních přístupů – stejná komponenta jako ve Správě)
 - **Nastavení** ✅ `/settings` – osobní: vzhled (režim, velikost písma), upozornění, výchozí zobrazení akcí. **Nezaměňovat se Správou.**
-  - **Spodní lišta** `[?]` – výběr a pořadí míst (kap. 6.2)
+  - **Spodní lišta** ✅ – výběr a pořadí míst (kap. 6.2)
+  - **Kalendář** ✅ – export mých akcí do .ics (typy akcí, vynechané termíny jako „NENÍ …“)
 - **Hledat** ✅ `/search` – příspěvky, komentáře, zprávy chatu, akce
   - Osoby, kusy krojů (podle evidenčního čísla) `[?]`
 - **Novinky v aplikaci** ✅ `/changelog`
@@ -468,7 +470,7 @@ Každý vidí jinou sadu míst podle členství a pověření. Pevné menu, kter
 
 ### 6.2 Mobil – osobní spodní lišta
 
-**Dnešní stav:** lišta automaticky obsahuje Přehled, Akce, **každou skupinu zvlášť**, rozcestník Skupiny a Správu a při větším počtu se posouvá do strany. Moje kroje a Správa krojů v ní nejsou vůbec. Hlavička na mobilu už má Profil, Hledat a Nastavení ✅.
+**Stav (18. 10. 2026):** implementováno podle pravidel níže ✅ – Přehled pevně, osobní výběr v Nastavení → Spodní lišta, stránka Více (`/more`), „Moje místa“ na Přehledu. Jednorázová nabídka „Přidat novou skupinu do lišty?“ zatím chybí `[?]`.
 
 **Problém dnešního stavu:** posuvná lišta je anti-vzor (položky za okrajem nikdo neobjeví, palec nemá pevné cíle). Obsah se navíc mění s každou novou skupinou a nedá se ovlivnit.
 
@@ -486,7 +488,9 @@ Každý vidí jinou sadu míst podle členství a pověření. Pevné menu, kter
 
 #### Automatický výchozí návrh
 
-Pořadí kandidátů: Akce → skupiny, kde je člen (podle aktivity) → agendy s právem zápisu (Docházka, Správa krojů) → Moje kroje (jen s výpůjčkou) → agendy jen ke čtení a Správa souboru → Zprávy `[?]`.
+Pořadí kandidátů: Akce → skupiny, kde je člen → agendy s právem zápisu (Docházka, Správa krojů) → Moje kroje (jen s výpůjčkou) → agendy jen ke čtení a Správa souboru → Zprávy `[?]`.
+
+- **Běžný člen bez agend** dostane skupiny vždy přímo, pokud se s Akcemi vejdou do 4 pozic; Moje kroje pak najde na Přehledu (karta Moje kroje, Moje místa).
 
 - Vejdou-li se všichni kandidáti do 4 pozic za Přehledem, dostane je přímo.
 - Pokud ne, **skupiny se sloučí do položky Skupiny**. Vejdou-li se pak, hotovo. Jinak se přebytek přesune pod „Více“.

@@ -2,6 +2,13 @@ export type EventType = 'rehearsal' | 'performance' | 'camp' | 'meeting' | 'othe
 
 import { AttendanceRecord } from '../../attendance/models/attendance.model';
 
+export interface EventImportantChange {
+  at: string;
+  note: string;
+  // Výjimečná zpráva, jejíž přečtení má člen výslovně potvrdit
+  requiresConfirmation?: boolean;
+}
+
 export interface AppEvent {
   id: number;
   ensembleId: number;
@@ -17,5 +24,15 @@ export interface AppEvent {
   // Kdo akci pořádá – oddělené od cílení; správu akce dává až pověření (Mandate 'events')
   organizerGroupIds?: number[];
   requiresAction?: boolean;
+  // Předstih výzvy k odpovědi ve dnech; chybí = podle typu (nácvik 7, vystoupení 14), max. 365 (docs/07 kap. 18)
+  reminderLeadDays?: number;
+  // Nepovinná měkká uzávěrka: po ní se výzva zopakuje nerozhodnutým (MOŽNÁ / bez odpovědi)
+  responseDeadline?: string;
+  // Výskyt série nácviků (docs/07 kap. 17) – každý výskyt je samostatná akce
+  seriesId?: number;
+  // Vynechaný výskyt série (svátek, prázdniny): jen informační, nečeká na odpověď
+  skippedReason?: string;
+  // Poslední důležitá změna (organizátor ji výslovně označil): kdy, co a zda vyžaduje potvrzení přečtení
+  importantChange?: EventImportantChange;
   attendance?: AttendanceRecord[];
 }

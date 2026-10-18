@@ -89,6 +89,13 @@ export class CommentsService {
     return of(undefined).pipe(delay(300));
   }
 
+  // Komentáře smazaných příspěvků (smazání archivované skupiny)
+  purgePosts(postIds: number[]): void {
+    const next = this.commentsSubject.value.filter((c) => !postIds.includes(c.postId));
+    this.commentsSubject.next(next);
+    this.persist(next);
+  }
+
   resetCache(): void {
     const initial = [...MOCK_COMMENTS];
     this.commentsSubject.next(initial);

@@ -18,7 +18,7 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
   template: `
     <div class="page">
       <app-wardrobe-nav />
-      <h1 class="page__title">Nastavení krojárny</h1>
+      <h1 class="page__title">Nastavení správy krojů</h1>
       @if (error()) { <div class="error-box" role="alert">{{ error() }}</div> }
       @if (state(); as st) {
         <section class="section">

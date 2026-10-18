@@ -1,3 +1,5 @@
+import { AppEvent } from '../../features/events/models/event.model';
+import { needsResponse } from '../../features/events/utils/event-reminders';
 import { AccessSubject, isEventAudience } from '../access/access.utils';
 
 export function hasBoard(group: { boardEnabled?: boolean }): boolean {
@@ -21,17 +23,14 @@ export function getBoardBadgeCount(posts: any[], comments: any[], groupId: numbe
   return unreadPosts + unseenMentions;
 }
 
-// Počítají se jen nadcházející akce, kterými je člen osloven – na proběhlé už účast potvrzovat nejde
-export function getUnconfirmedEventsCount(events: any[], subject: AccessSubject | null, now = new Date()): number {
+// Akce, které teď čekají na odpověď člena: oslovují ho, nastal předstih výzvy a nemá odpověď
+// (po měkké uzávěrce i MOŽNÁ). Vzdálené akce se do badge nepočítají, i když na ně odpovědět jde.
+export function getUnconfirmedEventsCount(events: AppEvent[], subject: AccessSubject | null, now = new Date()): number {
   if (!subject) return 0;
   const currentMemberId = subject.memberId;
   return events
-    .filter(e => new Date(e.startsAt) >= now)
-    .filter(e => isEventAudience({ id: currentMemberId, groupIds: subject.groupIds, isActive: true, isExternal: subject.isExternal }, e))
-    .filter(e => {
-      const memberAttendance = e.attendance?.find((a: any) => a.memberId === currentMemberId);
-      return !memberAttendance || memberAttendance.status === 'pending';
-    })
+    .filter((e) => isEventAudience({ id: currentMemberId, groupIds: subject.groupIds, isActive: true, isExternal: subject.isExternal }, e))
+    .filter((e) => needsResponse(e, e.attendance?.find((a) => a.memberId === currentMemberId)?.status ?? 'pending', now))
     .length;
 }
 

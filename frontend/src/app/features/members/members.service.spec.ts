@@ -115,15 +115,18 @@ describe('MembersService', () => {
     expect(result).toBeUndefined();
   }));
 
-  it('setGroupMembership zapíše členství i čas vstupu a odebrání ho smaže', () => {
+  it('setGroupMembership vede intervaly členství: vstup otevře, odchod uzavře, návrat otevře nový', () => {
     const member = service.setGroupMembership(1, 7, true, '2026-10-16T10:00:00Z')!;
     expect(member.groupIds).toContain(7);
-    expect(member.groupJoinedAt?.[7]).toBe('2026-10-16T10:00:00Z');
+    expect(member.groupIntervals?.[7]).toEqual([{ from: '2026-10-16T10:00:00Z' }]);
     expect(service.members().find((m) => m.id === 1)?.groupIds).toContain(7);
 
-    const removed = service.setGroupMembership(1, 7, false)!;
+    const removed = service.setGroupMembership(1, 7, false, '2026-10-17T10:00:00Z')!;
     expect(removed.groupIds).not.toContain(7);
-    expect(removed.groupJoinedAt?.[7]).toBeUndefined();
+    expect(removed.groupIntervals?.[7]).toEqual([{ from: '2026-10-16T10:00:00Z', to: '2026-10-17T10:00:00Z' }]);
+
+    const back = service.setGroupMembership(1, 7, true, '2026-10-18T10:00:00Z')!;
+    expect(back.groupIntervals?.[7].length).toBe(2);
   });
 
   it('setActive ukončí členství bez smazání osoby', () => {

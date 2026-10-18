@@ -1,4 +1,4 @@
-// Krojový fond – viz docs/zadani-pro-robota-krojarna-inventury.md (nahrazuje fyzické komplety z docs/06).
+// Krojový fond – viz docs/06 (verze 0.4: fyzický kus, evidenční řada, komplet jako šablona).
 // Doménové entity jsou záměrně oddělené: fyzické umístění, stav součástky, zápůjčka a pracovní úkol
 // se nemíchají do jednoho stavového enumu.
 
@@ -184,6 +184,8 @@ export interface CostumeState {
   workOrders: CostumeWorkOrder[];
   kitTemplates: CostumeKitTemplate[];
   events: CostumeEvent[];
+  // Výchozí kroj osoby: klíč držitele (`member-1`, `external-2`) → pohlaví kroje. Jen řadí nabídku při vydávání (docs/06 kap. 5.1a).
+  defaultCostumes: Record<string, string>;
   // Výchozí kapacita inventurního termínu (počet osob)
   defaultSlotCapacity: number;
   inventories: Inventory[];

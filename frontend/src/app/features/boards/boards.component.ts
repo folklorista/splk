@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { BoardsService } from './boards.service';
 import { AccessService } from '../../core/access/access.service';
 import { canJoinDirectly, canRequestToJoin, canSeeGroup, canReadGroupContent, isGroupMember } from '../../core/access/access.utils';
-import { GROUP_VISIBILITY_LABELS, Group } from '../../core/models/group.model';
+import { GROUP_VISIBILITY_LABELS, Group, isGroupArchived } from '../../core/models/group.model';
 import { GroupsService } from '../groups/groups.service';
 import { JoinRequestsService } from '../groups/join-requests.service';
 import { MembershipService } from '../groups/membership.service';
@@ -105,6 +105,23 @@ import { ActionFeedback } from '../../shared/ui/form-ui';
           }
         </ul>
       }
+
+      @if (archived().length) {
+        <h2 class="hub__heading">Archivované skupiny</h2>
+        <ul class="item-list">
+          @for (group of archived(); track group.id) {
+            <li class="item-list__item item-list__item--link" [routerLink]="['/app/boards', group.slug]">
+              <div class="item-list__row">
+                <span class="item-list__title">
+                  @if (group.icon) { <app-icon [name]="group.icon" [size]="16" /> }
+                  {{ group.name }}
+                </span>
+                <div class="item-list__badges"><span class="badge">jen ke čtení</span></div>
+              </div>
+            </li>
+          }
+        </ul>
+      }
     </div>
   `,
   styles: [
@@ -127,10 +144,15 @@ export class BoardsComponent implements OnInit {
   readonly canCreate = this.access.canCreateGroup;
   readonly isAdmin = this.access.isEnsembleAdmin;
 
-  readonly mine = this.access.myGroups;
+  readonly mine = computed(() => this.access.myGroups().filter((g) => !isGroupArchived(g)));
   readonly others = computed(() => {
     const s = this.access.subject();
-    return this.groupsService.groups().filter((g) => !isGroupMember(s, g.id) && canSeeGroup(s, g) && (g.visibility ?? 'private') !== 'hidden');
+    return this.groupsService.groups().filter((g) => !isGroupArchived(g) && !isGroupMember(s, g.id) && canSeeGroup(s, g) && (g.visibility ?? 'private') !== 'hidden');
+  });
+  // Archivované skupiny, jejichž obsah smím číst (jen ke čtení)
+  readonly archived = computed(() => {
+    const s = this.access.subject();
+    return this.groupsService.groups().filter((g) => isGroupArchived(g) && canReadGroupContent(s, g));
   });
 
   private myPending = computed(() => this.requestsService.requests().filter((r) => isPendingJoinRequest(r) && r.memberId === this.access.memberId()));

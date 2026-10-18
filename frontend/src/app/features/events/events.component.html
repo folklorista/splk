@@ -98,7 +98,7 @@
         <span>Moje odpověď</span>
         <select [value]="filters().response" (change)="setResponseFilter($any($event.target).value)">
           <option value="all">Vše</option>
-          <option value="pending">Nepotvrzené</option>
+          <option value="pending">Čeká na odpověď</option>
           <option value="answered">Potvrzené</option>
         </select>
       </label>

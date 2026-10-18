@@ -35,6 +35,10 @@ export class JoinRequestsService {
     return this.find(id);
   }
 
+  removeForGroup(groupId: number): void {
+    this.commit(requestsCache.filter((r) => r.groupId !== groupId));
+  }
+
   resetCache(): void {
     this.commit([]);
   }

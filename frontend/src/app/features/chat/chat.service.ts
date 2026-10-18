@@ -118,6 +118,11 @@ export class ChatService {
     saveDemoData(READ_STATE, next);
   }
 
+  // Smazání archivované skupiny: odstraní celý její chat
+  purgeGroup(groupId: number): void {
+    this.commit(this._messages().filter((m) => m.groupId !== groupId));
+  }
+
   resetCache(): void {
     this._messages.set([...MOCK_CHAT_MESSAGES]);
     this._readState.set({});

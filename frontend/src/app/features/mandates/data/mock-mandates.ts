@@ -6,8 +6,8 @@ import { nicknameKey } from '../../../core/utils/member.utils';
 
 // Výchozí pověření demo dat – převod dřívějších pevných rolí (docs/08 kap. 12, etapa A bod 6):
 // - příznak „administrátor“ → Správa souboru a Organizace akcí (dřív spravoval akce v administraci),
-// - Výbor (dřív role vedoucí) → Evidence docházky a Náhled do krojárky,
-// - skupina Sklad → Správa krojů,
+// - Výbor (dřív role vedoucí) → Evidence docházky a Náhled do správy krojů,
+// - skupina Krojařky → Správa krojů,
 // - hlavní správci a spolusprávci skupin podle docs/08 kap. 6.2.
 // Demo běží s reálnými (lokálně importovanými) i s vymyšlenými členy, proto se správci vybírají
 // podle přezdívky a když chybí, vezme se první aktivní člen skupiny.
@@ -67,11 +67,11 @@ export const DEMO_FUNCTION_TITLES: Record<string, string> = {
   'Áďa': 'Kronikářka',
   'Tezi': 'Umělecká vedoucí',
   'Staňa': 'Vedoucí kluků',
-  'Lucka Š': 'Krojárka',
+  'Lucka Š': 'Krojařka',
   'Ivoš': 'Hlavní vedoucí',
   'Marci': 'Vedoucí dětského souboru',
   'Lucka Z': 'Ekonomka',
   'Vedoucí': 'Hlavní vedoucí',
   'Admin': 'Organizační vedoucí',
-  'Maky': 'Krojárka',
+  'Maky': 'Krojařka',
 };

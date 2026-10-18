@@ -28,8 +28,8 @@ export interface TimelineInput {
   comments: PostComment[];
   audit: AuditEntry[];
   grouping: ChatGrouping;
-  // Nově přijatý člen vidí chat (zprávy, náhledy komentářů, události) až od svého vstupu
-  visibleFrom?: string;
+  // Viditelnost podle režimu historie chatu a intervalů členství (chat-history.ts); chybí = vše
+  isVisible?: (at: string) => boolean;
 }
 
 const time = (iso: string) => Date.parse(iso);
@@ -61,8 +61,7 @@ export function isPostInChat(post: Post, groupId: number): boolean {
 
 export function buildGroupTimeline(input: TimelineInput): TimelineItem[] {
   const { groupId, viewerId, grouping } = input;
-  const from = input.visibleFrom ? time(input.visibleFrom) : -Infinity;
-  const visible = (iso: string) => time(iso) >= from;
+  const visible = input.isVisible ?? (() => true);
   const items: TimelineItem[] = [];
 
   for (const message of input.messages) {
@@ -96,7 +95,7 @@ export function buildGroupTimeline(input: TimelineInput): TimelineItem[] {
 
 // Nepřečtené v chatu = cizí běžné zprávy po posledním zobrazení chatu. Aktivita příspěvků se počítá
 // na nástěnce (nepřečtený příspěvek, nové komentáře), aby se nic nezapočítalo dvakrát (docs/08 kap. 9.1).
-export function unreadChatCount(messages: ChatMessage[], groupId: number, viewerId: number, lastReadAt?: string, visibleFrom?: string): number {
-  const after = Math.max(lastReadAt ? time(lastReadAt) : -Infinity, visibleFrom ? time(visibleFrom) : -Infinity);
-  return messages.filter((m) => m.groupId === groupId && !m.deletedAt && m.authorId !== viewerId && time(m.createdAt) > after).length;
+export function unreadChatCount(messages: ChatMessage[], groupId: number, viewerId: number, lastReadAt?: string, isVisible?: (at: string) => boolean): number {
+  const after = lastReadAt ? time(lastReadAt) : -Infinity;
+  return messages.filter((m) => m.groupId === groupId && !m.deletedAt && m.authorId !== viewerId && time(m.createdAt) > after && (!isVisible || isVisible(m.createdAt))).length;
 }
