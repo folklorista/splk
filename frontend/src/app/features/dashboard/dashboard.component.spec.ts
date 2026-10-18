@@ -66,7 +66,7 @@ describe('DashboardComponent', () => {
 
   function configure(): void {
     env = env ?? createTestAccess(member);
-    membersSpy = jasmine.createSpyObj('MembersService', ['getMembers']);
+    membersSpy = jasmine.createSpyObj('MembersService', ['getMembers'], { members: () => [member] });
     membersSpy.getMembers.and.returnValue(of([member]));
 
     postsSpy = jasmine.createSpyObj('PostsService', ['getPosts']);

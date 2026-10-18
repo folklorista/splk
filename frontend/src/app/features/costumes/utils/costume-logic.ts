@@ -2,85 +2,82 @@ import { Member } from '../../../core/models/member.model';
 import {
   Borrower,
   CostumeItem,
-  CostumeKit,
+  CostumeLoan,
+  CostumeSeries,
   CostumeState,
+  CostumeWorkOrder,
   ExternalPerson,
-  Inventory,
-  InventoryLine,
-  KitBulkLine,
-  Loan,
-  LoanLine,
 } from '../models/costume.model';
 
-// Odvozené pohledy na krojovou evidenci – čisté funkce bez stavu, aby šly testovat
+// Odvozené pohledy na krojový fond – čisté funkce bez stavu, aby šly testovat
 // a aby je mohla stejně použít mock i budoucí HTTP implementace.
 
-export interface OpenLine {
-  loan: Loan;
-  line: LoanLine;
+// --- Popisky klasifikace ---
+
+export function genderLabel(state: CostumeState, genderId: string | undefined): string {
+  return state.classification.genders.find((g) => g.id === genderId)?.label ?? '';
 }
 
-export function returnedCount(line: LoanLine): number {
-  return line.returns.reduce((sum, r) => sum + r.count, 0);
+export function regionLabel(state: CostumeState, regionId: string | undefined): string {
+  return state.classification.regions.find((r) => r.id === regionId)?.label ?? '';
 }
 
-// Kolik kusů řádku je stále u vypůjčitele
-export function lineRemaining(line: LoanLine): number {
-  return line.settled ? 0 : Math.max(0, line.count - returnedCount(line));
-}
-
-export function isLoanOpen(loan: Loan): boolean {
-  return loan.lines.some((line) => lineRemaining(line) > 0);
-}
-
-export function openLines(state: CostumeState): OpenLine[] {
-  return state.loans.flatMap((loan) =>
-    loan.lines.filter((line) => lineRemaining(line) > 0).map((line) => ({ loan, line })),
-  );
-}
-
-// Otevřená zápůjčka číslované součásti (oficiální držitel), pokud existuje
-export function openLineForItem(state: CostumeState, itemId: number): OpenLine | undefined {
-  return openLines(state).find(({ line }) => line.itemId === itemId);
-}
-
-export type ItemStatus = 'available' | 'not-ready' | 'on-loan' | 'retired';
-
-export function itemStatus(state: CostumeState, item: CostumeItem): ItemStatus {
-  if (item.retired) return 'retired';
-  if (openLineForItem(state, item.id)) return 'on-loan';
-  return item.ready ? 'available' : 'not-ready';
-}
-
-export const ITEM_STATUS_LABELS: Record<ItemStatus, string> = {
-  available: 'Ve skladu',
-  'not-ready': 'Nepřipraveno',
-  'on-loan': 'Zapůjčeno',
-  retired: 'Vyřazeno',
-};
-
-export function seriesName(state: CostumeState, seriesId: number | undefined): string {
-  return state.series.find((s) => s.id === seriesId)?.name ?? '';
+export function variantLabel(state: CostumeState, variantId: string | undefined): string {
+  return state.classification.variants.find((v) => v.id === variantId)?.label ?? '';
 }
 
 export function partTypeName(state: CostumeState, partTypeId: number | undefined): string {
   return state.partTypes.find((t) => t.id === partTypeId)?.name ?? '';
 }
 
-// „Horňácká černá 1“ – číslo platí jen v rámci řady
-export function itemCode(state: CostumeState, item: CostumeItem): string {
-  const series = seriesName(state, item.seriesId);
-  return item.number !== undefined ? `${series} ${item.number}` : `${series} (bez čísla)`;
+// Varianty, které dávají smysl pro daný druh součástky
+export function variantsForPartType(state: CostumeState, partTypeId: number) {
+  return state.classification.variants.filter((v) => v.partTypeIds.includes(partTypeId));
 }
 
-// „Košile – horňácká černá 1“
+export function findSeries(state: CostumeState, seriesId: number | undefined): CostumeSeries | undefined {
+  return state.series.find((s) => s.id === seriesId);
+}
+
+// „Mužské / Horňácko / Košile“, s variantou v klíči řady „Mužské / Slovensko / Gatě modré“
+export function seriesLabel(state: CostumeState, series: CostumeSeries | undefined): string {
+  if (!series) return 'Neznámá řada';
+  const part = partTypeName(state, series.partTypeId);
+  const variant = series.variantId ? ` ${variantLabel(state, series.variantId)}` : '';
+  return `${genderLabel(state, series.genderId)} / ${regionLabel(state, series.regionId)} / ${part}${variant}`;
+}
+
+// „č. 7“ – samotné číslo není globálně unikátní, vždy se zobrazuje s řadou
+export function itemNumberLabel(item: CostumeItem): string {
+  return item.number !== undefined ? `č. ${item.number}` : 'bez čísla';
+}
+
+// „Mužské / Horňácko / Košile č. 7“ (+ varianta jako atribut kusu)
 export function itemLabel(state: CostumeState, item: CostumeItem): string {
-  return `${partTypeName(state, item.partTypeId)} – ${itemCode(state, item).toLocaleLowerCase('cs')}`;
+  const variant = item.variantId ? ` (${variantLabel(state, item.variantId)})` : '';
+  return `${seriesLabel(state, findSeries(state, item.seriesId))} ${itemNumberLabel(item)}${variant}`;
 }
 
-export function kitLabel(state: CostumeState, kitId: number | undefined): string {
-  return state.kits.find((k) => k.id === kitId)?.label ?? '';
+// Druh součástky s variantou bez řady – pro seskupené pohledy („Gatě (modré)“)
+export function itemPartLabel(state: CostumeState, item: CostumeItem): string {
+  const series = findSeries(state, item.seriesId);
+  const variantId = series?.variantId ?? item.variantId;
+  const variant = variantId ? ` (${variantLabel(state, variantId)})` : '';
+  return `${partTypeName(state, series?.partTypeId)}${variant}`;
 }
+
+// Klasifikace kusu odvozená z řady (+ varianta atributem)
+export function itemClassification(state: CostumeState, item: CostumeItem) {
+  const series = findSeries(state, item.seriesId);
+  return {
+    genderId: series?.genderId,
+    regionId: series?.regionId,
+    partTypeId: series?.partTypeId,
+    variantId: series?.variantId ?? item.variantId,
+  };
+}
+
+// --- Držitelé ---
 
 export function sameBorrower(a: Borrower, b: Borrower): boolean {
   if (a.kind === 'member' && b.kind === 'member') return a.memberId === b.memberId;
@@ -99,7 +96,7 @@ export function parseBorrowerKey(key: string): Borrower | undefined {
   return match[1] === 'member' ? { kind: 'member', memberId: id } : { kind: 'external', externalId: id };
 }
 
-// Krojárky potřebují jednoznačně identifikovat vypůjčitele – u členů přezdívka i jméno
+// Krojárky potřebují jednoznačně identifikovat držitele – u členů přezdívka i jméno
 export function borrowerLabel(borrower: Borrower, members: Member[], externals: ExternalPerson[]): string {
   if (borrower.kind === 'member') {
     const member = members.find((m) => m.id === borrower.memberId);
@@ -112,234 +109,223 @@ export function borrowerLabel(borrower: Borrower, members: Member[], externals: 
   return external ? `${external.name} – externista` : `Externista #${borrower.externalId}`;
 }
 
-export interface BorrowerHolding {
-  loan: Loan;
-  line: LoanLine;
-  remaining: number;
+export function memberName(members: Member[], memberId: number | undefined): string {
+  if (memberId === undefined) return '';
+  return members.find((m) => m.id === memberId)?.nickname ?? `#${memberId}`;
 }
 
-// Co má osoba podle oficiální evidence u sebe
-export function holdingsOf(state: CostumeState, borrower: Borrower): BorrowerHolding[] {
-  return openLines(state)
-    .filter(({ loan }) => sameBorrower(loan.borrower, borrower))
-    .map(({ loan, line }) => ({ loan, line, remaining: lineRemaining(line) }));
+// --- Zápůjčky ---
+
+export function isLoanOpen(loan: CostumeLoan): boolean {
+  return !loan.endedAt;
 }
 
-// Všichni, kdo mají něco zapůjčeno (pro přehled vypůjčitelů)
-export function borrowersWithHoldings(state: CostumeState): Borrower[] {
-  const seen = new Map<string, Borrower>();
-  for (const { loan } of openLines(state)) seen.set(borrowerKey(loan.borrower), loan.borrower);
-  return [...seen.values()];
+export function openLoans(state: CostumeState): CostumeLoan[] {
+  return state.loans.filter(isLoanOpen);
+}
+
+// Aktuální zápůjčka kusu – kus smí mít nejvýš jednu
+export function openLoanFor(state: CostumeState, itemId: number): CostumeLoan | undefined {
+  return state.loans.find((loan) => loan.itemId === itemId && isLoanOpen(loan));
 }
 
 function startOfDay(date: Date): number {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }
 
-// Po termínu: krátkodobá otevřená zápůjčka, jejíž termín vrácení už uplynul
-export function isLoanOverdue(loan: Loan, now = new Date()): boolean {
-  if (!loan.dueAt || loan.longTerm || !isLoanOpen(loan)) return false;
+export function isLoanOverdue(loan: CostumeLoan, now = new Date()): boolean {
+  if (!loan.dueAt || !isLoanOpen(loan)) return false;
   return startOfDay(new Date(loan.dueAt)) < startOfDay(now);
 }
 
-// --- Komplety ---
-
-export interface KitItemView {
+export interface Holding {
+  loan: CostumeLoan;
   item: CostumeItem;
-  // Zapůjčeno spolu s kompletem (stejná zápůjčka jako komplet)
-  withKitLoan: boolean;
-  // Samostatně zapůjčeno jinde – v kompletu chybí
-  separateLoan?: OpenLine;
-  status: ItemStatus;
 }
 
-export interface KitBulkView {
-  line: KitBulkLine;
-  loanedWithKit: number;
-  loanedSeparately: number;
-  // Kusy, o kterých evidence neví, kde jsou (chybí, neověřeno)
-  missing: number;
+// Co má držitel podle evidence u sebe – jednotlivé konkrétní kusy
+export function holdingsOf(state: CostumeState, borrower: Borrower): Holding[] {
+  return openLoans(state)
+    .filter((loan) => sameBorrower(loan.borrower, borrower))
+    .map((loan) => ({ loan, item: state.items.find((i) => i.id === loan.itemId)! }))
+    .filter((h) => !!h.item);
 }
 
-export type KitCompleteness = 'complete' | 'incomplete' | 'needs-check';
+export function borrowersWithHoldings(state: CostumeState): Borrower[] {
+  const seen = new Map<string, Borrower>();
+  for (const loan of openLoans(state)) seen.set(borrowerKey(loan.borrower), loan.borrower);
+  return [...seen.values()];
+}
 
-export const KIT_COMPLETENESS_LABELS: Record<KitCompleteness, string> = {
-  complete: 'Úplný',
-  incomplete: 'Neúplný',
-  'needs-check': 'Čeká na kontrolu',
+// --- Dostupnost kusu ---
+
+export type ItemAvailability = 'available' | 'on-loan' | 'away' | 'not-issuable' | 'retired';
+
+export const AVAILABILITY_LABELS: Record<ItemAvailability, string> = {
+  available: 'K vydání',
+  'on-loan': 'Zapůjčeno',
+  away: 'Mimo sklad',
+  'not-issuable': 'Nevydatelné',
+  retired: 'Vyřazeno',
 };
 
-export interface KitView {
-  kit: CostumeKit;
-  items: KitItemView[];
-  bulk: KitBulkView[];
-  // Otevřená zápůjčka celého kompletu (komu je komplet svěřen)
-  kitLoan?: Loan;
-  completeness: KitCompleteness;
+export function itemAvailability(state: CostumeState, item: CostumeItem): ItemAvailability {
+  if (item.retired) return 'retired';
+  if (openLoanFor(state, item.id)) return 'on-loan';
+  if (item.location !== 'store') return 'away';
+  return item.issuable ? 'available' : 'not-issuable';
 }
 
-export function openKitLoan(state: CostumeState, kitId: number): Loan | undefined {
-  return state.loans.find((loan) => loan.kitId === kitId && isLoanOpen(loan));
-}
-
-export function kitView(state: CostumeState, kit: CostumeKit): KitView {
-  const kitLoan = openKitLoan(state, kit.id);
-  const items = state.items
-    .filter((item) => item.kitId === kit.id && !item.retired)
-    .map((item): KitItemView => {
-      const open = openLineForItem(state, item.id);
-      const withKitLoan = !!open && !!kitLoan && open.loan.id === kitLoan.id;
-      return {
-        item,
-        withKitLoan,
-        separateLoan: open && !withKitLoan ? open : undefined,
-        status: itemStatus(state, item),
-      };
-    });
-
-  const bulk = kit.bulk.map((line): KitBulkView => {
-    let loanedWithKit = 0;
-    let loanedSeparately = 0;
-    for (const open of openLines(state)) {
-      if (open.line.fromKitId !== kit.id || open.line.partTypeId !== line.partTypeId || open.line.itemId) continue;
-      const remaining = lineRemaining(open.line);
-      if (kitLoan && open.loan.id === kitLoan.id) loanedWithKit += remaining;
-      else loanedSeparately += remaining;
-    }
-    return {
-      line,
-      loanedWithKit,
-      loanedSeparately,
-      missing: Math.max(0, line.required - line.present - loanedWithKit - loanedSeparately),
-    };
-  });
-
-  const incomplete =
-    items.some((i) => i.separateLoan) || bulk.some((b) => b.missing > 0 || b.loanedSeparately > 0);
-  const completeness: KitCompleteness = kit.needsCheck ? 'needs-check' : incomplete ? 'incomplete' : 'complete';
-  return { kit, items, bulk, kitLoan, completeness };
-}
-
-// Co lze z kompletu právě teď předat jedním krokem (ve skladu a připravené)
-export interface KitIssueCandidates {
-  items: CostumeItem[];
-  bulk: { partTypeId: number; count: number }[];
-  // Patří do kompletu, ale předat nejdou – aplikace na ně upozorní
-  exceptions: { label: string; reason: string }[];
-}
-
-export function kitIssueCandidates(state: CostumeState, kit: CostumeKit, members: Member[] = []): KitIssueCandidates {
-  const view = kitView(state, kit);
-  const items: CostumeItem[] = [];
-  const exceptions: KitIssueCandidates['exceptions'] = [];
-  for (const entry of view.items) {
-    const label = itemLabel(state, entry.item);
-    if (entry.status === 'available') items.push(entry.item);
-    else if (entry.status === 'on-loan' && entry.separateLoan) {
-      exceptions.push({
-        label,
-        reason: `zapůjčeno: ${borrowerLabel(entry.separateLoan.loan.borrower, members, state.externals)}`,
-      });
-    } else if (entry.status === 'on-loan') exceptions.push({ label, reason: 'zapůjčeno s kompletem' });
-    else if (entry.status === 'not-ready') exceptions.push({ label, reason: 'nepřipraveno k zapůjčení' });
+// Důvod, proč kus nelze vydat (undefined = lze)
+export function issueBlocker(state: CostumeState, item: CostumeItem): string | undefined {
+  switch (itemAvailability(state, item)) {
+    case 'retired':
+      return 'je vyřazený';
+    case 'on-loan':
+      return 'je už zapůjčený';
+    case 'away':
+      return 'není fyzicky ve skladu';
+    case 'not-issuable':
+      return 'je označený jako nevydatelný';
+    default:
+      return undefined;
   }
-  const bulk = view.bulk.filter((b) => b.line.present > 0).map((b) => ({ partTypeId: b.line.partTypeId, count: b.line.present }));
-  for (const b of view.bulk) {
-    const shortBy = b.line.required - b.line.present;
-    if (shortBy > 0) {
-      exceptions.push({
-        label: partTypeName(state, b.line.partTypeId),
-        reason: `v kompletu ${b.line.present} z ${b.line.required}`,
-      });
-    }
-  }
-  return { items, bulk, exceptions };
+}
+
+// --- Pracovní úkoly ---
+
+export function isWorkOrderOpen(order: CostumeWorkOrder): boolean {
+  return order.status === 'open' || order.status === 'in-progress';
+}
+
+export function openWorkOrdersFor(state: CostumeState, itemId: number): CostumeWorkOrder[] {
+  return state.workOrders.filter((o) => o.itemId === itemId && isWorkOrderOpen(o));
 }
 
 // --- Číselné řady ---
 
+// Bez výslovného pravidla řady se čísla vyřazených kusů nerecyklují
 export function isNumberTaken(state: CostumeState, seriesId: number, number: number, exceptItemId?: number): boolean {
+  const reuse = !!findSeries(state, seriesId)?.allowNumberReuse;
   return state.items.some(
-    (item) => item.seriesId === seriesId && item.number === number && !item.retired && item.id !== exceptItemId,
+    (item) =>
+      item.seriesId === seriesId && item.number === number && item.id !== exceptItemId && (!item.retired || !reuse),
   );
 }
 
-// Nejnižší volné číslo v řadě (čísla vyřazených součástí jsou znovu volná)
+// Návrh čísla pro nový kus: bez recyklace za nejvyšším použitým, s recyklací nejnižší volné
 export function nextFreeNumber(state: CostumeState, seriesId: number): number {
-  let candidate = 1;
-  while (isNumberTaken(state, seriesId, candidate)) candidate++;
-  return candidate;
-}
-
-// --- Inventura ---
-
-// Očekávaný stav se zachytí při zahájení inventury; pozdější změny zápůjček ho nepřepisují
-export function buildInventoryLines(state: CostumeState, seriesId?: number): InventoryLine[] {
-  const lines: InventoryLine[] = [];
-  const items = state.items.filter((item) => !item.retired && (seriesId === undefined || item.seriesId === seriesId));
-  for (const item of items) {
-    const open = openLineForItem(state, item.id);
-    lines.push({ key: `item-${item.id}`, itemId: item.id, kitId: item.kitId, expectedCount: 1, holder: open?.loan.borrower });
+  if (findSeries(state, seriesId)?.allowNumberReuse) {
+    let candidate = 1;
+    while (isNumberTaken(state, seriesId, candidate)) candidate++;
+    return candidate;
   }
-  const kits = state.kits.filter((kit) => seriesId === undefined || kit.seriesId === seriesId);
-  for (const kit of kits) {
-    for (const line of kit.bulk) {
-      lines.push({ key: `bulk-${kit.id}-${line.partTypeId}`, kitId: kit.id, partTypeId: line.partTypeId, expectedCount: line.present });
-    }
-    // Neočíslované kusy u vypůjčitelů se ověřují zvlášť u každé osoby
-    for (const open of openLines(state)) {
-      if (open.line.itemId || open.line.fromKitId !== kit.id) continue;
-      lines.push({
-        key: `bulk-loan-${open.loan.id}-${open.line.id}`,
-        kitId: kit.id,
-        partTypeId: open.line.partTypeId,
-        expectedCount: lineRemaining(open.line),
-        holder: open.loan.borrower,
-      });
-    }
-  }
-  return lines;
+  const numbers = state.items.filter((i) => i.seriesId === seriesId && i.number !== undefined).map((i) => i.number!);
+  return Math.max(0, ...numbers) + 1;
 }
 
-export interface InventoryProgress {
-  total: number;
-  checked: number;
-  unchecked: number;
-  ok: number;
-  problem: number;
-  missing: number;
-  // Podle evidence mimo sklad (u členů a externistů)
-  outside: number;
-  outsideUnchecked: number;
+export interface SeriesStats {
+  active: number;
+  retired: number;
+  maxNumber: number;
+  // Čísla 1..max, která nikdy žádný kus neměl – mezera je validní, ne chybějící kus
+  unusedNumbers: number[];
+  retiredNumbers: number[];
 }
 
-export function inventoryProgress(inventory: Inventory): InventoryProgress {
-  const lines = inventory.lines;
-  const count = (predicate: (line: InventoryLine) => boolean) => lines.filter(predicate).length;
+export function seriesStats(state: CostumeState, seriesId: number): SeriesStats {
+  const items = state.items.filter((i) => i.seriesId === seriesId);
+  const used = new Set(items.filter((i) => i.number !== undefined).map((i) => i.number!));
+  const maxNumber = Math.max(0, ...used);
+  const unusedNumbers: number[] = [];
+  for (let n = 1; n <= maxNumber; n++) if (!used.has(n)) unusedNumbers.push(n);
+  const activeNumbers = new Set(items.filter((i) => !i.retired && i.number !== undefined).map((i) => i.number!));
   return {
-    total: lines.length,
-    checked: count((l) => !!l.result),
-    unchecked: count((l) => !l.result),
-    ok: count((l) => l.result === 'ok'),
-    problem: count((l) => l.result === 'problem'),
-    missing: count((l) => l.result === 'missing'),
-    outside: count((l) => !!l.holder),
-    outsideUnchecked: count((l) => !!l.holder && !l.result),
+    active: items.filter((i) => !i.retired).length,
+    retired: items.filter((i) => !!i.retired).length,
+    maxNumber,
+    unusedNumbers,
+    retiredNumbers: [...new Set(items.filter((i) => i.retired && i.number !== undefined && !activeNumbers.has(i.number)).map((i) => i.number!))].sort((a, b) => a - b),
   };
 }
 
-export const INVENTORY_RESULT_LABELS = {
-  ok: 'Zkontrolováno',
-  problem: 'Nesrovnalost',
-  missing: 'Chybí',
-} as const;
+export function sortItems(state: CostumeState, items: CostumeItem[]): CostumeItem[] {
+  return [...items].sort(
+    (a, b) =>
+      seriesLabel(state, findSeries(state, a.seriesId)).localeCompare(seriesLabel(state, findSeries(state, b.seriesId)), 'cs') ||
+      (a.number ?? Number.MAX_SAFE_INTEGER) - (b.number ?? Number.MAX_SAFE_INTEGER) ||
+      a.id - b.id,
+  );
+}
+
+// --- Krojová karta držitele ---
+
+export interface CardGroup {
+  key: string;
+  // „Horňácko – mužský kroj“ (jen pro čitelnost, není to komplet)
+  title: string;
+  holdings: Holding[];
+  // Šablony kompletů pro tento kroj a druhy součástek, které v kartě chybí
+  missing: { templateName: string; partTypes: string[] }[];
+}
+
+export function cardGroups(state: CostumeState, holdings: Holding[]): CardGroup[] {
+  const groups = new Map<string, CardGroup & { genderId?: string; regionId?: string }>();
+  for (const holding of holdings) {
+    const cls = itemClassification(state, holding.item);
+    const key = `${cls.regionId}|${cls.genderId}`;
+    if (!groups.has(key)) {
+      const gender = genderLabel(state, cls.genderId).toLocaleLowerCase('cs').replace(/é$/, 'ý');
+      groups.set(key, { key, title: `${regionLabel(state, cls.regionId)} – ${gender} kroj`, holdings: [], missing: [], genderId: cls.genderId, regionId: cls.regionId });
+    }
+    groups.get(key)!.holdings.push(holding);
+  }
+  return [...groups.values()]
+    .map(({ genderId, regionId, ...group }) => {
+      const held = new Set(group.holdings.map((h) => findSeries(state, h.item.seriesId)?.partTypeId));
+      const missing = state.kitTemplates
+        .filter((t) => t.genderId === genderId && t.regionId === regionId)
+        .map((t) => ({ templateName: t.name, partTypes: t.partTypeIds.filter((id) => !held.has(id)).map((id) => partTypeName(state, id)) }))
+        .filter((m) => m.partTypes.length > 0);
+      const holdingsSorted = [...group.holdings].sort(
+        (a, b) => itemPartLabel(state, a.item).localeCompare(itemPartLabel(state, b.item), 'cs') || (a.item.number ?? 0) - (b.item.number ?? 0),
+      );
+      return { ...group, holdings: holdingsSorted, missing };
+    })
+    .sort((a, b) => a.title.localeCompare(b.title, 'cs'));
+}
+
+// --- Kdy byl kus naposledy fyzicky viděn ---
+
+export interface LastSeen {
+  at: string;
+  source: 'inventory' | 'returned' | 'issued';
+  inventoryId?: number;
+}
+
+// Napříč inventurami a pohyby (vrácení/vydání = kus prošel rukama krojárky)
+export function lastSeen(state: CostumeState, itemId: number): LastSeen | undefined {
+  const candidates: LastSeen[] = [
+    ...state.inventoryChecks
+      .filter((c) => c.itemId === itemId && c.presented && !c.revokedAt)
+      .map((c): LastSeen => ({ at: c.at, source: 'inventory', inventoryId: c.inventoryId })),
+    ...state.loans.filter((l) => l.itemId === itemId).map((l): LastSeen => ({ at: l.issuedAt, source: 'issued' })),
+    ...state.loans
+      .filter((l) => l.itemId === itemId && l.endedAt && l.endReason !== 'settled')
+      .map((l): LastSeen => ({ at: l.endedAt!, source: 'returned' })),
+  ];
+  return candidates.sort((a, b) => b.at.localeCompare(a.at))[0];
+}
 
 // --- Moje kroje ---
 
 export interface MyCostumeRow {
-  key: string;
+  loanId: number;
+  itemId: number;
   label: string;
-  kit?: string;
+  part: string;
+  number: string;
+  series: string;
   issuedAt: string;
   dueAt?: string;
   overdue: boolean;
@@ -347,48 +333,78 @@ export interface MyCostumeRow {
 
 export function myCostumeRows(state: CostumeState, memberId: number, now = new Date()): MyCostumeRow[] {
   return holdingsOf(state, { kind: 'member', memberId })
-    .map(({ loan, line, remaining }): MyCostumeRow => {
-      const item = line.itemId !== undefined ? state.items.find((i) => i.id === line.itemId) : undefined;
-      return {
-        key: `${loan.id}-${line.id}`,
-        label: item ? itemLabel(state, item) : `${partTypeName(state, line.partTypeId)} – ${remaining} ks`,
-        kit: kitLabel(state, line.fromKitId) || undefined,
-        issuedAt: loan.issuedAt,
-        dueAt: loan.longTerm ? undefined : loan.dueAt,
-        overdue: isLoanOverdue(loan, now),
-      };
-    })
-    .sort((a, b) => (a.kit ?? '').localeCompare(b.kit ?? '', 'cs') || a.label.localeCompare(b.label, 'cs'));
+    .map(({ loan, item }): MyCostumeRow => ({
+      loanId: loan.id,
+      itemId: item.id,
+      label: itemLabel(state, item),
+      part: itemPartLabel(state, item),
+      number: itemNumberLabel(item),
+      series: seriesLabel(state, findSeries(state, item.seriesId)),
+      issuedAt: loan.issuedAt,
+      dueAt: loan.dueAt,
+      overdue: isLoanOverdue(loan, now),
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, 'cs'));
 }
 
-// --- Přehled skladu pro krojárky ---
+// --- Přehled skladu ---
 
 export interface CostumeStockSummary {
   items: number;
+  available: number;
   onLoan: number;
-  notReady: number;
+  away: number;
+  notIssuable: number;
+  needsAttention: number;
   withoutNumber: number;
-  retired: number;
-  openLoans: number;
   overdueLoans: number;
-  incompleteKits: number;
-  kits: number;
+  openWorkOrders: number;
   openInventories: number;
 }
 
 export function stockSummary(state: CostumeState, now = new Date()): CostumeStockSummary {
   const active = state.items.filter((i) => !i.retired);
-  const statuses = active.map((i) => itemStatus(state, i));
+  const availability = active.map((i) => itemAvailability(state, i));
+  const count = (a: ItemAvailability) => availability.filter((x) => x === a).length;
   return {
     items: active.length,
-    onLoan: statuses.filter((s) => s === 'on-loan').length,
-    notReady: statuses.filter((s) => s === 'not-ready').length,
+    available: count('available'),
+    onLoan: count('on-loan'),
+    away: count('away'),
+    notIssuable: count('not-issuable'),
+    needsAttention: active.filter((i) => i.condition !== 'ok').length,
     withoutNumber: active.filter((i) => i.number === undefined).length,
-    retired: state.items.length - active.length,
-    openLoans: state.loans.filter(isLoanOpen).length,
-    overdueLoans: state.loans.filter((l) => isLoanOverdue(l, now)).length,
-    incompleteKits: state.kits.filter((k) => kitView(state, k).completeness !== 'complete').length,
-    kits: state.kits.length,
-    openInventories: state.inventories.filter((i) => !i.closedAt).length,
+    overdueLoans: openLoans(state).filter((l) => isLoanOverdue(l, now)).length,
+    openWorkOrders: state.workOrders.filter(isWorkOrderOpen).length,
+    openInventories: state.inventories.filter((i) => !i.closure).length,
   };
+}
+
+// --- Hledání a datumy ---
+
+export function normalizeSearch(text: string): string {
+  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase('cs').trim();
+}
+
+export function matchesSearch(label: string, search: string): boolean {
+  const query = normalizeSearch(search);
+  return !query || normalizeSearch(label).includes(query);
+}
+
+export function todayInputValue(now = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+// „2026-10-17“ z <input type="date"> → ISO (poledne, aby nevadilo časové pásmo)
+export function dateInputToIso(value: string): string | undefined {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+  const [y, m, d] = value.split('-').map(Number);
+  return new Date(y, m - 1, d, 12).toISOString();
+}
+
+// „2026-10-17T16:30“ z <input type="datetime-local"> → ISO
+export function dateTimeInputToIso(value: string): string | undefined {
+  const date = new Date(value);
+  return value && !Number.isNaN(date.getTime()) ? date.toISOString() : undefined;
 }

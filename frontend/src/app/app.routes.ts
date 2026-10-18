@@ -133,117 +133,83 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/manage/manage-group.component').then((m) => m.ManageGroupComponent),
       },
+      // Moje kroje – osobní karta každého člena
       {
         path: 'costumes',
         canActivate: [moduleGuard('costumes')],
-        loadComponent: () =>
-          import('./features/costumes/costumes.component').then(
-            (m) => m.CostumesComponent,
-          ),
+        loadComponent: () => import('./features/costumes/my-costumes/my-costumes-page.component').then((m) => m.MyCostumesPageComponent),
       },
+      // Krojárna – správa fondu (prohlížení: Náhled do krojárky, zápis: Správa krojů)
+      { path: 'wardrobe', pathMatch: 'full', redirectTo: 'wardrobe/stock' },
       {
-        path: 'costumes/items',
+        path: 'wardrobe/stock',
         canActivate: [costumeStockGuard],
-        loadComponent: () =>
-          import('./features/costumes/pages/items/items.component').then(
-            (m) => m.CostumeItemsComponent,
-          ),
+        loadComponent: () => import('./features/costumes/wardrobe/stock/stock.component').then((m) => m.WardrobeStockComponent),
       },
       {
-        path: 'costumes/items/new',
+        path: 'wardrobe/stock/new',
         canActivate: [costumeManagerGuard],
-        loadComponent: () =>
-          import('./features/costumes/pages/item-form/item-form.component').then(
-            (m) => m.CostumeItemFormComponent,
-          ),
+        loadComponent: () => import('./features/costumes/wardrobe/stock/item-form.component').then((m) => m.WardrobeItemFormComponent),
       },
       {
-        path: 'costumes/items/:id/edit',
+        path: 'wardrobe/stock/:id/edit',
         canActivate: [costumeManagerGuard],
-        loadComponent: () =>
-          import('./features/costumes/pages/item-form/item-form.component').then(
-            (m) => m.CostumeItemFormComponent,
-          ),
+        loadComponent: () => import('./features/costumes/wardrobe/stock/item-form.component').then((m) => m.WardrobeItemFormComponent),
       },
       {
-        path: 'costumes/items/:id',
+        path: 'wardrobe/stock/:id',
         canActivate: [costumeStockGuard],
-        loadComponent: () =>
-          import('./features/costumes/pages/item-detail/item-detail.component').then(
-            (m) => m.CostumeItemDetailComponent,
-          ),
+        loadComponent: () => import('./features/costumes/wardrobe/stock/item-detail.component').then((m) => m.WardrobeItemDetailComponent),
       },
       {
-        path: 'costumes/kits',
+        path: 'wardrobe/cards',
         canActivate: [costumeStockGuard],
-        loadComponent: () =>
-          import('./features/costumes/pages/kits/kits.component').then(
-            (m) => m.CostumeKitsComponent,
-          ),
+        loadComponent: () => import('./features/costumes/wardrobe/cards/cards.component').then((m) => m.WardrobeCardsComponent),
       },
       {
-        path: 'costumes/kits/:id',
+        path: 'wardrobe/cards/:key',
         canActivate: [costumeStockGuard],
-        loadComponent: () =>
-          import('./features/costumes/pages/kit-detail/kit-detail.component').then(
-            (m) => m.CostumeKitDetailComponent,
-          ),
+        loadComponent: () => import('./features/costumes/wardrobe/cards/card-detail.component').then((m) => m.WardrobeCardDetailComponent),
       },
       {
-        path: 'costumes/loans',
+        path: 'wardrobe/loans',
         canActivate: [costumeStockGuard],
-        loadComponent: () =>
-          import('./features/costumes/pages/loans/loans.component').then(
-            (m) => m.CostumeLoansComponent,
-          ),
+        loadComponent: () => import('./features/costumes/wardrobe/loans/loans.component').then((m) => m.WardrobeLoansComponent),
       },
       {
-        path: 'costumes/loans/new',
+        path: 'wardrobe/loans/new',
         canActivate: [costumeManagerGuard],
-        loadComponent: () =>
-          import('./features/costumes/pages/loan-form/loan-form.component').then(
-            (m) => m.CostumeLoanFormComponent,
-          ),
+        loadComponent: () => import('./features/costumes/wardrobe/loans/loan-form.component').then((m) => m.WardrobeLoanFormComponent),
       },
       {
-        path: 'costumes/loans/:id',
+        path: 'wardrobe/inventories',
         canActivate: [costumeStockGuard],
-        loadComponent: () =>
-          import('./features/costumes/pages/loan-detail/loan-detail.component').then(
-            (m) => m.CostumeLoanDetailComponent,
-          ),
+        loadComponent: () => import('./features/costumes/wardrobe/inventories/inventories.component').then((m) => m.WardrobeInventoriesComponent),
       },
       {
-        path: 'costumes/people',
-        canActivate: [costumeStockGuard],
-        loadComponent: () =>
-          import('./features/costumes/pages/people/people.component').then(
-            (m) => m.CostumePeopleComponent,
-          ),
+        path: 'wardrobe/inventories/new',
+        canActivate: [costumeManagerGuard],
+        loadComponent: () => import('./features/costumes/wardrobe/inventories/inventory-new.component').then((m) => m.WardrobeInventoryNewComponent),
       },
       {
-        path: 'costumes/people/:key',
+        path: 'wardrobe/inventories/:id',
         canActivate: [costumeStockGuard],
-        loadComponent: () =>
-          import('./features/costumes/pages/person/person.component').then(
-            (m) => m.CostumePersonComponent,
-          ),
+        loadComponent: () => import('./features/costumes/wardrobe/inventories/inventory-detail.component').then((m) => m.WardrobeInventoryDetailComponent),
       },
       {
-        path: 'costumes/inventories',
+        path: 'wardrobe/inventories/:id/visit/:key',
         canActivate: [costumeStockGuard],
-        loadComponent: () =>
-          import('./features/costumes/pages/inventories/inventories.component').then(
-            (m) => m.CostumeInventoriesComponent,
-          ),
+        loadComponent: () => import('./features/costumes/wardrobe/inventories/inventory-visit.component').then((m) => m.WardrobeInventoryVisitComponent),
       },
       {
-        path: 'costumes/inventories/:id',
+        path: 'wardrobe/inventories/:id/stock/:seriesId',
         canActivate: [costumeStockGuard],
-        loadComponent: () =>
-          import('./features/costumes/pages/inventory-detail/inventory-detail.component').then(
-            (m) => m.CostumeInventoryDetailComponent,
-          ),
+        loadComponent: () => import('./features/costumes/wardrobe/inventories/inventory-series.component').then((m) => m.WardrobeInventorySeriesComponent),
+      },
+      {
+        path: 'wardrobe/settings',
+        canActivate: [costumeStockGuard],
+        loadComponent: () => import('./features/costumes/wardrobe/settings/settings.component').then((m) => m.WardrobeSettingsComponent),
       },
       // Dřívější Administrace – staré odkazy vedou do Správy
       { path: 'admin', redirectTo: 'manage', pathMatch: 'prefix' },

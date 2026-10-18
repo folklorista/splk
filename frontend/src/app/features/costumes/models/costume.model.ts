@@ -1,62 +1,82 @@
-// Krojový sklad – viz docs/06-specifikace-krojoveho-skladu.md
+// Krojový fond – viz docs/zadani-pro-robota-krojarna-inventury.md (nahrazuje fyzické komplety z docs/06).
+// Doménové entity jsou záměrně oddělené: fyzické umístění, stav součástky, zápůjčka a pracovní úkol
+// se nemíchají do jednoho stavového enumu.
 
-// Číselná řada podle konkrétního druhu kroje („horňácká černá“, „kopaničká“…).
-// Identifikaci součásti tvoří řada + číslo.
-export interface CostumeSeries {
-  id: number;
-  name: string;
+import type { Inventory, InventoryCheck, InventorySlot, InventoryVisit } from './inventory.model';
+
+// Jedna možnost klasifikace (pohlaví kroje, region, varianta). `id` je stabilní textový klíč.
+export interface ClassificationOption {
+  id: string;
+  label: string;
 }
 
-// Druh součásti (košile, kordulka, šátek, úzká mašle…).
-// `numbered: false` = zaměnitelný doplněk evidovaný jen podle počtu kusů v kompletu.
+// Doplňkové rozlišení (nové/staré, modré/bílé…) – platí jen pro vyjmenované druhy součástek
+export interface CostumeVariant extends ClassificationOption {
+  partTypeIds: number[];
+}
+
+// Klasifikace krojového fondu konfigurovatelná pro soubor. Jiný soubor může mít místo regionů
+// vesnice nebo rozlišovat sváteční/pracovní – stačí jiné možnosti, ne jiný kód.
+export interface CostumeClassification {
+  ensembleId: number;
+  genders: ClassificationOption[];
+  regions: ClassificationOption[];
+  variants: CostumeVariant[];
+}
+
+// Druh součástky (košile, gatě, rukávce…). `genderId` chybí = používá se v mužském i ženském kroji.
 export interface CostumePartType {
   id: number;
   name: string;
-  numbered: boolean;
+  genderId?: string;
 }
 
-// Vyřazení: číslo se v řadě uvolní, historie zůstává u původní součásti (podle id)
+// Evidenční řada = konkrétní definovaná kombinace klasifikace (např. mužské / Horňácko / košile).
+// Varianta může být součástí klíče řady (`variantId`), nebo atributem jednotlivých kusů – podle nastavení souboru.
+export interface CostumeSeries {
+  id: number;
+  ensembleId: number;
+  genderId: string;
+  regionId: string;
+  partTypeId: number;
+  variantId?: string;
+  // Výslovné pravidlo: číslo vyřazeného kusu smí dostat nový kus. Bez něj se čísla nerecyklují.
+  allowNumberReuse?: boolean;
+  note?: string;
+}
+
+// Stav součástky – nezávislý na umístění a zápůjčce
+export type ItemCondition = 'ok' | 'needs-alteration' | 'damaged';
+
+// Fyzické umístění kusu – nezávislé na tom, komu je kus v evidenci zapůjčen
+export type ItemLocation = 'store' | 'holder' | 'seamstress' | 'repair' | 'unknown';
+
 export interface CostumeRetirement {
   at: string;
-  byUserId: number;
+  byMemberId: number;
   reason?: string;
 }
 
-// Jedinečná součást s vlastní identitou. Bez čísla = číslo jí zatím chybí a má ho dostat.
+// Fyzická součástka – základní entita. Identifikace pro lidi = řada + číslo (číslo platí jen v řadě),
+// v kódu stabilní `id`. Čísla mohou mít mezery; vyřazený kus zůstává v evidenci i s číslem.
 export interface CostumeItem {
   id: number;
+  ensembleId: number;
   seriesId: number;
+  // Chybí = kus ještě nedostal fyzické číslo
   number?: number;
-  partTypeId: number;
-  description?: string;
+  // Varianta jako atribut kusu (jen když není součástí klíče řady)
+  variantId?: string;
   size?: string;
-  // Dlouhodobá poznámka k součásti („povolený šev“, „chybí knoflík“)
+  description?: string;
+  // Dlouhodobá poznámka („povolený šev“)
   note?: string;
-  // Určené složení: komplet, do kterého součást patří
-  kitId?: number;
-  // Převzatá věc nemusí být připravená k další zápůjčce (praní, oprava)
-  ready: boolean;
+  condition: ItemCondition;
+  // Nevydatelné = nesmí se půjčit (praní, zásadní vada…) bez ohledu na stav
+  issuable: boolean;
+  location: ItemLocation;
+  locationNote?: string;
   retired?: CostumeRetirement;
-  createdAt: string;
-}
-
-// Neočíslované zaměnitelné doplňky v kompletu – požadovaný a aktuálně přítomný počet
-export interface KitBulkLine {
-  partTypeId: number;
-  required: number;
-  // Kusy fyzicky v kompletu (ne zapůjčené, ne chybějící)
-  present: number;
-  note?: string;
-}
-
-export interface CostumeKit {
-  id: number;
-  label: string;
-  seriesId?: number;
-  note?: string;
-  bulk: KitBulkLine[];
-  // Komplet čeká na kontrolu (např. po nalezení nesrovnalosti)
-  needsCheck?: boolean;
   createdAt: string;
 }
 
@@ -69,107 +89,132 @@ export interface ExternalPerson {
   createdAt: string;
 }
 
-export type Borrower =
-  | { kind: 'member'; memberId: number }
-  | { kind: 'external'; externalId: number };
+export type Borrower = { kind: 'member'; memberId: number } | { kind: 'external'; externalId: number };
 
-// Historický záznam o vrácení (části) řádku zápůjčky – poznámka se nikdy nepřepisuje
-export interface LoanReturn {
-  at: string;
-  count: number;
-  note?: string;
-  // Byla vrácená věc při převzetí připravená k další zápůjčce
-  ready: boolean;
-  byUserId: number;
-}
+export type LoanEndReason = 'returned' | 'exchanged' | 'settled';
 
-// Řádek zápůjčky: číslovaná součást (count = 1) nebo druh a počet neočíslovaných kusů
-export interface LoanLine {
+// Zápůjčka jednoho konkrétního kusu jednomu držiteli. Uzavřená zápůjčka zůstává v historii.
+export interface CostumeLoan {
   id: number;
-  itemId?: number;
-  partTypeId?: number;
-  count: number;
-  // Komplet, ze kterého byl kus vydán (neočíslované kusy se do něj vrací)
-  fromKitId?: number;
-  returns: LoanReturn[];
-  // Jinak oficiálně vypořádáno (vyřazení, ztráta…) – zbývající kusy už se nevrací
-  settled?: { at: string; byUserId: number; note: string };
-}
-
-export interface Loan {
-  id: number;
+  ensembleId: number;
+  itemId: number;
   borrower: Borrower;
-  // Zápůjčka celého kompletu (seznam řádků je stav v okamžiku předání)
-  kitId?: number;
   issuedAt: string;
+  issuedByMemberId: number;
+  // Chybí = dlouhodobě
   dueAt?: string;
-  longTerm: boolean;
   note?: string;
-  issuedByUserId: number;
-  lines: LoanLine[];
+  // Vydáno jako náhrada za jinou zápůjčku (výměna)
+  replacesLoanId?: number;
+  // Vydáno během inventurní návštěvy
+  inventoryId?: number;
+  visitId?: number;
+  endedAt?: string;
+  endedByMemberId?: number;
+  endReason?: LoanEndReason;
+  endNote?: string;
 }
 
-export type CostumeLogKind =
+export type WorkOrderKind = 'alteration' | 'repair' | 'resewing';
+export type WorkOrderStatus = 'open' | 'in-progress' | 'done' | 'cancelled';
+
+// Pracovní úkol na konkrétní součástce (úprava, oprava, přešití) – vzniká v inventuře i mimo ni
+export interface CostumeWorkOrder {
+  id: number;
+  ensembleId: number;
+  itemId: number;
+  kind: WorkOrderKind;
+  description: string;
+  status: WorkOrderStatus;
+  assignee?: string;
+  dueAt?: string;
+  createdAt: string;
+  createdByMemberId: number;
+  inventoryId?: number;
+  closedAt?: string;
+  resolution?: string;
+}
+
+// Šablona kompletu: jaké druhy součástek kroj daného pohlaví a regionu potřebuje.
+// Není to pevná sada kusů – slouží jen k upozornění, co držiteli chybí.
+export interface CostumeKitTemplate {
+  id: number;
+  ensembleId: number;
+  name: string;
+  genderId: string;
+  regionId: string;
+  partTypeIds: number[];
+  note?: string;
+}
+
+export type CostumeEventKind =
   | 'item-created'
   | 'item-updated'
   | 'item-retired'
-  | 'item-ready'
-  | 'kit-created'
-  | 'kit-updated'
-  | 'kit-add'
-  | 'kit-remove'
-  | 'kit-bulk';
+  | 'condition'
+  | 'location'
+  | 'issued'
+  | 'returned'
+  | 'exchanged'
+  | 'work-order'
+  | 'inventory-added';
 
-// Auditní stopa změn evidence (kdo, kdy, co); zápůjčky a inventury mají historii samy v sobě
-export interface CostumeLogEntry {
+// Historie pohybů a změn kusu (kdo, kdy, co). Kontroly inventur jsou v `inventoryChecks`.
+export interface CostumeEvent {
   id: number;
   at: string;
-  byUserId: number;
-  kind: CostumeLogKind;
-  itemId?: number;
-  kitId?: number;
-  // U přesunu mezi komplety
-  fromKitId?: number;
-  partTypeId?: number;
+  byMemberId: number;
+  kind: CostumeEventKind;
+  itemId: number;
   text: string;
   note?: string;
-}
-
-export type InventoryResult = 'ok' | 'problem' | 'missing';
-
-// Řádek inventury – očekávaný stav je zachycen při zahájení, pozdější zápůjčky ho nemění
-export interface InventoryLine {
-  key: string;
-  itemId?: number;
-  kitId?: number;
-  partTypeId?: number;
-  expectedCount: number;
-  // Podle evidence u vypůjčitele (mimo sklad) – ověřuje se osobní kontrolou krojárky
-  holder?: Borrower;
-  result?: InventoryResult;
-  foundCount?: number;
-  note?: string;
-  checkedAt?: string;
-  checkedByUserId?: number;
-}
-
-export interface Inventory {
-  id: number;
-  name: string;
-  seriesId?: number;
-  startedAt: string;
-  startedByUserId: number;
-  closedAt?: string;
-  lines: InventoryLine[];
+  loanId?: number;
+  inventoryId?: number;
+  visitId?: number;
+  workOrderId?: number;
 }
 
 export interface CostumeState {
-  series: CostumeSeries[];
+  classification: CostumeClassification;
   partTypes: CostumePartType[];
+  series: CostumeSeries[];
   items: CostumeItem[];
-  kits: CostumeKit[];
   externals: ExternalPerson[];
-  loans: Loan[];
-  log: CostumeLogEntry[];
+  loans: CostumeLoan[];
+  workOrders: CostumeWorkOrder[];
+  kitTemplates: CostumeKitTemplate[];
+  events: CostumeEvent[];
+  // Výchozí kapacita inventurního termínu (počet osob)
+  defaultSlotCapacity: number;
   inventories: Inventory[];
+  inventorySlots: InventorySlot[];
+  inventoryVisits: InventoryVisit[];
+  inventoryChecks: InventoryCheck[];
 }
+
+export const CONDITION_LABELS: Record<ItemCondition, string> = {
+  ok: 'V pořádku',
+  'needs-alteration': 'Vyžaduje úpravu',
+  damaged: 'Poškozeno',
+};
+
+export const LOCATION_LABELS: Record<ItemLocation, string> = {
+  store: 'Ve skladu',
+  holder: 'U držitele',
+  seamstress: 'U švadleny',
+  repair: 'V opravě',
+  unknown: 'Neznámé',
+};
+
+export const WORK_ORDER_KIND_LABELS: Record<WorkOrderKind, string> = {
+  alteration: 'Úprava',
+  repair: 'Oprava',
+  resewing: 'Přešití',
+};
+
+export const WORK_ORDER_STATUS_LABELS: Record<WorkOrderStatus, string> = {
+  open: 'Otevřený',
+  'in-progress': 'Rozpracovaný',
+  done: 'Hotovo',
+  cancelled: 'Zrušeno',
+};

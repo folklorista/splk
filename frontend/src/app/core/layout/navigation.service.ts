@@ -81,7 +81,10 @@ export class NavigationService {
 
   readonly moduleItems = computed<NavItem[]>(() =>
     this.access.modules().costumes
-      ? [{ path: '/app/costumes', label: this.access.canViewCostumeStock() ? 'Kroje a Krojárna' : 'Moje kroje', icon: 'shirt' }]
+      ? [
+          { path: '/app/costumes', label: 'Moje kroje', icon: 'shirt' },
+          ...(this.access.canViewCostumeStock() ? [{ path: '/app/wardrobe', label: 'Krojárna', icon: 'clipboard-check' as IconName }] : []),
+        ]
       : [],
   );
 
