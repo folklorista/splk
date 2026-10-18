@@ -14,6 +14,11 @@ describe('bottom-bar', () => {
     expect(resolveBar(places, null).overflow).toEqual([]);
   });
 
+  it('běžný člen se 3 skupinami a krojem: skupiny přímo, Moje kroje zůstanou na Přehledu', () => {
+    const places = [events, group(1), group(2), group(3), hub, costumes(), search];
+    expect(defaultBarKeys(places)).toEqual(['events', 'group-1', 'group-2', 'group-3']);
+  });
+
   it('Moje kroje bez výpůjčky se nenavrhují; Hledat ani rozcestník se nenavrhují, vejdou-li se skupiny', () => {
     expect(defaultBarKeys([events, group(1), hub, costumes(false), search])).toEqual(['events', 'group-1']);
   });

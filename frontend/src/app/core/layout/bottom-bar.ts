@@ -25,7 +25,8 @@ export const GROUPS_HUB_KEY = 'groups';
 export const MORE_KEY = 'more';
 
 // Automatický výchozí návrh: Akce → skupiny → agendy se zápisem → Moje kroje → ostatní agendy.
-// Nevejdou-li se, skupiny se sloučí do „Skupiny“; zbytek případně pod „Více“.
+// Běžný člen (bez agend) dostane skupiny vždy přímo, vejdou-li se s Akcemi do lišty – ostatní (Moje kroje)
+// najde na Přehledu. Jinak se skupiny sloučí do „Skupiny“ a zbytek případně jde pod „Více“.
 export function defaultBarKeys(places: Place[]): string[] {
   const pick = (filter: (p: Place) => boolean) => places.filter(filter).map((p) => p.key);
   const events = pick((p) => p.category === 'main');
@@ -35,6 +36,8 @@ export function defaultBarKeys(places: Place[]): string[] {
   const agendasRead = pick((p) => p.category === 'agenda' && !p.writes);
   const direct = [...events, ...groups, ...agendasWrite, ...costumes, ...agendasRead];
   if (direct.length <= BAR_SLOTS) return direct;
+  const hasAgendas = agendasWrite.length + agendasRead.length > 0;
+  if (!hasAgendas && groups.length && events.length + groups.length <= BAR_SLOTS) return [...events, ...groups];
   const hub = places.some((p) => p.key === GROUPS_HUB_KEY) && groups.length ? [GROUPS_HUB_KEY] : groups;
   return [...events, ...hub, ...agendasWrite, ...costumes, ...agendasRead];
 }
