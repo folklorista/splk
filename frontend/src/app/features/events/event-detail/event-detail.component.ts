@@ -35,12 +35,14 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
 };
 
 import { isSoftDeadlinePassed, needsResponse } from '../utils/event-reminders';
+import { AvailabilityService } from '../../availability/availability.service';
+import { formatRange } from '../../availability/unavailability.utils';
 @Component({
   selector: 'app-event-detail',
   standalone: true,
   imports: [CommonModule, DatePipe, RouterLink, FormsModule, IconComponent],
   templateUrl: './event-detail.component.html',
-  styles: [`.detail__deadline { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--spacing-sm); } .detail__deadline--due { color: var(--color-primary); font-weight: 600; }`],
+  styles: [`.detail__deadline { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--spacing-sm); } .detail__deadline--due { color: var(--color-primary); font-weight: 600; } .member-unavailable { font-size: var(--font-size-xs); color: var(--color-text-muted); border: 1px dashed var(--color-border); border-radius: 4px; padding: 0 4px; margin-left: 4px; white-space: nowrap; }`],
 })
 export class EventDetailComponent implements OnInit {
   event = signal<AppEvent | null>(null);
@@ -72,6 +74,15 @@ export class EventDetailComponent implements OnInit {
     if (!event) return [];
     return this.allMembers().filter((m) => isEventAudience(m, event));
   });
+
+  // Dlouhodobá nedostupnost členů v termínu akce – jen pro pověřené organizátory (docs/10 kap. 4.11)
+  private availability = inject(AvailabilityService);
+  private unavailableMap = computed(() => {
+    const event = this.event();
+    return new Map((event ? this.availability.forEvent(event) : []).map((u) => [u.memberId, u]));
+  });
+  unavailable = (memberId: number) => this.unavailableMap().get(memberId);
+  range = formatRange;
 
   // Měkká uzávěrka a aktivní výzva (docs/07 kap. 18)
   readonly needsMyResponse = computed(() => {

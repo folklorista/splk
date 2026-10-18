@@ -10,6 +10,8 @@ import { AccessService } from '../../../core/access/access.service';
 import { canEditEvent, eventOrganizerScope, isEventAudience } from '../../../core/access/access.utils';
 import { AppEvent, EventType } from '../models/event.model';
 import { MAX_REMINDER_LEAD_DAYS, defaultReminderLeadDays } from '../utils/event-reminders';
+import { AvailabilityService } from '../../availability/availability.service';
+import { formatRange } from '../../availability/unavailability.utils';
 import { AttendanceRecord, AttendanceStatus } from '../../attendance/models/attendance.model';
 import { Member } from '../../../core/models/member.model';
 import { ActionFeedback } from '../../../shared/ui/form-ui';
@@ -65,6 +67,13 @@ export const EVENT_TYPE_OPTIONS: [EventType, string][] = [
               <input type="datetime-local" required [value]="endsAt()" (input)="endsAt.set($any($event.target).value)" />
             </label>
           </div>
+
+          @if (unavailable().length) {
+            <p class="event-form__unavailable" role="status">
+              V tomto termínu {{ unavailable().length === 1 ? 'je nedostupný 1 oslovený člen' : 'je nedostupných ' + unavailable().length + ' oslovených členů' }}:
+              @for (row of unavailable(); track row.id; let last = $last) { {{ row.name }} ({{ row.range }}@if (row.note) {, {{ row.note }}}){{ last ? '' : ',' }} }
+            </p>
+          }
 
           <label class="cs-field">
             <span>Místo *</span>
@@ -188,6 +197,7 @@ export const EVENT_TYPE_OPTIONS: [EventType, string][] = [
   styles: [
     `
       .event-form { max-width: 640px; }
+      .event-form__unavailable { font-size: var(--font-size-sm); padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid #e0a800; background: var(--color-surface-alt); border-radius: 6px; }
       .event-form__fieldset { border: 1px solid var(--color-border); border-radius: 8px; padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md); display: flex; flex-direction: column; gap: var(--spacing-sm); }
       .event-form__fieldset legend { font-size: var(--font-size-sm); font-weight: 600; padding: 0 4px; }
       .event-form__options { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--spacing-xs); }
@@ -264,6 +274,18 @@ export class EventFormComponent implements OnInit {
   readonly audience = computed(() => {
     const scope = { id: this.eventId ?? 0, targetGroupIds: this.targetGroupIds(), guestMemberIds: this.guestMemberIds() };
     return this.membersService.members().filter((m) => isEventAudience(m, scope));
+  });
+
+  // Dlouhodobá nedostupnost oslovených členů v termínu (jen informace pro organizátora)
+  private availability = inject(AvailabilityService);
+  readonly unavailable = computed(() => {
+    const members = this.audience();
+    return this.availability.forPlanning(this.startsAt(), this.endsAt(), members.map((m) => m.id)).map((u) => ({
+      id: u.id,
+      name: members.find((m) => m.id === u.memberId)?.nickname ?? '?',
+      range: formatRange(u),
+      note: u.note,
+    }));
   });
 
   readonly valid = computed(() => {

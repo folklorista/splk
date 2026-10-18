@@ -6,6 +6,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { MembersService } from '../members/members.service';
 import { User } from '../../core/auth/models/user.model';
 import { Member } from '../../core/models/member.model';
+import { signal } from '@angular/core';
+import { AvailabilityService } from '../availability/availability.service';
 
 describe('ProfileComponent', () => {
   let membersSpy: jasmine.SpyObj<MembersService>;
@@ -43,6 +45,7 @@ describe('ProfileComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ProfileComponent],
       providers: [
+        { provide: AvailabilityService, useValue: { mine: signal([]) } },
         provideRouter([]),
         { provide: AuthService, useValue: authSpy },
         { provide: MembersService, useValue: membersSpy },

@@ -130,6 +130,7 @@
                           } @else {
                             {{ m.nickname }}
                           }
+                          @if (unavailable(m.id); as u) { <span class="member-unavailable" [title]="u.note || 'Dlouhodobě nedostupný'">nedostupný {{ range(u) }}</span> }
                         </li>
                       }
                     </ul>
@@ -143,7 +144,7 @@
                 @if (membersByStatus().pending.length) {
                   <ul class="member-column__list">
                     @for (m of membersByStatus().pending; track m.id) {
-                      <li>{{ m.nickname }}</li>
+                      <li>{{ m.nickname }} @if (unavailable(m.id); as u) { <span class="member-unavailable" [title]="u.note || 'Dlouhodobě nedostupný'">nedostupný {{ range(u) }}</span> }</li>
                     }
                   </ul>
                 } @else {
