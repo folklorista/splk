@@ -1,5 +1,32 @@
 # Postup vývoje
 
+## Produktová konsolidace 18. 10. 2026 – poznámka k plánu
+
+Tento dokument obsahuje **historický stav kódu a dřívější harmonogramy**. Níže uvedená data a tvrzení „hotovo“ se tímto zpětně nemění. Nově odsouhlasené cílové chování **není automaticky implementováno** ani dodatečně podmínkou již vydané V1.0 (viz `08`).
+
+Při příštím plánování rozlišit:
+
+1. **Datové a autorizační základy:** osoba vs. účet, samostatné členství v souborech, rodičovské zastupování, pověření, globální relace, izolace dat a osobní pohled na zápůjčky.
+2. **Uživatelské rozšíření:** přepínač souborového kontextu a společný osobní přehled; dlouhodobé přihlášení a budoucí přepínání účtů; historie čtení detailu akcí, notifikace, měkké uzávěrky, opakované série a výjimky, kalendářové ICS odběry.
+3. **Sklad:** autoritativní evidence, přímé externí výpůjčky a dočasné naskladnění cizích kompletů (včetně původních čísel a hromadného předání bez automatické synchronizace skladů).
+4. **Komunikace a soubory:** konfigurace historie skupinového chatu, archivace před smazáním skupiny, sdílené neměnné přílohy po jejich druhém použití, nahlášení zpráv dostupné všem členům.
+5. **Provozní základy:** omezené offline čtení textů (ETag / IndexedDB, kontrola cca po 10 minutách při aktivní aplikaci), bez offline zápisů; denní zálohy poskytovatele + plánovaný týdenní externí šifrovaný archiv a test obnovy.
+
+**Nevyřešené před implementací:**
+
+1. Detaily 2FA, důvěryhodných zařízení a bezpečného přepínání několika přihlášených účtů v jednom prohlížeči.
+2. Bezpečnostní politiky DM nezletilých, osoba přijímající hlášení, střet zájmů, blokování a krizový postup.
+3. Přesné retenční lhůty osobních údajů, IP a bezpečnostních logů, proces anonymizace a žádostí o výmaz.
+4. Rozsah ukládané historie skupinového chatu offline a délka platnosti lokálních dat.
+5. Implementace správy odkazů na sdílené přílohy a ochrany před souběžným přepsáním.
+6. Kalendářový ICS feed: tokeny, správa odběrů a reálné chování synchronizace klientů.
+7. Exportní cesta databáze na hostingu bez ověřeného `mysqldump`, volba externího úložiště a test obnovy.
+8. Časová a prioritní roadmapa implementace rozhodnutých funkcí.
+
+Neuvedené termíny dokončení neslibovat.
+
+**Známé rozdíly kódu a dokumentace (k 18. 10. 2026):** skupinu lze ve Správě smazat bez archivace (cíl: `08` kap. 10.5); chat má pevně historii od vstupu (cíl: volba režimu, `08` kap. 10.3); badge akcí nerespektuje předstih výzvy (`07` kap. 18); UI používá název „Krojárna“ a záložku „Sklad“ pro všechny kusy (cíl: „Správa krojů“ a „Součástky“, `10` kap. 11.1); dlouhodobá nedostupnost členů je schválená k realizaci, zatím neimplementovaná (`07`, `10` kap. 4.11); výchozí kroj osoby pro nabídku kusů při vydávání zatím chybí (`06` kap. 5.1a).
+
 ## Aktuální stav (2026-10-15)
 
 Hotovo:
@@ -23,7 +50,7 @@ Poznatek z ladění mock vrstvy: pokud stejná data (např. účast na akci) pot
 Rozsah V1.0 je nově definován v `07-souborovy-system-vize-funkce-roadmapa.md` a `06-specifikace-krojoveho-skladu.md`. Ve frontendu (demo režim, data v prohlížeči) je hotovo:
 
 - **Skutečná docházka** (docs/07 kap. 19): vedoucí a administrátor v detailu proběhlé akce označí Přítomen / Nepřítomen, odděleně od nahlášené účasti (ta se nepřepisuje), s „Ostatní nepřítomni“ a počtem nezkontrolovaných. Přehled `/app/attendance` (období, typ akce, souhrn na člena, export CSV). `ActualAttendanceService`, `leaderGuard`.
-- **Krojový sklad** (docs/06): číselné řady podle druhu kroje, opětovné použití čísla po vyřazení bez spojení historie, součásti bez čísla (čekající na číslo) i neočíslované zaměnitelné doplňky podle počtu v kompletu, komplety s určeným složením a historií změn, zápůjčky jednotlivých součástí i celého kompletu (bez dílů půjčených jinde), částečné vrácení s poznámkou a připraveností u každého řádku, jiné vypořádání, vyřazení s upozorněním na otevřenou zápůjčku, externisté a bývalí členové jako vypůjčitelé, inventura se zachyceným očekávaným stavem (nezkontrolováno ≠ chybí, mimo sklad = osobní ověření), „Moje kroje“ (rozcestník i Přehled), tisk a export CSV přehledů.
+- **Krojový sklad** (docs/06, nahrazeno 2026-10-17 – viz Krojárna níže): číselné řady podle druhu kroje, opětovné použití čísla po vyřazení bez spojení historie, součásti bez čísla (čekající na číslo) i neočíslované zaměnitelné doplňky podle počtu v kompletu, komplety s určeným složením a historií změn, zápůjčky jednotlivých součástí i celého kompletu (bez dílů půjčených jinde), částečné vrácení s poznámkou a připraveností u každého řádku, jiné vypořádání, vyřazení s upozorněním na otevřenou zápůjčku, externisté a bývalí členové jako vypůjčitelé, inventura se zachyceným očekávaným stavem (nezkontrolováno ≠ chybí, mimo sklad = osobní ověření), „Moje kroje“ (rozcestník i Přehled), tisk a export CSV přehledů.
   - Model a pravidla: `features/costumes/models`, `costumes.service.ts` (mutace, `CostumeRuleError`), odvozené pohledy jako čisté funkce v `utils/costume-logic.ts`.
   - Oprávnění: zapisují jen členové skupiny **Sklad** (`canManageCostumes`); vedoucí a administrátoři sklad jen prohlížejí; běžný člen vidí jen své kroje. Vynucení je zatím jen ve frontendu.
 
@@ -33,7 +60,23 @@ Zbývá do V1.0 (vyžaduje backend nebo rozhodnutí, docs/07 kap. 63):
 - skutečné přihlašování a obnova přístupu,
 - role host / superadministrátor, správci skupin (garanti) s moderováním, režim zakládání skupin, audit změn členství,
 - cílení akcí na jednotlivé hosty, notifikace (push nebo náhradní cesta),
-- doladit s krojárkami: seznam číselných řad, druhy neočíslovaných doplňků, podoba tiskových sestav (docs/06 kap. 13).
+- doladit s krojařkami: seznam číselných řad, druhy neočíslovaných doplňků, podoba tiskových sestav (docs/06 kap. 13).
+
+## Krojárna, Moje kroje a inventury – stav k 2026-10-17 (v UI „Krojárna“, cílový název „Správa krojů“ – viz docs/10 kap. 11.1)
+
+Podle implementačního zadání, které je od 18. 10. 2026 zapracované do `06` verze 0.4 (fyzický kus + evidenční řada, komplet jako šablona, inventura ve dvou režimech; nahradilo fyzické komplety a množstevní doplňky verze 0.3). Frontend + mock, bez backendu:
+
+- **Dvě oddělené sekce:** „Moje kroje“ (`/app/costumes`, všichni členové, jen čtení, inventurní výzvy a rezervace termínu) a „Krojárna“ (`/app/wardrobe`: Sklad / Krojové karty / Výpůjčky / Inventury / Nastavení; prohlížení s pověřením Náhled do krojárky, zápis jen Správa krojů – ověřuje i služba).
+- **Model:** konfigurovatelná klasifikace (pohlaví, region, varianty), evidenční řada = kombinace klasifikace (varianta v klíči řady nebo jako atribut kusu), fyzický kus se stabilním ID a číslem v řadě, čísla vyřazených kusů se bez výslovného pravidla řady nerecyklují; výpůjčka = jeden kus jednomu držiteli s historií; pracovní úkoly; komplet = šablona druhů součástek (jen upozornění na chybějící druh). Umístění, stav, vydatelnost, zápůjčka, ověření v inventuře a stav návštěvy jsou oddělené.
+- **Inventura:** filtry klasifikace × skupina (průnik), náhled rozsahu, snapshot cílových kusů a dotčených držitelů, výslovné přidání kusu s poznámkou; režim Podle lidí (termíny s kapacitou, přihlásit se smí jen dotčený, návštěva s kontrolou, vrácením, výměnou, novým vydáním a úkolem, rekapitulace) a Ve skladu (řady, číselná mřížka, rychlé zadání „1, 3, 12-15“ s Enter, zřetelné odmítnutí neexistujících / opakovaných / zapůjčených / mimo sklad vedených čísel); pokrytí podle unikátních kusů; uzavření bez výhrad jen při úplném ověření, jinak výslovně s důvodem; „naposledy fyzicky viděn“ napříč inventurami.
+
+**Rozhodnutí ke schválení (výchozí volba v demu):**
+1. Zakládá varianta (modré/bílé gatě) vlastní řadu? – Volí se při založení řady v Nastavení; demo ukazuje obojí (horňácké gatě = atribut, slovenské gatě = vlastní řady).
+2. Kdo smí uzavřít inventuru s nesrovnalostmi? – Zatím každá krojařka (Správa krojů), vždy s důvodem.
+3. Stavy oprav: otevřený / rozpracovaný / hotovo / zrušeno, bez schvalování.
+4. Termíny inventury jsou samostatné, nenavázané na akce v kalendáři.
+5. Fyzicky viděný kus zůstává v inventuře ověřený i po pozdějším zápisu „nepředloženo“; omyl se opravuje zrušením zápisu.
+6. Vrácení kusu během návštěvy se bere jako jeho fyzické ověření.
 
 ## Skupiny, pověření a chat (docs/08) – stav k 2026-10-16
 
@@ -269,7 +312,9 @@ Implementace: `AuthService` (`splk.auth.user`), `core/data/demo-storage.ts` (`sp
   - Před nahráním vypsat shrnutí (zdroj, verze/commit, cílový server) a vyžádat potvrzení.
   - **Ověřeno na hostingu (Websupport, 2026-10-14)**:
     - SFTP (port 22) funguje, SSH shell ne (`exec` odmítnut) → `rsync`/`scp` nelze, nahrávat přes `ssh2-sftp-client` (závislost schválena místo `basic-ftp`).
-    - Kořen SFTP je přímo webový adresář `moje.vonica.cz` (na disku `/data/1/f/…/vonica.cz/sub/moje`). Mimo web root přístup není, `.htpasswd` proto musí ležet ve web rootu a `.htaccess` ho blokuje (`<Files ".ht*"> Require all denied` → ověřeno 403). Absolutní cestu pro `AuthUserFile` držet v `.env`, ne v repu.
+    - Kořen SFTP deploy účtu je přímo webový adresář `moje.vonica.cz` (na disku `/data/1/f/…/vonica.cz/sub/moje`). Mimo web root tento účet nevidí, `.htpasswd` proto leží ve web rootu a `.htaccess` ho blokuje (`<Files ".ht*"> Require all denied` → ověřeno 403). Absolutní cestu pro `AuthUserFile` držet v `.env`, ne v repu.
+    - **Neveřejný adresář `home`** (ověřeno 2026-10-17): `/data/1/f/…/vonica.cz/home` není dostupný z webu, přes SFTP ho vidí jen hlavní účet hostingu (`VONICA_SFTP_*` v `.env`). PHP ze subdomény `moje` do něj smí číst i zapisovat (`open_basedir` povoluje `/data/`), z kódu jako `dirname(__DIR__, 2) . '/home'`. Pro Fázi 5 sem patří konfigurace s hesly k DB a šifrovací klíč, případně i neveřejné nahrané soubory. Vlastní proměnné prostředí hosting do PHP nepředává.
+    - **Šifrování** (ověřeno 2026-10-17): rozšíření `sodium` je zapnuté (libsodium 1.0.18), XChaCha20-Poly1305 (`sodium_crypto_aead_xchacha20poly1305_ietf_*`) funguje, dostupné jsou i secretstream a Argon2id (`sodium_crypto_pwhash`, `PASSWORD_ARGON2ID`). OpenSSL 3.0.2, `disable_functions` prázdné. Hlavička `Authorization` se do PHP předává (`HTTP_AUTHORIZATION`).
     - Basic Auth v `.htaccess` funguje (401 bez hesla / se špatným heslem, 200 se správným), hash APR1 (`openssl passwd -apr1`) Apache přijímá. `Header ... X-Robots-Tag` funguje (mod_headers).
     - HTTPS s platným certifikátem a přesměrování HTTP → HTTPS už zajišťuje hosting (proxy openresty před Apache), v `.htaccess` ho není potřeba řešit.
     - PHP 8.5 (FPM) je k dispozici – pro Fázi 5.

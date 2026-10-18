@@ -8,7 +8,7 @@ Primární cílová skupina první verze:
 
 - dospělý soubor,
 - pouze členové,
-- bez rodičů a zákonných zástupců,
+- bez rodičů a zákonných zástupců v prvním provozním rozsahu (nikoliv jako trvalé omezení architektury),
 - mobilní použití jako hlavní scénář.
 
 Do budoucna má být možné aplikaci rozšířit také pro:
@@ -23,7 +23,7 @@ Projekt nemá být od začátku univerzální framework pro libovolnou organizac
 
 Aplikace má být navržená podle zásady:
 
-> Konkrétní aplikace pro jeden soubor, ale s připravenou strukturou pro více souborů, moduly a rozdílná pravidla.
+> Jedna aplikace se společným přihlášením může sloužit více samostatným folklorním souborům; každý má vlastní data, skupiny, agendy a pravidla. Digitalizujeme jen to, co skutečně usnadňuje život souboru.
 
 To znamená:
 
@@ -32,6 +32,16 @@ To znamená:
 - žádné 100% dynamické REST API nad libovolnou databázovou tabulkou,
 - konfigurace pouze tam, kde je pravděpodobné, že se soubory budou lišit,
 - skupiny členů jako základ pro viditelnost, oprávnění a pravidla.
+
+## Upřesněná produktová pravidla (rozhodnutí z 18. 10. 2026)
+
+- Aplikace **nenahrazuje osobní domluvy, Messenger ani veškerou komunikaci**. Má být pohodlnějším místem pro online organizaci než roztříštěné chaty, externí formuláře a tabulky. Nezavádět úkoly a evidenci jen kvůli evidenci.
+- **Krojový sklad je autoritativní evidence** skutečného svěření a pohybu krojů. **Docházka je orientační**: sleduje slib, případné změny a skutečnou účast bez automatických sankcí.
+- `moje.vonica.cz` využívá **globální identitu a přihlášení**; dospělá Vonica a Malá Vonica jsou **samostatné soubory** bez automaticky sdílených akcí či skladů. Osobní přehled však bezpečně agreguje relevantní informace z obou.
+- Dětské soubory potřebují samostatná, konfigurovatelná pravidla rodičovského zastupování a komunikace; rodič může být současně vedoucím či členem jiné skupiny/souboru.
+- Offline provoz je pouze **pro čtení aktivních textových dat**; žádné změny mimo spojení a žádné automatické odesílání offline zápisů.
+
+**Status:** Tato pravidla jsou odsouhlaseným cílovým chováním, nikoliv konstatováním, že už jsou v aplikaci implementována.
 
 ## Hlavní oblasti aplikace
 

@@ -22,9 +22,11 @@
 
 ## Rozsah implementace
 
-- Držet se dokumentace v [`docs/`](docs/).
-- Neimplementovat budoucí funkcionalitu bez výslovného zadání (WebSocket, push notifikace, platby, rodiče/zástupci, registrace, komplexní oprávnění apod.).
-- Projekt má být konkrétní aplikace pro jeden soubor, ne univerzální dynamický framework.
+- Držet se dokumentace v [`docs/`](docs/). Dokumentace popisuje **schválené cílové chování**, ne stav implementace – co je hotové, eviduje `docs/03-postup-vyvoje.md` a značky ✅ v `docs/10`.
+- Neimplementovat cílovou ani budoucí funkcionalitu bez výslovného zadání (WebSocket, push notifikace, platby, více souborů a přepínač kontextu, rodiče/zastupování dětí, registrace, DM, úkoly, offline režim apod.).
+- Konkrétní aplikace pro folklorní soubory (Vonica, cílově i samostatná Malá Vonica se společným přihlášením), ne univerzální dynamický framework. Oprávnění = pověření (`docs/08`), ne hierarchie rolí.
+- Nejdřív využít stávající model (skupina, příspěvek, přílohy, akce, úkol); nový modul nebo položku menu navrhnout až tehdy, když stávající model přestane stačit.
+- Názvosloví krojů: **krojařka** = osoba s pověřením Správa krojů, **sklad** = místnost s nezapůjčenými kroji, agenda = **Správa krojů**. Nepoužívat „krojárna“ ani „krojárka“ (viz `docs/10` kap. 11.1).
 
 ## Git commit messages
 

@@ -1,94 +1,55 @@
 import { seedCostumeState } from '../data/mock-costumes';
-import { Member } from '../../../core/models/member.model';
-import {
-  borrowerLabel,
-  holdingsOf,
-  inventoryProgress,
-  isLoanOverdue,
-  isNumberTaken,
-  itemLabel,
-  kitView,
-  parseBorrowerKey,
-  borrowerKey,
-  myCostumeRows,
-  stockSummary,
-} from './costume-logic';
+import { MOCK_MEMBERS } from '../../members/data/mock-members';
+import { CostumeState } from '../models/costume.model';
+import { cardGroups, holdingsOf, isNumberTaken, itemLabel, lastSeen, nextFreeNumber, seriesStats } from './costume-logic';
 
 describe('costume-logic', () => {
-  const state = seedCostumeState();
+  let state: CostumeState;
+  beforeEach(() => (state = seedCostumeState(MOCK_MEMBERS)));
 
-  it('označí součást řadou a číslem', () => {
-    expect(itemLabel(state, state.items[0])).toBe('Košile – horňácká černá 1');
+  it('kus se identifikuje řadou + číslem; stejné číslo v různých řadách je v pořádku', () => {
+    const a = state.items.find((i) => i.seriesId === 1 && i.number === 1)!;
+    const b = state.items.find((i) => i.seriesId === 6 && i.number === 1)!;
+    expect(itemLabel(state, a)).toBe('Mužské / Horňácko / Košile č. 1');
+    expect(itemLabel(state, b)).toBe('Mužské / Kopanice / Košile č. 1');
   });
 
-  it('vyřazená součást nedrží číslo', () => {
-    expect(isNumberTaken(state, 1, 3, 17)).toBeFalse();
-    expect(isNumberTaken(state, 1, 3)).toBeTrue();
+  it('varianta v klíči řady i jako atribut kusu', () => {
+    const inKey = state.items.find((i) => i.seriesId === 10 && i.number === 1)!;
+    const attr = state.items.find((i) => i.seriesId === 2 && i.number === 1)!;
+    expect(itemLabel(state, inKey)).toBe('Mužské / Slovensko / Gatě modré č. 1');
+    expect(itemLabel(state, attr)).toBe('Mužské / Horňácko / Gatě č. 1 (modré)');
   });
 
-  it('po termínu jen otevřené krátkodobé zápůjčky', () => {
-    const [satek, kit, external, returned] = state.loans;
-    expect(isLoanOverdue(external)).toBeTrue();
-    expect(isLoanOverdue(satek)).toBeFalse();
-    expect(isLoanOverdue(kit)).toBeFalse();
-    expect(isLoanOverdue(returned)).toBeFalse();
+  it('mezery v číslování jsou validní a čísla vyřazených kusů se bez pravidla nerecyklují', () => {
+    // řada 1: číslo 5 vyřazené, 10 a 13 nikdy nepoužité
+    const stats = seriesStats(state, 1);
+    expect(stats.retiredNumbers).toEqual([5]);
+    expect(stats.unusedNumbers).toEqual([10, 13]);
+    expect(isNumberTaken(state, 1, 5)).toBeTrue();
+    expect(isNumberTaken(state, 1, 10)).toBeFalse();
+    expect(nextFreeNumber(state, 1)).toBe(16);
   });
 
-  it('komplet svěřený celý není kvůli tomu neúplný', () => {
-    const view = kitView(state, state.kits[1]);
-    expect(view.kitLoan?.id).toBe(2);
-    expect(view.items.every((i) => i.withKitLoan)).toBeTrue();
-    // 2 požadované: 1 u vypůjčitelky se zápůjčkou kompletu, 1 vrácená v kompletu
-    expect(view.bulk[0].loanedWithKit).toBe(1);
-    expect(view.bulk[0].missing).toBe(0);
-    expect(view.completeness).toBe('complete');
+  it('s výslovným pravidlem řady lze číslo vyřazeného kusu znovu použít', () => {
+    state.series.find((s) => s.id === 1)!.allowNumberReuse = true;
+    expect(isNumberTaken(state, 1, 5)).toBeFalse();
+    expect(nextFreeNumber(state, 1)).toBe(5);
   });
 
-  it('přehled držených věcí osoby', () => {
-    expect(holdingsOf(state, { kind: 'member', memberId: 1 }).length).toBe(5);
-    expect(holdingsOf(state, { kind: 'member', memberId: 5 }).length).toBe(0);
+  it('krojová karta seskupí kusy podle kroje a upozorní na chybějící druhy ze šablony', () => {
+    // Péťa (id 4): Horňácko (košile, gatě) a Slovensko (košile, gatě modré)
+    const groups = cardGroups(state, holdingsOf(state, { kind: 'member', memberId: 4 }));
+    const hornacko = groups.find((g) => g.title.startsWith('Horňácko'))!;
+    expect(hornacko.title).toBe('Horňácko – mužský kroj');
+    expect(hornacko.missing[0].partTypes).toEqual(['Pruclek', 'Klobouk', 'Čižmy']);
+    expect(groups.find((g) => g.title.startsWith('Slovensko'))!.missing).toEqual([]);
   });
 
-  it('bývalý člen a externista jsou v popisku rozlišeni', () => {
-    const members = [{ id: 6, nickname: 'Mára', firstName: 'Marek', lastName: 'K.', isActive: false } as Member];
-    expect(borrowerLabel({ kind: 'member', memberId: 6 }, members, [])).toContain('bývalý člen');
-    expect(borrowerLabel({ kind: 'external', externalId: 1 }, [], state.externals)).toContain('externista');
-  });
-
-  it('klíč vypůjčitele jde převést tam a zpět', () => {
-    const borrower = { kind: 'external', externalId: 3 } as const;
-    expect(parseBorrowerKey(borrowerKey(borrower))).toEqual(borrower);
-    expect(parseBorrowerKey('nesmysl')).toBeUndefined();
-  });
-
-  it('průběh inventury rozlišuje nezkontrolované a mimo sklad', () => {
-    const progress = inventoryProgress({
-      id: 1, name: 'x', startedAt: '', startedByUserId: 0,
-      lines: [
-        { key: 'a', expectedCount: 1, result: 'ok' },
-        { key: 'b', expectedCount: 1, holder: { kind: 'member', memberId: 1 } },
-        { key: 'c', expectedCount: 1, result: 'missing' },
-      ],
-    });
-    expect(progress).toEqual(jasmine.objectContaining({ total: 3, checked: 2, unchecked: 1, outside: 1, outsideUnchecked: 1, missing: 1 }));
-  });
-});
-
-describe('costume-logic – přehledy', () => {
-  const state = seedCostumeState();
-
-  it('Moje kroje: věci svěřené členovi včetně neočíslovaných kusů', () => {
-    const rows = myCostumeRows(state, 1);
-    expect(rows.length).toBe(5);
-    expect(rows.some((r) => r.label.includes('1 ks'))).toBeTrue();
-    expect(myCostumeRows(state, 999).length).toBe(0);
-  });
-
-  it('souhrn skladu', () => {
-    const summary = stockSummary(state);
-    expect(summary.retired).toBe(1);
-    expect(summary.withoutNumber).toBe(1);
-    expect(summary.overdueLoans).toBe(1);
-    expect(summary.openLoans).toBe(3);
+  it('naposledy fyzicky viděn – nejnovější předložení napříč inventurami', () => {
+    const verifiedToday = state.inventoryChecks.find((c) => c.inventoryId === 2 && c.presented)!;
+    const seen = lastSeen(state, verifiedToday.itemId)!;
+    expect(seen.source).toBe('inventory');
+    expect(seen.inventoryId).toBe(2);
   });
 });
