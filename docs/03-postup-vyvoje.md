@@ -358,6 +358,24 @@ Implementace: `posts/utils/mentions.ts` (token `@[member:ID]`, vykreslení po se
 - **Nastavení – vzhled**: světlý / tmavý / automatický režim. Barvy přes CSS proměnné, volba uložená v zařízení.
 - **Nastavení – další**: velikost písma (normální / větší / největší), výchozí zobrazení stránky Akce (seznam / kalendář), omezení animací (`prefers-reduced-motion`). Volbu fontu nedoporučuji.
 
+### Vlna 4 – dorovnání dema s dokumentací (schváleno 2026-10-18)
+
+Frontend + mock, bez backendu. Otázky pro krojařky (`06` kap. 13) zůstávají otevřené, vlna na nich nezávisí. Po dokončení vln 4 a 5 nasadit na produkci.
+
+1. **Správa krojů – názvy a výchozí kroj:** „Krojárna“ → „Správa krojů“, záložka „Sklad“ → „Součástky“, pověření „Náhled do správy krojů“, popisek modulu. Výchozí kroj osoby a nabídka kusů podle něj (`06` kap. 5.1a).
+2. **Archivace skupin:** aktivní → archivovaná → smazaná, smazat jen archivovanou (`08` kap. 10.5).
+3. **Režim historie chatu:** otevřená / od vstupu, intervaly členství (`08` kap. 10.3).
+4. **Předstih výzev u akcí:** nácvik 7 dní, vystoupení 14 dní, úprava u akce; měkká uzávěrka (`07` kap. 18).
+5. **Dlouhodobá nedostupnost:** Profil → Moje nedostupnost, štítek v Účasti, upozornění ve formuláři akce (`07`, `10` kap. 4.11).
+6. **„Čeká na vás“ na Přehledu:** jeden blok povinností napříč moduly (`10` kap. 7.2).
+7. **Osobní spodní lišta:** Přehled + 4 volitelná místa, „Více“, Nastavení → Spodní lišta, „Moje místa“ (`10` kap. 6–7.4).
+
+### Vlna 5 – rozšíření akcí (schváleno 2026-10-18)
+
+1. **Zobrazení detailu a důležité změny:** `last_viewed_at`, drobná / důležitá / potvrzovaná změna (`07` kap. 18, `08` kap. 11.3).
+2. **Série nácviků:** výskyty jako samostatné akce, výjimky „Vynecháno + důvod“ (`07` kap. 17).
+3. **Export kalendáře:** jednorázový `.ics` (odběr s tokenem až s backendem).
+
 ### Potom
 
 - **Administrace**: projít a doplnit vše, co se v ní má spravovat – až po dotažení členské části.
