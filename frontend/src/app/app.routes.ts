@@ -107,6 +107,10 @@ export const routes: Routes = [
           import('./features/search/search.component').then((m) => m.SearchComponent),
       },
       {
+        path: 'more',
+        loadComponent: () => import('./features/more/more.component').then((m) => m.MoreComponent),
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('./features/settings/settings.component').then(

@@ -10,12 +10,17 @@ import { JoinRequest } from '../../features/groups/models/join-request.model';
 import { createTestAccess, testMandate, testMember } from '../../testing/access.testing';
 import { ChatService } from '../../features/chat/chat.service';
 import { ChatMessage } from '../../features/chat/models/chat-message.model';
+import { CostumesService } from '../../features/costumes/costumes.service';
+import { SettingsService } from '../settings/settings.service';
+import { seedCostumeState } from '../../features/costumes/data/mock-costumes';
+import { MOCK_MEMBERS } from '../../features/members/data/mock-members';
 
 describe('NavigationService', () => {
   const member = testMember({ id: 7, groupIds: [2] });
   let env: ReturnType<typeof createTestAccess>;
   const requests = signal<JoinRequest[]>([]);
   const messages = signal<ChatMessage[]>([]);
+  const appSettings = signal<{ bottomBar: string[] | null }>({ bottomBar: null });
 
   function create(): NavigationService {
     TestBed.configureTestingModule({
@@ -25,6 +30,8 @@ describe('NavigationService', () => {
         { provide: EventsService, useValue: { getEvents: () => of([]) } },
         { provide: JoinRequestsService, useValue: { requests } },
         { provide: ChatService, useValue: { messages, lastReadAt: () => '2026-01-01T00:00:00Z' } },
+        { provide: CostumesService, useValue: { state$: of(seedCostumeState(MOCK_MEMBERS)) } },
+        { provide: SettingsService, useValue: { settings: appSettings } },
       ],
     });
     return TestBed.inject(NavigationService);
@@ -34,6 +41,7 @@ describe('NavigationService', () => {
     env = createTestAccess(member);
     requests.set([]);
     messages.set([]);
+    appSettings.set({ bottomBar: null });
   });
 
   it('badge skupiny zahrne i nepřečtené cizí zprávy chatu', fakeAsync(() => {
@@ -57,10 +65,30 @@ describe('NavigationService', () => {
     discardPeriodicTasks();
   }));
 
-  it('Správa souboru přidá Správu, ale ne cizí skupiny', () => {
+  it('Správa souboru přidá místo Správa (v agendách), ale ne cizí skupiny', () => {
     env.mandates.set([testMandate(7, 'ensemble-admin')]);
     const nav = create();
-    expect(nav.bottomItems().map((i) => i.path)).toEqual(['/app/dashboard', '/app/events', '/app/boards/tanecni', '/app/boards', '/app/manage']);
+    expect(nav.places().map((p) => p.path)).toContain('/app/manage');
+    expect(nav.places().filter((p) => p.category === 'group').map((p) => p.path)).toEqual(['/app/boards/tanecni']);
+    expect(nav.bottomItems()[0].path).toBe('/app/dashboard');
+    expect(nav.sections().find((s) => s.label === 'Agendy')!.items.map((i) => i.path)).toEqual(['/app/manage']);
+  });
+
+  it('výchozí lišta: Přehled, Akce, skupiny člena přímo, žádné posouvání ani „Více“', () => {
+    const nav = create();
+    const paths = nav.bottomItems().map((i) => i.path);
+    expect(paths[0]).toBe('/app/dashboard');
+    expect(paths).toContain('/app/events');
+    expect(paths).toContain('/app/boards/tanecni');
+    expect(paths.length).toBeLessThanOrEqual(5);
+    expect(paths).not.toContain('/app/more');
+  });
+
+  it('vlastní lišta s víc než 4 místy: první 3 a „Více“ se součtem badge schovaných míst', () => {
+    appSettings.set({ bottomBar: ['search', 'groups', 'costumes', 'events', 'group-2'] });
+    const nav = create();
+    const items = nav.bottomItems();
+    expect(items.map((i) => i.path)).toEqual(['/app/dashboard', '/app/search', '/app/boards', '/app/costumes', '/app/more']);
   });
 
   it('Docházka jen s pověřením Evidence docházky', () => {

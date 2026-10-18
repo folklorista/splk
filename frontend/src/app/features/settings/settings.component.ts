@@ -4,6 +4,7 @@ import { NotificationService } from '../../core/notifications/notification.servi
 import { GroupNotificationsService } from '../../core/notifications/group-notifications.service';
 import { GROUP_NOTIFY_LABELS, GroupNotifyMode } from '../../core/notifications/group-notifications';
 import { AccessService } from '../../core/access/access.service';
+import { BottomBarSettingsComponent } from './bottom-bar-settings.component';
 
 interface Option<T> {
   value: T;
@@ -14,6 +15,7 @@ interface Option<T> {
 @Component({
   selector: 'app-settings',
   standalone: true,
+  imports: [BottomBarSettingsComponent],
   templateUrl: './settings.component.html',
 })
 export class SettingsComponent {

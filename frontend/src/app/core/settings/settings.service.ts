@@ -10,6 +10,8 @@ export interface AppSettings {
   eventsView: EventsViewSetting;
   // null = podle systému (prefers-reduced-motion)
   reduceMotion: boolean | null;
+  // Osobní spodní lišta: klíče míst v pořadí (bez Přehledu); null = automatický návrh (docs/10 kap. 6.2)
+  bottomBar: string[] | null;
 }
 
 export const SETTINGS_STORAGE_KEY = 'splk.settings';
@@ -19,6 +21,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   fontSize: 'normal',
   eventsView: 'list',
   reduceMotion: null,
+  bottomBar: null,
 };
 
 function readStoredSettings(): AppSettings {

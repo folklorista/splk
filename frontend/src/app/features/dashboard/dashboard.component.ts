@@ -8,6 +8,8 @@ import { AttendanceService } from '../attendance/attendance.service';
 import { MembersService } from '../members/members.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
+import { NavigationService } from '../../core/layout/navigation.service';
+import { IconComponent } from '../../shared/icon/icon.component';
 import { EventRsvpRowComponent } from '../events/event-rsvp-row/event-rsvp-row.component';
 import { MyCostumesComponent } from '../costumes/my-costumes/my-costumes.component';
 import { CostumesService } from '../costumes/costumes.service';
@@ -31,7 +33,7 @@ export interface UpcomingEventRow {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, EventRsvpRowComponent, MyCostumesComponent],
+  imports: [RouterLink, EventRsvpRowComponent, MyCostumesComponent, IconComponent],
   templateUrl: './dashboard.component.html',
   styles: [`
     .pending { margin-bottom: var(--spacing-lg); border-left: 4px solid var(--color-primary); background: var(--color-surface-alt); border-radius: 8px; padding: var(--spacing-sm) var(--spacing-md); }
@@ -43,6 +45,12 @@ export interface UpcomingEventRow {
     .pending__link:hover .pending__text { color: var(--color-primary); }
     .pending__detail { font-size: var(--font-size-xs); color: var(--color-text-muted); }
     .pending__actions { display: flex; gap: 6px; }
+    .places__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); }
+    .places__tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--spacing-sm); border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface); color: var(--color-text); text-decoration: none; text-align: center; }
+    .places__tile:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    .places__label { font-size: var(--font-size-xs); }
+    .places__badge { position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--color-primary); color: #fff; font-size: 10px; line-height: 16px; }
+    @media (min-width: 768px) { .places { display: none; } }
   `],
 })
 export class DashboardComponent implements OnInit {
@@ -54,6 +62,8 @@ export class DashboardComponent implements OnInit {
   hasCostumes = signal(false);
 
   private requests = inject(JoinRequestsService);
+  // Moje místa: záložní rozcestník pro místa vyřazená z lišty (docs/10 kap. 7.4)
+  readonly places = inject(NavigationService).orderedPlaces;
   private allEvents = signal<AppEvent[]>([]);
   private costumeState = toSignal(inject(CostumesService).state$);
   private actualAttendance = toSignal(inject(ActualAttendanceService).records$, { initialValue: [] });
