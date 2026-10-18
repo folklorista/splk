@@ -25,7 +25,7 @@ Při příštím plánování rozlišit:
 
 Neuvedené termíny dokončení neslibovat.
 
-**Známé rozdíly kódu a dokumentace (k 18. 10. 2026):** skupinu lze ve Správě smazat bez archivace (cíl: `08` kap. 10.5); chat má pevně historii od vstupu (cíl: volba režimu, `08` kap. 10.3); badge akcí nerespektuje předstih výzvy (`07` kap. 18); UI používá název „Krojárna“ a záložku „Sklad“ pro všechny kusy (cíl: „Správa krojů“ a „Součástky“, `10` kap. 11.1); dlouhodobá nedostupnost členů je schválená k realizaci, zatím neimplementovaná (`07`, `10` kap. 4.11).
+**Známé rozdíly kódu a dokumentace (k 18. 10. 2026):** skupinu lze ve Správě smazat bez archivace (cíl: `08` kap. 10.5); chat má pevně historii od vstupu (cíl: volba režimu, `08` kap. 10.3); badge akcí nerespektuje předstih výzvy (`07` kap. 18); UI používá název „Krojárna“ a záložku „Sklad“ pro všechny kusy (cíl: „Správa krojů“ a „Součástky“, `10` kap. 11.1); dlouhodobá nedostupnost členů je schválená k realizaci, zatím neimplementovaná (`07`, `10` kap. 4.11); výchozí kroj osoby pro nabídku kusů při vydávání zatím chybí (`06` kap. 5.1a).
 
 ## Aktuální stav (2026-10-15)
 

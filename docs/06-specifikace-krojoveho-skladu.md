@@ -96,6 +96,17 @@ Krojařka vybere **konkrétní dostupný kus** (vydatelný, nikomu nesvěřený)
 
 Při vydávání více kusů jedné osobě může jako pomůcka posloužit šablona kompletu (co ještě chybí), ale vydávají se vždy jednotlivé kusy.
 
+### 5.1a Nabídka kusů podle výchozího kroje osoby
+
+U každé osoby (člena i externisty) lze evidovat **výchozí kroj**: mužský / ženský / neurčeno. Nejde o obecný údaj o pohlaví, ale o krojovou preferenci pro nabídku při vydávání. Údaj je nepovinný a nastavuje ho krojařka na krojové kartě osoby, případně Správa souboru v detailu osoby.
+
+- Když pro kroj přijde Martina s výchozím krojem ženským, výběr kusu **primárně nabízí ženské součástky** a druhy použitelné v obou krojích (druh bez pohlaví). Stejně se řídí i šablona kompletu, podle které aplikace ukazuje, co osobě chybí.
+- Jde jen o **řazení a výchozí filtr, nikdy o zákaz**. Jedním klepnutím („zobrazit všechny kusy“) lze vybrat kus libovolného pohlaví a vydat ho bez dalšího potvrzování. U takového kusu se na krojové kartě jen nenápadně zobrazí, že nejde o výchozí kroj osoby.
+- U osoby s výchozím krojem „neurčeno“ se nabízí vše.
+- **Kus pro jinou osobu:** Verča si může vypůjčit na sebe součástku pro manžela, odpovědnost pak nese ona. Pokud ji ale bude manžel nosit dlouhodobě, doporučuje se vést ho jako externistu s vlastní krojovou kartou, aby evidence odpovídala skutečnému držiteli.
+- **Choreografie s obráceným krojem** (např. fašanková obchůzka, holky v mužských krojích): vydání proběhne běžně přes „zobrazit všechny kusy“, s volitelnou poznámkou k zápůjčce („fašank“) a termínem vrácení. Výchozí kroj osoby se tím nemění.
+- Výchozí kroj neovlivňuje inventuru ani oprávnění.
+
 ### 5.2 Vrácení
 
 Krojařka zaznamená skutečné převzetí a může doplnit **poznámku k vrácení** („vrácena nevypraná“). Současně může upravit stav, vydatelnost a umístění kusu. Zápůjčka se ukončí, historie i poznámka zůstanou.
@@ -284,6 +295,8 @@ Konkrétní tiskové sestavy a formáty doladíme s krojařkami. Exporty s osobn
 
 **S. Odchod člena:** Ukončení členství neuzavře zápůjčky ani nevymaže historickou odpovědnost.
 
+**T. Nabídka podle výchozího kroje:** Martině (výchozí kroj ženský) se při vydávání nabízejí nejdřív ženské a univerzální součástky. Krojařka přesto může jedním klepnutím vydat mužský kus, například na fašankovou obchůzku nebo Verče pro manžela.
+
 ## 12. Co může počkat na další verze
 
 - QR kódy a automatické načítání evidenčních čísel,
@@ -302,9 +315,10 @@ Konkrétní tiskové sestavy a formáty doladíme s krojařkami. Exporty s osobn
 2. **Opakované použití čísel:** u kterých řad ho povolit (výchozí: nepovolovat).
 3. **Zaměnitelné drobnosti bez čísla** (kap. 3.4): stačí jednotlivé kusy bez fyzického čísla, nebo je nutná evidence podle počtu?
 4. **Uzavření inventury s nesrovnalostmi:** zatím smí každá krojařka, vždy s důvodem – potvrdit.
-5. **Pracovní úkoly:** stačí stavy otevřený / rozpracovaný / hotovo / zrušeno bez schvalování?
-6. **Termíny inventury:** zůstanou samostatné, nebo je navázat na akce v kalendáři?
-7. **Tisk a export:** jaké sestavy a formáty potřebujete při první inventuře?
+5. **Výchozí kroj osoby:** stačí mužský / ženský / neurčeno, nebo je potřeba jemnější rozlišení (např. dětský kroj u Malé Vonice)?
+6. **Pracovní úkoly:** stačí stavy otevřený / rozpracovaný / hotovo / zrušeno bez schvalování?
+7. **Termíny inventury:** zůstanou samostatné, nebo je navázat na akce v kalendáři?
+8. **Tisk a export:** jaké sestavy a formáty potřebujete při první inventuře?
 
 Tento dokument není technickým návrhem databáze; orientační doménové entity jsou v příloze.
 
@@ -337,6 +351,7 @@ Entity zůstávají oddělené; žádná obří generická entita ani jeden spol
 | `CostumeItem` | stabilní ID, `ensembleId`, řada, číslo, varianta, velikost, poznámka, stav, vydatelnost, umístění, vyřazení |
 | `CostumeKitTemplate` | šablona kompletu: pohlaví, region, seznam druhů |
 | `ExternalPerson` | externí vypůjčitel bez účtu |
+| výchozí kroj osoby | atribut osoby / externisty: mužský / ženský / neurčeno; jen pro řazení nabídky při vydávání (kap. 5.1a) |
 | `CostumeLoan` | kus × držitel, výdej, termín, ukončení (vráceno / vyměněno / vypořádáno), vazba na nahrazovanou zápůjčku a inventuru |
 | `CostumeWorkOrder` | pracovní úkol na kusu |
 | `Inventory` | rozsah (filtry), zmrazený seznam kusů a držitelů, výslovná doplnění, uzavření s důvodem |

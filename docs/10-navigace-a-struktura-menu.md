@@ -192,6 +192,7 @@ Skutečná podoba se liší od původního návrhu (Součástky / Komplety / Lid
     - Nový kus ✅ `/wardrobe/stock/new`, úprava ✅ `/wardrobe/stock/:id/edit`
   - **Krojové karty** ✅ `/wardrobe/cards` – kdo má co zapůjčeno
     - Karta osoby ✅ `/wardrobe/cards/:key` – vydat, vrátit, vyměnit kus, úkol
+      - Výchozí kroj osoby (mužský / ženský / neurčeno) `[?]` – výběr kusu při vydávání primárně nabízí odpovídající součástky, „zobrazit všechny kusy“ jedním klepnutím (`06` kap. 5.1a)
     - Externisté (držitelé mimo soubor) ✅
   - **Výpůjčky** ✅ `/wardrobe/loans` – jeden řádek = jeden kus u jednoho držitele; historie, export CSV
     - Nová výpůjčka ✅ `/wardrobe/loans/new`
@@ -229,6 +230,7 @@ Správa = **jádro souboru**: osoby, skupiny, pověření, moduly a jejich audit
     - **Detail osoby** ✅ `/manage/members/:id`
       - Osobní údaje: jméno, příjmení, přezdívka, e-mail, telefon ✅
       - Souborová funkce (kronikářka, ekonomka…) – jen informativní ✅
+      - Výchozí kroj `[?]` – stejný údaj jako na krojové kartě (`06` kap. 5.1a)
       - **Členství v souboru** – ukončit / obnovit aktivní členství (historie zůstává) ✅
       - **Skupiny** – přidat do skupiny / odebrat ✅ (sebe přidat nelze – ochrana soukromí skupin)
       - **Pověření** – přidělit / odebrat, s rozsahem soubor / skupina / akce ✅; přechodná pověření označená ✅
