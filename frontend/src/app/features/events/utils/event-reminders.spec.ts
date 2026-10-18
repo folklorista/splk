@@ -34,4 +34,8 @@ describe('event-reminders', () => {
     expect(needsResponse(ev({ responseDeadline: day(-1) }), 'yes', now)).toBeFalse();
     expect(needsResponse(ev({ startsAt: day(30) }), 'pending', now)).toBeFalse();
   });
+
+  it('vynechaný termín série na odpověď nečeká', () => {
+    expect(needsResponse(ev({ skippedReason: 'Státní svátek' }), 'pending', now)).toBeFalse();
+  });
 });

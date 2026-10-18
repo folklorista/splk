@@ -1,4 +1,4 @@
-<div class="rsvp-row" [class.rsvp-row--pending]="status === 'pending' && !isPast" [class.rsvp-row--past]="isPast">
+<div class="rsvp-row" [class.rsvp-row--pending]="status === 'pending' && !isPast && !event.skippedReason" [class.rsvp-row--past]="isPast || !!event.skippedReason">
   <a class="rsvp-row__main" [routerLink]="['/app/events', event.id]" [title]="countsTitle">
     @if (showDate) {
       <span class="rsvp-row__date">
@@ -7,7 +7,7 @@
       </span>
     }
     <span class="rsvp-row__info">
-      <span class="rsvp-row__title">{{ event.title }}</span>
+      <span class="rsvp-row__title">{{ event.title }}@if (event.skippedReason) { <span class="rsvp-row__skipped">Vynecháno – {{ event.skippedReason }}</span> }</span>
       <span class="rsvp-row__meta">
         {{ event.startsAt | date: 'HH:mm' }} · {{ event.location }}
         @if (counts; as c) {
@@ -16,6 +16,7 @@
       </span>
     </span>
   </a>
+  @if (!event.skippedReason) {
   <div class="rsvp-row__actions" role="group" aria-label="Moje účast">
     @for (quick of quickStatuses; track quick) {
       <button
@@ -34,4 +35,5 @@
       </button>
     }
   </div>
+}
 </div>

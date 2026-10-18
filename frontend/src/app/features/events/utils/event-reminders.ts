@@ -46,8 +46,8 @@ export function isDecided(status: AttendanceStatus): boolean {
 }
 
 // Čeká akce na moji odpověď? Bez odpovědi v době výzvy; po měkké uzávěrce i MOŽNÁ.
-export function needsResponse(event: Pick<AppEvent, 'type' | 'reminderLeadDays' | 'startsAt' | 'responseDeadline'>, status: AttendanceStatus, now = new Date()): boolean {
-  if (!isReminderActive(event, now)) return false;
+export function needsResponse(event: Pick<AppEvent, 'type' | 'reminderLeadDays' | 'startsAt' | 'responseDeadline' | 'skippedReason'>, status: AttendanceStatus, now = new Date()): boolean {
+  if (event.skippedReason || !isReminderActive(event, now)) return false;
   if (status === 'pending') return true;
   return status === 'maybe' && isSoftDeadlinePassed(event, now);
 }

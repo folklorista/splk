@@ -28,6 +28,10 @@ export interface AppEvent {
   reminderLeadDays?: number;
   // Nepovinná měkká uzávěrka: po ní se výzva zopakuje nerozhodnutým (MOŽNÁ / bez odpovědi)
   responseDeadline?: string;
+  // Výskyt série nácviků (docs/07 kap. 17) – každý výskyt je samostatná akce
+  seriesId?: number;
+  // Vynechaný výskyt série (svátek, prázdniny): jen informační, nečeká na odpověď
+  skippedReason?: string;
   // Poslední důležitá změna (organizátor ji výslovně označil): kdy, co a zda vyžaduje potvrzení přečtení
   importantChange?: EventImportantChange;
   attendance?: AttendanceRecord[];

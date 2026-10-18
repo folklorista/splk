@@ -185,4 +185,27 @@ describe('EventsService', () => {
     expect(entry.details).toContain('začátek');
     expect(entry.details).toContain('Náves');
   }));
+
+  it('série: každý termín samostatná akce se stejným seriesId, vynechané s důvodem, jeden záznam historie', fakeAsync(() => {
+    const audit = TestBed.inject(AuditService);
+    const before = audit.entries().length;
+    const { id, ...data } = MOCK_EVENTS[0];
+    let created: AppEvent[] = [];
+    service.createSeries({ ...data, title: 'Nácvik' }, [
+      { startsAt: '2026-11-05T18:00', endsAt: '2026-11-05T20:00' },
+      { startsAt: '2026-11-12T18:00', endsAt: '2026-11-12T20:00', skippedReason: 'Podzimní prázdniny' },
+    ]).subscribe((e) => (created = e));
+    tick(300);
+    expect(created.length).toBe(2);
+    expect(new Set(created.map((e) => e.seriesId)).size).toBe(1);
+    expect(created[1].skippedReason).toBe('Podzimní prázdniny');
+    expect(new Set(created.map((e) => e.id)).size).toBe(2);
+    expect(audit.entries().length - before).toBe(1);
+    expect(audit.entries().some((e) => e.action === 'series-created')).toBeTrue();
+
+    env.mandates.set([]);
+    let error: unknown;
+    service.createSeries(data, [{ startsAt: '2026-11-05T18:00', endsAt: '2026-11-05T20:00' }]).subscribe({ error: (e) => (error = e) });
+    expect(error).toEqual(jasmine.any(AccessDeniedError));
+  }));
 });

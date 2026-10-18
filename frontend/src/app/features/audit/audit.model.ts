@@ -32,6 +32,7 @@ export type AuditAction =
   | 'post-archived'
   | 'post-restored'
   | 'event-created'
+  | 'series-created'
   | 'event-updated'
   | 'settings-updated';
 

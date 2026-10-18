@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, of, Observable } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -11,6 +11,7 @@ import { canEditEvent, eventOrganizerScope, isEventAudience } from '../../../cor
 import { AppEvent, EventType } from '../models/event.model';
 import { MAX_REMINDER_LEAD_DAYS, defaultReminderLeadDays } from '../utils/event-reminders';
 import { AvailabilityService } from '../../availability/availability.service';
+import { SeriesPlannerComponent } from './series-planner.component';
 import { formatRange } from '../../availability/unavailability.utils';
 import { AttendanceRecord, AttendanceStatus } from '../../attendance/models/attendance.model';
 import { Member } from '../../../core/models/member.model';
@@ -32,7 +33,7 @@ export const EVENT_TYPE_OPTIONS: [EventType, string][] = [
 @Component({
   selector: 'app-event-form',
   standalone: true,
-  imports: [RouterLink, RelativeTimePipe],
+  imports: [RouterLink, RelativeTimePipe, SeriesPlannerComponent],
   template: `
     <div class="page">
       <a class="back-link" [routerLink]="backLink()">← Zpět</a>
@@ -102,6 +103,10 @@ export const EVENT_TYPE_OPTIONS: [EventType, string][] = [
                 </label>
               }
             </fieldset>
+          }
+
+          @if (!eventId) {
+            <app-series-planner [startsAt]="startsAt()" />
           }
 
           <fieldset class="event-form__fieldset">
@@ -250,6 +255,7 @@ export class EventFormComponent implements OnInit {
   readonly endsAt = signal('');
   readonly location = signal('');
   readonly description = signal('');
+  private planner = viewChild(SeriesPlannerComponent);
   readonly leadDays = signal('');
   // Drobná změna bez upozornění / důležitá (nové sledování zobrazení) / výjimečná s potvrzením
   readonly changeKind = signal<'minor' | 'important' | 'confirm'>('minor');
@@ -351,6 +357,20 @@ export class EventFormComponent implements OnInit {
     });
   }
 
+  // Termíny série (jen při zakládání se zapnutým opakováním): čas a délka podle prvního termínu
+  private seriesOccurrences(): { startsAt: string; endsAt: string; skippedReason?: string }[] | null {
+    const planner = this.planner();
+    if (this.eventId || !planner?.enabled()) return null;
+    const startTime = this.startsAt().slice(11, 16);
+    const durationMs = Date.parse(this.endsAt()) - Date.parse(this.startsAt());
+    return planner.occurrences().map((o) => {
+      const startsAt = `${o.date}T${startTime}`;
+      const end = new Date(Date.parse(startsAt) + Math.max(0, durationMs));
+      const endsAt = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}T${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+      return { startsAt, endsAt, skippedReason: o.skipReason !== undefined ? o.skipReason.trim() || 'Vynecháno' : undefined };
+    });
+  }
+
   // Prázdné = výchozí podle typu; jinak 0–365 dní
   private parsedLeadDays(): number | undefined {
     const value = String(this.leadDays()).trim();
@@ -412,6 +432,12 @@ export class EventFormComponent implements OnInit {
       organizerGroupIds: this.organizerGroupIds().length ? this.organizerGroupIds() : undefined,
       guestMemberIds: this.guestMemberIds().length ? this.guestMemberIds() : undefined,
     };
+    const series = this.seriesOccurrences();
+    if (series) {
+      // Série: každý termín samostatná akce; po uložení zpět na seznam akcí
+      this.feedback.run(this.eventsService.createSeries(data, series), () => this.router.navigate(['/app/events']));
+      return;
+    }
     const request = this.eventId
       ? this.eventsService.updateEvent(this.eventId, data).pipe(switchMap(() => this.saveStatuses(this.eventId!)))
       : this.eventsService.createEvent(data);

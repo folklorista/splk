@@ -104,7 +104,7 @@ export function attendanceRecordActions(events: AppEvent[], actual: ActualAttend
   const recorded = new Set(actual.map((a) => a.eventId));
   return events
     .filter((e) => Date.parse(e.endsAt) <= now.getTime() && Date.parse(e.endsAt) >= since)
-    .filter((e) => !recorded.has(e.id) && canRecordAttendance(subject, e))
+    .filter((e) => !e.skippedReason && !recorded.has(e.id) && canRecordAttendance(subject, e))
     .map((e) => ({ key: `attendance-${e.id}`, kind: 'attendance-record', title: `${e.title} – zapište docházku`, detail: fmtDate(e.startsAt), link: ['/app/events', e.id], sortAt: e.startsAt }));
 }
 

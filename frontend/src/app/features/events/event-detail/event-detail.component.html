@@ -17,6 +17,9 @@
           }
         </div>
 
+        @if (ev.skippedReason) {
+          <div class="detail__change" role="status"><strong>Vynecháno</strong> – {{ ev.skippedReason }}. Termín série se nekoná, na účast se neodpovídá.</div>
+        }
         @if (ev.importantChange; as change) {
           <div class="detail__change" [class.detail__change--confirm]="needsConfirmation()" role="status">
             <strong>Důležitá změna</strong> ({{ change.at | date: 'd. M. HH:mm' }}): {{ change.note }}
@@ -72,7 +75,7 @@
           <p class="detail__body">{{ ev.description }}</p>
         }
 
-        @if (isAudience()) {
+        @if (isAudience() && !ev.skippedReason) {
         <section class="detail__section">
           <h2 class="detail__section-title">Moje účast</h2>
           @if (deadlineText(); as text) {
