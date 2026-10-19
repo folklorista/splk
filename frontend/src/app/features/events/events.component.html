@@ -1,17 +1,19 @@
 <div class="page">
-  <div class="page__header">
+  <div class="page__header events-header">
     <h1 class="page__title">Akce</h1>
-    @if (canViewAttendance()) {
-      <a class="page__header-link" routerLink="/app/attendance">Docházka</a>
-    }
-    @if (canCreateEvents()) {
-      <a class="btn-primary btn-primary--sm" routerLink="/app/events/new">+ Nová akce</a>
-    }
-    <div class="view-toggle" role="group" aria-label="Zobrazení">
-      <button type="button" class="view-toggle__btn" [class.view-toggle__btn--active]="view() === 'list'"
-        [attr.aria-pressed]="view() === 'list'" (click)="setView('list')">Seznam</button>
-      <button type="button" class="view-toggle__btn" [class.view-toggle__btn--active]="view() === 'calendar'"
-        [attr.aria-pressed]="view() === 'calendar'" (click)="setView('calendar')">Kalendář</button>
+    <div class="toolbar">
+      <div class="view-toggle" role="group" aria-label="Zobrazení">
+        <button type="button" class="view-toggle__btn" [class.view-toggle__btn--active]="view() === 'list'"
+          [attr.aria-pressed]="view() === 'list'" (click)="setView('list')">Seznam</button>
+        <button type="button" class="view-toggle__btn" [class.view-toggle__btn--active]="view() === 'calendar'"
+          [attr.aria-pressed]="view() === 'calendar'" (click)="setView('calendar')">Kalendář</button>
+      </div>
+      @if (canViewAttendance()) {
+        <a class="toolbar__btn" routerLink="/app/attendance" title="Docházka" aria-label="Docházka"><app-icon name="clipboard-check" [size]="16" /><span class="toolbar__label">Docházka</span></a>
+      }
+      @if (canCreateEvents()) {
+        <a class="toolbar__btn toolbar__btn--primary" routerLink="/app/events/new">+ Nová akce</a>
+      }
     </div>
   </div>
 
@@ -104,17 +106,8 @@
       </label>
     </div>
 
-    @if (!filteredEvents().length) {
-      <p class="state-note">{{ upcomingEvents().length ? 'Žádná akce neodpovídá filtrům.' : 'Žádné nadcházející akce.' }}</p>
-    } @else {
-      <ul class="rsvp-list">
-        @for (event of filteredEvents(); track event.id) {
-          <li>
-            <app-event-rsvp-row [event]="event" [status]="ownStatus(event)" [counts]="attendanceCounts(event)"
-              (statusChange)="setStatus(event.id, $event)" />
-          </li>
-        }
-      </ul>
-    }
+    <app-event-list [upcoming]="filteredEvents()" [past]="pastEvents()" [memberId]="currentMemberId()" [countsFor]="attendanceCounts"
+      [emptyText]="upcomingEvents().length ? 'Žádná akce neodpovídá filtrům.' : 'Žádné nadcházející akce.'"
+      (statusChange)="setStatus($event.eventId, $event.status)" />
   }
 </div>

@@ -2129,3 +2129,74 @@ a.mobile-header__user {
     font-weight: 400;
   }
 }
+
+// Záhlaví stránky s nástroji (přepínač zobrazení, odkazy, hlavní akce) – stejná výška, jeden řádek
+.events-header {
+  flex-wrap: wrap;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+
+  .view-toggle {
+    margin-bottom: 0;
+  }
+
+  .view-toggle__btn {
+    height: 34px;
+  }
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    white-space: nowrap;
+
+    &:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    &--primary {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+
+      &:hover {
+        color: #fff;
+        filter: brightness(0.95);
+      }
+    }
+  }
+}
+
+// Na úzkém displeji jen ikona (popisek zůstává pro čtečky přes aria-label)
+@media (max-width: 420px) {
+  .toolbar__label {
+    display: none;
+  }
+}
+
+// Uplynulé akce pod seznamem – výchozí sbalené
+.events-past {
+  margin-top: var(--spacing-lg);
+
+  &__summary {
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-sm);
+  }
+}

@@ -105,7 +105,7 @@ Seznam obsahuje i obrazovky dosažitelné jen ze souvisejících míst, nejen p�
 
 - **Akce**
   - **Seznam** ✅ (`?view=list`)
-    - Nadcházející / proběhlé
+    - Nadcházející ✅, pod nimi sbalené **Uplynulé** ✅
     - Filtry: typ akce ✅, moje odpověď ✅, skupina `[?]`
   - **Kalendář** ✅ (`?view=calendar`; výchozí pohled si člen nastaví v Nastavení)
     - Měsíc, přechod na Dnes ✅
@@ -158,7 +158,7 @@ Docházka je dnes samostatná položka hlavního menu jen pro pověřené. Dopor
     - Nový příspěvek ✅ `/boards/:slug/new`, úprava ✅ `/posts/:id/edit`
   - **Členové** ✅ (`tab=members`) → Detail osoby `[?]`
   - **Správa** ✅ (`tab=manage`) `(Hlavní správce / spolusprávce)` – stejný panel jako Správa → Skupiny → detail (kap. 4.7)
-  - **Akce skupiny** `[?]` – filtrovaný pohled na Akce (akce cílené na skupinu); **stejný detail akce**, ne „skupinový typ akce“
+  - **Akce skupiny** ✅ (`tab=events`) – akce, které skupina pořádá nebo pro ni jsou, s filtrem Vše / Pořádá skupina / Pro skupinu; **stejný detail akce**, ne „skupinový typ akce“
   - **Dokumenty skupiny** `[?]`
   - Úkoly skupiny `[?]` (V2)
 

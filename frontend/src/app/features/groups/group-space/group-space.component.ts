@@ -17,6 +17,7 @@ import { GROUP_NOTIFY_LABELS, GroupNotifyMode } from '../../../core/notification
 const TAB_LABELS: Record<GroupSpaceTab, string> = {
   chat: 'Chat',
   board: 'Nástěnka',
+  events: 'Akce',
   members: 'Členové',
   manage: 'Správa',
 };
@@ -24,10 +25,11 @@ const TAB_LABELS: Record<GroupSpaceTab, string> = {
 // Prostor skupiny (/app/boards/:slug): Chat, Nástěnka, Členové a Správa skupiny (jen správcům).
 // Výchozí záložku určuje nastavení skupiny; záložka je v URL (?tab=), aby šla sdílet a vrátit se na ni.
 import { NavigationService } from '../../../core/layout/navigation.service';
+import { GroupEventsComponent } from './group-events.component';
 @Component({
   selector: 'app-group-space',
   standalone: true,
-  imports: [RouterLink, GroupChatComponent, PostsComponent, GroupMembersComponent, GroupAdminPanelComponent, IconComponent],
+  imports: [RouterLink, GroupChatComponent, PostsComponent, GroupMembersComponent, GroupAdminPanelComponent, IconComponent, GroupEventsComponent],
   template: `
     <div class="page">
       @if (group(); as g) {
@@ -72,6 +74,7 @@ import { NavigationService } from '../../../core/layout/navigation.service';
         @switch (tab()) {
           @case ('chat') { <app-group-chat [group]="g" /> }
           @case ('board') { <app-posts [board]="g" /> }
+          @case ('events') { <app-group-events [group]="g" /> }
           @case ('members') { <app-group-members [group]="g" /> }
           @case ('manage') { <app-group-admin-panel [groupId]="g.id" /> }
         }
@@ -109,8 +112,9 @@ export class GroupSpaceComponent {
     return !!g && (canManageGroupMembership(this.access.subject(), g.id) || canEditGroupCommunication(this.access.subject(), g.id));
   });
 
-  readonly tabs = computed(() => (this.group() ? groupTabs(this.group()!, this.canManage()) : []));
-  readonly tab = computed(() => (this.group() ? resolveGroupTab(this.requestedTab(), this.group()!, this.canManage()) : 'members'));
+  private eventsModule = computed(() => this.access.modules().events);
+  readonly tabs = computed(() => (this.group() ? groupTabs(this.group()!, this.canManage(), this.eventsModule()) : []));
+  readonly tab = computed(() => (this.group() ? resolveGroupTab(this.requestedTab(), this.group()!, this.canManage(), this.eventsModule()) : 'members'));
 
   private notify = inject(GroupNotificationsService);
   readonly notifyOptions = Object.entries(GROUP_NOTIFY_LABELS) as [GroupNotifyMode, string][];
