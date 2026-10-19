@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { StitchPath, stitchIcon } from './stitch-icons';
 
 export type IconName =
   | 'calendar'
@@ -62,6 +63,22 @@ export const GROUP_ICON_OPTIONS: IconName[] = [
   selector: 'app-icon',
   standalone: true,
   template: `
+    @if (stitches; as paths) {
+      <svg
+        class="icon icon--stitch"
+        [attr.width]="size"
+        [attr.height]="size"
+        viewBox="0 0 160 160"
+        fill="none"
+        stroke-width="3.6"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        @for (p of paths; track $index) {
+          <path [attr.d]="p.d" [attr.stroke]="p.color" />
+        }
+      </svg>
+    } @else {
     <svg
       class="icon"
       [attr.width]="size"
@@ -245,6 +262,7 @@ export const GROUP_ICON_OPTIONS: IconName[] = [
         }
       }
     </svg>
+    }
   `,
   styles: [`
     :host {
@@ -256,4 +274,9 @@ export const GROUP_ICON_OPTIONS: IconName[] = [
 export class IconComponent {
   @Input() name!: IconName;
   @Input() size = 16;
+
+  // Křížkové ikony Vonica (stitch-icons.ts); co v sadě chybí, zůstává čárové
+  get stitches(): StitchPath[] | null {
+    return stitchIcon(this.name);
+  }
 }
