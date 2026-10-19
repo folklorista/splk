@@ -10,13 +10,9 @@
     @if (ev) {
       <div class="detail">
         <div class="detail__header">
-          <h1 class="detail__title">{{ ev.title }}</h1>
-          <span class="badge">{{ typeLabel(ev.type) }}</span>
+          <h1 class="detail__title detail__title--compact">{{ ev.title }} <span class="detail__when">({{ when() }})</span></h1>
           @if (canEdit()) {
             <a class="attendance-btn" [routerLink]="['/app/events', ev.id, 'edit']">Upravit</a>
-          }
-          @if (!ev.skippedReason) {
-            <button type="button" class="attendance-btn" (click)="downloadIcs()" title="Přidat do kalendáře (.ics)"><app-icon class="dl-icon" name="download" [size]="16" />Do kalendáře</button>
           }
         </div>
 
@@ -36,43 +32,7 @@
           </div>
         }
 
-        <dl class="detail__meta">
-          <dt><app-icon class="detail__meta-icon" name="arrow-start" /> Začátek</dt>
-          <dd>{{ ev.startsAt | date: 'd. M. yyyy, HH:mm' }}</dd>
-          <dt><app-icon class="detail__meta-icon" name="arrow-end" /> Konec</dt>
-          <dd>{{ ev.endsAt | date: 'd. M. yyyy, HH:mm' }}</dd>
-          <dt><app-icon class="detail__meta-icon" name="location" /> Místo</dt>
-          <dd>{{ ev.location }}</dd>
-          @if (organizerGroups().length) {
-            <dt><app-icon class="detail__meta-icon" name="flag" /> Pořádá</dt>
-            <dd>
-              @for (group of organizerGroups(); track group.id) {
-                <span class="badge">{{ group.name }}</span>
-              }
-            </dd>
-          }
-          @if (guests().length) {
-            <dt><app-icon class="detail__meta-icon" name="user" /> Hosté</dt>
-            <dd>
-              @for (guest of guests(); track guest.id) {
-                <span class="badge">{{ guest.nickname }}</span>
-              }
-            </dd>
-          }
-          @if (targetGroups().length) {
-            <dt><app-icon class="detail__meta-icon" name="users" /> Pro skupiny</dt>
-            <dd>
-              @for (group of targetGroups(); track group.id) {
-                <span class="badge">
-                  @if (group.icon) {
-                    <app-icon [name]="group.icon" [size]="12" />
-                  }
-                  {{ group.name }}
-                </span>
-              }
-            </dd>
-          }
-        </dl>
+
 
         <nav class="group-tabs" aria-label="Části akce">
           @for (t of tabs(); track t) {
@@ -82,6 +42,49 @@
 
         @switch (tab()) {
           @case ('detail') {
+            <div class="detail__meta-row">
+              <span class="badge">{{ typeLabel(ev.type) }}</span>
+              @if (!ev.skippedReason) {
+                <button type="button" class="attendance-btn" (click)="downloadIcs()" title="Přidat do kalendáře (.ics)"><app-icon class="dl-icon" name="download" [size]="16" />Do kalendáře</button>
+              }
+            </div>
+                <dl class="detail__meta">
+              <dt><app-icon class="detail__meta-icon" name="arrow-start" /> Začátek</dt>
+              <dd>{{ ev.startsAt | date: 'd. M. yyyy, HH:mm' }}</dd>
+              <dt><app-icon class="detail__meta-icon" name="arrow-end" /> Konec</dt>
+              <dd>{{ ev.endsAt | date: 'd. M. yyyy, HH:mm' }}</dd>
+              <dt><app-icon class="detail__meta-icon" name="location" /> Místo</dt>
+              <dd>{{ ev.location }}</dd>
+              @if (organizerGroups().length) {
+                <dt><app-icon class="detail__meta-icon" name="flag" /> Pořádá</dt>
+                <dd>
+                  @for (group of organizerGroups(); track group.id) {
+                    <span class="badge">{{ group.name }}</span>
+                  }
+                </dd>
+              }
+              @if (guests().length) {
+                <dt><app-icon class="detail__meta-icon" name="user" /> Hosté</dt>
+                <dd>
+                  @for (guest of guests(); track guest.id) {
+                    <span class="badge">{{ guest.nickname }}</span>
+                  }
+                </dd>
+              }
+              @if (targetGroups().length) {
+                <dt><app-icon class="detail__meta-icon" name="users" /> Pro skupiny</dt>
+                <dd>
+                  @for (group of targetGroups(); track group.id) {
+                    <span class="badge">
+                      @if (group.icon) {
+                        <app-icon [name]="group.icon" [size]="12" />
+                      }
+                      {{ group.name }}
+                    </span>
+                  }
+                </dd>
+              }
+            </dl>
             @if (ev.description) {
               <p class="detail__body">{{ ev.description }}</p>
             }

@@ -5,9 +5,10 @@
   flex-direction: column;
   gap: var(--spacing-sm);
 
+  // Výška podle obsahu, nejvýš tolik, aby pole pro psaní zůstalo vidět (prázdný chat je nízký)
   &__log {
-    height: calc(100dvh - 300px - var(--bottom-nav-height));
-    min-height: 240px;
+    max-height: calc(100dvh - 300px - var(--bottom-nav-height));
+    min-height: 120px;
     overflow-y: auto;
     overscroll-behavior: contain;
     display: flex;
@@ -19,7 +20,7 @@
     background: var(--color-surface-alt);
 
     @media (min-width: 768px) {
-      height: calc(100dvh - 300px);
+      max-height: calc(100dvh - 300px);
     }
   }
 
