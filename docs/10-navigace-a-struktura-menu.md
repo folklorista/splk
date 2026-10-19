@@ -389,6 +389,7 @@ Vždy v hlavičce (jméno/avatar, lupa, ozubené kolo) ✅, nelze je odebrat ani
   - Moje skupiny a pověření `[?]` (náhled vlastních přístupů – stejná komponenta jako ve Správě)
 - **Nastavení** ✅ `/settings` – osobní: vzhled (režim, velikost písma), upozornění, výchozí zobrazení akcí. **Nezaměňovat se Správou.**
   - **Spodní lišta** ✅ – výběr a pořadí míst (kap. 6.2)
+  - **Boční menu** ✅ – pořadí a skrytí položek v sekcích Moje skupiny a Agendy (kap. 6.4)
   - **Kalendář** ✅ – export mých akcí do .ics (typy akcí, vynechané termíny jako „NENÍ …“)
 - **Hledat** ✅ `/search` – příspěvky, komentáře, zprávy chatu, akce
   - Osoby, kusy krojů (podle evidenčního čísla) `[?]`
@@ -459,7 +460,7 @@ Každý vidí jinou sadu míst podle členství a pověření. Pevné menu, kter
 | Prvek | Obsah | Konfigurovatelné | Mobil | Desktop |
 | --- | --- | --- | --- | --- |
 | **Přehled** | dashboard + rozcestník do všech míst (kap. 7) | ne – vždy první | 1. pozice lišty | 1. položka sidebaru |
-| **Osobní lišta** | 0–4 další místa, která si uživatel vybere z dostupných | ano | pozice 2–5 lišty, přebytek pod „Více“ | sidebar ukazuje vše, konfigurace jen řadí |
+| **Osobní lišta** | 0–4 další místa, která si uživatel vybere z dostupných | ano | pozice 2–5 lišty, přebytek pod „Více“ | sidebar má vlastní, nezávislou konfiguraci (kap. 6.4) |
 | **Hlavička** | Hledat, Nastavení, Profil (avatar), později Upozornění | ne | vždy viditelná ✅ | vždy viditelná ✅ |
 | **Více** | vše dostupné, co není v liště | automaticky | poslední pozice, jen když se místa do lišty nevejdou | — |
 | **Pracovní režimy** | inventura, formuláře | — | lišta skrytá, „Zpět“ v hlavičce | normálně |
@@ -570,13 +571,16 @@ Místa, která si uživatel z lišty vyřadil, zůstávají dosažitelná do dvo
 
 ### 6.3 Tablet
 
-- Na šířce ≥ 768 px sidebar sbalený na ikony a rozbalitelný.
+- Na šířce ≥ 768 px sidebar; uživatel ho může sbalit na ikony (kap. 6.4) ✅.
 - **Seznam + detail vedle sebe** tam, kde se prochází řada položek: Zprávy (seznam konverzací | chat), Krojové karty (seznam lidí | karta), Součástky (seznam | detail kusu).
 - Inventura na tabletu je pravděpodobně hlavní zařízení krojařky ve skladu – režim Ve skladu optimalizovat na tablet na výšku.
 
 ### 6.4 Desktop
 
-- **Sidebar** ukazuje všechna místa, protože se vejdou: Přehled → místa v pořadí z osobní lišty → zbylé skupiny → blok **„Agendy“** (Docházka, Správa krojů, Správa – podle pověření). Konfigurace lišty tedy na desktopu jen řadí, nic neschovává. Dnes je v bloku „Soubor“ rozcestník Skupiny, Hledat a Správa. Hledat patří do hlavičky (už tam je), Docházku a Správu krojů přesunout do Agend.
+- **Sidebar** ✅ má pevné sekce: Přehled a Akce → **Moje skupiny** (jednotlivé skupiny pohromadě, sekce chybí, nemá-li člen žádnou) → **Agendy** (Docházka, Moje kroje, Správa krojů, Správa – podle pověření a modulů) → **Soubor** (rozcestník Skupiny, Hledat).
+  - **Nastavení → Boční menu** ✅: pořadí a skrytí položek jen uvnitř Moje skupiny a Agendy, „Obnovit výchozí“. Přehled, Akce a Soubor jsou pevné; přesun mezi sekcemi ani vlastní odkazy nejsou. Konfigurace je nezávislá na spodní liště a uložená v zařízení (jako lišta). Nedostupná místa v uložené konfiguraci se tiše vynechají.
+  - Skryté položky jsou v sekci pod rozbalovacím **„Další (n)“** se součtem badge; skupiny navíc v rozcestníku Skupiny.
+  - **Sbalený režim** ✅ (jen ikony, ~68 px): přepínač v hlavičce sidebaru, volba uložená v zařízení (výchozí rozbalený). Název položky jako tooltip a zároveň přístupný název, nadpisy sekcí jako oddělovače, badge zmenšený u ikony; profil, odhlášení a Nastavení jako ikony v patičce. Na mobilu se neuplatní.
 - Druhá úroveň jako záložky pod titulkem (stejné jako na mobilu – jedna terminologie, jedno chování).
 - Breadcrumb s kanonickou polohou u detailů 3. úrovně.
 - Široké tabulky, hromadné akce a exporty (Sklad, Výpůjčky, Docházka, Členové) – desktop je hlavní místo pro agendy.

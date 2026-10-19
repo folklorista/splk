@@ -170,6 +170,9 @@
   height: 100dvh;
   position: sticky;
   top: 0;
+  // Tooltipy sbaleného menu se vykreslují nad obsahem stránky
+  z-index: 50;
+  transition: width 0.15s ease;
   background: var(--color-surface);
   border-right: 1px solid var(--color-border);
   display: flex;
@@ -177,8 +180,28 @@
   flex-shrink: 0;
 
   &__header {
-    padding: var(--spacing-lg) var(--spacing-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    padding: 18px var(--spacing-md);
     border-bottom: 1px solid var(--color-border);
+  }
+
+  &__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    color: var(--color-text-muted);
+
+    &:hover {
+      color: var(--color-primary);
+      background: var(--color-surface-alt);
+    }
   }
 
   &__logo {
@@ -209,6 +232,7 @@
   }
 
   &__nav-item {
+    position: relative;
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
@@ -260,6 +284,125 @@
 
     &:hover {
       text-decoration: underline;
+    }
+  }
+
+  &__badge {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primary);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0 4px;
+  }
+
+  // „Další (n)“ – položky skryté v Nastavení → Boční menu
+  &__more {
+    width: 100%;
+    text-align: left;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  // Sbalený režim: jen ikony, název jako tooltip (zůstává v DOM jako přístupný název)
+  &--compact {
+    width: var(--sidebar-compact-width);
+
+    .sidebar__header {
+      justify-content: center;
+      padding-inline: 0;
+    }
+
+    .sidebar__nav-section-label {
+      height: 1px;
+      padding: 0;
+      margin: var(--spacing-sm) var(--spacing-md);
+      overflow: hidden;
+      color: transparent;
+      background: var(--color-border);
+    }
+
+    .sidebar__nav-item {
+      justify-content: center;
+      gap: 0;
+      padding: 10px 0;
+
+      .sidebar__label {
+        position: absolute;
+        left: calc(100% + 6px);
+        top: 50%;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: var(--color-text);
+        color: var(--color-surface);
+        font-size: var(--font-size-sm);
+        font-weight: 500;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.1s;
+      }
+
+      &:hover .sidebar__label,
+      &:focus-visible .sidebar__label {
+        opacity: 1;
+      }
+    }
+
+    .sidebar__badge {
+      top: 4px;
+      right: 10px;
+      transform: none;
+      min-width: 16px;
+      height: 16px;
+      font-size: 10px;
+      padding: 0 3px;
+    }
+
+    .sidebar__footer {
+      align-items: center;
+      padding-inline: 0;
+
+      .sidebar__label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+    }
+
+    .sidebar__footer-actions {
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+
+    a.sidebar__user,
+    .sidebar__logout {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      color: var(--color-text-muted);
+
+      &:hover {
+        color: var(--color-primary);
+        background: var(--color-surface-alt);
+        text-decoration: none;
+      }
     }
   }
 }

@@ -1,41 +1,84 @@
-<aside class="sidebar">
+<aside class="sidebar" [class.sidebar--compact]="compact()">
   <div class="sidebar__header">
-    <span class="sidebar__logo">Folklorní soubor</span>
+    @if (!compact()) {
+      <span class="sidebar__logo">Folklorní soubor</span>
+    }
+    <button
+      type="button"
+      class="sidebar__toggle"
+      (click)="toggleCompact()"
+      [attr.aria-expanded]="!compact()"
+      [attr.aria-label]="compact() ? 'Rozbalit boční menu' : 'Sbalit boční menu'"
+      [title]="compact() ? 'Rozbalit boční menu' : 'Sbalit boční menu'"
+    >
+      <app-icon name="sidebar" [size]="18" />
+    </button>
   </div>
 
-  <nav class="sidebar__nav">
-    @for (section of navSections(); track $index) {
+  <nav class="sidebar__nav" aria-label="Hlavní navigace">
+    @for (section of navSections(); track section.key) {
       <div class="sidebar__nav-section">
         @if (section.label) {
           <div class="sidebar__nav-section-label">{{ section.label }}</div>
         }
         @for (item of section.items; track item.path) {
-          <a
-            class="sidebar__nav-item"
-            [routerLink]="item.path"
-            routerLinkActive="sidebar__nav-item--active"
+          <ng-container *ngTemplateOutlet="navItem; context: { $implicit: item }" />
+        }
+        @if (section.hidden.length) {
+          <button
+            type="button"
+            class="sidebar__nav-item sidebar__more"
+            (click)="toggleHidden(section.key)"
+            [attr.aria-expanded]="isExpanded(section.key)"
           >
-            <app-icon [name]="item.icon" />
-            <span>{{ item.label }}</span>
-            @if (item.badge) {
-              <span class="sidebar__badge">{{ item.badge }}</span>
+            <app-icon name="menu" />
+            <span class="sidebar__label">{{ isExpanded(section.key) ? 'Méně' : 'Další (' + section.hidden.length + ')' }}</span>
+            @if (!isExpanded(section.key) && hiddenBadge(section)) {
+              <span class="sidebar__badge">{{ badgeText(hiddenBadge(section)) }}</span>
             }
-          </a>
+          </button>
+          @if (isExpanded(section.key)) {
+            @for (item of section.hidden; track item.path) {
+              <ng-container *ngTemplateOutlet="navItem; context: { $implicit: item }" />
+            }
+          }
         }
       </div>
     }
   </nav>
 
+  <ng-template #navItem let-item>
+    <a class="sidebar__nav-item" [routerLink]="item.path" routerLinkActive="sidebar__nav-item--active" ariaCurrentWhenActive="page">
+      <app-icon [name]="item.icon" />
+      <span class="sidebar__label">{{ item.label }}</span>
+      @if (item.badge) {
+        <span class="sidebar__badge">{{ badgeText(item.badge) }}</span>
+      }
+    </a>
+  </ng-template>
+
   <div class="sidebar__footer">
     @if (auth.currentUser(); as user) {
-      <a class="sidebar__user" routerLink="/app/profile" title="Můj profil">{{ user.name }}</a>
+      <a class="sidebar__user" routerLink="/app/profile" title="Můj profil">
+        @if (compact()) {
+          <app-icon name="user" [size]="18" />
+        }
+        <span class="sidebar__label">{{ user.name }}</span>
+      </a>
     }
     <div class="sidebar__footer-actions">
-      <button class="sidebar__logout" (click)="logout()">Odhlásit se</button>
+      <button type="button" class="sidebar__logout" (click)="logout()" title="Odhlásit se">
+        @if (compact()) {
+          <app-icon name="logout" [size]="18" />
+        }
+        <span class="sidebar__label">Odhlásit se</span>
+      </button>
       <a class="settings-link" routerLink="/app/settings" routerLinkActive="settings-link--active" title="Nastavení" aria-label="Nastavení">
         <app-icon name="settings" [size]="18" />
       </a>
     </div>
-    <app-version-label />
+    @if (!compact()) {
+      <app-version-label />
+    }
   </div>
 </aside>

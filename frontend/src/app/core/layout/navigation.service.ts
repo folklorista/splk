@@ -8,6 +8,7 @@ import { CostumesService } from '../../features/costumes/costumes.service';
 import { myCostumeRows } from '../../features/costumes/utils/costume-logic';
 import { SettingsService } from '../settings/settings.service';
 import { GROUPS_HUB_KEY, Place, orderPlaces, resolveBar, sumBadges } from './bottom-bar';
+import { SidebarSectionKey, resolveSidebar } from './sidebar-menu';
 import { BoardsService } from '../../features/boards/boards.service';
 import { EventsService } from '../../features/events/events.service';
 import { getUnconfirmedEventsCount, hasBoard, hasChat } from '../utils/visibility.utils';
@@ -27,8 +28,11 @@ export interface NavItem {
 }
 
 export interface NavSection {
+  key: SidebarSectionKey;
   label?: string;
   items: NavItem[];
+  // Položky schované uživatelem – v sidebaru pod „Další“
+  hidden: NavItem[];
 }
 
 const BADGE_REFRESH_MS = 2000;
@@ -148,8 +152,8 @@ export class NavigationService {
         category: 'group',
       })),
       { key: GROUPS_HUB_KEY, path: '/app/boards', label: 'Skupiny', icon: 'users', badge: this.groupsHubBadge() || undefined, category: 'hub' },
-      ...(modules.costumes ? [{ key: 'costumes', path: '/app/costumes', label: 'Moje kroje', icon: 'shirt' as IconName, category: 'costumes' as const, suggest: this.hasCostumeLoan() }] : []),
       ...(modules.events && this.access.canViewAttendanceReport() ? [{ key: 'attendance', path: '/app/attendance', label: 'Docházka', icon: 'clipboard-check' as IconName, category: 'agenda' as const, writes: true }] : []),
+      ...(modules.costumes ? [{ key: 'costumes', path: '/app/costumes', label: 'Moje kroje', icon: 'shirt' as IconName, category: 'costumes' as const, suggest: this.hasCostumeLoan() }] : []),
       ...(modules.costumes && this.access.canViewCostumeStock() ? [{ key: 'wardrobe', path: '/app/wardrobe', label: 'Správa krojů', icon: 'hanger' as IconName, category: 'agenda' as const, writes: this.access.canManageCostumes() }] : []),
       ...(this.access.isEnsembleAdmin() ? [{ key: 'manage', path: '/app/manage', label: 'Správa', icon: 'settings' as IconName, category: 'agenda' as const }] : []),
       { key: 'search', path: '/app/search', label: 'Hledat', icon: 'search', category: 'tool' },
@@ -163,15 +167,13 @@ export class NavigationService {
   // Místa v pořadí lišty a pak ostatní (sidebar, „Moje místa“ na Přehledu)
   readonly orderedPlaces = computed(() => orderPlaces(this.places(), this.chosenBar()));
 
+  // Sidebar (desktop): Přehled + Akce, Moje skupiny, Agendy, Soubor. Vlastní pořadí a skrytí jen ve skupinách
+  // a agendách, nezávisle na spodní liště. Prázdné sekce se nezobrazují.
   readonly sections = computed<NavSection[]>(() => {
-    const ordered = this.orderedPlaces();
     const dashboard: NavItem = { path: '/app/dashboard', label: 'Přehled', icon: 'home' };
-    const agendas = ordered.filter((p) => p.category === 'agenda');
-    return [
-      { items: [dashboard, ...ordered.filter((p) => p.category === 'main' || p.category === 'group' || p.category === 'costumes')] },
-      ...(agendas.length ? [{ label: 'Agendy', items: agendas }] : []),
-      { label: 'Soubor', items: ordered.filter((p) => p.category === 'hub' || p.category === 'tool') },
-    ];
+    return resolveSidebar(this.places(), this.settings.settings().sidebarMenu)
+      .map((s) => (s.key === 'main' ? { ...s, items: [dashboard, ...s.items] } : s))
+      .filter((s) => s.items.length || s.hidden.length);
   });
 
   // Lišta na mobilu: Přehled + osobní výběr (nejvýš 4 pozice), přetečení pod „Více“. Neposouvá se.
