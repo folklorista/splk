@@ -95,7 +95,7 @@ Výchozí rozhodnutí otevřených otázek docs/08 kap. 14 (k ověření): spolu
 
 Etapa D (hotovo):
 
-- **Upozornění podle skupiny** (`core/notifications/group-notifications.ts`, `ActivityNotifierService`): Všechny zprávy / Jen zmínky a příspěvky / Ztlumit chat – v hlavičce skupiny i v Nastavení. Zmínka upozorní vždy, nový příspěvek pokud chat není ztlumený, ostatní jen v režimu „Všechny zprávy“. Oprávnění se ověřuje v okamžiku upozornění, upozornění neobsahuje text zprávy. Ztlumený chat se nepočítá do badge. Bez serveru jen během běhu aplikace (Web Push s backendem).
+- **Upozornění podle skupiny** (`core/notifications/group-notifications.ts`, `ActivityNotifierService`): Vše / Jen důležité (zmínky a oznámení) / Jen když mě někdo zmíní / Vypnuto – v hlavičce skupiny i v Nastavení. „Vypnuto“ neupozorní ani na zmínku; v posledních dvou režimech se chat nepočítá do badge. Oprávnění se ověřuje v okamžiku upozornění, upozornění neobsahuje text zprávy. Bez serveru jen během běhu aplikace (Web Push s backendem).
 - **Vyhledávání** `/app/search`: příspěvky, komentáře, chat a akce jen v povoleném obsahu (chat od vstupu do skupiny, skryté příspěvky jen autor a moderátoři), filtr skupiny a období.
 - **Přehled** upozorní na pozvánky do skupin a na žádosti čekající na rozhodnutí správce.
 

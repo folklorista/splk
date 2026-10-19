@@ -12,7 +12,12 @@ describe('shouldNotify', () => {
     expect(shouldNotify({ ...base, mentionedMemberIds: [1] }, 1, true, 'muted')).toBeTrue();
   });
 
-  it('běžná zpráva jen v režimu Všechny zprávy', () => {
+  it('Vypnuto neupozorní na nic, ani na zmínku', () => {
+    expect(shouldNotify({ ...base, mentionedMemberIds: [1] }, 1, true, 'off')).toBeFalse();
+    expect(shouldNotify({ ...base, kind: 'post' }, 1, true, 'off')).toBeFalse();
+  });
+
+  it('běžná zpráva jen v režimu Vše', () => {
     expect(shouldNotify(base, 1, true, 'all')).toBeTrue();
     expect(shouldNotify(base, 1, true, 'mentions')).toBeFalse();
     expect(shouldNotify(base, 1, true, 'muted')).toBeFalse();

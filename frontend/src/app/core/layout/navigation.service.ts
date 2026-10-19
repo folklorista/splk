@@ -16,6 +16,7 @@ import { isGroupManager } from '../access/access.utils';
 import { isPendingJoinRequest } from '../../features/groups/models/join-request.model';
 import { ChatService } from '../../features/chat/chat.service';
 import { GroupNotificationsService } from '../notifications/group-notifications.service';
+import { isChatSilenced } from '../notifications/group-notifications';
 import { unreadChatCount } from '../../features/chat/utils/chat-timeline';
 
 export interface NavItem {
@@ -57,7 +58,7 @@ export class NavigationService {
   private chatBadge(groupId: number): number {
     const member = this.access.currentMember();
     // Ztlumený chat do badge nepočítáme (zprávy jsou dál vidět v záložce Chat)
-    if (!member || this.notify.modeFor(member.id, groupId) === 'muted') return 0;
+    if (!member || isChatSilenced(this.notify.modeFor(member.id, groupId))) return 0;
     const group = this.access.myGroups().find((g) => g.id === groupId);
     return unreadChatCount(this.chat.messages(), groupId, member.id, this.chat.lastReadAt(groupId, member.id), group ? chatVisibility(group, member) : undefined);
   }

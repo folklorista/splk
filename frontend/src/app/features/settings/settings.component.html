@@ -70,7 +70,7 @@
     }
 
     @if (myGroups().length) {
-      <p class="settings__hint">Upozornění ze skupin: zmínka (&#64;) upozorní vždy, nový příspěvek pokud chat není ztlumený, ostatní zprávy jen v režimu „Všechny zprávy“. Platí pro váš účet.</p>
+      <p class="settings__hint">Upozornění ze skupin: <strong>Vše</strong> – každá zpráva, komentář i příspěvek; <strong>Jen důležité</strong> – zmínky (&#64;vy) a nové příspěvky na nástěnce; <strong>Jen když mě někdo zmíní</strong> – jen zmínky; <strong>Vypnuto</strong> – nic. Ve dvou posledních režimech se nepřečtené zprávy chatu nepočítají do čísla u skupiny (v chatu je uvidíte dál).</p>
       @for (group of myGroups(); track group.id) {
         <div class="settings__row">
           <span class="settings__label">{{ group.name }}</span>
