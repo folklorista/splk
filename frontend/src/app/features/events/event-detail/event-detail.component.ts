@@ -35,6 +35,7 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
   pending: 'Nezadáno',
 };
 
+import { formatEventRange } from '../utils/event-format';
 import { isResponseClosed, isSoftDeadlinePassed, needsResponse } from '../utils/event-reminders';
 import { EventChatComponent } from '../event-chat/event-chat.component';
 import { isEventChatEnabled } from '../event-chat/event-chat.service';
@@ -60,7 +61,7 @@ import { formatRange } from '../../availability/unavailability.utils';
   standalone: true,
   imports: [CommonModule, DatePipe, RouterLink, FormsModule, IconComponent, EventChatComponent],
   templateUrl: './event-detail.component.html',
-  styles: [`.detail__deadline { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--spacing-sm); } .detail__deadline--due { color: var(--color-primary); font-weight: 600; } .detail__change { margin: var(--spacing-sm) 0 var(--spacing-md); padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid #e0a800; background: var(--color-surface-alt); border-radius: 6px; display: flex; flex-wrap: wrap; gap: var(--spacing-sm); align-items: center; } .detail__change--confirm { border-left-color: var(--color-primary); } .detail__change-ok { color: #2e7d32; font-weight: 600; } .detail__summary { display: flex; flex-wrap: wrap; gap: 6px; } .aa-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--spacing-md); } .aa-chip { padding: 4px 12px; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: var(--font-size-sm); } .aa-chip--active { border-color: var(--color-primary); background: var(--color-primary); color: #fff; } .aa-section { margin-bottom: var(--spacing-md); } .aa-section__header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); } .aa-section__title { font-size: var(--font-size-sm); font-weight: 700; margin: 0; } .aa-section__bulk { display: flex; gap: 6px; } .aa-section--done { opacity: 0.85; } .member-unavailable { font-size: var(--font-size-xs); color: var(--color-text-muted); border: 1px dashed var(--color-border); border-radius: 4px; padding: 0 4px; margin-left: 4px; white-space: nowrap; }`],
+  styles: [`.detail__deadline { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--spacing-sm); } .detail__deadline--due { color: var(--color-primary); font-weight: 600; } .detail__change { margin: var(--spacing-sm) 0 var(--spacing-md); padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid #e0a800; background: var(--color-surface-alt); border-radius: 6px; display: flex; flex-wrap: wrap; gap: var(--spacing-sm); align-items: center; } .detail__change--confirm { border-left-color: var(--color-primary); } .detail__change-ok { color: #2e7d32; font-weight: 600; } .detail__title--compact { font-size: var(--font-size-lg); line-height: 1.3; } .detail__when { font-weight: 400; color: var(--color-text-muted); white-space: nowrap; } .detail__meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); } .detail__summary { display: flex; flex-wrap: wrap; gap: 6px; } .aa-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--spacing-md); } .aa-chip { padding: 4px 12px; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: var(--font-size-sm); } .aa-chip--active { border-color: var(--color-primary); background: var(--color-primary); color: #fff; } .aa-section { margin-bottom: var(--spacing-md); } .aa-section__header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); } .aa-section__title { font-size: var(--font-size-sm); font-weight: 700; margin: 0; } .aa-section__bulk { display: flex; gap: 6px; } .aa-section--done { opacity: 0.85; } .member-unavailable { font-size: var(--font-size-xs); color: var(--color-text-muted); border: 1px dashed var(--color-border); border-radius: 4px; padding: 0 4px; margin-left: 4px; white-space: nowrap; }`],
 })
 export class EventDetailComponent implements OnInit {
   event = signal<AppEvent | null>(null);
@@ -88,6 +89,12 @@ export class EventDetailComponent implements OnInit {
     this.openNoteMemberId.update((current) => (current === memberId ? null : memberId));
   }
   readonly statusLabels = STATUS_LABELS;
+
+  // Zkrácený termín do hlavičky: „23. 10. 17:00 – 18:30“, přes více dní „23. 10. 17:00 – 24. 10. 12:00“
+  readonly when = computed(() => {
+    const event = this.event();
+    return event ? formatEventRange(event.startsAt, event.endsAt) : '';
+  });
 
   readonly visibleMembers = computed(() => {
     const event = this.event();
