@@ -49,16 +49,70 @@ export function filterMentionCandidates(members: Member[], query: string, limit 
   return [...starts, ...rest].slice(0, limit);
 }
 
-// „Letní soustředění · 12. 7.“ – datum odliší termíny série se stejným názvem
-export function eventMentionLabel(event: EventRef): string {
+// „Letní soustředění · 12. 7.“ – datum odliší termíny série se stejným názvem; mimo letošek i s rokem
+export function eventMentionLabel(event: EventRef, now = new Date()): string {
   const d = new Date(event.startsAt);
-  return `${event.title} · ${d.getDate()}. ${d.getMonth() + 1}.`;
+  const year = d.getFullYear() !== now.getFullYear() ? ` ${d.getFullYear()}` : '';
+  return `${event.title} · ${d.getDate()}. ${d.getMonth() + 1}.${year}`;
 }
 
-// Akce podle názvu nebo data; nejdřív nadcházející (nejbližší první), pak proběhlé (nejnovější první)
-export function filterEventCandidates(events: EventRef[], query: string, limit = 6, now = new Date()): EventRef[] {
-  const q = nicknameKey(query);
-  const matching = events.filter((e) => nicknameKey(eventMentionLabel(e)).includes(q));
+// Měsíce bez diakritiky – nominativ i genitiv („leden“, „ledna“); delší tvary dřív (červenec před červen)
+const MONTHS: [string, number][] = [
+  ['cervence', 7], ['cervenec', 7], ['cervna', 6], ['cerven', 6], ['ledna', 1], ['leden', 1], ['unora', 2], ['unor', 2],
+  ['brezna', 3], ['brezen', 3], ['dubna', 4], ['duben', 4], ['kvetna', 5], ['kveten', 5], ['srpna', 8], ['srpen', 8],
+  ['zari', 9], ['rijna', 10], ['rijen', 10], ['listopadu', 11], ['listopad', 11], ['prosince', 12], ['prosinec', 12],
+];
+
+export interface EventQuery {
+  // Zbylý text – hledá se v názvu
+  text: string;
+  day?: number;
+  month?: number;
+  year?: number;
+}
+
+// Rozloží dotaz za „#“ na text názvu a datum: „nácvik 15.1.“, „15. 1. 2027“, „15/1“, „nácvik leden“, „2027“
+export function parseEventQuery(query: string): EventQuery {
+  let text = nicknameKey(query);
+  const result: EventQuery = { text: '' };
+  const date = /(\d{1,2})\s*[./]\s*(\d{1,2})\s*\.?(?:\s*[./]?\s*(\d{4}))?/.exec(text);
+  if (date) {
+    result.day = Number(date[1]);
+    result.month = Number(date[2]);
+    if (date[3]) result.year = Number(date[3]);
+    text = text.replace(date[0], ' ');
+  }
+  if (!result.month) {
+    const month = MONTHS.find(([name]) => new RegExp(`(^|\\s)${name}(\\s|$)`).test(text));
+    if (month) {
+      result.month = month[1];
+      text = text.replace(month[0], ' ');
+    }
+  }
+  if (!result.year) {
+    const year = /(^|\s)(\d{4})(\s|$)/.exec(text);
+    if (year) {
+      result.year = Number(year[2]);
+      text = text.replace(year[2], ' ');
+    }
+  }
+  result.text = text.replace(/\s+/g, ' ').trim();
+  return result;
+}
+
+function matchesEventQuery(event: EventRef, q: EventQuery): boolean {
+  const d = new Date(event.startsAt);
+  if (q.day && d.getDate() !== q.day) return false;
+  if (q.month && d.getMonth() + 1 !== q.month) return false;
+  if (q.year && d.getFullYear() !== q.year) return false;
+  return !q.text || nicknameKey(event.title).includes(q.text);
+}
+
+// Akce podle názvu a data (volný zápis, měsíc slovem, rok); nejdřív nadcházející (nejbližší první),
+// pak proběhlé (nejnovější první)
+export function filterEventCandidates(events: EventRef[], query: string, limit = 10, now = new Date()): EventRef[] {
+  const q = parseEventQuery(query);
+  const matching = events.filter((e) => matchesEventQuery(e, q));
   const upcoming = matching.filter((e) => new Date(e.startsAt) >= now).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   const past = matching.filter((e) => new Date(e.startsAt) < now).sort((a, b) => b.startsAt.localeCompare(a.startsAt));
   return [...upcoming, ...past].slice(0, limit);
