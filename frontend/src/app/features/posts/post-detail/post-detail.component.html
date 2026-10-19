@@ -65,8 +65,8 @@
         }
 
         @if (canSeeReadStats() && visibleMembers().length > 0) {
-          <section class="detail__section">
-            <h2 class="detail__section-title">Přečteno</h2>
+          <details class="detail__section detail__toggle">
+            <summary class="detail__section-title">Přečteno {{ readStatus().read.length }} z {{ visibleMembers().length }}</summary>
             <div class="member-columns">
               <div class="member-column">
                 <div class="member-column__header">Přečetlo ({{ readStatus().read.length }})</div>
@@ -93,11 +93,11 @@
                 }
               </div>
             </div>
-          </section>
+          </details>
         }
 
-        <section class="detail__section">
-          <h2 class="detail__section-title">Komentáře ({{ comments().length }})</h2>
+        <details class="detail__section detail__toggle" open>
+          <summary class="detail__section-title">Komentáře ({{ comments().length }})</summary>
 
           @if (comments().length) {
             <ul class="comment-list">
@@ -171,7 +171,7 @@
             </button>
           </div>
           }
-        </section>
+        </details>
       </div>
     }
   }

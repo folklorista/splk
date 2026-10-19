@@ -16,7 +16,7 @@
             <a class="attendance-btn" [routerLink]="['/app/events', ev.id, 'edit']">Upravit</a>
           }
           @if (!ev.skippedReason) {
-            <button type="button" class="attendance-btn" (click)="downloadIcs()" title="Přidat do kalendáře (.ics)">Do kalendáře</button>
+            <button type="button" class="attendance-btn" (click)="downloadIcs()" title="Přidat do kalendáře (.ics)"><app-icon class="dl-icon" name="download" [size]="16" />Do kalendáře</button>
           }
         </div>
 

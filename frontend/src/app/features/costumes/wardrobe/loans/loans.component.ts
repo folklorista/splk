@@ -13,10 +13,11 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
 type LoanFilter = 'open' | 'overdue' | 'all';
 
 // Výpůjčky – jeden řádek = jeden konkrétní kus u jednoho držitele; ukončené zůstávají v historii
+import { IconComponent } from '../../../../shared/icon/icon.component';
 @Component({
   selector: 'app-wardrobe-loans',
   standalone: true,
-  imports: [WardrobeNavComponent, RouterLink, DatePipe],
+  imports: [WardrobeNavComponent, RouterLink, DatePipe, IconComponent],
   template: `
     <div class="page">
       <app-wardrobe-nav />
@@ -31,7 +32,7 @@ type LoanFilter = 'open' | 'overdue' | 'all';
           }
         </div>
         <input class="input input--search" type="search" placeholder="Hledat držitele nebo kus…" [value]="search()" (input)="search.set($any($event.target).value)" />
-        <button type="button" class="btn-secondary" (click)="exportCsv()">Export CSV</button>
+        <button type="button" class="btn-secondary" (click)="exportCsv()"><app-icon class="dl-icon" name="download" [size]="16" />Export CSV</button>
       </div>
       <ul class="item-list">
         @for (row of rows(); track row.loan.id) {

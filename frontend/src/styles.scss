@@ -2075,3 +2075,29 @@ a.mobile-header__user {
 .group-tabs__link:hover { color: var(--color-text); }
 .group-tabs__link--active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
 .group-tabs__badge { margin-left: 4px; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--color-primary); color: #fff; font-size: 11px; display: inline-block; text-align: center; }
+
+// Rozbalovací sekce detailu (Přečteno – výchozí sbaleno, Komentáře – výchozí rozbaleno)
+.detail__toggle > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.detail__toggle > summary::-webkit-details-marker {
+  display: none;
+}
+.detail__toggle > summary::before {
+  content: '▸';
+  font-size: 0.9em;
+  transition: transform 0.15s;
+}
+.detail__toggle[open] > summary::before {
+  transform: rotate(90deg);
+}
+.detail__toggle[open] > summary {
+  margin-bottom: var(--spacing-sm);
+}
+
+// Ikona u tlačítek, která stahují soubor
+.dl-icon { display: inline-flex; vertical-align: -3px; margin-right: 6px; }

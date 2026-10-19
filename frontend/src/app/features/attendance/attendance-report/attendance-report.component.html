@@ -1,7 +1,7 @@
 <div class="page">
   <div class="page__header">
     <h1 class="page__title">Docházka</h1>
-    <button type="button" class="btn-primary btn-primary--sm" [disabled]="!report().rows.length" (click)="exportCsv()">Export CSV</button>
+    <button type="button" class="btn-primary btn-primary--sm" [disabled]="!report().rows.length" (click)="exportCsv()"><app-icon class="dl-icon" name="download" [size]="16" />Export CSV</button>
   </div>
 
   <div class="attendance-report__filters">

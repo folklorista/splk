@@ -382,6 +382,10 @@ Implementace: `core/layout/bottom-bar.ts` (výchozí návrh, rozdělení na liš
 
 Opraveno: chat neskáče na konec při čtení historie (tlačítko „Nové zprávy ↓“); jednotné badge (záložky Chat + Nástěnka = skupina, součet skupin + žádosti = „Skupiny“, `NavigationService.groupBadgeParts`); po skončení akce nelze měnit vlastní odpověď (kontrola i v `AttendanceService`); detail akce v záložkách včetně chatu akce (`features/events/event-chat`, `AppEvent.chatEnabled`); zjednodušená docházka; mazání poznámky k účasti (smyčka `markViewed`); úniky odběrů živých proudů (navigace, Přehled, Akce, detail akce a příspěvku) – hlavní příčina zpomalování dema; úprava důvodu vynechaného termínu (`seriesId`/`skippedReason` se při úpravě zachovají, dodatečné zrušení = důležitá změna); ramínko pro Správu krojů; dlaždice členů skupiny; profilové ikonky (`Member.avatar`, Nastavení → Profilová ikonka, výchozí iniciály).
 
+### Drobnosti 19. 10. 2026 (hotovo)
+
+Detail příspěvku: sekce „Přečteno X z Y“ výchozí sbalená, „Komentáře“ rozbalené (`<details>`). Ikona stahování u všech tlačítek, která stahují soubor (Do kalendáře, Stáhnout .ics, exporty CSV).
+
 ### Potom
 
 - **Administrace**: projít a doplnit vše, co se v ní má spravovat – až po dotažení členské části.
