@@ -1,3 +1,4 @@
+import { eventToken } from '../utils/mentions';
 import { Post } from '../models/post.model';
 import { GROUP_IDS } from '../../../core/data/mock-groups';
 import { demoMember } from '../../members/data/demo-authors';
@@ -43,7 +44,7 @@ function post(
 export const MOCK_POSTS: Post[] = [
   // Taneční – společné informace pro celý soubor
   post(1, tanecni, demoMember([vybor, tanecni]).id, 'Důležité informace k soustředění',
-    'Podzimní soustředění proběhne za tři týdny v Luhačovicích. Přihlaste se prosím do konce měsíce. Doprava bude zajištěna autobusem, odjezd v pátek v 15:00 od kulturního domu.',
+    `Podzimní soustředění proběhne za tři týdny v Luhačovicích. Přihlaste se prosím do konce měsíce. Doprava bude zajištěna autobusem, odjezd v pátek v 15:00 od kulturního domu.\n\nProgram a podmínky najdete u akce ${eventToken(4)}.`,
     6, { isPinned: true, requiresAction: true }),
   post(2, tanecni, demoMember([vybor, tanecni], 1).id, 'Změna času páteční zkoušky',
     'Páteční nácvik tento týden začne výjimečně až v 19:30, sál je do té doby obsazený. Děkujeme za pochopení.',

@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { MentionInputComponent, MentionSubmit } from '../../../shared/mention-input/mention-input.component';
+import { EventsService } from '../../events/events.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PostsService } from '../posts.service';
@@ -12,7 +14,7 @@ import { Group } from '../../../core/models/group.model';
 @Component({
   selector: 'app-post-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, MentionInputComponent],
   template: `
     <div class="page">
       <a class="back-link" [routerLink]="backLink" [queryParams]="backQuery">← Zpět na nástěnku</a>
@@ -33,7 +35,9 @@ import { Group } from '../../../core/models/group.model';
 
           <div class="post-form__field">
             <label for="body">Obsah *</label>
-            <textarea id="body" formControlName="body" placeholder="Zadejte obsah příspěvku" rows="6" required></textarea>
+            <app-mention-input [candidates]="mentionable" [events]="linkableEvents()" [rows]="6" [showSubmit]="false" [initialBody]="initialBody"
+              placeholder="Zadejte obsah příspěvku… (&#64; zmínit člena, # odkázat na akci)" label="Obsah" (valueChange)="onBodyChange($event)" />
+            <span class="post-form__hint">Napište &#64; a vyberte člena, nebo # a vyberte akci – v příspěvku se z ní stane odkaz.</span>
             @if (form.get('body')?.invalid && form.get('body')?.touched) {
               <span class="post-form__error">Obsah je povinný</span>
             }
@@ -63,6 +67,7 @@ import { Group } from '../../../core/models/group.model';
     }
     .post-form__field input:focus, .post-form__field textarea:focus { border-color: var(--color-primary); }
     .post-form__error { font-size: var(--font-size-sm); color: #d32f2f; }
+    .post-form__hint { font-size: var(--font-size-xs); color: var(--color-text-muted); }
     .post-form__actions { display: flex; gap: 0.75rem; align-items: center; }
     .post-form__error-message { padding: 0.75rem; background: #ffebee; color: #d32f2f; border-radius: 4px; border-left: 4px solid #d32f2f; }
   `],
@@ -77,6 +82,13 @@ export class PostFormComponent implements OnInit {
   private postId: number | null = null;
   private originalPost: Post | null = null;
   private currentMember: Member | null = null;
+  private allMembers: Member[] = [];
+  private mentionedMemberIds: number[] = [];
+  // Zmínit lze aktivní členy skupiny nástěnky kromě sebe; odkázat na akce, které autor vidí
+  mentionable: Member[] = [];
+  readonly linkableEvents = inject(EventsService).linkableEvents;
+  // Uložený text s tokeny – pole ho při úpravě převede na čitelné „@Přezdívka“ / „#Akce“
+  initialBody = '';
 
   constructor(
     private fb: FormBuilder,
@@ -102,6 +114,7 @@ export class PostFormComponent implements OnInit {
 
     this.membersService.getMembers().subscribe((members) => {
       this.currentMember = members.find((m) => m.userId === user.id) ?? null;
+      this.allMembers = members;
       if (!this.currentMember) {
         this.notAllowed = true;
         return;
@@ -114,6 +127,7 @@ export class PostFormComponent implements OnInit {
         this.boardsService.getBoardBySlug(slug).subscribe((board) => {
           this.board = board ?? null;
           this.notAllowed = !board;
+          this.updateMentionable();
         });
         return;
       }
@@ -138,10 +152,24 @@ export class PostFormComponent implements OnInit {
           }
           this.board = board;
           this.originalPost = post;
+          this.updateMentionable();
+          this.initialBody = post.body;
+          this.mentionedMemberIds = post.mentionedMemberIds ?? [];
           this.form.patchValue({ title: post.title, body: post.body });
         });
       });
     });
+  }
+
+  private updateMentionable(): void {
+    const groupId = this.board?.id;
+    this.mentionable = this.allMembers.filter((m) => m.isActive && groupId !== undefined && m.groupIds.includes(groupId) && m.id !== this.currentMember?.id);
+  }
+
+  onBodyChange(value: MentionSubmit): void {
+    this.mentionedMemberIds = value.mentionedMemberIds;
+    this.form.patchValue({ body: value.body });
+    this.form.get('body')?.markAsTouched();
   }
 
   get backLink(): string[] {
@@ -164,7 +192,7 @@ export class PostFormComponent implements OnInit {
 
     if (this.isEditMode && this.postId !== null && this.originalPost) {
       const { id, ...rest } = this.originalPost;
-      this.postsService.updatePost(this.postId, { ...rest, title, body }).subscribe({
+      this.postsService.updatePost(this.postId, { ...rest, title, body, mentionedMemberIds: this.mentionedMemberIds }).subscribe({
         next: () => this.router.navigate(['/app/posts', this.postId]),
         error: () => {
           this.isSubmitting = false;
@@ -183,6 +211,7 @@ export class PostFormComponent implements OnInit {
         updatedAt: now,
         isPinned: false,
         readers: [],
+        mentionedMemberIds: this.mentionedMemberIds,
       };
       this.postsService.createPost(newPost).subscribe({
         next: (created) => this.router.navigate(['/app/posts', created.id]),

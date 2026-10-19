@@ -1,3 +1,5 @@
+import { signal } from '@angular/core';
+import { EventsService } from '../../events/events.service';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
@@ -49,6 +51,7 @@ describe('PostFormComponent', () => {
     TestBed.configureTestingModule({
       imports: [PostFormComponent],
       providers: [
+        { provide: EventsService, useValue: { linkableEvents: signal([]) } },
         provideRouter([]),
         { provide: AuthService, useValue: { currentUser: () => user } },
         { provide: PostsService, useValue: postsSpy },

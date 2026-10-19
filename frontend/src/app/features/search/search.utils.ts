@@ -7,7 +7,7 @@ import { ChatMessage } from '../chat/models/chat-message.model';
 import { AppEvent } from '../events/models/event.model';
 import { PostComment } from '../posts/models/comment.model';
 import { Post } from '../posts/models/post.model';
-import { parseCommentBody } from '../posts/utils/mentions';
+import { plainText } from '../posts/utils/mentions';
 
 export type SearchHitKind = 'post' | 'comment' | 'message' | 'event';
 
@@ -57,7 +57,7 @@ export function searchContent(input: SearchInput): SearchHit[] {
   const matches = (...texts: (string | undefined)[]) => texts.some((t) => t && nicknameKey(t).includes(q));
   const inPeriod = (iso: string) => (!input.from || iso.slice(0, 10) >= input.from) && (!input.to || iso.slice(0, 10) <= input.to);
   const inGroup = (groupId: number) => input.groupId === undefined || input.groupId === groupId;
-  const plain = (body: string) => parseCommentBody(body).map((s) => (s.type === 'mention' ? `@${input.memberName(s.memberId)}` : s.text)).join('');
+  const plain = (body: string) => plainText(body, input.memberName, (id) => input.events.find((e) => e.id === id && canSeeEvent(input.subject, e))?.title);
 
   const readable = new Map(input.groups.filter((g) => canReadGroupContent(input.subject, g)).map((g) => [g.id, g]));
   const postVisible = (post: Post) => {

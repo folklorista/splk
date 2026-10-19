@@ -14,7 +14,7 @@ import { TimelineItem, buildGroupTimeline } from '../utils/chat-timeline';
 import { PostsService } from '../../posts/posts.service';
 import { CommentsService } from '../../posts/comments.service';
 import { PostComment } from '../../posts/models/comment.model';
-import { CommentSegment, parseCommentBody } from '../../posts/utils/mentions';
+import { plainText } from '../../posts/utils/mentions';
 import { MembersService } from '../../members/members.service';
 import { AuditService } from '../../audit/audit.service';
 import { chatSystemText, AuditTextContext } from '../../audit/audit-text';
@@ -30,10 +30,11 @@ const PREVIEW_LENGTH = 140;
 // Chat skupiny: jedna časová osa se zprávami, aktivitou nástěnky a systémovými událostmi.
 // Komentáře jen odkazuje (originál je pod příspěvkem) a odpověď z karty ukládá do diskuze příspěvku.
 import { chatVisibility } from '../utils/chat-history';
+import { RichTextComponent } from '../../../shared/rich-text/rich-text.component';
 @Component({
   selector: 'app-group-chat',
   standalone: true,
-  imports: [DatePipe, NgTemplateOutlet, RouterLink, MentionInputComponent],
+  imports: [DatePipe, NgTemplateOutlet, RouterLink, MentionInputComponent, RichTextComponent],
   template: `
     <div class="chat">
       <div class="chat__log" #log role="log" aria-live="polite" aria-label="Chat skupiny" (scroll)="onScroll()">
@@ -58,15 +59,7 @@ import { chatVisibility } from '../utils/chat-history';
                 @if (m.deletedAt) {
                   <p class="chat-msg__body chat-msg__body--deleted">Zpráva byla odstraněna{{ m.deletedById !== m.authorId ? ' moderátorem' : '' }}.</p>
                 } @else {
-                  <p class="chat-msg__body">
-                    @for (segment of segments(m.body); track $index) {
-                      @if (segment.type === 'mention') {
-                        <span class="mention">&#64;{{ name(segment.memberId) }}</span>
-                      } @else {
-                        <span>{{ segment.text }}</span>
-                      }
-                    }
-                  </p>
+                  <p class="chat-msg__body"><app-rich-text [body]="m.body" /></p>
                   @if (canDelete(m)) {
                     <button type="button" class="chat-msg__action" (click)="remove(m)">Smazat</button>
                   }
@@ -89,11 +82,7 @@ import { chatVisibility } from '../utils/chat-history';
                   {{ item.at | date: 'HH:mm' }} · {{ name(item.comment.authorId) }} · komentář v příspěvku
                   <a class="chat-card__link" [routerLink]="['/app/posts', item.post.id]">„{{ item.post.title }}“</a>
                 </div>
-                <p class="chat-card__preview">
-                  @for (segment of segments(item.comment.body); track $index) {
-                    @if (segment.type === 'mention') { <span class="mention">&#64;{{ name(segment.memberId) }}</span> } @else { <span>{{ segment.text }}</span> }
-                  }
-                </p>
+                <p class="chat-card__preview"><app-rich-text [body]="item.comment.body" /></p>
                 <ng-container *ngTemplateOutlet="cardActions; context: { $implicit: item.post.id, comment: item.comment }" />
               </div>
             }
@@ -125,7 +114,7 @@ import { chatVisibility } from '../utils/chat-history';
 
       @if (canPost()) {
         <div class="chat__composer">
-          <app-mention-input [candidates]="mentionable()" [sendOnEnter]="true" placeholder="Zpráva pro skupinu… (@ pro zmínku)" label="Zpráva do chatu" (submitted)="send($event)" />
+          <app-mention-input [candidates]="mentionable()" [events]="linkableEvents()" [sendOnEnter]="true" placeholder="Zpráva pro skupinu… (@ člen, # akce)" label="Zpráva do chatu" (submitted)="send($event)" />
         </div>
       } @else {
         <p class="cs-hint">Chat čtete jako nečlen otevřené skupiny – psát mohou jen členové.</p>
@@ -167,6 +156,7 @@ export class GroupChatComponent implements OnInit, OnDestroy {
   private comments = signal<PostComment[]>([]);
 
   readonly me = this.access.memberId;
+  readonly linkableEvents = inject(EventsService).linkableEvents;
   readonly replyTo = signal<number | null>(null);
   readonly error = signal('');
   // Hranice „Nové“ se zafixuje při otevření chatu, ať během čtení neposkakuje
@@ -289,13 +279,9 @@ export class GroupChatComponent implements OnInit, OnDestroy {
     return this.membersService.members().find((m) => m.id === id)?.nickname ?? 'neznámý člen';
   }
 
-  segments(body: string): CommentSegment[] {
-    return parseCommentBody(body);
-  }
-
   // Text pro náhled: zmínky jako @Přezdívka, zkrácený
   plain(body: string): string {
-    return parseCommentBody(body).map((s) => (s.type === 'mention' ? `@${this.name(s.memberId)}` : s.text)).join('');
+    return plainText(body, (id) => this.name(id), (id) => this.events().find((e) => e.id === id)?.title);
   }
 
   preview(text: string): string {
