@@ -1,43 +1,27 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
-import { NavigationService } from '../navigation.service';
+import { NavSection, NavigationService } from '../navigation.service';
+import { SettingsService } from '../../settings/settings.service';
 import { IconComponent } from '../../../shared/icon/icon.component';
 import { VersionLabelComponent } from '../../../shared/version-label/version-label.component';
+import { SidebarSectionKey } from '../sidebar-menu';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, IconComponent, VersionLabelComponent],
+  imports: [NgTemplateOutlet, RouterLink, RouterLinkActive, IconComponent, VersionLabelComponent],
   templateUrl: './sidebar.component.html',
-  styles: [`
-    .sidebar__nav-item {
-      position: relative;
-    }
-
-    .sidebar__badge {
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-      min-width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--color-primary);
-      color: #fff;
-      border-radius: 50%;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 0 4px;
-    }
-  `],
 })
 export class SidebarComponent implements OnInit, OnDestroy {
-  // Přehled – Akce – Docházka – skupiny uživatele – Kroje; Soubor: rozcestník skupin, Správa.
-  // Na profil se jde kliknutím na jméno v patičce.
+  // Přehled – Akce; Moje skupiny; Agendy; Soubor (rozcestník Skupiny, Hledat). Pořadí a skrytí podle
+  // Nastavení → Boční menu. Na profil se jde kliknutím na jméno v patičce.
+  private settings = inject(SettingsService);
   readonly navSections: NavigationService['sections'];
+  // Sbalený sidebar (jen ikony) – uložené v tomto zařízení, na mobilu se sidebar nezobrazuje
+  readonly compact = computed(() => this.settings.settings().sidebarCompact);
+  private expanded = signal<ReadonlySet<SidebarSectionKey>>(new Set());
 
   constructor(
     public auth: AuthService,
@@ -53,6 +37,30 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.navigation.stop();
+  }
+
+  toggleCompact(): void {
+    this.settings.update({ sidebarCompact: !this.compact() });
+  }
+
+  isExpanded(key: SidebarSectionKey): boolean {
+    return this.expanded().has(key);
+  }
+
+  toggleHidden(key: SidebarSectionKey): void {
+    this.expanded.update((current) => {
+      const next = new Set(current);
+      if (!next.delete(key)) next.add(key);
+      return next;
+    });
+  }
+
+  hiddenBadge(section: NavSection): number {
+    return section.hidden.reduce((sum, item) => sum + (item.badge ?? 0), 0);
+  }
+
+  badgeText(count: number): string {
+    return count > 99 ? '99+' : String(count);
   }
 
   logout(): void {

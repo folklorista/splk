@@ -20,7 +20,7 @@ describe('NavigationService', () => {
   let env: ReturnType<typeof createTestAccess>;
   const requests = signal<JoinRequest[]>([]);
   const messages = signal<ChatMessage[]>([]);
-  const appSettings = signal<{ bottomBar: string[] | null }>({ bottomBar: null });
+  const appSettings = signal<{ bottomBar: string[] | null; sidebarMenu: { order: string[]; hidden: string[] } | null }>({ bottomBar: null, sidebarMenu: null });
 
   function create(): NavigationService {
     TestBed.configureTestingModule({
@@ -41,7 +41,7 @@ describe('NavigationService', () => {
     env = createTestAccess(member);
     requests.set([]);
     messages.set([]);
-    appSettings.set({ bottomBar: null });
+    appSettings.set({ bottomBar: null, sidebarMenu: null });
   });
 
   it('badge skupiny zahrne i nepřečtené cizí zprávy chatu', fakeAsync(() => {
@@ -71,7 +71,7 @@ describe('NavigationService', () => {
     expect(nav.places().map((p) => p.path)).toContain('/app/manage');
     expect(nav.places().filter((p) => p.category === 'group').map((p) => p.path)).toEqual(['/app/boards/tanecni']);
     expect(nav.bottomItems()[0].path).toBe('/app/dashboard');
-    expect(nav.sections().find((s) => s.label === 'Agendy')!.items.map((i) => i.path)).toEqual(['/app/manage']);
+    expect(nav.sections().find((s) => s.label === 'Agendy')!.items.map((i) => i.path)).toEqual(['/app/costumes', '/app/manage']);
   });
 
   it('výchozí lišta: Přehled, Akce, skupiny člena přímo, žádné posouvání ani „Více“', () => {
@@ -85,7 +85,7 @@ describe('NavigationService', () => {
   });
 
   it('vlastní lišta s víc než 4 místy: první 3 a „Více“ se součtem badge schovaných míst', () => {
-    appSettings.set({ bottomBar: ['search', 'groups', 'costumes', 'events', 'group-2'] });
+    appSettings.set({ bottomBar: ['search', 'groups', 'costumes', 'events', 'group-2'], sidebarMenu: null });
     const nav = create();
     const items = nav.bottomItems();
     expect(items.map((i) => i.path)).toEqual(['/app/dashboard', '/app/search', '/app/boards', '/app/costumes', '/app/more']);
@@ -132,4 +132,31 @@ describe('NavigationService', () => {
     nav.stop();
     discardPeriodicTasks();
   }));
+
+  it('sidebar: Přehled a Akce první, skupiny pohromadě v Moje skupiny; pořadí lišty ho neovlivní', () => {
+    appSettings.set({ bottomBar: ['search', 'costumes', 'group-2'], sidebarMenu: null });
+    const nav = create();
+    expect(nav.sections().map((s) => [s.label, s.items.map((i) => i.path)])).toEqual([
+      [undefined, ['/app/dashboard', '/app/events']],
+      ['Moje skupiny', ['/app/boards/tanecni']],
+      ['Agendy', ['/app/costumes']],
+      ['Soubor', ['/app/boards', '/app/search']],
+    ]);
+  });
+
+  it('sidebar: skrytá položka je v „hidden“ sekce a lišta se nemění', () => {
+    const nav = create();
+    const bar = nav.bottomItems().map((i) => i.path);
+    appSettings.set({ bottomBar: null, sidebarMenu: { order: [], hidden: ['group-2'] } });
+    const groups = nav.sections().find((s) => s.key === 'groups')!;
+    expect(groups.items).toEqual([]);
+    expect(groups.hidden.map((i) => i.path)).toEqual(['/app/boards/tanecni']);
+    expect(nav.bottomItems().map((i) => i.path)).toEqual(bar);
+  });
+
+  it('sidebar: bez skupin se sekce Moje skupiny nezobrazí', () => {
+    env = createTestAccess(testMember({ id: 7, groupIds: [] }));
+    const nav = create();
+    expect(nav.sections().some((s) => s.key === 'groups')).toBeFalse();
+  });
 });

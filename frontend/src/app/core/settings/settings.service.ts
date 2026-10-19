@@ -1,4 +1,5 @@
 import { Injectable, effect, signal } from '@angular/core';
+import type { SidebarMenuConfig } from '../layout/sidebar-menu';
 
 export type ThemeSetting = 'light' | 'dark' | 'auto';
 export type FontSizeSetting = 'normal' | 'larger' | 'largest';
@@ -12,6 +13,10 @@ export interface AppSettings {
   reduceMotion: boolean | null;
   // Osobní spodní lišta: klíče míst v pořadí (bez Přehledu); null = automatický návrh (docs/10 kap. 6.2)
   bottomBar: string[] | null;
+  // Desktopový sidebar: pořadí a skryté položky v sekcích Moje skupiny a Agendy; null = výchozí (nezávislé na liště)
+  sidebarMenu: SidebarMenuConfig | null;
+  // Desktopový sidebar sbalený na ikony (jen toto zařízení)
+  sidebarCompact: boolean;
   // Export kalendáře (.ics): typy akcí a vynechané termíny série jako „NENÍ …“; null = výchozí (bez nácviků)
   calendarExport: { types: string[]; skippedAsNotice: boolean } | null;
 }
@@ -24,6 +29,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   eventsView: 'list',
   reduceMotion: null,
   bottomBar: null,
+  sidebarMenu: null,
+  sidebarCompact: false,
   calendarExport: null,
 };
 

@@ -35,7 +35,9 @@ export type IconName =
   | 'clipboard-check'
   | 'menu'
   | 'hanger'
-  | 'download';
+  | 'download'
+  | 'sidebar'
+  | 'logout';
 
 // Sada ikon nabízených při výběru ikony skupiny (app/admin/groups)
 export const GROUP_ICON_OPTIONS: IconName[] = [
@@ -226,6 +228,15 @@ export const GROUP_ICON_OPTIONS: IconName[] = [
           <path d="M12 4v11" />
           <polyline points="7.5 10.5 12 15 16.5 10.5" />
           <path d="M5 19h14" />
+        }
+        @case ('sidebar') {
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <line x1="9" y1="4" x2="9" y2="20" />
+        }
+        @case ('logout') {
+          <path d="M10 4H5v16h5" />
+          <line x1="10" y1="12" x2="20" y2="12" />
+          <polyline points="16 8 20 12 16 16" />
         }
         @case ('menu') {
           <circle cx="5" cy="12" r="1.5" />

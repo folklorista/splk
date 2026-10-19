@@ -5,6 +5,7 @@ import { GroupNotificationsService } from '../../core/notifications/group-notifi
 import { GROUP_NOTIFY_LABELS, GroupNotifyMode } from '../../core/notifications/group-notifications';
 import { AccessService } from '../../core/access/access.service';
 import { BottomBarSettingsComponent } from './bottom-bar-settings.component';
+import { SidebarSettingsComponent } from './sidebar-settings.component';
 import { CalendarExportComponent } from './calendar-export.component';
 import { AvatarSettingsComponent } from './avatar-settings.component';
 
@@ -17,7 +18,7 @@ interface Option<T> {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [BottomBarSettingsComponent, CalendarExportComponent, AvatarSettingsComponent],
+  imports: [BottomBarSettingsComponent, SidebarSettingsComponent, CalendarExportComponent, AvatarSettingsComponent],
   templateUrl: './settings.component.html',
 })
 export class SettingsComponent {
