@@ -74,178 +74,198 @@
           }
         </dl>
 
-        @if (ev.description) {
-          <p class="detail__body">{{ ev.description }}</p>
-        }
-
-        @if (isAudience() && !ev.skippedReason) {
-        <section class="detail__section">
-          <h2 class="detail__section-title">Moje účast</h2>
-          @if (deadlineText(); as text) {
-            <p class="detail__deadline" [class.detail__deadline--due]="needsMyResponse()">{{ text }}</p>
+        <nav class="group-tabs" aria-label="Části akce">
+          @for (t of tabs(); track t) {
+            <a class="group-tabs__link" [class.group-tabs__link--active]="tab() === t" [routerLink]="[]" [queryParams]="{ tab: t }" [attr.aria-current]="tab() === t ? 'page' : null">{{ tabLabels[t] }}</a>
           }
-          <div class="attendance-actions">
-            @for (status of statuses; track status) {
-              <button
-                class="attendance-btn"
-                [class.attendance-btn--active]="record()?.status === status"
-                (click)="setStatus(status)"
-              >
-                {{ statusLabels[status] }}
-              </button>
-            }
-            @if (record() && record()!.status !== 'pending') {
-              <button class="attendance-btn attendance-btn--clear" (click)="clearStatus()">Zrušit odpověď</button>
-            }
-          </div>
+        </nav>
 
-          <div class="attendance-note">
-            @if (noteValue() && !noteOpen()) {
-              <div class="attendance-note__preview">
-                <span class="attendance-note__text">{{ noteValue() }}</span>
-                <button class="attendance-note__edit" (click)="noteOpen.set(true)">Upravit</button>
-              </div>
-            } @else if (noteOpen()) {
-              <div class="attendance-note__form">
-                <textarea
-                  class="attendance-note__input"
-                  rows="2"
-                  placeholder="Poznámka k účasti…"
-                  [value]="noteValue()"
-                  (input)="noteValue.set($any($event.target).value)"
-                ></textarea>
-                <p class="attendance-note__hint">Poznámku uvidí všichni, kdo vidí tuto akci.</p>
-                <div class="attendance-note__actions">
-                  <button class="attendance-btn attendance-btn--active" (click)="saveNote(noteValue())">Uložit</button>
-                  <button class="attendance-btn" (click)="noteOpen.set(false)">Zrušit</button>
-                </div>
-              </div>
-            } @else {
-              <button class="attendance-note__add" (click)="noteOpen.set(true)">+ Přidat poznámku</button>
+        @switch (tab()) {
+          @case ('detail') {
+            @if (ev.description) {
+              <p class="detail__body">{{ ev.description }}</p>
             }
-          </div>
-        </section>
-        }
+            @if (!ev.skippedReason) {
+              <section class="detail__section">
+                <h2 class="detail__section-title">Účast</h2>
+                <p class="detail__summary">
+                  <span class="attendance-status attendance-status--yes">Přijde {{ attendanceSummary().yes }}</span>
+                  <span class="attendance-status attendance-status--maybe">Možná {{ attendanceSummary().maybe }}</span>
+                  <span class="attendance-status attendance-status--no">Nepřijde {{ attendanceSummary().no }}</span>
+                  <span class="attendance-status attendance-status--pending">Bez odpovědi {{ attendanceSummary().pending }}</span>
+                </p>
+                @if (isAudience()) {
+                  <p class="detail__deadline" [class.detail__deadline--due]="needsMyResponse()">
+                    Moje odpověď: <strong>{{ statusLabel(record()?.status) }}</strong> ·
+                    <a [routerLink]="[]" [queryParams]="{ tab: 'attendance' }">{{ responseClosed() ? 'zobrazit účast' : 'změnit / zobrazit účast' }}</a>
+                  </p>
+                }
+              </section>
+            }
+          }
 
-        @if (visibleMembers().length > 0) {
-          <section class="detail__section">
-            <h2 class="detail__section-title">Účast</h2>
-            <div class="member-columns">
-              @for (status of statuses; track status) {
-                <div class="member-column">
-                  <div class="member-column__header">{{ statusLabels[status] }} ({{ membersByStatus()[status].length }})</div>
-                  @if (membersByStatus()[status].length) {
-                    <ul class="member-column__list">
-                      @for (m of membersByStatus()[status]; track m.id) {
-                        <li>
-                          @if (noteFor(m.id); as note) {
-                            <button type="button" class="member-note" [title]="note" [attr.aria-expanded]="openNoteMemberId() === m.id"
-                              (click)="toggleNote(m.id)">
-                              {{ m.nickname }} <app-icon name="comment" [size]="13" />
-                            </button>
-                            @if (openNoteMemberId() === m.id) {
-                              <span class="member-note__text">{{ note }}</span>
-                            }
-                          } @else {
-                            {{ m.nickname }}
+          @case ('attendance') {
+            @if (isAudience() && !ev.skippedReason) {
+              <section class="detail__section">
+                <h2 class="detail__section-title">Moje účast</h2>
+                @if (responseClosed()) {
+                  <p class="detail__deadline">Akce proběhla – odpověď už nelze měnit. Vaše odpověď: <strong>{{ statusLabel(record()?.status) }}</strong>@if (noteValue()) { · {{ noteValue() }} }</p>
+                } @else {
+                  @if (deadlineText(); as text) {
+                    <p class="detail__deadline" [class.detail__deadline--due]="needsMyResponse()">{{ text }}</p>
+                  }
+                  <div class="attendance-actions">
+                    @for (status of statuses; track status) {
+                      <button class="attendance-btn" [class.attendance-btn--active]="record()?.status === status" (click)="setStatus(status)">{{ statusLabels[status] }}</button>
+                    }
+                    @if (record() && record()!.status !== 'pending') {
+                      <button class="attendance-btn attendance-btn--clear" (click)="clearStatus()">Zrušit odpověď</button>
+                    }
+                  </div>
+                  <div class="attendance-note">
+                    @if (noteValue() && !noteOpen()) {
+                      <div class="attendance-note__preview">
+                        <span class="attendance-note__text">{{ noteValue() }}</span>
+                        <button class="attendance-note__edit" (click)="noteOpen.set(true)">Upravit</button>
+                      </div>
+                    } @else if (noteOpen()) {
+                      <div class="attendance-note__form">
+                        <textarea class="attendance-note__input" rows="2" placeholder="Poznámka k účasti…" [value]="noteValue()" (input)="noteValue.set($any($event.target).value)"></textarea>
+                        <p class="attendance-note__hint">Poznámku uvidí všichni, kdo vidí tuto akci.</p>
+                        <div class="attendance-note__actions">
+                          <button class="attendance-btn attendance-btn--active" (click)="saveNote(noteValue())">Uložit</button>
+                          <button class="attendance-btn" (click)="cancelNote()">Zrušit</button>
+                        </div>
+                      </div>
+                    } @else {
+                      <button class="attendance-note__add" (click)="noteOpen.set(true)">+ Přidat poznámku</button>
+                    }
+                  </div>
+                }
+              </section>
+            }
+            @if (visibleMembers().length > 0) {
+              <section class="detail__section">
+                <h2 class="detail__section-title">Odpovědi členů</h2>
+                <div class="member-columns">
+                  @for (status of statusesWithPending; track status) {
+                    <div class="member-column">
+                      <div class="member-column__header">{{ status === 'pending' ? 'Neodpovědělo' : statusLabels[status] }} ({{ membersByStatus()[status].length }})</div>
+                      @if (membersByStatus()[status].length) {
+                        <ul class="member-column__list">
+                          @for (m of membersByStatus()[status]; track m.id) {
+                            <li>
+                              @if (noteFor(m.id); as note) {
+                                <button type="button" class="member-note" [title]="note" [attr.aria-expanded]="openNoteMemberId() === m.id" (click)="toggleNote(m.id)">
+                                  {{ m.nickname }} <app-icon name="comment" [size]="13" />
+                                </button>
+                                @if (openNoteMemberId() === m.id) { <span class="member-note__text">{{ note }}</span> }
+                              } @else {
+                                {{ m.nickname }}
+                              }
+                              @if (unavailable(m.id); as u) { <span class="member-unavailable" [title]="u.note || 'Dlouhodobě nedostupný'">nedostupný {{ range(u) }}</span> }
+                            </li>
                           }
-                          @if (unavailable(m.id); as u) { <span class="member-unavailable" [title]="u.note || 'Dlouhodobě nedostupný'">nedostupný {{ range(u) }}</span> }
-                        </li>
+                        </ul>
+                      } @else {
+                        <p class="member-column__empty">Nikdo</p>
                       }
-                    </ul>
-                  } @else {
-                    <p class="member-column__empty">Nikdo</p>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
+          }
+
+          @case ('chat') {
+            <app-event-chat [event]="ev" [members]="allMembers()" [canModerate]="canEdit()" />
+          }
+
+          @case ('actual') {
+            <section class="detail__section actual-attendance">
+              <div class="actual-attendance__header">
+                <h2 class="detail__section-title">Skutečná docházka</h2>
+                <a class="actual-attendance__report-link" routerLink="/app/attendance">Přehled docházky</a>
+              </div>
+              <p class="actual-attendance__summary">
+                Přítomno: <strong>{{ actualSummary().present }}</strong> · Nepřítomno: <strong>{{ actualSummary().absent }}</strong> · Nevyplněno: <strong>{{ actualSummary().unchecked }}</strong>
+              </p>
+              @if (actualGroupOptions().length > 1) {
+                <div class="aa-filter" role="group" aria-label="Filtr podle skupiny">
+                  <button type="button" class="aa-chip" [class.aa-chip--active]="actualGroupFilter() === null" (click)="actualGroupFilter.set(null)">Všichni</button>
+                  @for (g of actualGroupOptions(); track g.id) {
+                    <button type="button" class="aa-chip" [class.aa-chip--active]="actualGroupFilter() === g.id" (click)="actualGroupFilter.set(g.id)">{{ g.name }}</button>
                   }
                 </div>
               }
-              <div class="member-column">
-                <div class="member-column__header">Neodpovědělo ({{ membersByStatus().pending.length }})</div>
-                @if (membersByStatus().pending.length) {
-                  <ul class="member-column__list">
-                    @for (m of membersByStatus().pending; track m.id) {
-                      <li>{{ m.nickname }} @if (unavailable(m.id); as u) { <span class="member-unavailable" [title]="u.note || 'Dlouhodobě nedostupný'">nedostupný {{ range(u) }}</span> }</li>
+              @for (section of actualUncheckedSections(); track section.status) {
+                <div class="aa-section">
+                  <div class="aa-section__header">
+                    <h3 class="aa-section__title">{{ section.title }} ({{ section.rows.length }})</h3>
+                    <span class="aa-section__bulk">
+                      <button type="button" class="actual-attendance__btn actual-attendance__btn--present" (click)="markRows(section.rows, true)">Všichni přítomni</button>
+                      <button type="button" class="actual-attendance__btn actual-attendance__btn--absent" (click)="markRows(section.rows, false)">Všichni nepřítomni</button>
+                    </span>
+                  </div>
+                  <ul class="actual-attendance__list">
+                    @for (row of section.rows; track row.member.id) {
+                      <ng-container *ngTemplateOutlet="actualRow; context: { $implicit: row }" />
                     }
                   </ul>
-                } @else {
-                  <p class="member-column__empty">Nikdo</p>
-                }
+                </div>
+              } @empty {
+                @if (actualFilteredRows().length) { <p class="state-note">Docházka je vyplněná u všech zobrazených členů.</p> }
+              }
+              @if (actualCheckedRows().length) {
+                <div class="aa-section aa-section--done">
+                  <h3 class="aa-section__title">Vyplněno ({{ actualCheckedRows().length }})</h3>
+                  <ul class="actual-attendance__list">
+                    @for (row of actualCheckedRows(); track row.member.id) {
+                      <ng-container *ngTemplateOutlet="actualRow; context: { $implicit: row }" />
+                    }
+                  </ul>
+                </div>
+              }
+              <p class="actual-attendance__hint">Opětovným klepnutím na zvolený stav záznam zrušíte.</p>
+            </section>
+          }
+
+          @case ('views') {
+            <section class="detail__section">
+              <h2 class="detail__section-title">Zobrazení{{ ev.importantChange ? ' po důležité změně' : '' }}</h2>
+              @if (ev.importantChange?.requiresConfirmation) {
+                <p class="detail__deadline">Potvrdilo přečtení: {{ viewedStatus().confirmed.length }} z {{ visibleMembers().length }}</p>
+              }
+              <div class="member-columns">
+                <div class="member-column">
+                  <div class="member-column__header">{{ ev.importantChange ? 'Otevřeli po změně' : 'Zobrazili' }} ({{ viewedStatus().viewed.length }})</div>
+                  @if (viewedStatus().viewed.length) {
+                    <ul class="member-column__list">@for (m of viewedStatus().viewed; track m.id) { <li>{{ m.nickname }}</li> }</ul>
+                  } @else { <p class="member-column__empty">Nikdo</p> }
+                </div>
+                <div class="member-column">
+                  <div class="member-column__header">{{ ev.importantChange ? 'Neotevřeli po změně' : 'Nezobrazili' }} ({{ viewedStatus().notViewed.length }})</div>
+                  @if (viewedStatus().notViewed.length) {
+                    <ul class="member-column__list">@for (m of viewedStatus().notViewed; track m.id) { <li>{{ m.nickname }}</li> }</ul>
+                  } @else { <p class="member-column__empty">Nikdo</p> }
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          }
         }
 
-        @if (canRecordActual() && visibleMembers().length > 0) {
-          <section class="detail__section actual-attendance">
-            <div class="actual-attendance__header">
-              <h2 class="detail__section-title">Skutečná docházka</h2>
-              <a class="actual-attendance__report-link" routerLink="/app/attendance">Přehled docházky</a>
-            </div>
-            <p class="actual-attendance__summary">
-              Přítomno: <strong>{{ actualSummary().present }}</strong> ·
-              Nepřítomno: <strong>{{ actualSummary().absent }}</strong> ·
-              Nezkontrolováno: <strong>{{ actualSummary().unchecked }}</strong>
-            </p>
-            <ul class="actual-attendance__list">
-              @for (row of actualRows(); track row.member.id) {
-                <li class="actual-attendance__row" [class.actual-attendance__row--unchecked]="row.present === null">
-                  <span class="actual-attendance__name">
-                    {{ row.member.nickname }}
-                    <span class="attendance-status attendance-status--{{ row.rsvp }}" title="Nahlášená účast">{{ statusLabel(row.rsvp) }}</span>
-                  </span>
-                  <span class="actual-attendance__toggle" role="group" [attr.aria-label]="'Docházka – ' + row.member.nickname">
-                    <button type="button" class="actual-attendance__btn actual-attendance__btn--present"
-                      [class.actual-attendance__btn--active]="row.present === true" [attr.aria-pressed]="row.present === true"
-                      (click)="markActual(row.member.id, true)">Přítomen</button>
-                    <button type="button" class="actual-attendance__btn actual-attendance__btn--absent"
-                      [class.actual-attendance__btn--active]="row.present === false" [attr.aria-pressed]="row.present === false"
-                      (click)="markActual(row.member.id, false)">Nepřítomen</button>
-                  </span>
-                </li>
-              }
-            </ul>
-            <div class="actual-attendance__actions">
-              @if (actualSummary().unchecked > 0) {
-                <button type="button" class="attendance-btn" (click)="markRestAbsent()">Ostatní nepřítomni</button>
-              }
-              <span class="actual-attendance__hint">Opětovným klepnutím na zvolený stav záznam zrušíte.</span>
-            </div>
-          </section>
-        }
-
-        @if (canSeeResponses() && visibleMembers().length > 0) {
-          <section class="detail__section">
-            <h2 class="detail__section-title">Zobrazení{{ ev.importantChange ? ' po důležité změně' : '' }}</h2>
-            @if (ev.importantChange?.requiresConfirmation) {
-              <p class="detail__deadline">Potvrdilo přečtení: {{ viewedStatus().confirmed.length }} z {{ visibleMembers().length }}</p>
-            }
-            <div class="member-columns">
-              <div class="member-column">
-                <div class="member-column__header">{{ ev.importantChange ? 'Otevřeli po změně' : 'Zobrazili' }} ({{ viewedStatus().viewed.length }})</div>
-                @if (viewedStatus().viewed.length) {
-                  <ul class="member-column__list">
-                    @for (m of viewedStatus().viewed; track m.id) {
-                      <li>{{ m.nickname }}</li>
-                    }
-                  </ul>
-                } @else {
-                  <p class="member-column__empty">Nikdo</p>
-                }
-              </div>
-              <div class="member-column">
-                <div class="member-column__header">{{ ev.importantChange ? 'Neotevřeli po změně' : 'Nezobrazili' }} ({{ viewedStatus().notViewed.length }})</div>
-                @if (viewedStatus().notViewed.length) {
-                  <ul class="member-column__list">
-                    @for (m of viewedStatus().notViewed; track m.id) {
-                      <li>{{ m.nickname }}</li>
-                    }
-                  </ul>
-                } @else {
-                  <p class="member-column__empty">Nikdo</p>
-                }
-              </div>
-            </div>
-          </section>
-        }
+        <ng-template #actualRow let-row>
+          <li class="actual-attendance__row" [class.actual-attendance__row--unchecked]="row.present === null">
+            <span class="actual-attendance__name">
+              {{ row.member.nickname }}
+              <span class="attendance-status attendance-status--{{ row.rsvp }}" title="Nahlášená účast">{{ statusLabel(row.rsvp) }}</span>
+            </span>
+            <span class="actual-attendance__toggle" role="group" [attr.aria-label]="'Docházka – ' + row.member.nickname">
+              <button type="button" class="actual-attendance__btn actual-attendance__btn--present" [class.actual-attendance__btn--active]="row.present === true" [attr.aria-pressed]="row.present === true" (click)="markActual(row.member.id, true)">Přítomen</button>
+              <button type="button" class="actual-attendance__btn actual-attendance__btn--absent" [class.actual-attendance__btn--active]="row.present === false" [attr.aria-pressed]="row.present === false" (click)="markActual(row.member.id, false)">Nepřítomen</button>
+            </span>
+          </li>
+        </ng-template>
       </div>
     }
   }

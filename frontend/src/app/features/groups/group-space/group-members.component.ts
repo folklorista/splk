@@ -7,20 +7,24 @@ import { MembersService } from '../../members/members.service';
 import { MandatesService } from '../../mandates/mandates.service';
 import { MembershipService } from '../membership.service';
 import { ActionFeedback } from '../../../shared/ui/form-ui';
+import { AvatarComponent } from '../../../shared/avatar/avatar.component';
 
 // Záložka Členové: kdo ve skupině je a kdo ji spravuje (transparentně pro všechny členy),
 // návrh nového člena (rozhodne správce, pak pozvaný) a odchod ze skupiny
 @Component({
   selector: 'app-group-members',
   standalone: true,
+  imports: [AvatarComponent],
   template: `
     @if (feedback.error()) { <p class="cs-error" role="alert">{{ feedback.error() }}</p> }
     @if (feedback.success()) { <p class="cs-success" role="status">{{ feedback.success() }}</p> }
 
     <ul class="gm">
       @for (row of rows(); track row.id) {
-        <li class="gm__row">
+        <li class="gm__tile">
+          <app-avatar [name]="row.nickname" [memberId]="row.id" [avatar]="row.avatar" [size]="48" />
           <span class="gm__name">{{ row.nickname }}</span>
+          @if (row.functionTitle) { <span class="gm__function">{{ row.functionTitle }}</span> }
           @if (row.role === 'owner') { <span class="badge badge--pinned">hlavní správce</span> }
           @if (row.role === 'deputy') { <span class="badge">spolusprávce</span> }
         </li>
@@ -56,9 +60,10 @@ import { ActionFeedback } from '../../../shared/ui/form-ui';
   `,
   styles: [
     `
-      .gm { list-style: none; display: flex; flex-direction: column; margin-bottom: var(--spacing-md); }
-      .gm__row { display: flex; align-items: center; gap: var(--spacing-sm); padding: 6px 0; border-bottom: 1px solid var(--color-border); font-size: var(--font-size-sm); }
-      .gm__name { flex: 1; }
+      .gm { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
+      .gm__tile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--spacing-sm); border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface); text-align: center; font-size: var(--font-size-sm); }
+      .gm__name { font-weight: 600; word-break: break-word; }
+      .gm__function { font-size: var(--font-size-xs); color: var(--color-text-muted); }
       .gm__propose { margin-top: var(--spacing-md); }
       .gm__leave { margin-top: var(--spacing-xl); }
     `,
@@ -90,7 +95,7 @@ export class GroupMembersComponent {
     return this.membersService
       .members()
       .filter((m) => m.isActive && m.groupIds.includes(this.group().id))
-      .map((m) => ({ id: m.id, nickname: m.nickname, role: this.roleOf(m.id) }))
+      .map((m) => ({ id: m.id, nickname: m.nickname, avatar: m.avatar, functionTitle: m.functionTitle, role: this.roleOf(m.id) }))
       .sort((a, b) => rank(a.role) - rank(b.role) || a.nickname.localeCompare(b.nickname, 'cs'));
   });
 

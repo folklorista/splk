@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, of, Observable } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, take } from 'rxjs/operators';
 import { EventsService } from '../events.service';
 import { AttendanceService } from '../../attendance/attendance.service';
 import { MembersService } from '../../members/members.service';
@@ -84,6 +84,31 @@ export const EVENT_TYPE_OPTIONS: [EventType, string][] = [
           <label class="cs-field">
             <span>Popis</span>
             <textarea rows="3" [value]="description()" (input)="description.set($any($event.target).value)"></textarea>
+          </label>
+
+          @if (original()?.seriesId) {
+            <fieldset class="event-form__fieldset">
+              <legend>Termín série</legend>
+              <label class="cs-field cs-field--inline">
+                <input type="checkbox" [checked]="skipped()" (change)="skipped.set($any($event.target).checked)" />
+                Tento termín se nekoná (vynecháno)
+              </label>
+              @if (skipped()) {
+                <label class="cs-field">
+                  <span>Důvod *</span>
+                  <input type="text" required placeholder="např. Státní svátek, podzimní prázdniny" [value]="skipReason()" (input)="skipReason.set($any($event.target).value)" />
+                  @if (!original()?.skippedReason) {
+                    <span class="cs-hint">Dodatečné zrušení termínu oznámíme členům jako důležitou změnu akce.</span>
+                  }
+                </label>
+              }
+              <span class="cs-hint">Úprava platí jen pro tento termín, ostatní termíny série zůstávají beze změny.</span>
+            </fieldset>
+          }
+
+          <label class="cs-field cs-field--inline">
+            <input type="checkbox" [checked]="chatEnabled()" (change)="chatEnabled.set($any($event.target).checked)" />
+            Chat k akci (záložka Chat v detailu – dotazy, domluva dopravy, krojů…)
           </label>
 
           @if (eventId) {
@@ -248,7 +273,7 @@ export class EventFormComponent implements OnInit {
   readonly eventId = Number(this.route.snapshot.paramMap.get('id')) || null;
 
   readonly loaded = signal(false);
-  private original = signal<AppEvent | null>(null);
+  readonly original = signal<AppEvent | null>(null);
   readonly title = signal('');
   readonly type = signal<EventType>('rehearsal');
   readonly startsAt = signal('');
@@ -256,6 +281,10 @@ export class EventFormComponent implements OnInit {
   readonly location = signal('');
   readonly description = signal('');
   private planner = viewChild(SeriesPlannerComponent);
+  readonly chatEnabled = signal(true);
+  // Vynechaný termín série (docs/07 kap. 17)
+  readonly skipped = signal(false);
+  readonly skipReason = signal('');
   readonly leadDays = signal('');
   // Drobná změna bez upozornění / důležitá (nové sledování zobrazení) / výjimečná s potvrzením
   readonly changeKind = signal<'minor' | 'important' | 'confirm'>('minor');
@@ -324,7 +353,7 @@ export class EventFormComponent implements OnInit {
   readonly valid = computed(() => {
     const scope = this.scope();
     const organizerOk = scope.ensembleWide || !!this.eventId || this.organizerGroupIds().some((g) => scope.groupIds.includes(g));
-    const changeOk = this.changeKind() === 'minor' || !!this.changeNote().trim();
+    const changeOk = (this.changeKind() === 'minor' || !!this.changeNote().trim()) && (!this.skipped() || !!this.skipReason().trim());
     return !!this.title().trim() && !!this.startsAt() && !!this.endsAt() && !!this.location().trim() && this.endsAt() >= this.startsAt() && organizerOk && changeOk;
   });
 
@@ -335,7 +364,7 @@ export class EventFormComponent implements OnInit {
       this.loaded.set(true);
       return;
     }
-    this.eventsService.getEvent(this.eventId).subscribe((event) => {
+    this.eventsService.getEvent(this.eventId).pipe(take(1)).subscribe((event) => {
       if (!event || this.loaded()) {
         this.loaded.set(true);
         return;
@@ -347,6 +376,9 @@ export class EventFormComponent implements OnInit {
       this.endsAt.set(event.endsAt.slice(0, 16));
       this.location.set(event.location);
       this.description.set(event.description ?? '');
+      this.chatEnabled.set(event.chatEnabled !== false);
+      this.skipped.set(!!event.skippedReason);
+      this.skipReason.set(event.skippedReason ?? '');
       this.leadDays.set(event.reminderLeadDays !== undefined ? String(event.reminderLeadDays) : '');
       this.responseDeadline.set(event.responseDeadline?.slice(0, 16) ?? '');
       this.targetGroupIds.set([...(event.targetGroupIds ?? [])]);
@@ -369,6 +401,17 @@ export class EventFormComponent implements OnInit {
       const endsAt = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}T${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
       return { startsAt, endsAt, skippedReason: o.skipReason !== undefined ? o.skipReason.trim() || 'Vynecháno' : undefined };
     });
+  }
+
+  // Dodatečně zrušený termín série se oznámí jako důležitá změna (pokud organizátor nezvolil jinou)
+  private importantChangeToSave() {
+    const original = this.original();
+    if (this.changeKind() !== 'minor') {
+      return { at: new Date().toISOString(), note: this.changeNote().trim(), requiresConfirmation: this.changeKind() === 'confirm' || undefined };
+    }
+    const newlySkipped = !!original?.seriesId && this.skipped() && !original.skippedReason && new Date(original.startsAt) > new Date();
+    if (newlySkipped) return { at: new Date().toISOString(), note: `Termín se nekoná – ${this.skipReason().trim() || 'vynecháno'}` };
+    return original?.importantChange;
   }
 
   // Prázdné = výchozí podle typu; jinak 0–365 dní
@@ -423,10 +466,12 @@ export class EventFormComponent implements OnInit {
       endsAt: this.endsAt(),
       location: this.location().trim(),
       description: this.description().trim() || undefined,
+      chatEnabled: this.chatEnabled() ? undefined : false,
       reminderLeadDays: this.parsedLeadDays(),
-      importantChange: this.changeKind() === 'minor'
-        ? this.original()?.importantChange
-        : { at: new Date().toISOString(), note: this.changeNote().trim(), requiresConfirmation: this.changeKind() === 'confirm' || undefined },
+      importantChange: this.importantChangeToSave(),
+      // Údaje série se při úpravě zachovají; důvod vynechání jde upravit
+      seriesId: this.original()?.seriesId,
+      skippedReason: this.original()?.seriesId && this.skipped() ? this.skipReason().trim() || 'Vynecháno' : undefined,
       responseDeadline: this.responseDeadline() || undefined,
       targetGroupIds: this.targetGroupIds(),
       organizerGroupIds: this.organizerGroupIds().length ? this.organizerGroupIds() : undefined,

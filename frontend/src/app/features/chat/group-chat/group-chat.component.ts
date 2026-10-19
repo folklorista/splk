@@ -36,7 +36,7 @@ import { chatVisibility } from '../utils/chat-history';
   imports: [DatePipe, NgTemplateOutlet, RouterLink, MentionInputComponent],
   template: `
     <div class="chat">
-      <div class="chat__log" #log role="log" aria-live="polite" aria-label="Chat skupiny">
+      <div class="chat__log" #log role="log" aria-live="polite" aria-label="Chat skupiny" (scroll)="onScroll()">
         @if (!items().length) {
           <p class="state-note">Zatím tu nic není. Napište první zprávu.</p>
         }
@@ -115,6 +115,9 @@ import { chatVisibility } from '../utils/chat-history';
           }
         }
       </div>
+      @if (hasNewBelow()) {
+        <button type="button" class="chat__jump" (click)="jumpToLatest()">Nové zprávy ↓</button>
+      }
 
       @if (error()) {
         <p class="login-error" role="alert">{{ error() }}</p>
@@ -206,13 +209,20 @@ export class GroupChatComponent implements OnInit, OnDestroy {
   };
 
   constructor() {
-    // Při nové položce sjet dolů a označit chat za přečtený (čtení chatu neoznačuje příspěvky)
+    // Časová osa se přepočítává i při pravidelném obnovení dat – posouvat jen při skutečně nové položce,
+    // a jen když je čtenář u konce (nebo při prvním zobrazení). Jinak nabídnout „Nové zprávy ↓“.
     effect(() => {
       const count = this.items().length;
       untracked(() => {
-        if (!count) return;
-        this.chat.markRead(this.group().id);
-        queueMicrotask(() => this.scrollToBottom());
+        if (!count || count === this.lastCount) return;
+        const first = this.lastCount === 0;
+        this.lastCount = count;
+        if (first || this.atBottom) {
+          this.chat.markRead(this.group().id);
+          queueMicrotask(() => this.scrollToBottom());
+        } else {
+          this.hasNewBelow.set(true);
+        }
       });
     });
   }
@@ -226,9 +236,31 @@ export class GroupChatComponent implements OnInit, OnDestroy {
     this.chat.markRead(this.group().id);
   }
 
+  private lastCount = 0;
+  // Je čtenář u konce chatu? (tolerance pro zaokrouhlení a drobný posun)
+  private atBottom = true;
+  readonly hasNewBelow = signal(false);
+
+  onScroll(): void {
+    const el = this.log()?.nativeElement;
+    if (!el) return;
+    this.atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    if (this.atBottom && this.hasNewBelow()) {
+      this.hasNewBelow.set(false);
+      this.chat.markRead(this.group().id);
+    }
+  }
+
+  jumpToLatest(): void {
+    this.hasNewBelow.set(false);
+    this.chat.markRead(this.group().id);
+    this.scrollToBottom();
+  }
+
   private scrollToBottom(): void {
     const el = this.log()?.nativeElement;
     if (el) el.scrollTop = el.scrollHeight;
+    this.atBottom = true;
   }
 
   trackItem(item: TimelineItem): string {
@@ -289,6 +321,8 @@ export class GroupChatComponent implements OnInit, OnDestroy {
 
   send(input: MentionSubmit): void {
     this.error.set('');
+    // Po vlastní zprávě vždy na konec
+    this.atBottom = true;
     this.chat.send(this.group().id, input.body, input.mentionedMemberIds).subscribe({ error: (e) => this.error.set(errorMessage(e)) });
   }
 

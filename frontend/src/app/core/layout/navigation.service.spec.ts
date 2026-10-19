@@ -117,4 +117,19 @@ describe('NavigationService', () => {
     const nav = create();
     expect(nav.pendingRequests()).toBe(2);
   });
+
+  it('badge „Skupiny“ = součet badge skupin + žádosti; části skupiny (nástěnka + chat) dávají badge skupiny', fakeAsync(() => {
+    const base = { kind: 'request' as const, createdById: 1, createdAt: '' };
+    requests.set([{ ...base, id: 3, groupId: 5, memberId: 7, kind: 'invitation', status: 'awaiting-member' }]);
+    messages.set([{ id: 1, groupId: 2, authorId: 3, body: '', mentionedMemberIds: [], createdAt: '2026-02-01T00:00:00Z' }]);
+    const nav = create();
+    nav.start();
+    tick();
+    const parts = nav.groupBadgeParts().get(2)!;
+    expect(parts).toEqual({ board: 3, chat: 1 });
+    expect(nav.groupBadge(2)).toBe(4);
+    expect(nav.groupsHubBadge()).toBe(5);
+    nav.stop();
+    discardPeriodicTasks();
+  }));
 });

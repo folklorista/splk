@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { EventDetailComponent } from './event-detail.component';
 import { EventsService } from '../events.service';
 import { AttendanceService } from '../../attendance/attendance.service';
@@ -80,6 +80,21 @@ describe('EventDetailComponent', () => {
       ],
     });
   }
+
+  it('opakované vyslání akce (změna účasti) nezapíše zobrazení znovu ani nesmaže rozepsanou poznámku', () => {
+    configure([{ eventId: 10, memberId: 1, status: 'yes', note: 'uložená' }]);
+    const events$ = new BehaviorSubject<AppEvent>(event);
+    eventsSpy.getEvent.and.returnValue(events$);
+    const fixture = TestBed.createComponent(EventDetailComponent);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.noteValue()).toBe('uložená');
+    fixture.componentInstance.noteValue.set('rozepsaná');
+    events$.next({ ...event });
+    events$.next({ ...event });
+    expect(attendanceSpy.markViewed).toHaveBeenCalledTimes(1);
+    expect(attendanceSpy.getAttendance).toHaveBeenCalledTimes(1);
+    expect(fixture.componentInstance.noteValue()).toBe('rozepsaná');
+  });
 
   it('započítá do souhrnu i členy bez záznamu jako "pending"', () => {
     configure([{ eventId: 10, memberId: 2, status: 'yes' }]);
@@ -231,5 +246,53 @@ describe('EventDetailComponent', () => {
     expect(fixture.componentInstance.canEdit()).toBeFalse();
     env.mandates.set([testMandate(1, 'events', { eventId: 10 })]);
     expect(fixture.componentInstance.canEdit()).toBeTrue();
+  });
+
+  describe('záložky a docházka', () => {
+    it('záložky: Detail, Účast, Chat (povolený), Docházka po začátku s pověřením, Zobrazení', () => {
+      configure([]);
+      const fixture = TestBed.createComponent(EventDetailComponent);
+      fixture.detectChanges();
+      expect(fixture.componentInstance.tabs()).toEqual(['detail', 'attendance', 'chat', 'actual', 'views']);
+      expect(fixture.componentInstance.tab()).toBe('detail');
+    });
+
+    it('bez chatu a bez pověření k docházce tyto záložky chybí', () => {
+      env.mandates.set([]);
+      configure([]);
+      eventsSpy.getEvent.and.returnValue(of({ ...event, chatEnabled: false }));
+      const fixture = TestBed.createComponent(EventDetailComponent);
+      fixture.detectChanges();
+      expect(fixture.componentInstance.tabs()).toEqual(['detail', 'attendance']);
+    });
+
+    it('nevyplněná docházka nahoře podle nahlášené účasti, vyplnění níže; hromadné označení skupiny', () => {
+      configure([{ eventId: 10, memberId: 1, status: 'yes' }, { eventId: 10, memberId: 2, status: 'no' }], [{ eventId: 10, memberId: 3, present: true, recordedByMemberId: 1, recordedAt: '' }]);
+      const fixture = TestBed.createComponent(EventDetailComponent);
+      fixture.detectChanges();
+      const c = fixture.componentInstance;
+      expect(c.actualUncheckedSections().map((s) => [s.status, s.rows.map((r) => r.member.id)])).toEqual([['yes', [1]], ['no', [2]]]);
+      expect(c.actualCheckedRows().map((r) => r.member.id)).toEqual([3]);
+      c.markRows(c.actualUncheckedSections()[0].rows, true);
+      expect(actualSpy.markMany).toHaveBeenCalledWith(10, [1], true, 1);
+    });
+
+    it('filtr podle členské skupiny (pohlaví se neeviduje)', () => {
+      configure([]);
+      const fixture = TestBed.createComponent(EventDetailComponent);
+      fixture.detectChanges();
+      const c = fixture.componentInstance;
+      c.actualGroupFilter.set(99);
+      expect(c.actualFilteredRows().length).toBe(0);
+      c.actualGroupFilter.set(1);
+      expect(c.actualFilteredRows().length).toBe(3);
+    });
+
+    it('po skončení akce je moje odpověď uzavřená', () => {
+      configure([]);
+      const fixture = TestBed.createComponent(EventDetailComponent);
+      fixture.detectChanges();
+      expect(fixture.componentInstance.responseClosed()).toBeTrue();
+    });
   });
 });

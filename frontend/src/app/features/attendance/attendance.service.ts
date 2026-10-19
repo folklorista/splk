@@ -1,5 +1,9 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { Injectable, Injector, inject } from '@angular/core';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { EventsService } from '../events/events.service';
+import { AccessService } from '../../core/access/access.service';
+import { RuleViolationError } from '../../core/access/mandate-rules';
+import { isResponseClosed } from '../events/utils/event-reminders';
 import { delay, map } from 'rxjs/operators';
 import { AttendanceRecord, AttendanceStatus } from './models/attendance.model';
 import { MOCK_ATTENDANCE } from './data/mock-attendance';
@@ -10,6 +14,8 @@ export class AttendanceService {
   private recordsSubject = new BehaviorSubject<AttendanceRecord[]>(loadDemoData('attendance', () => [...MOCK_ATTENDANCE]));
 
   readonly records$ = this.recordsSubject.asObservable();
+
+  private injector = inject(Injector);
 
   constructor() {
     this.recordsSubject.subscribe((records) => saveDemoData('attendance', records));
@@ -58,6 +64,12 @@ export class AttendanceService {
   }
 
   updateAttendance(record: AttendanceRecord): Observable<AttendanceRecord> {
+    // Po skončení akce už člen svou odpověď nemění (kontrola jako na serveru, ne jen vypnutá tlačítka).
+    // EventsService se bere líně – sám na AttendanceService závisí.
+    const event = this.injector.get(EventsService).findEvent(record.eventId);
+    if (event && record.memberId === this.injector.get(AccessService).memberId() && isResponseClosed(event)) {
+      return throwError(() => new RuleViolationError('Akce už proběhla – odpověď ani poznámku nelze měnit.'));
+    }
     const records = this.recordsSubject.value;
     const index = records.findIndex(
       (r) => r.eventId === record.eventId && r.memberId === record.memberId,

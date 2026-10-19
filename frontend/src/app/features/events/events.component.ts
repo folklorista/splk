@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, signal, computed, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AppEvent, EventType } from './models/event.model';
 import { AttendanceCounts, DEFAULT_EVENT_FILTERS, EventFilters, ResponseFilter, filterEvents, ownAttendanceStatus } from './utils/event-filters';
@@ -43,6 +44,7 @@ export class EventsComponent implements OnInit {
   selectedDateKey = signal(this.todayKey);
 
   private access = inject(AccessService);
+  private destroyRef = inject(DestroyRef);
 
   visibleEvents = computed(() => {
     const subject = this.access.subject();
@@ -131,7 +133,7 @@ export class EventsComponent implements OnInit {
       });
     }
 
-    this.eventsService.getEvents().subscribe((events) => {
+    this.eventsService.getEvents().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((events) => {
       this.events.set(events);
       this.loading.set(false);
     });

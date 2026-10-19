@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
 import { BottomNavComponent } from '../bottom-nav/bottom-nav.component';
@@ -30,6 +31,8 @@ export class MainLayoutComponent implements OnInit {
     private activityNotifier: ActivityNotifierService,
   ) {}
 
+  private destroyRef = inject(DestroyRef);
+
   ngOnInit(): void {
     const user = this.auth.currentUser();
     if (!user) return;
@@ -48,7 +51,7 @@ export class MainLayoutComponent implements OnInit {
   private watchForNewMentions(memberId: number, members: Member[]): void {
     let knownUnseenIds: Set<number> | null = null;
 
-    this.commentsService.comments$.subscribe((comments) => {
+    this.commentsService.comments$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((comments) => {
       const unseen = comments.filter(
         (c) => c.mentionedMemberIds.includes(memberId) && !c.seenByMemberIds.includes(memberId),
       );

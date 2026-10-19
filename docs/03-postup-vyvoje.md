@@ -378,6 +378,10 @@ Frontend + mock, bez backendu. Otázky pro krojařky (`06` kap. 13) zůstávají
 
 Implementace: `core/layout/bottom-bar.ts` (výchozí návrh, rozdělení na lištu a „Více“), `features/more`, `features/settings/bottom-bar-settings.component.ts` a `calendar-export.component.ts`, `features/dashboard/pending-actions.ts` (Čeká na vás), `features/availability` (dlouhodobá nedostupnost), `features/chat/utils/chat-history.ts` (režim historie, intervaly členství `Member.groupIntervals`), `features/events/utils/event-reminders.ts`, `event-views.ts`, `event-series.ts`, `ics.ts`, `CostumeState.defaultCostumes` (výchozí kroj), `Group.archivedAt` a `MembershipService.archiveGroup/restoreGroup`. `DEMO_DATA_VERSION` 8.
 
+### Připomínky 19. 10. 2026 (hotovo)
+
+Opraveno: chat neskáče na konec při čtení historie (tlačítko „Nové zprávy ↓“); jednotné badge (záložky Chat + Nástěnka = skupina, součet skupin + žádosti = „Skupiny“, `NavigationService.groupBadgeParts`); po skončení akce nelze měnit vlastní odpověď (kontrola i v `AttendanceService`); detail akce v záložkách včetně chatu akce (`features/events/event-chat`, `AppEvent.chatEnabled`); zjednodušená docházka; mazání poznámky k účasti (smyčka `markViewed`); úniky odběrů živých proudů (navigace, Přehled, Akce, detail akce a příspěvku) – hlavní příčina zpomalování dema; úprava důvodu vynechaného termínu (`seriesId`/`skippedReason` se při úpravě zachovají, dodatečné zrušení = důležitá změna); ramínko pro Správu krojů; dlaždice členů skupiny; profilové ikonky (`Member.avatar`, Nastavení → Profilová ikonka, výchozí iniciály).
+
 ### Potom
 
 - **Administrace**: projít a doplnit vše, co se v ní má spravovat – až po dotažení členské části.
