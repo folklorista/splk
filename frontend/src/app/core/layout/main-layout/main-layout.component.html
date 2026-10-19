@@ -2,6 +2,9 @@
   <app-sidebar class="app-shell__sidebar" />
   <div class="app-shell__main">
     <header class="mobile-header">
+      <a class="mobile-header__logo" routerLink="/app/dashboard" title="Přehled">
+        <app-logo [height]="34" />
+      </a>
       @if (auth.currentUser(); as user) {
         <a class="mobile-header__user" routerLink="/app/profile" title="Můj profil">{{ user.name }}</a>
       }
@@ -17,6 +20,7 @@
       </a>
       <button class="mobile-header__logout" (click)="logout()">Odhlásit se</button>
     </header>
+    <div class="bordura bordura--mobile" aria-hidden="true"></div>
     <main class="app-shell__content">
       <app-demo-banner />
       <router-outlet />

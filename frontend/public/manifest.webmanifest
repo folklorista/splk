@@ -3,8 +3,8 @@
   "short_name": "Soubor",
   "description": "Interní aplikace pro organizaci folklorního souboru",
   "display": "standalone",
-  "theme_color": "#0066cc",
-  "background_color": "#ffffff",
+  "theme_color": "#fef7e7",
+  "background_color": "#fef7e7",
   "scope": "./",
   "start_url": "./",
   "icons": [

@@ -1,12 +1,16 @@
 :root {
-  // Colors
-  --color-primary: #c0392b;
-  --color-primary-dark: #96281b;
-  --color-surface: #ffffff;
-  --color-surface-alt: #f5f5f5;
-  --color-border: #e0e0e0;
-  --color-text: #1a1a1a;
-  --color-text-muted: #757575;
+  // Colors – souborová identita Vonica (identity/): tmavá #0F1115, červená #E05249,
+  // krémová #FEF7E7, béžová #EADFCF, šedá #6B6F76. Pro text a tlačítka na světlém
+  // pozadí je červená ztmavená, aby měla kontrast alespoň 4.5:1.
+  --color-primary: #c63d32;
+  --color-primary-dark: #a32f26;
+  --color-primary-soft: #fbe3df;
+  --color-accent: #e05249;
+  --color-surface: #fffdf8;
+  --color-surface-alt: #fef7e7;
+  --color-border: #eadfcf;
+  --color-text: #0f1115;
+  --color-text-muted: #6b6f76;
   --color-nav-active: var(--color-primary);
 
   // Spacing
@@ -24,6 +28,8 @@
 
   // Typography
   --font-family: system-ui, -apple-system, sans-serif;
+  // Nadpisy – serifová antikva bez načítání webfontu
+  --font-family-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
   --font-size-xs: 12px;
   --font-size-sm: 13px;
   --font-size-base: 15px;
@@ -39,13 +45,15 @@
 // zůstávají světlé – na tmavém pozadí jsou čitelné.
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --color-primary: #e5574a;
-  --color-primary-dark: #c0392b;
-  --color-surface: #1e1f22;
-  --color-surface-alt: #141517;
-  --color-border: #3a3b40;
-  --color-text: #ececec;
-  --color-text-muted: #a0a0a6;
+  --color-primary: #e05249;
+  --color-primary-dark: #c63d32;
+  --color-primary-soft: #3a1d1b;
+  --color-accent: #e05249;
+  --color-surface: #181a1f;
+  --color-surface-alt: #0f1115;
+  --color-border: #2e3138;
+  --color-text: #f3eee3;
+  --color-text-muted: #a3a6ad;
 }
 
 // Velikost písma (Nastavení → Vzhled) – pro starší členy

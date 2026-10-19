@@ -7,6 +7,7 @@ import { Member } from '../../core/models/member.model';
 import { User } from '../../core/auth/models/user.model';
 import { MandatesService } from '../mandates/mandates.service';
 import { MANDATE_LABELS } from '../../core/models/mandate.model';
+import { LogoComponent } from '../../shared/logo/logo.component';
 
 const DEFAULT_RETURN_URL = '/app/dashboard';
 
@@ -18,7 +19,7 @@ export function safeReturnUrl(url: string | null | undefined): string {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, LogoComponent],
   templateUrl: './login.component.html',
   styles: [`
     .login-page {
@@ -26,30 +27,44 @@ export function safeReturnUrl(url: string | null | undefined): string {
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      background: #f5f5f5;
+      background: var(--color-surface-alt);
       padding: 1rem;
     }
 
     .login-card {
-      background: white;
+      position: relative;
+      overflow: hidden;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      padding: calc(2rem + 14px) 2rem 2rem;
       max-width: 500px;
       width: 100%;
     }
 
+    /* Souborová bordura přes horní okraj karty */
+    .login-bordura {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 14px;
+      background: var(--color-accent);
+      -webkit-mask: url('/identity/bordura-tile.png') repeat-x center / auto 100%;
+      mask: url('/identity/bordura-tile.png') repeat-x center / auto 100%;
+    }
+
     .login-title {
+      display: flex;
+      justify-content: center;
       margin: 0 0 0.5rem;
-      font-size: 1.75rem;
-      text-align: center;
-      color: #333;
     }
 
     .login-subtitle {
       margin: 0 0 1.5rem;
       text-align: center;
-      color: #666;
+      color: var(--color-text-muted);
       font-size: 0.95rem;
     }
 
@@ -69,13 +84,15 @@ export function safeReturnUrl(url: string | null | undefined): string {
     .form-field label {
       font-weight: 500;
       font-size: 0.95rem;
-      color: #333;
+      color: var(--color-text);
     }
 
     .form-field input {
       padding: 0.75rem;
-      border: 1px solid #ddd;
+      border: 1px solid var(--color-border);
       border-radius: 4px;
+      background: var(--color-surface);
+      color: var(--color-text);
       font-size: 0.95rem;
       font-family: inherit;
       outline: none;
@@ -83,12 +100,12 @@ export function safeReturnUrl(url: string | null | undefined): string {
     }
 
     .form-field input:focus {
-      border-color: #0066cc;
+      border-color: var(--color-primary);
     }
 
     .btn-primary {
       padding: 0.85rem 1.5rem;
-      background: #c94a3a;
+      background: var(--color-primary);
       color: white;
       border: none;
       border-radius: 4px;
@@ -99,7 +116,7 @@ export function safeReturnUrl(url: string | null | undefined): string {
     }
 
     .btn-primary:hover:not(:disabled) {
-      background: #a73a2a;
+      background: var(--color-primary-dark);
     }
 
     .btn-primary:disabled {
@@ -109,16 +126,16 @@ export function safeReturnUrl(url: string | null | undefined): string {
 
     .login-error {
       padding: 0.75rem;
-      background: #ffebee;
-      color: #d32f2f;
+      background: var(--color-primary-soft);
+      color: var(--color-primary);
       border-radius: 4px;
-      border-left: 4px solid #d32f2f;
+      border-left: 4px solid var(--color-primary);
       margin: 0;
       font-size: 0.9rem;
     }
 
     .demo-section {
-      border-top: 1px solid #ddd;
+      border-top: 1px solid var(--color-border);
       padding-top: 1.5rem;
     }
 
@@ -126,7 +143,7 @@ export function safeReturnUrl(url: string | null | undefined): string {
       margin: 0 0 1rem;
       font-size: 0.9rem;
       font-weight: 500;
-      color: #666;
+      color: var(--color-text-muted);
       text-align: center;
     }
 
@@ -139,16 +156,18 @@ export function safeReturnUrl(url: string | null | undefined): string {
       flex: 1;
       min-width: 0;
       padding: 0.65rem;
-      border: 1px solid #ddd;
+      border: 1px solid var(--color-border);
       border-radius: 4px;
+      background: var(--color-surface);
+      color: var(--color-text);
       font-size: 0.9rem;
     }
 
     .btn-demo {
       padding: 0.65rem 1rem;
-      background: #f0f0f0;
-      color: #333;
-      border: 1px solid #ddd;
+      background: var(--color-surface-alt);
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
       border-radius: 4px;
       font-size: 0.9rem;
       cursor: pointer;
@@ -157,8 +176,7 @@ export function safeReturnUrl(url: string | null | undefined): string {
     }
 
     .btn-demo:hover:not(:disabled) {
-      background: #e0e0e0;
-      border-color: #999;
+      border-color: var(--color-text-muted);
     }
 
     .btn-demo:disabled {

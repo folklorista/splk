@@ -6,12 +6,13 @@ import { NavSection, NavigationService } from '../navigation.service';
 import { SettingsService } from '../../settings/settings.service';
 import { IconComponent } from '../../../shared/icon/icon.component';
 import { VersionLabelComponent } from '../../../shared/version-label/version-label.component';
+import { LogoComponent } from '../../../shared/logo/logo.component';
 import { SidebarSectionKey } from '../sidebar-menu';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [NgTemplateOutlet, RouterLink, RouterLinkActive, IconComponent, VersionLabelComponent],
+  imports: [NgTemplateOutlet, RouterLink, RouterLinkActive, IconComponent, VersionLabelComponent, LogoComponent],
   templateUrl: './sidebar.component.html',
 })
 export class SidebarComponent implements OnInit, OnDestroy {

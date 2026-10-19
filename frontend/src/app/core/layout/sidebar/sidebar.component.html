@@ -1,8 +1,8 @@
 <aside class="sidebar" [class.sidebar--compact]="compact()">
   <div class="sidebar__header">
-    @if (!compact()) {
-      <span class="sidebar__logo">Folklorní soubor</span>
-    }
+    <a class="sidebar__logo" routerLink="/app/dashboard" title="Přehled">
+      <app-logo [variant]="compact() ? 'mark' : 'full'" [height]="compact() ? 32 : 44" />
+    </a>
     <button
       type="button"
       class="sidebar__toggle"
@@ -14,6 +14,7 @@
       <app-icon name="sidebar" [size]="18" />
     </button>
   </div>
+  <div class="bordura" aria-hidden="true"></div>
 
   <nav class="sidebar__nav" aria-label="Hlavní navigace">
     @for (section of navSections(); track section.key) {

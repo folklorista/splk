@@ -2,6 +2,7 @@
 @use 'styles/reset';
 @use 'styles/form-ui';
 @use 'styles/chat';
+@use 'styles/identity';
 
 // Login page
 .login-page {
@@ -148,6 +149,11 @@
     display: none;
   }
 
+  &__logo {
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+
   &__user {
     font-size: var(--font-size-sm);
     color: var(--color-text-muted);
@@ -184,8 +190,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--spacing-sm);
-    padding: 18px var(--spacing-md);
-    border-bottom: 1px solid var(--color-border);
+    padding: 12px var(--spacing-md) 8px;
   }
 
   &__toggle {
@@ -205,9 +210,8 @@
   }
 
   &__logo {
-    font-weight: 700;
-    font-size: var(--font-size-base);
-    color: var(--color-primary);
+    display: inline-flex;
+    min-width: 0;
   }
 
   &__nav {
@@ -318,7 +322,9 @@
     width: var(--sidebar-compact-width);
 
     .sidebar__header {
+      flex-direction: column;
       justify-content: center;
+      gap: 6px;
       padding-inline: 0;
     }
 
@@ -1408,7 +1414,11 @@
 }
 
 .mobile-header__user {
-  flex-shrink: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 // Changelog page

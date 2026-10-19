@@ -1,0 +1,118 @@
+// Souborová identita Vonica – logo, bordura a drobné akcenty z křížkového motivu (podklady v identity/).
+// Motivy jsou masky (PNG/SVG s průhledností), barvu jim dává background – sedí tak do obou témat.
+
+@mixin motif($url, $size: auto 100%, $repeat: repeat-x, $position: center) {
+  -webkit-mask: url($url) $repeat $position / $size;
+  mask: url($url) $repeat $position / $size;
+}
+
+// Logo: světlá varianta (černý nápis) vs. tmavá (krémový nápis)
+.logo {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+
+  &__img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+  }
+
+  &__img--dark {
+    display: none;
+  }
+}
+
+:root[data-theme='dark'] .logo {
+  .logo__img--light { display: none; }
+  .logo__img--dark { display: block; }
+}
+
+// Pruh bordury – pod horní lištou (mobil) a pod hlavičkou bočního menu
+.bordura {
+  flex-shrink: 0;
+  height: 14px;
+  margin: 4px 0;
+  background: var(--color-accent);
+  @include motif('/identity/bordura-tile.png');
+
+  &--mobile {
+    @media (min-width: 768px) {
+      display: none;
+    }
+  }
+}
+
+// Nadpisy – serifová antikva
+.page__title,
+.detail__title,
+.placeholder-page h1 {
+  font-family: var(--font-family-display);
+  font-weight: 700;
+  letter-spacing: 0.005em;
+}
+
+// Aktivní záložka skupiny – podtržení motivem místo plné čáry
+.group-tabs__link--active {
+  position: relative;
+  border-bottom-color: transparent;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    bottom: -1px;
+    height: 6px;
+    background: var(--color-accent);
+    @include motif('/identity/bordura-tile.png');
+  }
+}
+
+// Dolní navigace – drobný motiv pod aktivní položkou
+.bottom-nav__item--active::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  width: 36px;
+  height: 5px;
+  transform: translateX(-50%);
+  background: var(--color-accent);
+  @include motif('/identity/bordura-tile.png');
+}
+
+// Karta, která čeká na akci (nepřečtený příspěvek, akce bez odpovědi) – jemný motiv u spodního okraje
+.item-list .item-list__item--requires-action {
+  position: relative;
+  padding-bottom: calc(var(--spacing-md) + 6px);
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: var(--spacing-md);
+    right: var(--spacing-md);
+    bottom: 6px;
+    height: 6px;
+    background: var(--color-accent);
+    opacity: 0.35;
+    pointer-events: none;
+    @include motif('/identity/bordura-tile.png');
+  }
+}
+
+// Chat – oddělovač dne s křížkovým srdíčkem
+.chat__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+
+  &::after {
+    content: '';
+    width: 14px;
+    height: 12px;
+    background: var(--color-accent);
+    @include motif('/identity/heart.svg', contain, no-repeat);
+  }
+}
