@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { Observable, BehaviorSubject, combineLatest, of, throwError } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
 import { AppEvent } from './models/event.model';
@@ -7,7 +8,8 @@ import { AttendanceService } from '../attendance/attendance.service';
 import { loadDemoData, saveDemoData } from '../../core/data/demo-storage';
 import { AccessService } from '../../core/access/access.service';
 import { AccessDeniedError } from '../../core/access/mandate-rules';
-import { canEditEvent, eventOrganizerScope } from '../../core/access/access.utils';
+import { canEditEvent, canSeeEvent, eventOrganizerScope } from '../../core/access/access.utils';
+import { EventRef } from '../posts/utils/mentions';
 import { AuditService } from '../audit/audit.service';
 
 // Neutrální popis podstatné změny akce pro členy (posun začátku, místo, název) – jde i do chatu skupin
@@ -31,6 +33,14 @@ const createInitialCache = (): AppEvent[] => MOCK_EVENTS.map(event => ({ ...even
 export class EventsService {
   private eventsSubject = new BehaviorSubject<AppEvent[]>(loadDemoData('events', createInitialCache));
   private readonly eventsWithAttendance$: Observable<AppEvent[]>;
+  // Akce bez účasti jako signál – pro odkazy #akce v textu (nabídka i vykreslení)
+  private readonly eventsSignal = toSignal(this.eventsSubject, { requireSync: true });
+
+  // Akce, na které smí přihlášený odkazovat a které uvidí jako odkaz (canSeeEvent)
+  readonly linkableEvents = computed<EventRef[]>(() => {
+    const subject = this.access.subject();
+    return this.eventsSignal().filter((e) => canSeeEvent(subject, e)).map((e) => ({ id: e.id, title: e.title, startsAt: e.startsAt }));
+  });
 
   constructor(
     private attendanceService: AttendanceService,

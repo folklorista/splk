@@ -13,23 +13,17 @@ import { Group } from '../../../core/models/group.model';
 import { Member } from '../../../core/models/member.model';
 import { IconComponent } from '../../../shared/icon/icon.component';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
-import {
-  CommentSegment,
-  MentionQuery,
-  activeMentionQuery,
-  encodeMentions,
-  filterMentionCandidates,
-  insertMention,
-  parseCommentBody,
-} from '../utils/mentions';
 import { AccessService } from '../../../core/access/access.service';
 import { canModerateGroup, canPostInGroup, canSeeReadStats } from '../../../core/access/access.utils';
 import { errorMessage } from '../../../shared/ui/form-ui';
 
+import { RichTextComponent } from '../../../shared/rich-text/rich-text.component';
+import { MentionInputComponent, MentionSubmit } from '../../../shared/mention-input/mention-input.component';
+import { EventsService } from '../../events/events.service';
 @Component({
   selector: 'app-post-detail',
   standalone: true,
-  imports: [DatePipe, RouterLink, IconComponent, RelativeTimePipe],
+  imports: [DatePipe, RouterLink, IconComponent, RelativeTimePipe, RichTextComponent, MentionInputComponent],
   templateUrl: './post-detail.component.html',
 })
 export class PostDetailComponent implements OnInit, OnDestroy {
@@ -40,22 +34,14 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   allMembers = signal<Member[]>([]);
   currentMemberId = signal<number | null>(null);
   comments = signal<PostComment[]>([]);
-  newCommentBody = signal('');
-  // Členové vybraní z nabídky „@“ – při odeslání se jejich „@Přezdívka“ v textu převede na token
-  selectedMentions = signal<Member[]>([]);
-  mentionQuery = signal<MentionQuery | null>(null);
-  activeSuggestion = signal(0);
-  private caret = 0;
 
   // Zmínit lze aktivní členy skupiny nástěnky kromě sebe
+  // Akce, na které lze v komentáři odkázat (#)
+  readonly linkableEvents = inject(EventsService).linkableEvents;
+
   readonly mentionableMembers = computed(() =>
     this.visibleMembers().filter((m) => m.isActive && m.id !== this.currentMemberId()),
   );
-
-  readonly mentionSuggestions = computed(() => {
-    const query = this.mentionQuery();
-    return query ? filterMentionCandidates(this.mentionableMembers(), query.query) : [];
-  });
 
   // Členové skupiny, na jejíž nástěnce příspěvek visí – jen ty lze zmínit a jen u nich se sleduje přečtení
   readonly visibleMembers = computed(() => {
@@ -191,65 +177,15 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  onCommentInput(textarea: HTMLTextAreaElement): void {
-    this.newCommentBody.set(textarea.value);
-    this.caret = textarea.selectionStart ?? textarea.value.length;
-    this.mentionQuery.set(activeMentionQuery(textarea.value, this.caret));
-    this.activeSuggestion.set(0);
-  }
 
-  onCommentKeydown(event: KeyboardEvent, textarea: HTMLTextAreaElement): void {
-    const suggestions = this.mentionSuggestions();
-    if (!suggestions.length) return;
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      const step = event.key === 'ArrowDown' ? 1 : -1;
-      this.activeSuggestion.update((i) => (i + step + suggestions.length) % suggestions.length);
-    } else if (event.key === 'Enter' || event.key === 'Tab') {
-      event.preventDefault();
-      this.chooseMention(suggestions[this.activeSuggestion()], textarea);
-    } else if (event.key === 'Escape') {
-      event.preventDefault();
-      this.mentionQuery.set(null);
-    }
-  }
 
-  chooseMention(member: Member, textarea?: HTMLTextAreaElement): void {
-    const query = this.mentionQuery();
-    if (!query) return;
-    const result = insertMention(this.newCommentBody(), query, this.caret, member);
-    this.newCommentBody.set(result.text);
-    this.caret = result.caret;
-    this.mentionQuery.set(null);
-    this.selectedMentions.update((members) => (members.some((m) => m.id === member.id) ? members : [...members, member]));
-    if (textarea) {
-      textarea.value = result.text;
-      textarea.focus();
-      textarea.setSelectionRange(result.caret, result.caret);
-    }
-  }
-
-  commentSegments(comment: PostComment): CommentSegment[] {
-    return parseCommentBody(comment.body);
-  }
-
-  memberNickname(memberId: number): string {
-    return this.allMembers().find((m) => m.id === memberId)?.nickname ?? 'neznámý člen';
-  }
-
-  submitComment(): void {
+  submitComment(input: MentionSubmit): void {
     const post = this.post();
     const memberId = this.currentMemberId();
-    const text = this.newCommentBody().trim();
-    if (!post || !memberId || !text) return;
-
-    const { body, mentionedMemberIds } = encodeMentions(text, this.selectedMentions());
-    this.commentsService.addComment(post.id, memberId, body, mentionedMemberIds).subscribe((comment) => {
+    if (!post || !memberId || !input.body.trim()) return;
+    this.commentsService.addComment(post.id, memberId, input.body, input.mentionedMemberIds).subscribe((comment) => {
       // getComments() je živý stream, takže tuto změnu doručí i sám – zápis proto musí být idempotentní
       this.comments.update((comments) => [...comments.filter((c) => c.id !== comment.id), comment]);
-      this.newCommentBody.set('');
-      this.selectedMentions.set([]);
-      this.mentionQuery.set(null);
     });
   }
 

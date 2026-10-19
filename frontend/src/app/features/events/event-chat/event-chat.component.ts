@@ -4,14 +4,15 @@ import { AppEvent } from '../models/event.model';
 import { Member } from '../../../core/models/member.model';
 import { EventChatMessage, EventChatService } from './event-chat.service';
 import { MentionInputComponent, MentionSubmit } from '../../../shared/mention-input/mention-input.component';
-import { CommentSegment, parseCommentBody } from '../../posts/utils/mentions';
 import { AccessService } from '../../../core/access/access.service';
+import { EventsService } from '../events.service';
 
 // Záložka Chat v detailu akce – diskuze k akci (kdo veze kroje, sraz…)
+import { RichTextComponent } from '../../../shared/rich-text/rich-text.component';
 @Component({
   selector: 'app-event-chat',
   standalone: true,
-  imports: [DatePipe, MentionInputComponent],
+  imports: [DatePipe, MentionInputComponent, RichTextComponent],
   template: `
     <div class="chat">
       <div class="chat__log" role="log" aria-live="polite" aria-label="Chat akce">
@@ -21,11 +22,7 @@ import { AccessService } from '../../../core/access/access.service';
             @if (m.deletedAt) {
               <p class="chat-msg__body chat-msg__body--deleted">Zpráva byla odstraněna.</p>
             } @else {
-              <p class="chat-msg__body">
-                @for (segment of segments(m.body); track $index) {
-                  @if (segment.type === 'mention') { <span class="mention">&#64;{{ name(segment.memberId) }}</span> } @else { <span>{{ segment.text }}</span> }
-                }
-              </p>
+              <p class="chat-msg__body"><app-rich-text [body]="m.body" /></p>
               @if (m.authorId === me() || canModerate()) {
                 <button type="button" class="chat-msg__action" (click)="remove(m)">Smazat</button>
               }
@@ -38,7 +35,7 @@ import { AccessService } from '../../../core/access/access.service';
       @if (error()) { <p class="login-error" role="alert">{{ error() }}</p> }
       @if (canWrite()) {
         <div class="chat__composer">
-          <app-mention-input [candidates]="members()" [sendOnEnter]="true" placeholder="Zpráva k akci… (@ pro zmínku)" label="Zpráva do chatu akce" (submitted)="send($event)" />
+          <app-mention-input [candidates]="members()" [events]="linkableEvents()" [sendOnEnter]="true" placeholder="Zpráva k akci… (@ člen, # akce)" label="Zpráva do chatu akce" (submitted)="send($event)" />
         </div>
       }
     </div>
@@ -52,16 +49,13 @@ export class EventChatComponent {
 
   private service = inject(EventChatService);
   readonly me = inject(AccessService).memberId;
+  readonly linkableEvents = inject(EventsService).linkableEvents;
   readonly error = signal('');
   readonly messages = computed(() => this.service.messagesFor(this.event()));
   readonly canWrite = computed(() => this.service.canWrite(this.event()));
 
   name(memberId: number): string {
     return this.members().find((m) => m.id === memberId)?.nickname ?? 'člen';
-  }
-
-  segments(body: string): CommentSegment[] {
-    return parseCommentBody(body);
   }
 
   send(input: MentionSubmit): void {

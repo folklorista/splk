@@ -386,6 +386,10 @@ Opraveno: chat neskáče na konec při čtení historie (tlačítko „Nové zpr
 
 Detail příspěvku: sekce „Přečteno X z Y“ výchozí sbalená, „Komentáře“ rozbalené (`<details>`). Ikona stahování u všech tlačítek, která stahují soubor (Do kalendáře, Stáhnout .ics, exporty CSV).
 
+### Odkazy v textu (hotovo 2026-10-19)
+
+V příspěvku, komentáři, skupinovém chatu i chatu akce: `@` nabídne členy, `#` akce (s datem kvůli sériím). Ukládají se jen tokeny `@[member:ID]` a `#[event:ID]`; jméno a název akce se vykreslí z aktuálních dat, odkaz vede na `/app/events/ID` a akci, kterou čtenář nesmí vidět, ukáže jen jako „akce“. Implementace: `features/posts/utils/mentions.ts`, `shared/mention-input` (i režim bez tlačítka pro formulář příspěvku, převod tokenů zpět při úpravě), `shared/rich-text`, `EventsService.linkableEvents`, `Post.mentionedMemberIds` (zmínka v příspěvku upozorní). `DEMO_DATA_VERSION` 9.
+
 ### Potom
 
 - **Administrace**: projít a doplnit vše, co se v ní má spravovat – až po dotažení členské části.

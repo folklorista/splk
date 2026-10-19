@@ -44,7 +44,7 @@ export class ActivityNotifierService {
 
     this.subscriptions.push(
       interval(POLL_MS).pipe(startWith(0), switchMap(() => this.posts.getPosts())).subscribe((posts) =>
-        this.check('posts', posts.filter((p) => isPostInChat(p, p.groupId)), (p) => ({ kind: 'post', groupId: p.groupId, authorId: p.authorId, mentionedMemberIds: [] }), (p) => `Nový příspěvek ve skupině ${this.groupName(p.groupId)}: ${p.title}`),
+        this.check('posts', posts.filter((p) => isPostInChat(p, p.groupId)), (p) => ({ kind: 'post', groupId: p.groupId, authorId: p.authorId, mentionedMemberIds: p.mentionedMemberIds ?? [] }), (p) => `Nový příspěvek ve skupině ${this.groupName(p.groupId)}: ${p.title}`),
       ),
       this.comments.comments$.subscribe((comments) => {
         const me = this.access.memberId();

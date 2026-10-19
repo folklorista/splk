@@ -10,6 +10,8 @@ export interface Post {
   updatedAt: string;
   isPinned: boolean;
   requiresAction?: boolean;
+  // Členové zmínění v textu příspěvku (@[member:ID]) – upozornění a zvýraznění
+  mentionedMemberIds?: number[];
   readers?: number[];
   // Kdy člen příspěvek naposledy viděl (memberId → ISO čas) – podle toho se počítají nové komentáře
   lastVisitedAt?: Record<number, string>;

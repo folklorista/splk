@@ -1,4 +1,4 @@
-import { activeMentionQuery, encodeMentions, filterMentionCandidates, insertMention, parseCommentBody } from './mentions';
+import { activeMentionQuery, decodeMentions, encodeMentions, eventMentionLabel, filterEventCandidates, filterMentionCandidates, insertEventMention, insertMention, parseCommentBody, plainText } from './mentions';
 import { Member } from '../../../core/models/member.model';
 
 const member = (id: number, nickname: string): Member => ({
@@ -12,8 +12,8 @@ describe('mentions', () => {
 
   describe('activeMentionQuery', () => {
     it('najde rozepsanou zmínku před kurzorem', () => {
-      expect(activeMentionQuery('Ahoj @Ku', 8)).toEqual({ start: 5, query: 'Ku' });
-      expect(activeMentionQuery('@', 1)).toEqual({ start: 0, query: '' });
+      expect(activeMentionQuery('Ahoj @Ku', 8)).toEqual({ start: 5, query: 'Ku', trigger: '@' });
+      expect(activeMentionQuery('@', 1)).toEqual({ start: 0, query: '', trigger: '@' });
     });
 
     it('ignoruje e-mail, zalomení řádku a text bez „@“', () => {
@@ -31,7 +31,7 @@ describe('mentions', () => {
 
   it('vloží přezdívku místo rozepsaného textu a posune kurzor', () => {
     const text = 'Ahoj @Ku, jak se máš';
-    const result = insertMention(text, { start: 5, query: 'Ku' }, 8, kubaD);
+    const result = insertMention(text, { start: 5, query: 'Ku', trigger: '@' }, 8, kubaD);
     expect(result.text).toBe('Ahoj @Kuba D , jak se máš');
     expect(result.caret).toBe(13);
   });
@@ -53,5 +53,38 @@ describe('mentions', () => {
       { type: 'text', text: ', díky' },
     ]);
     expect(parseCommentBody('<b>bez zmínky</b>')).toEqual([{ type: 'text', text: '<b>bez zmínky</b>' }]);
+  });
+
+  describe('odkazy na akce (#)', () => {
+    const summer = { id: 4, title: 'Letní soustředění', startsAt: '2026-07-12T10:00:00' };
+    const autumn = { id: 9, title: 'Podzimní soustředění', startsAt: '2026-11-06T10:00:00' };
+    const now = new Date('2026-10-19T12:00:00');
+
+    it('„#“ spustí nabídku akcí; text může obsahovat mezery', () => {
+      expect(activeMentionQuery('viz #Letní sou', 14)).toEqual({ start: 4, query: 'Letní sou', trigger: '#' });
+      expect(activeMentionQuery('C#', 2)).toBeNull();
+    });
+
+    it('nabídka: podle názvu i data, nejdřív nadcházející', () => {
+      expect(filterEventCandidates([summer, autumn], 'soustr', 6, now).map((e) => e.id)).toEqual([9, 4]);
+      expect(filterEventCandidates([summer, autumn], '12. 7', 6, now).map((e) => e.id)).toEqual([4]);
+    });
+
+    it('vložení, zakódování na token a převod zpět pro úpravu', () => {
+      const typed = 'jako u #Let';
+      const inserted = insertEventMention(typed, { start: 7, query: 'Let', trigger: '#' }, typed.length, summer);
+      expect(inserted.text).toBe(`jako u #${eventMentionLabel(summer)} `);
+      const { body } = encodeMentions(`@Kuba založí akci, jako u #${eventMentionLabel(summer)}`, [kuba], [summer]);
+      expect(body).toBe('@[member:1] založí akci, jako u #[event:4]');
+      const decoded = decodeMentions(body, [kuba], [summer]);
+      expect(decoded.text).toBe(`@Kuba založí akci, jako u #${eventMentionLabel(summer)}`);
+      expect(decoded.events).toEqual([summer]);
+    });
+
+    it('vykreslení a čistý text: akce jako samostatný segment', () => {
+      expect(parseCommentBody('viz #[event:4]!')).toEqual([{ type: 'text', text: 'viz ' }, { type: 'event', eventId: 4 }, { type: 'text', text: '!' }]);
+      expect(plainText('@[member:1] a #[event:4]', () => 'Kuba', () => 'Letní soustředění')).toBe('@Kuba a #Letní soustředění');
+      expect(plainText('#[event:99]', () => '', () => undefined)).toBe('#akce');
+    });
   });
 });

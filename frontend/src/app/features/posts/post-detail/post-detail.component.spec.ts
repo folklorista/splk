@@ -227,76 +227,29 @@ describe('PostDetailComponent', () => {
     expect(commentsSpy.markSeen).not.toHaveBeenCalled();
   });
 
-  function typeInto(fixture: { componentInstance: PostDetailComponent }, text: string): void {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.setSelectionRange(text.length, text.length);
-    fixture.componentInstance.onCommentInput(textarea);
-  }
-
-  it('po napsání „@“ nabídne členy nástěnky kromě sebe, filtrované textem za „@“', () => {
+  it('zmínit lze členy nástěnky kromě sebe; nečlen skupiny v nabídce není', () => {
     configure(authorUser);
     const fixture = TestBed.createComponent(PostDetailComponent);
     fixture.detectChanges();
-
-    typeInto(fixture, 'Ahoj @');
-    const all = fixture.componentInstance.mentionSuggestions().map((m) => m.id);
-    expect(all).not.toContain(1); // přihlášený sám sebe
-    expect(all).not.toContain(3); // není členem skupiny nástěnky
-    expect(all).toEqual(jasmine.arrayContaining([2, 4]));
-
-    typeInto(fixture, 'Ahoj @petr');
-    expect(fixture.componentInstance.mentionSuggestions().map((m) => m.id)).toEqual([2]);
+    const ids = fixture.componentInstance.mentionableMembers().map((m) => m.id);
+    expect(ids).not.toContain(1);
+    expect(ids).not.toContain(3);
+    expect(ids).toEqual(jasmine.arrayContaining([2, 4]));
   });
 
-  it('výběr z nabídky doplní přezdívku a odeslání ji uloží jako token se zmínkou', () => {
+  it('odeslaný komentář (už se zakódovanými odkazy) se uloží a zobrazí', () => {
     configure(authorUser);
     const newComment: PostComment = {
-      id: 20, postId: 5, authorId: 1, body: 'Test @[member:2] ', createdAt: '2026-01-03T00:00:00',
+      id: 20, postId: 5, authorId: 1, body: 'Test @[member:2] #[event:4]', createdAt: '2026-01-03T00:00:00',
       mentionedMemberIds: [2], seenByMemberIds: [],
     };
     commentsSpy.addComment.and.returnValue(of(newComment));
     const fixture = TestBed.createComponent(PostDetailComponent);
     fixture.detectChanges();
     const component = fixture.componentInstance;
-
-    typeInto(fixture, 'Test @Pe');
-    component.chooseMention(component.mentionSuggestions()[0]);
-    expect(component.newCommentBody()).toBe('Test @Petr Novák ');
-    expect(component.mentionSuggestions()).toEqual([]);
-
-    component.submitComment();
-
-    expect(commentsSpy.addComment).toHaveBeenCalledWith(5, 1, 'Test @[member:2]', [2]);
+    component.submitComment({ body: 'Test @[member:2] #[event:4]', mentionedMemberIds: [2] });
+    expect(commentsSpy.addComment).toHaveBeenCalledWith(5, 1, 'Test @[member:2] #[event:4]', [2]);
     expect(component.comments()).toContain(newComment);
-    expect(component.newCommentBody()).toBe('');
-    expect(component.selectedMentions()).toEqual([]);
-  });
-
-  it('když uživatel jméno po výběru přepíše, zmínka se neuloží', () => {
-    configure(authorUser);
-    commentsSpy.addComment.and.returnValue(of({ id: 21, postId: 5, authorId: 1, body: '', createdAt: '', mentionedMemberIds: [], seenByMemberIds: [] }));
-    const fixture = TestBed.createComponent(PostDetailComponent);
-    fixture.detectChanges();
-    const component = fixture.componentInstance;
-
-    typeInto(fixture, '@Pe');
-    component.chooseMention(component.mentionSuggestions()[0]);
-    component.newCommentBody.set('@Petře pojď');
-    component.submitComment();
-
-    expect(commentsSpy.addComment).toHaveBeenCalledWith(5, 1, '@Petře pojď', []);
-  });
-
-  it('komentář se zmínkou vykreslí jménem člena podle tokenu', () => {
-    configure(authorUser);
-    const fixture = TestBed.createComponent(PostDetailComponent);
-    fixture.detectChanges();
-    const component = fixture.componentInstance;
-
-    const segments = component.commentSegments({ id: 1, postId: 5, authorId: 1, body: 'Díky @[member:2]!', createdAt: '', mentionedMemberIds: [2], seenByMemberIds: [] });
-    expect(segments.length).toBe(3);
-    expect(component.memberNickname(2)).toBe('Petr Novák');
   });
 });
 
@@ -345,8 +298,7 @@ describe('PostDetailComponent s reálnou CommentsService (živý stream)', () =>
     fixture.detectChanges();
     tick(300);
 
-    fixture.componentInstance.newCommentBody.set('Ahoj všem');
-    fixture.componentInstance.submitComment();
+    fixture.componentInstance.submitComment({ body: 'Ahoj všem', mentionedMemberIds: [] });
     tick(300);
 
     const matching = fixture.componentInstance.comments().filter((c) => c.body === 'Ahoj všem');

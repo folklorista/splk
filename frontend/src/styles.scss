@@ -2101,3 +2101,28 @@ a.mobile-header__user {
 
 // Ikona u tlačítek, která stahují soubor
 .dl-icon { display: inline-flex; vertical-align: -3px; margin-right: 6px; }
+
+// Odkaz na akci v textu (#akce)
+.event-link {
+  display: inline;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--color-surface-alt);
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &::before {
+    content: '📅 ';
+  }
+
+  &--hidden {
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+}

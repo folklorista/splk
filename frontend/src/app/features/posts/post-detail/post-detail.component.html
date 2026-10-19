@@ -31,7 +31,7 @@
           }
         </dl>
 
-        <p class="detail__body">{{ p.body }}</p>
+        <p class="detail__body"><app-rich-text [body]="p.body" /></p>
 
         @if (p.hiddenAt) {
           <p class="badge">Skryto moderátorem – vidí jen autor a správci skupiny</p>
@@ -107,15 +107,7 @@
                     <strong>{{ commentAuthorName(comment) }}</strong>
                     <span class="detail__meta-relative">{{ comment.createdAt | relativeTime }}</span>
                   </div>
-                  <p class="comment-list__body">
-                    @for (segment of commentSegments(comment); track $index) {
-                      @if (segment.type === 'mention') {
-                        <span class="mention">&#64;{{ memberNickname(segment.memberId) }}</span>
-                      } @else {
-                        <span>{{ segment.text }}</span>
-                      }
-                    }
-                  </p>
+                  <p class="comment-list__body"><app-rich-text [body]="comment.body" /></p>
                 </li>
               }
             </ul>
@@ -125,50 +117,7 @@
 
           @if (canComment()) {
           <div class="comment-form">
-            <div class="mention-input">
-              <textarea
-                #commentInput
-                class="comment-form__input"
-                rows="2"
-                placeholder="Napište komentář… (@ pro zmínku)"
-                role="combobox"
-                aria-autocomplete="list"
-                aria-controls="mention-suggestions"
-                [attr.aria-expanded]="mentionSuggestions().length > 0"
-                [attr.aria-activedescendant]="mentionSuggestions().length ? 'mention-option-' + activeSuggestion() : null"
-                [value]="newCommentBody()"
-                (input)="onCommentInput(commentInput)"
-                (click)="onCommentInput(commentInput)"
-                (keydown)="onCommentKeydown($event, commentInput)"
-                (blur)="mentionQuery.set(null)"
-              ></textarea>
-
-              @if (mentionSuggestions().length) {
-                <ul id="mention-suggestions" class="mention-input__menu" role="listbox">
-                  @for (m of mentionSuggestions(); track m.id; let i = $index) {
-                    <li
-                      [id]="'mention-option-' + i"
-                      role="option"
-                      class="mention-input__option"
-                      [class.mention-input__option--active]="i === activeSuggestion()"
-                      [attr.aria-selected]="i === activeSuggestion()"
-                      (mousedown)="$event.preventDefault(); chooseMention(m, commentInput)"
-                    >
-                      &#64;{{ m.nickname }}
-                    </li>
-                  }
-                </ul>
-              }
-            </div>
-
-            <button
-              type="button"
-              class="attendance-btn attendance-btn--active"
-              [disabled]="!newCommentBody().trim()"
-              (click)="submitComment()"
-            >
-              Přidat komentář
-            </button>
+            <app-mention-input [candidates]="mentionableMembers()" [events]="linkableEvents()" [rows]="2" placeholder="Napište komentář… (@ člen, # akce)" label="Komentář" submitLabel="Přidat komentář" (submitted)="submitComment($event)" />
           </div>
           }
         </details>
