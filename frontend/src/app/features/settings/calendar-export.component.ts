@@ -18,9 +18,11 @@ const TYPE_LABELS: [EventType, string][] = [
 
 // Nastavení → Kalendář: jednorázový export mých akcí do .ics (docs/07 kap. 17).
 // Průběžný odběr (URL s tokenem) přibude s backendem.
+import { IconComponent } from '../../shared/icon/icon.component';
 @Component({
   selector: 'app-calendar-export',
   standalone: true,
+  imports: [IconComponent],
   template: `
     <section class="settings__section">
       <h2 class="settings__title">Kalendář</h2>
@@ -35,7 +37,7 @@ const TYPE_LABELS: [EventType, string][] = [
         <input type="checkbox" [checked]="skippedAsNotice()" (change)="setSkipped($any($event.target).checked)" />
         <span>Vynechané termíny pravidelných nácviků jako „NENÍ {{ ensembleName() }} – důvod“</span>
       </label>
-      <button type="button" class="cs-btn cs-btn--primary" [disabled]="!count()" (click)="download()">Stáhnout .ics ({{ count() }} akcí)</button>
+      <button type="button" class="cs-btn cs-btn--primary" [disabled]="!count()" (click)="download()"><app-icon class="dl-icon" name="download" [size]="16" />Stáhnout .ics ({{ count() }} akcí)</button>
     </section>
   `,
 })

@@ -40,10 +40,11 @@ type Tab = 'people' | 'stock' | 'slots' | 'issues';
 
 // Inventura: jeden rozsah, dva pracovní režimy (Podle lidí / Ve skladu) nad společnými kontrolami.
 // Průběh návštěv, pokrytí kusů a nesrovnalosti se počítají zvlášť.
+import { IconComponent } from '../../../../shared/icon/icon.component';
 @Component({
   selector: 'app-wardrobe-inventory-detail',
   standalone: true,
-  imports: [WardrobeNavComponent, RouterLink, DatePipe],
+  imports: [WardrobeNavComponent, RouterLink, DatePipe, IconComponent],
   template: `
     <div class="page">
       <app-wardrobe-nav />
@@ -195,7 +196,7 @@ type Tab = 'people' | 'stock' | 'slots' | 'issues';
                 }
               </div>
             }
-            <button type="button" class="btn-secondary no-print" (click)="exportCsv()">Export výsledků CSV</button>
+            <button type="button" class="btn-secondary no-print" (click)="exportCsv()"><app-icon class="dl-icon" name="download" [size]="16" />Export výsledků CSV</button>
           }
         }
       } @else {

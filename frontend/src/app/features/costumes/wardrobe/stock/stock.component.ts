@@ -23,10 +23,11 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
 import { EMPTY_STOCK_FILTER, StockFilter, filterStock, groupBySeries } from './stock.utils';
 
 // Součástky – všechny fyzické součástky po evidenčních řadách (řada + číslo), s filtry podle klasifikace
+import { IconComponent } from '../../../../shared/icon/icon.component';
 @Component({
   selector: 'app-wardrobe-stock',
   standalone: true,
-  imports: [WardrobeNavComponent, RouterLink],
+  imports: [WardrobeNavComponent, RouterLink, IconComponent],
   template: `
     <div class="page">
       <app-wardrobe-nav />
@@ -56,7 +57,7 @@ import { EMPTY_STOCK_FILTER, StockFilter, filterStock, groupBySeries } from './s
         }
         <span class="toolbar__spacer"></span>
         <button type="button" class="btn-secondary" (click)="print()">Tisk</button>
-        <button type="button" class="btn-secondary" (click)="exportCsv()">Export CSV</button>
+        <button type="button" class="btn-secondary" (click)="exportCsv()"><app-icon class="dl-icon" name="download" [size]="16" />Export CSV</button>
       </div>
 
       @if (state(); as st) {

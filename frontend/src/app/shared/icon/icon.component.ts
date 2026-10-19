@@ -34,7 +34,8 @@ export type IconName =
   | 'comment'
   | 'clipboard-check'
   | 'menu'
-  | 'hanger';
+  | 'hanger'
+  | 'download';
 
 // Sada ikon nabízených při výběru ikony skupiny (app/admin/groups)
 export const GROUP_ICON_OPTIONS: IconName[] = [
@@ -220,6 +221,11 @@ export const GROUP_ICON_OPTIONS: IconName[] = [
         @case ('hanger') {
           <path d="M12 7.5a2 2 0 1 1 2-2" />
           <path d="M12 7.5v1.5L3.5 15.5a1.2 1.2 0 0 0 .7 2.2h15.6a1.2 1.2 0 0 0 .7-2.2L12 9" />
+        }
+        @case ('download') {
+          <path d="M12 4v11" />
+          <polyline points="7.5 10.5 12 15 16.5 10.5" />
+          <path d="M5 19h14" />
         }
         @case ('menu') {
           <circle cx="5" cy="12" r="1.5" />

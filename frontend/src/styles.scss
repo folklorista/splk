@@ -2098,3 +2098,6 @@ a.mobile-header__user {
 .detail__toggle[open] > summary {
   margin-bottom: var(--spacing-sm);
 }
+
+// Ikona u tlačítek, která stahují soubor
+.dl-icon { display: inline-flex; vertical-align: -3px; margin-right: 6px; }

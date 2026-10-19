@@ -30,10 +30,11 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
 
 // Přehled skutečné docházky za období – tabulka členové × proběhlé akce.
 // Jen akce v rozsahu pověření Evidence docházky přihlášeného.
+import { IconComponent } from '../../../shared/icon/icon.component';
 @Component({
   selector: 'app-attendance-report',
   standalone: true,
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, IconComponent],
   templateUrl: './attendance-report.component.html',
 })
 export class AttendanceReportComponent implements OnInit {
