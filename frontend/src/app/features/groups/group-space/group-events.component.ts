@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Group } from '../../../core/models/group.model';
 import { AccessService } from '../../../core/access/access.service';
@@ -20,22 +20,12 @@ export function groupEvents(events: AppEvent[], groupId: number, role: GroupEven
   });
 }
 
-// Záložka Akce ve skupině – stejný seznam jako stránka Akce (stejný detail akce, ne „skupinový typ akce“)
+// Záložka Akce ve skupině – akce, které skupina pořádá nebo pro ni jsou; stejný seznam a detail jako stránka Akce
 @Component({
   selector: 'app-group-events',
   standalone: true,
   imports: [EventListComponent],
   template: `
-    <div class="events-filters">
-      <label class="events-filters__field">
-        <span>Akce skupiny</span>
-        <select [value]="role()" (change)="role.set($any($event.target).value)">
-          <option value="all">Vše</option>
-          <option value="organizer">Pořádá skupina</option>
-          <option value="target">Pro skupinu</option>
-        </select>
-      </label>
-    </div>
     <app-event-list [upcoming]="upcoming()" [past]="past()" [memberId]="memberId()" emptyText="Skupina nemá žádné nadcházející akce."
       (statusChange)="setStatus($event.eventId, $event.status)" />
   `,
@@ -47,11 +37,10 @@ export class GroupEventsComponent {
   private attendance = inject(AttendanceService);
   private events = toSignal(inject(EventsService).getEvents(), { initialValue: [] });
   readonly memberId = this.access.memberId;
-  readonly role = signal<GroupEventRole>('all');
 
   private matching = computed(() => {
     const subject = this.access.subject();
-    return groupEvents(this.events(), this.group().id, this.role()).filter((e) => canSeeEvent(subject, e));
+    return groupEvents(this.events(), this.group().id, 'all').filter((e) => canSeeEvent(subject, e));
   });
   readonly upcoming = computed(() => {
     const now = new Date();

@@ -87,11 +87,11 @@ Seznam obsahuje i obrazovky dosažitelné jen ze souvisejících míst, nejen p�
     - → Detail akce ✅
     - → Všechny akce v kalendáři ✅
   - **Připnutá oznámení** ✅ → Detail příspěvku
-  - **Moje kroje** ✅ (kompaktní karta) → Moje kroje
+  - ~~Moje kroje (kompaktní karta)~~ – z Přehledu odebráno 19. 10. 2026; upozornění na kroje (inventura, vrácení) jsou v „Čeká na vás“
   - **Novinky z mých skupin** `[?]` – nepřečtené zprávy a příspěvky; dnes jen jako badge v menu
   - **Moje úkoly** `[?]` (až s modulem Úkoly)
   - **Aktuální sezónní téma** `[?]` → zastřešující akce (kap. 4.10)
-  - **Moje místa** ✅ – dlaždice všech míst, kam uživatel smí, s badge; záložní rozcestník pro místa vyřazená z lišty (kap. 7.4)
+  - ~~Moje místa~~ – odebráno 19. 10. 2026; záložní cestou ke všem místům je ikona **Více** v mobilní hlavičce (`/more`)
     - Upravit lištu → Nastavení → Spodní lišta
 
 ### 4.1a Globální osobní přehled a přepnutí kontextu `[?]`
@@ -158,7 +158,7 @@ Docházka je dnes samostatná položka hlavního menu jen pro pověřené. Dopor
     - Nový příspěvek ✅ `/boards/:slug/new`, úprava ✅ `/posts/:id/edit`
   - **Členové** ✅ (`tab=members`) → Detail osoby `[?]`
   - **Správa** ✅ (`tab=manage`) `(Hlavní správce / spolusprávce)` – stejný panel jako Správa → Skupiny → detail (kap. 4.7)
-  - **Akce skupiny** ✅ (`tab=events`) – akce, které skupina pořádá nebo pro ni jsou, s filtrem Vše / Pořádá skupina / Pro skupinu; **stejný detail akce**, ne „skupinový typ akce“
+  - **Akce skupiny** ✅ (`tab=events`) – akce, které skupina pořádá nebo pro ni jsou; **stejný detail akce**, ne „skupinový typ akce“
   - **Dokumenty skupiny** `[?]`
   - Úkoly skupiny `[?]` (V2)
 
@@ -470,7 +470,7 @@ Každý vidí jinou sadu míst podle členství a pověření. Pevné menu, kter
 
 ### 6.2 Mobil – osobní spodní lišta
 
-**Stav (18. 10. 2026):** implementováno podle pravidel níže ✅ – Přehled pevně, osobní výběr v Nastavení → Spodní lišta, stránka Více (`/more`), „Moje místa“ na Přehledu. Jednorázová nabídka „Přidat novou skupinu do lišty?“ zatím chybí `[?]`.
+**Stav (18. 10. 2026):** implementováno podle pravidel níže ✅ – Přehled pevně, osobní výběr v Nastavení → Spodní lišta, stránka Více (`/more`), ikona Více v mobilní hlavičce (dřív „Moje místa“ na Přehledu) na Přehledu. Jednorázová nabídka „Přidat novou skupinu do lišty?“ zatím chybí `[?]`.
 
 **Problém dnešního stavu:** posuvná lišta je anti-vzor (položky za okrajem nikdo neobjeví, palec nemá pevné cíle). Obsah se navíc mění s každou novou skupinou a nedá se ovlivnit.
 
@@ -490,7 +490,7 @@ Každý vidí jinou sadu míst podle členství a pověření. Pevné menu, kter
 
 Pořadí kandidátů: Akce → skupiny, kde je člen → agendy s právem zápisu (Docházka, Správa krojů) → Moje kroje (jen s výpůjčkou) → agendy jen ke čtení a Správa souboru → Zprávy `[?]`.
 
-- **Běžný člen bez agend** dostane skupiny vždy přímo, pokud se s Akcemi vejdou do 4 pozic; Moje kroje pak najde na Přehledu (karta Moje kroje, Moje místa).
+- **Běžný člen bez agend** dostane skupiny vždy přímo, pokud se s Akcemi vejdou do 4 pozic; Moje kroje pak najde přes ikonu Více v hlavičce.
 
 - Vejdou-li se všichni kandidáti do 4 pozic za Přehledem, dostane je přímo.
 - Pokud ne, **skupiny se sloučí do položky Skupiny**. Vejdou-li se pak, hotovo. Jinak se přebytek přesune pod „Více“.
@@ -559,7 +559,7 @@ Další dostupná místa
 | Vydat kus kroje | — | 3 (Správa krojů → Krojové karty → osoba) |
 | Změnit lištu | 2 (Nastavení → Spodní lišta) | 2 |
 
-Místa, která si uživatel z lišty vyřadil, zůstávají dosažitelná do dvou klepnutí přes Přehled → Moje místa nebo přes „Více“.
+Místa, která si uživatel z lišty vyřadil, zůstávají dosažitelná do dvou klepnutí přes ikonu **Více** v mobilní hlavičce (vždy viditelná) nebo přes položku „Více“ v liště.
 
 #### Další pravidla mobilu
 
@@ -623,9 +623,11 @@ Dnes jsou pozvánky a nepotvrzené účasti samostatné pruhy nad přehledem. S 
 4. Novinky ze skupin `[?]` – max. 3 řádky „Kluci: 4 nové zprávy“, žádný přenesený chat
 5. Moje kroje ✅ – jen když má člen výpůjčku; upozornění jdou do „Čeká na vás“
 6. Aktuální zastřešující akce `[?]`
-7. Moje místa `[?]` – vždy na konci (kap. 7.4)
+7. ~~Moje místa~~ – odebráno 19. 10. 2026 (nahrazeno ikonou Více v hlavičce)
 
-### 7.4 Moje místa – záložní rozcestník
+### 7.4 Moje místa – záložní rozcestník (odebráno 19. 10. 2026)
+
+> Na přání uživatele z Přehledu odebráno; stejnou roli plní ikona **Více** v mobilní hlavičce, která vede na stránku `/more` se všemi místy. Původní návrh níže ponechán pro kontext.
 
 Na konci Přehledu je mřížka dlaždic **všech míst, kam uživatel smí** (stejný zdroj jako nabídka konfigurace lišty), s badge:
 

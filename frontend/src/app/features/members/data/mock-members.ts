@@ -133,6 +133,20 @@ export const MOCK_MEMBERS: Member[] = [
     isActive: true,
     createdAt: '2025-02-07',
   },
+  {
+    id: 11,
+    ensembleId: 1,
+    userId: 11,
+    firstName: 'Externí',
+    lastName: 'Člen',
+    nickname: 'Externista',
+    email: 'externi@soubor.cz',
+    phone: '611 222 333',
+    groupIds: [],
+    isExternal: true,
+    isActive: true,
+    createdAt: '2026-10-19',
+  },
 ];
 
 // Členové s pověřením Správa souboru v demo datech (viz mock-mandates.ts)
