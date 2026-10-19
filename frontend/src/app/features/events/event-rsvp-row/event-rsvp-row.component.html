@@ -7,7 +7,7 @@
       </span>
     }
     <span class="rsvp-row__info">
-      <span class="rsvp-row__title">{{ event.title }}@if (event.skippedReason) { <span class="rsvp-row__skipped">Vynecháno – {{ event.skippedReason }}</span> }</span>
+      <span class="rsvp-row__title">{{ event.title }}@if (event.skippedReason) {{{ ' ' }}<span class="rsvp-row__skipped">Vynecháno – {{ event.skippedReason }}</span> }</span>
       <span class="rsvp-row__meta">
         {{ event.startsAt | date: 'HH:mm' }} · {{ event.location }}
         @if (counts; as c) {

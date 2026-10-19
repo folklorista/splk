@@ -33,7 +33,8 @@ export type IconName =
   | 'search'
   | 'comment'
   | 'clipboard-check'
-  | 'menu';
+  | 'menu'
+  | 'hanger';
 
 // Sada ikon nabízených při výběru ikony skupiny (app/admin/groups)
 export const GROUP_ICON_OPTIONS: IconName[] = [
@@ -215,6 +216,10 @@ export const GROUP_ICON_OPTIONS: IconName[] = [
           <rect x="5" y="4" width="14" height="17" rx="2" />
           <path d="M9 4V3h6v1" />
           <polyline points="9 13 11 15 15 10.5" />
+        }
+        @case ('hanger') {
+          <path d="M12 7.5a2 2 0 1 1 2-2" />
+          <path d="M12 7.5v1.5L3.5 15.5a1.2 1.2 0 0 0 .7 2.2h15.6a1.2 1.2 0 0 0 .7-2.2L12 9" />
         }
         @case ('menu') {
           <circle cx="5" cy="12" r="1.5" />
