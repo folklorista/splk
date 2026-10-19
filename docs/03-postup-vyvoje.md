@@ -392,6 +392,10 @@ V příspěvku, komentáři, skupinovém chatu i chatu akce: `@` nabídne členy
 
 Hledání akcí za „#“: volný zápis data (`15.1.`, `15. 1.`, `15/1`, `15.1.2027`), měsíc slovem (`leden`, `ledna`) a rok; nabídka až 10 akcí s posuvníkem, akce mimo letošek mají v textu i rok (`parseEventQuery`).
 
+### Akce v seznamu a ve skupině (hotovo 2026-10-19)
+
+Sjednocené záhlaví stránky Akce (přepínač Seznam/Kalendář, Docházka a + Nová akce v jednom řádku a stejné výšce); uplynulé akce v seznamu jako sbalená sekce „Uplynulé“ (`features/events/event-list`); záložka **Akce** ve skupině s filtrem Vše / Pořádá skupina / Pro skupinu (`group-events.component.ts`).
+
 ### Potom
 
 - **Administrace**: projít a doplnit vše, co se v ní má spravovat – až po dotažení členské části.

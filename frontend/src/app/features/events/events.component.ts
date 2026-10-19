@@ -25,10 +25,12 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
   other: 'Jiné',
 };
 
+import { EventListComponent } from './event-list/event-list.component';
+import { IconComponent } from '../../shared/icon/icon.component';
 @Component({
   selector: 'app-events',
   standalone: true,
-  imports: [EventRsvpRowComponent, RouterLink],
+  imports: [EventRsvpRowComponent, RouterLink, EventListComponent, IconComponent],
   templateUrl: './events.component.html',
 })
 export class EventsComponent implements OnInit {
@@ -51,7 +53,15 @@ export class EventsComponent implements OnInit {
     return this.events().filter(e => canSeeEvent(subject, e));
   });
 
-  // Seznam ukazuje jen nadcházející akce chronologicky – historie je dostupná v kalendáři
+  // Seznam: nadcházející chronologicky, pod nimi sbalené „Uplynulé“ (nejnovější první, jen filtr typu)
+  pastEvents = computed(() => {
+    const now = new Date();
+    const type = this.filters().type;
+    return this.visibleEvents()
+      .filter((e) => new Date(e.endsAt) < now && (type === 'all' || e.type === type))
+      .sort((a, b) => b.startsAt.localeCompare(a.startsAt));
+  });
+
   upcomingEvents = computed(() => {
     const now = new Date();
     return this.visibleEvents()
