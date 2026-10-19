@@ -1,3 +1,4 @@
+import { parseEventQuery } from './mentions';
 import { activeMentionQuery, decodeMentions, encodeMentions, eventMentionLabel, filterEventCandidates, filterMentionCandidates, insertEventMention, insertMention, parseCommentBody, plainText } from './mentions';
 import { Member } from '../../../core/models/member.model';
 
@@ -68,6 +69,33 @@ describe('mentions', () => {
     it('nabídka: podle názvu i data, nejdřív nadcházející', () => {
       expect(filterEventCandidates([summer, autumn], 'soustr', 6, now).map((e) => e.id)).toEqual([9, 4]);
       expect(filterEventCandidates([summer, autumn], '12. 7', 6, now).map((e) => e.id)).toEqual([4]);
+    });
+
+    it('datum lze psát volně, měsíc slovem i s rokem – i u vzdáleného nácviku', () => {
+      const weekly = Array.from({ length: 20 }, (_, i) => ({ id: 100 + i, title: 'Nácvik – tanečníci', startsAt: new Date(2026, 9, 22 + i * 7, 18).toISOString() }));
+      const far = weekly[13];
+      const d = new Date(far.startsAt);
+      const day = d.getDate();
+      const month = d.getMonth() + 1;
+      for (const q of [`nácvik ${day}.${month}.`, `nácvik ${day}. ${month}.`, `${day}/${month}`, `nacvik ${day}.${month}.${d.getFullYear()}`]) {
+        expect(filterEventCandidates(weekly, q, 10, now).map((e) => e.id)).withContext(q).toEqual([far.id]);
+      }
+      const january = filterEventCandidates(weekly, 'nácvik leden', 10, now);
+      expect(january.length).toBeGreaterThan(0);
+      expect(january.every((e) => new Date(e.startsAt).getMonth() === 0)).toBeTrue();
+      expect(filterEventCandidates(weekly, 'nácvik ledna 2027', 10, now).length).toBe(january.length);
+    });
+
+    it('rozklad dotazu: text, den, měsíc, rok; červenec ≠ červen', () => {
+      expect(parseEventQuery('Nácvik 15.1.2027')).toEqual({ text: 'nacvik', day: 15, month: 1, year: 2027 });
+      expect(parseEventQuery('hody červenec')).toEqual({ text: 'hody', month: 7 });
+      expect(parseEventQuery('hody červen')).toEqual({ text: 'hody', month: 6 });
+      expect(parseEventQuery('2027')).toEqual({ text: '', year: 2027 });
+    });
+
+    it('akce mimo letošní rok má v textu i rok', () => {
+      expect(eventMentionLabel({ id: 1, title: 'Hody', startsAt: '2027-01-15T10:00:00' }, now)).toBe('Hody · 15. 1. 2027');
+      expect(eventMentionLabel(summer, now)).toBe('Letní soustředění · 12. 7.');
     });
 
     it('vložení, zakódování na token a převod zpět pro úpravu', () => {

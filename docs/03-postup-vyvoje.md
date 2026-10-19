@@ -390,6 +390,8 @@ Detail příspěvku: sekce „Přečteno X z Y“ výchozí sbalená, „Koment�
 
 V příspěvku, komentáři, skupinovém chatu i chatu akce: `@` nabídne členy, `#` akce (s datem kvůli sériím). Ukládají se jen tokeny `@[member:ID]` a `#[event:ID]`; jméno a název akce se vykreslí z aktuálních dat, odkaz vede na `/app/events/ID` a akci, kterou čtenář nesmí vidět, ukáže jen jako „akce“. Implementace: `features/posts/utils/mentions.ts`, `shared/mention-input` (i režim bez tlačítka pro formulář příspěvku, převod tokenů zpět při úpravě), `shared/rich-text`, `EventsService.linkableEvents`, `Post.mentionedMemberIds` (zmínka v příspěvku upozorní). `DEMO_DATA_VERSION` 9.
 
+Hledání akcí za „#“: volný zápis data (`15.1.`, `15. 1.`, `15/1`, `15.1.2027`), měsíc slovem (`leden`, `ledna`) a rok; nabídka až 10 akcí s posuvníkem, akce mimo letošek mají v textu i rok (`parseEventQuery`).
+
 ### Potom
 
 - **Administrace**: projít a doplnit vše, co se v ní má spravovat – až po dotažení členské části.
