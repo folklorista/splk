@@ -22,6 +22,7 @@ const QUICK_ICONS: Record<QuickStatus, string> = {
 };
 
 // Kompaktní řádek akce s rychlým potvrzením účasti – jen zobrazuje a hlásí volbu, data neukládá
+import { isResponseClosed } from '../utils/event-reminders';
 @Component({
   selector: 'app-event-rsvp-row',
   standalone: true,
@@ -45,8 +46,9 @@ export class EventRsvpRowComponent {
     return c ? `Přijde ${c.yes}, možná ${c.maybe}, nepřijde ${c.no}, neodpovědělo ${c.pending}` : '';
   }
 
+  // Odpověď se zavírá po skončení akce
   get isPast(): boolean {
-    return new Date(this.event.startsAt) < new Date();
+    return isResponseClosed(this.event);
   }
 
   get weekday(): string {

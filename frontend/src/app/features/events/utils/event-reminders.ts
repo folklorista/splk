@@ -51,3 +51,8 @@ export function needsResponse(event: Pick<AppEvent, 'type' | 'reminderLeadDays' 
   if (status === 'pending') return true;
   return status === 'maybe' && isSoftDeadlinePassed(event, now);
 }
+
+// Po skončení akce člen svou odpověď (ani poznámku) už nemění
+export function isResponseClosed(event: Pick<AppEvent, 'endsAt'>, now = new Date()): boolean {
+  return now >= new Date(event.endsAt);
+}

@@ -1,5 +1,6 @@
 import { Component, DestroyRef, OnInit, signal, computed, inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { map, of } from 'rxjs';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -34,7 +35,21 @@ const STATUS_LABELS: Record<AttendanceStatus, string> = {
   pending: 'Nezadáno',
 };
 
-import { isSoftDeadlinePassed, needsResponse } from '../utils/event-reminders';
+import { isResponseClosed, isSoftDeadlinePassed, needsResponse } from '../utils/event-reminders';
+import { EventChatComponent } from '../event-chat/event-chat.component';
+import { isEventChatEnabled } from '../event-chat/event-chat.service';
+import { isGroupArchived } from '../../../core/models/group.model';
+
+export type EventDetailTab = 'detail' | 'attendance' | 'chat' | 'actual' | 'views';
+const TAB_LABELS: Record<EventDetailTab, string> = { detail: 'Detail', attendance: 'Účast', chat: 'Chat', actual: 'Docházka', views: 'Zobrazení' };
+
+// Pořadí sekcí nevyplněné docházky: podle předem nahlášené účasti
+const ACTUAL_SECTIONS: { status: AttendanceStatus; title: string }[] = [
+  { status: 'yes', title: 'Přijdu' },
+  { status: 'maybe', title: 'Možná' },
+  { status: 'no', title: 'Nepřijdu' },
+  { status: 'pending', title: 'Bez odpovědi' },
+];
 import { changeAcknowledgement, confirmedChange, viewedSinceChange } from '../utils/event-views';
 import { buildIcs, downloadIcs } from '../utils/ics';
 import { EnsembleSettingsService } from '../../ensemble/ensemble-settings.service';
@@ -43,9 +58,9 @@ import { formatRange } from '../../availability/unavailability.utils';
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, DatePipe, RouterLink, FormsModule, IconComponent],
+  imports: [CommonModule, DatePipe, RouterLink, FormsModule, IconComponent, EventChatComponent],
   templateUrl: './event-detail.component.html',
-  styles: [`.detail__deadline { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--spacing-sm); } .detail__deadline--due { color: var(--color-primary); font-weight: 600; } .detail__change { margin: var(--spacing-sm) 0 var(--spacing-md); padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid #e0a800; background: var(--color-surface-alt); border-radius: 6px; display: flex; flex-wrap: wrap; gap: var(--spacing-sm); align-items: center; } .detail__change--confirm { border-left-color: var(--color-primary); } .detail__change-ok { color: #2e7d32; font-weight: 600; } .member-unavailable { font-size: var(--font-size-xs); color: var(--color-text-muted); border: 1px dashed var(--color-border); border-radius: 4px; padding: 0 4px; margin-left: 4px; white-space: nowrap; }`],
+  styles: [`.detail__deadline { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--spacing-sm); } .detail__deadline--due { color: var(--color-primary); font-weight: 600; } .detail__change { margin: var(--spacing-sm) 0 var(--spacing-md); padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid #e0a800; background: var(--color-surface-alt); border-radius: 6px; display: flex; flex-wrap: wrap; gap: var(--spacing-sm); align-items: center; } .detail__change--confirm { border-left-color: var(--color-primary); } .detail__change-ok { color: #2e7d32; font-weight: 600; } .detail__summary { display: flex; flex-wrap: wrap; gap: 6px; } .aa-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--spacing-md); } .aa-chip { padding: 4px 12px; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: var(--font-size-sm); } .aa-chip--active { border-color: var(--color-primary); background: var(--color-primary); color: #fff; } .aa-section { margin-bottom: var(--spacing-md); } .aa-section__header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); } .aa-section__title { font-size: var(--font-size-sm); font-weight: 700; margin: 0; } .aa-section__bulk { display: flex; gap: 6px; } .aa-section--done { opacity: 0.85; } .member-unavailable { font-size: var(--font-size-xs); color: var(--color-text-muted); border: 1px dashed var(--color-border); border-radius: 4px; padding: 0 4px; margin-left: 4px; white-space: nowrap; }`],
 })
 export class EventDetailComponent implements OnInit {
   event = signal<AppEvent | null>(null);
@@ -60,6 +75,8 @@ export class EventDetailComponent implements OnInit {
   targetGroups = signal<Group[]>([]);
 
   readonly statuses: AttendanceStatus[] = ['yes', 'no', 'maybe'];
+  readonly statusesWithPending: AttendanceStatus[] = ['yes', 'maybe', 'no', 'pending'];
+  readonly tabLabels = TAB_LABELS;
   // Na mobilu (bez hoveru) se poznámka rozbalí kliknutím na jméno
   openNoteMemberId = signal<number | null>(null);
 
@@ -221,6 +238,65 @@ export class EventDetailComponent implements OnInit {
     };
   });
 
+  // --- Záložky (query param `tab`) ---
+  private routeRef = inject(ActivatedRoute);
+  private requestedTab = toSignal((this.routeRef.queryParamMap ?? of(null)).pipe(map((p) => p?.get('tab') ?? null)), { initialValue: null });
+
+  readonly tabs = computed<EventDetailTab[]>(() => {
+    const event = this.event();
+    if (!event) return ['detail'];
+    return [
+      'detail',
+      ...(event.skippedReason ? [] : (['attendance'] as const)),
+      ...(isEventChatEnabled(event) ? (['chat'] as const) : []),
+      // Docházka až od začátku akce a jen s pověřením
+      ...(this.canRecordActual() ? (['actual'] as const) : []),
+      ...(this.canSeeResponses() ? (['views'] as const) : []),
+    ];
+  });
+
+  readonly tab = computed<EventDetailTab>(() => {
+    const requested = this.requestedTab() as EventDetailTab | null;
+    return requested && this.tabs().includes(requested) ? requested : 'detail';
+  });
+
+  // Po skončení akce člen odpověď ani poznámku nemění (kontroluje i AttendanceService)
+  readonly responseClosed = computed(() => {
+    const event = this.event();
+    return !!event && isResponseClosed(event);
+  });
+
+  // --- Skutečná docházka: filtr podle skupin, nevyplnění nahoře podle nahlášené účasti ---
+  readonly actualGroupFilter = signal<number | null>(null);
+
+  // Skupiny, do kterých patří aspoň jeden oslovený člen (Kluci, Holky…); pohlaví se neeviduje
+  readonly actualGroupOptions = computed(() => {
+    const ids = new Set(this.visibleMembers().flatMap((m) => m.groupIds));
+    return this.groupsService.groups()
+      .filter((g) => ids.has(g.id) && !isGroupArchived(g))
+      .sort((a, b) => a.name.localeCompare(b.name, 'cs'));
+  });
+
+  readonly actualFilteredRows = computed(() => {
+    const groupId = this.actualGroupFilter();
+    return this.actualRows().filter((r) => groupId === null || r.member.groupIds.includes(groupId));
+  });
+
+  readonly actualUncheckedSections = computed(() => {
+    const unchecked = this.actualFilteredRows().filter((r) => r.present === null);
+    return ACTUAL_SECTIONS.map((section) => ({ ...section, rows: unchecked.filter((r) => r.rsvp === section.status) })).filter((s) => s.rows.length);
+  });
+
+  readonly actualCheckedRows = computed(() => this.actualFilteredRows().filter((r) => r.present !== null));
+
+  // Hromadně celá zobrazená skupina (jedno klepnutí místo jednoho za člena)
+  markRows(rows: { member: Member }[], present: boolean): void {
+    const event = this.event();
+    const recorderId = this.currentMemberId();
+    if (!event || !recorderId || !rows.length) return;
+    this.actualAttendanceService.markMany(event.id, rows.map((r) => r.member.id), present, recorderId).subscribe();
+  }
+
   constructor(
     private route: ActivatedRoute,
     private eventsService: EventsService,
@@ -310,7 +386,9 @@ export class EventDetailComponent implements OnInit {
     const event = this.event();
     const memberId = this.currentMemberId();
     if (!event || !memberId) return;
+    // Zachovat zobrazení a potvrzení u záznamu – měníme jen odpověď a poznámku
     const updated: AttendanceRecord = {
+      ...(this.record() ?? { eventId: event.id, memberId }),
       eventId: event.id,
       memberId,
       status,
@@ -323,7 +401,7 @@ export class EventDetailComponent implements OnInit {
     const event = this.event();
     const memberId = this.currentMemberId();
     if (!event || !memberId) return;
-    const cleared: AttendanceRecord = { eventId: event.id, memberId, status: 'pending' };
+    const cleared: AttendanceRecord = { ...(this.record() ?? { eventId: event.id, memberId }), status: 'pending', note: undefined };
     this.attendanceService.updateAttendance(cleared).subscribe(() => {
       this.patchOwnRecord(cleared);
       this.noteValue.set('');
@@ -342,8 +420,7 @@ export class EventDetailComponent implements OnInit {
     const memberId = this.currentMemberId();
     if (!event || !memberId) return;
     const updated: AttendanceRecord = {
-      eventId: event.id,
-      memberId,
+      ...(this.record() ?? { eventId: event.id, memberId }),
       status: this.record()?.status ?? 'pending',
       note: note.trim() || undefined,
     };

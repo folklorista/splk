@@ -1,3 +1,4 @@
+import { RuleViolationError } from '../../core/access/mandate-rules';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { EventsService } from './events.service';
 import { MOCK_EVENTS } from './data/mock-events';
@@ -142,13 +143,22 @@ describe('EventsService', () => {
     tick(300);
     expect(before?.attendance?.find((a) => a.memberId === 1)?.status).toBe('yes');
 
-    attendanceService.updateAttendance({ eventId: 1, memberId: 1, status: 'pending' }).subscribe();
+    // Organizátor může opravit odpověď jiného člena i po akci
+    attendanceService.updateAttendance({ eventId: 1, memberId: 2, status: 'maybe' }).subscribe();
     tick(300);
 
     let after: AppEvent | undefined;
     service.getEvent(1).subscribe((e) => (after = e));
     tick(300);
-    expect(after?.attendance?.find((a) => a.memberId === 1)?.status).toBe('pending');
+    expect(after?.attendance?.find((a) => a.memberId === 2)?.status).toBe('maybe');
+  }));
+
+  it('po skončení akce člen svou odpověď už nezmění', fakeAsync(() => {
+    const ended = MOCK_EVENTS.find((e) => new Date(e.endsAt) < new Date())!;
+    let error: unknown;
+    attendanceService.updateAttendance({ eventId: ended.id, memberId: 1, status: 'no' }).subscribe({ error: (e) => (error = e) });
+    tick(300);
+    expect(error).toEqual(jasmine.any(RuleViolationError));
   }));
 
   it('bez pověření Organizace akcí akci nezaloží ani neupraví', fakeAsync(() => {

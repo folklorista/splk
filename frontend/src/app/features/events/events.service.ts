@@ -53,6 +53,10 @@ export class EventsService {
     );
   }
 
+  findEvent(id: number): AppEvent | undefined {
+    return this.eventsSubject.value.find((e) => e.id === id);
+  }
+
   getEvents(): Observable<AppEvent[]> {
     return this.eventsWithAttendance$.pipe(delay(300));
   }
