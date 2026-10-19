@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Post } from '../models/post.model';
@@ -174,10 +175,11 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   get targetFragment(): string | null {
     return this.route.snapshot?.fragment ?? null;
   }
+  private destroyRef = inject(DestroyRef);
   private scrolledToTarget = false;
 
   private loadComments(postId: number, memberId: number): void {
-    this.commentsService.getComments(postId).subscribe((comments) => {
+    this.commentsService.getComments(postId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((comments) => {
       this.comments.set(comments);
       if (this.targetFragment && !this.scrolledToTarget) {
         this.scrolledToTarget = true;

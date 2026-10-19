@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { AppEvent } from '../events/models/event.model';
 import { Post } from '../posts/models/post.model';
 import { AttendanceStatus } from '../attendance/models/attendance.model';
@@ -18,7 +18,7 @@ import { AccessService } from '../../core/access/access.service';
 import { canReadGroupContent, isEventAudience } from '../../core/access/access.utils';
 import { GroupsService } from '../groups/groups.service';
 import { JoinRequestsService } from '../groups/join-requests.service';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActualAttendanceService } from '../attendance/actual-attendance.service';
 import { PendingAction, attendanceRecordActions, costumeActions, eventChangeActions, eventResponseActions, groupRequestActions, sortPendingActions } from './pending-actions';
 
@@ -61,6 +61,7 @@ export class DashboardComponent implements OnInit {
   // Sekce „Moje kroje“ se ukáže jen tomu, kdo má něco svěřeno
   hasCostumes = signal(false);
 
+  private destroyRef = inject(DestroyRef);
   private requests = inject(JoinRequestsService);
   // Moje místa: záložní rozcestník pro místa vyřazená z lišty (docs/10 kap. 7.4)
   readonly places = inject(NavigationService).orderedPlaces;
@@ -118,7 +119,7 @@ export class DashboardComponent implements OnInit {
         return;
       }
       this.currentMemberId.set(member.id);
-      this.costumesService.getState().subscribe((state) => this.hasCostumes.set(myCostumeRows(state, member.id).length > 0));
+      this.costumesService.getState().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => this.hasCostumes.set(myCostumeRows(state, member.id).length > 0));
 
       this.postsService.getPosts().subscribe((posts) => {
         this.pinnedPosts.set(
@@ -136,7 +137,7 @@ export class DashboardComponent implements OnInit {
       });
 
       // Stream akcí obsahuje i účast, takže se po rychlém potvrzení řádky samy aktualizují
-      this.eventsService.getEvents().subscribe((events) => {
+      this.eventsService.getEvents().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((events) => {
         this.allEvents.set(events);
         const now = new Date();
         this.upcomingEvents.set(

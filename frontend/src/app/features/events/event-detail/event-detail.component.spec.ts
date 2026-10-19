@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, ActivatedRoute } from '@angular/router';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { EventDetailComponent } from './event-detail.component';
 import { EventsService } from '../events.service';
 import { AttendanceService } from '../../attendance/attendance.service';
@@ -80,6 +80,21 @@ describe('EventDetailComponent', () => {
       ],
     });
   }
+
+  it('opakované vyslání akce (změna účasti) nezapíše zobrazení znovu ani nesmaže rozepsanou poznámku', () => {
+    configure([{ eventId: 10, memberId: 1, status: 'yes', note: 'uložená' }]);
+    const events$ = new BehaviorSubject<AppEvent>(event);
+    eventsSpy.getEvent.and.returnValue(events$);
+    const fixture = TestBed.createComponent(EventDetailComponent);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.noteValue()).toBe('uložená');
+    fixture.componentInstance.noteValue.set('rozepsaná');
+    events$.next({ ...event });
+    events$.next({ ...event });
+    expect(attendanceSpy.markViewed).toHaveBeenCalledTimes(1);
+    expect(attendanceSpy.getAttendance).toHaveBeenCalledTimes(1);
+    expect(fixture.componentInstance.noteValue()).toBe('rozepsaná');
+  });
 
   it('započítá do souhrnu i členy bez záznamu jako "pending"', () => {
     configure([{ eventId: 10, memberId: 2, status: 'yes' }]);

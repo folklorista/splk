@@ -249,7 +249,10 @@ export class EventDetailComponent implements OnInit {
 
       this.currentMemberId.set(member.id);
       const id = Number(this.route.snapshot.paramMap.get('id'));
-      this.eventsService.getEvent(id).subscribe((event) => {
+      // Každý živý proud jen jednou a s odhlášením při opuštění stránky. Akce se znovu vyšle při každé
+      // změně účasti – zobrazení detailu (markViewed) se proto zapíše jen jednou za otevření.
+      let initialized = false;
+      this.eventsService.getEvent(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
         // Bez oprávnění akci vidět se tváří jako neexistující (i při přímé URL)
         if (!event || !canSeeEvent(this.access.subject(), event)) {
           this.notFound.set(true);
@@ -257,6 +260,8 @@ export class EventDetailComponent implements OnInit {
           return;
         }
         this.event.set(event);
+        if (initialized) return;
+        initialized = true;
 
         this.loadTargetGroups(event.targetGroupIds);
         if (this.canRecordActual()) {
@@ -265,11 +270,16 @@ export class EventDetailComponent implements OnInit {
             .subscribe((records) => this.actualRecords.set(records));
         }
         if (isEventAudience(member, event)) this.attendanceService.markViewed(id, member.id).subscribe();
-        this.attendanceService.getAttendance(id).subscribe((records) => {
+        let noteLoaded = false;
+        this.attendanceService.getAttendance(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((records) => {
           this.eventRecords.set(records);
           const r = records.find((r) => r.memberId === member.id);
           this.record.set(r);
-          this.noteValue.set(r?.note ?? '');
+          // Rozepsanou poznámku nepřepisovat – uložená hodnota se do pole načte jen poprvé
+          if (!noteLoaded) {
+            this.noteValue.set(r?.note ?? '');
+            noteLoaded = true;
+          }
           this.loading.set(false);
         });
       });
@@ -319,6 +329,12 @@ export class EventDetailComponent implements OnInit {
       this.noteValue.set('');
       this.noteOpen.set(false);
     });
+  }
+
+  // Zrušit úpravu poznámky = vrátit uloženou hodnotu
+  cancelNote(): void {
+    this.noteValue.set(this.record()?.note ?? '');
+    this.noteOpen.set(false);
   }
 
   saveNote(note: string): void {

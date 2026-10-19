@@ -117,7 +117,7 @@
                 <p class="attendance-note__hint">Poznámku uvidí všichni, kdo vidí tuto akci.</p>
                 <div class="attendance-note__actions">
                   <button class="attendance-btn attendance-btn--active" (click)="saveNote(noteValue())">Uložit</button>
-                  <button class="attendance-btn" (click)="noteOpen.set(false)">Zrušit</button>
+                  <button class="attendance-btn" (click)="cancelNote()">Zrušit</button>
                 </div>
               </div>
             } @else {

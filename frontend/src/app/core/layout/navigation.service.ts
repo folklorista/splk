@@ -41,6 +41,7 @@ export class NavigationService {
   private groupBadges = signal<Map<number, number>>(new Map());
   private users = 0;
   private refresh?: Subscription;
+  private eventsSubscription?: Subscription;
 
   constructor(
     private access: AccessService,
@@ -169,12 +170,12 @@ export class NavigationService {
   });
 
   // Počítání badge běží, dokud je zobrazená aspoň jedna navigace
+  // Akce jsou živý proud (akce + účast) – stačí jeden odběr po celou dobu zobrazení navigace.
+  // Nástěnky se dopočítávají periodicky (jednorázový dotaz, který vždy skončí).
   start(): void {
     if (this.users++ > 0) return;
-    const update = () => {
-      this.boardsService.getBoardBadges().subscribe((badges) => this.groupBadges.set(badges));
-      this.eventsService.getEvents().subscribe((events) => this.eventsBadge.set(getUnconfirmedEventsCount(events, this.access.subject())));
-    };
+    this.eventsSubscription = this.eventsService.getEvents().subscribe((events) => this.eventsBadge.set(getUnconfirmedEventsCount(events, this.access.subject())));
+    const update = () => this.boardsService.getBoardBadges().subscribe((badges) => this.groupBadges.set(badges));
     update();
     this.refresh = interval(BADGE_REFRESH_MS).subscribe(update);
   }
@@ -183,5 +184,6 @@ export class NavigationService {
     if (--this.users > 0) return;
     this.users = 0;
     this.refresh?.unsubscribe();
+    this.eventsSubscription?.unsubscribe();
   }
 }

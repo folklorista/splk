@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, of, Observable } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, take } from 'rxjs/operators';
 import { EventsService } from '../events.service';
 import { AttendanceService } from '../../attendance/attendance.service';
 import { MembersService } from '../../members/members.service';
@@ -335,7 +335,7 @@ export class EventFormComponent implements OnInit {
       this.loaded.set(true);
       return;
     }
-    this.eventsService.getEvent(this.eventId).subscribe((event) => {
+    this.eventsService.getEvent(this.eventId).pipe(take(1)).subscribe((event) => {
       if (!event || this.loaded()) {
         this.loaded.set(true);
         return;
