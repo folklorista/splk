@@ -8,12 +8,8 @@ import { AttendanceService } from '../attendance/attendance.service';
 import { MembersService } from '../members/members.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { RouterLink } from '@angular/router';
-import { NavigationService } from '../../core/layout/navigation.service';
-import { IconComponent } from '../../shared/icon/icon.component';
 import { EventRsvpRowComponent } from '../events/event-rsvp-row/event-rsvp-row.component';
-import { MyCostumesComponent } from '../costumes/my-costumes/my-costumes.component';
 import { CostumesService } from '../costumes/costumes.service';
-import { myCostumeRows } from '../costumes/utils/costume-logic';
 import { AccessService } from '../../core/access/access.service';
 import { canReadGroupContent, isEventAudience } from '../../core/access/access.utils';
 import { GroupsService } from '../groups/groups.service';
@@ -33,7 +29,7 @@ export interface UpcomingEventRow {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, EventRsvpRowComponent, MyCostumesComponent, IconComponent],
+  imports: [RouterLink, EventRsvpRowComponent],
   templateUrl: './dashboard.component.html',
   styles: [`
     .pending { margin-bottom: var(--spacing-lg); border-left: 4px solid var(--color-primary); background: var(--color-surface-alt); border-radius: 8px; padding: var(--spacing-sm) var(--spacing-md); }
@@ -45,12 +41,6 @@ export interface UpcomingEventRow {
     .pending__link:hover .pending__text { color: var(--color-primary); }
     .pending__detail { font-size: var(--font-size-xs); color: var(--color-text-muted); }
     .pending__actions { display: flex; gap: 6px; }
-    .places__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); }
-    .places__tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--spacing-sm); border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface); color: var(--color-text); text-decoration: none; text-align: center; }
-    .places__tile:hover { border-color: var(--color-primary); color: var(--color-primary); }
-    .places__label { font-size: var(--font-size-xs); }
-    .places__badge { position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--color-primary); color: #fff; font-size: 10px; line-height: 16px; }
-    @media (min-width: 768px) { .places { display: none; } }
   `],
 })
 export class DashboardComponent implements OnInit {
@@ -58,13 +48,9 @@ export class DashboardComponent implements OnInit {
   pinnedPosts = signal<Post[] | null>(null);
   loading = signal(true);
   currentMemberId = signal<number | null>(null);
-  // Sekce „Moje kroje“ se ukáže jen tomu, kdo má něco svěřeno
-  hasCostumes = signal(false);
 
   private destroyRef = inject(DestroyRef);
   private requests = inject(JoinRequestsService);
-  // Moje místa: záložní rozcestník pro místa vyřazená z lišty (docs/10 kap. 7.4)
-  readonly places = inject(NavigationService).orderedPlaces;
   private allEvents = signal<AppEvent[]>([]);
   private costumeState = toSignal(inject(CostumesService).state$);
   private actualAttendance = toSignal(inject(ActualAttendanceService).records$, { initialValue: [] });
@@ -96,7 +82,6 @@ export class DashboardComponent implements OnInit {
     private postsService: PostsService,
     private attendanceService: AttendanceService,
     private membersService: MembersService,
-    private costumesService: CostumesService,
     private access: AccessService,
     private groupsService: GroupsService,
   ) { }
@@ -119,7 +104,6 @@ export class DashboardComponent implements OnInit {
         return;
       }
       this.currentMemberId.set(member.id);
-      this.costumesService.getState().pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => this.hasCostumes.set(myCostumeRows(state, member.id).length > 0));
 
       this.postsService.getPosts().subscribe((posts) => {
         this.pinnedPosts.set(

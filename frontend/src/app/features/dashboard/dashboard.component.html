@@ -70,27 +70,6 @@
       }
     </section>
 
-    @if (hasCostumes()) {
-    <section class="dashboard__section">
-      <h2 class="dashboard__section-title">Moje kroje</h2>
-      <app-my-costumes />
-      <a class="dashboard__more" routerLink="/app/costumes">Moje kroje →</a>
-    </section>
-    }
-
-    <section class="dashboard__section places" aria-labelledby="places-title">
-      <h2 class="dashboard__section-title" id="places-title">Moje místa</h2>
-      <div class="places__grid">
-        @for (place of places(); track place.key) {
-          <a class="places__tile" [routerLink]="place.path">
-            <app-icon [name]="place.icon" [size]="20" />
-            <span class="places__label">{{ place.label }}</span>
-            @if (place.badge) { <span class="places__badge">{{ place.badge }}</span> }
-          </a>
-        }
-      </div>
-      <a class="dashboard__more" routerLink="/app/settings" fragment="spodni-lista">Upravit spodní lištu →</a>
-    </section>
 
   </div>
   }

@@ -43,12 +43,16 @@ const column = (name) => {
   }
   return index;
 };
+// Optional columns may be missing in older member lists – every row then reads as empty
+const optionalColumn = (name) => header.indexOf(name);
 
 const firstNameCol = column('jméno');
 const lastNameCol = column('příjmení');
 const nicknameCol = column('nickname');
 const createdAtCol = column('datum přidání');
 const adminCol = column('administrátor');
+const externCol = column('externista');
+const formerCol = optionalColumn('bývalý');
 const groupCols = Object.entries(GROUP_COLUMNS).map(([name, id]) => [column(name), id]);
 
 const isYes = (value) => (value ?? '').trim().toUpperCase() === 'ANO';
@@ -78,7 +82,10 @@ const members = lines.slice(1).map((line, index) => {
     lastName,
     nickname: cells[nicknameCol] || `${firstName} ${lastName}`.trim(),
     groupIds: groupCols.filter(([col]) => isYes(cells[col])).map(([, groupId]) => groupId),
-    isActive: true,
+    // The "externista" column marks a person outside the ensemble (Member.isExternal)
+    ...(isYes(cells[externCol]) ? { isExternal: true } : {}),
+    // The "bývalý" column marks a former member – kept for history, without access (isActive = false)
+    isActive: !isYes(cells[formerCol]),
     createdAt: cells[createdAtCol] || new Date().toISOString().slice(0, 10),
   };
 });
