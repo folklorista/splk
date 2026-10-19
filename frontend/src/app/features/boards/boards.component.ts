@@ -1,7 +1,6 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { BoardsService } from './boards.service';
 import { AccessService } from '../../core/access/access.service';
 import { canJoinDirectly, canRequestToJoin, canSeeGroup, canReadGroupContent, isGroupMember } from '../../core/access/access.utils';
 import { GROUP_VISIBILITY_LABELS, Group, isGroupArchived } from '../../core/models/group.model';
@@ -15,6 +14,7 @@ import { ActionFeedback } from '../../shared/ui/form-ui';
 
 // Rozcestník skupin: moje skupiny, pozvánky a žádosti, ostatní skupiny, do kterých lze vstoupit.
 // Skryté skupiny nečlenové nevidí; znát existenci skupiny neznamená číst její obsah.
+import { NavigationService } from '../../core/layout/navigation.service';
 @Component({
   selector: 'app-boards',
   standalone: true,
@@ -32,7 +32,7 @@ import { ActionFeedback } from '../../shared/ui/form-ui';
       @if (feedback.success()) { <p class="cs-success" role="status">{{ feedback.success() }}</p> }
 
       @if (invitations().length) {
-        <h2 class="hub__heading">Pozvánky pro vás</h2>
+        <h2 class="hub__heading">Pozvánky pro vás <span class="count-badge">{{ invitations().length }}</span></h2>
         <ul class="item-list">
           @for (inv of invitations(); track inv.id) {
             <li class="item-list__item item-list__item--requires-action">
@@ -50,7 +50,7 @@ import { ActionFeedback } from '../../shared/ui/form-ui';
       }
 
       @if (toDecide()) {
-        <p class="hub__notice">Ve skupinách, které spravujete, čeká {{ toDecide() }} žádostí nebo návrhů – najdete je v záložce Správa skupiny.</p>
+        <p class="hub__notice"><span class="count-badge">{{ toDecide() }}</span> Ve skupinách, které spravujete, čekají žádosti nebo návrhy – najdete je v záložce Správa skupiny.</p>
       }
 
       <h2 class="hub__heading">Moje skupiny</h2>
@@ -65,8 +65,8 @@ import { ActionFeedback } from '../../shared/ui/form-ui';
                   @if (group.icon) { <app-icon [name]="group.icon" [size]="16" /> }
                   {{ group.name }}
                 </span>
-                @if (badges().get(group.id); as count) {
-                  <div class="item-list__badges"><span class="badge badge--requires-action">{{ count }} nové</span></div>
+                @if (badge(group.id); as count) {
+                  <div class="item-list__badges"><span class="count-badge" [attr.aria-label]="count + ' nepřečtených'">{{ count }}</span></div>
                 }
               </div>
               @if (group.description) { <div class="item-list__meta">{{ group.description }}</div> }
@@ -131,8 +131,7 @@ import { ActionFeedback } from '../../shared/ui/form-ui';
     `,
   ],
 })
-export class BoardsComponent implements OnInit {
-  private boardsService = inject(BoardsService);
+export class BoardsComponent {
   private access = inject(AccessService);
   private groupsService = inject(GroupsService);
   private requestsService = inject(JoinRequestsService);
@@ -140,7 +139,9 @@ export class BoardsComponent implements OnInit {
   readonly membership = inject(MembershipService);
 
   readonly feedback = new ActionFeedback();
-  readonly badges = signal<Map<number, number>>(new Map());
+  // Stejné číslo jako u skupiny v menu; součet všech + žádosti = badge „Skupiny“
+  private navigation = inject(NavigationService);
+  badge = (groupId: number) => this.navigation.groupBadge(groupId);
   readonly canCreate = this.access.canCreateGroup;
   readonly isAdmin = this.access.isEnsembleAdmin;
 
@@ -161,10 +162,6 @@ export class BoardsComponent implements OnInit {
     const managed = new Set(this.access.managedGroups().map((g) => g.id));
     return this.requestsService.requests().filter((r) => r.status === 'awaiting-manager' && managed.has(r.groupId)).length;
   });
-
-  ngOnInit(): void {
-    this.boardsService.getBoardBadges().subscribe((badges) => this.badges.set(badges));
-  }
 
   myRequest(groupId: number) {
     return this.myPending().find((r) => r.groupId === groupId && r.kind === 'request');

@@ -11,8 +11,6 @@ import { GroupAdminPanelComponent } from '../group-admin/group-admin-panel.compo
 import { IconComponent } from '../../../shared/icon/icon.component';
 import { GroupSpaceTab, groupTabs, resolveGroupTab } from './group-tabs';
 import { GroupChatComponent } from '../../chat/group-chat/group-chat.component';
-import { ChatService } from '../../chat/chat.service';
-import { unreadChatCount } from '../../chat/utils/chat-timeline';
 import { GroupNotificationsService } from '../../../core/notifications/group-notifications.service';
 import { GROUP_NOTIFY_LABELS, GroupNotifyMode } from '../../../core/notifications/group-notifications';
 
@@ -25,7 +23,7 @@ const TAB_LABELS: Record<GroupSpaceTab, string> = {
 
 // Prostor skupiny (/app/boards/:slug): Chat, Nástěnka, Členové a Správa skupiny (jen správcům).
 // Výchozí záložku určuje nastavení skupiny; záložka je v URL (?tab=), aby šla sdílet a vrátit se na ni.
-import { chatVisibility } from '../../chat/utils/chat-history';
+import { NavigationService } from '../../../core/layout/navigation.service';
 @Component({
   selector: 'app-group-space',
   standalone: true,
@@ -63,6 +61,9 @@ import { chatVisibility } from '../../chat/utils/chat-history';
               {{ label(t) }}
               @if (t === 'chat' && tab() !== 'chat' && unreadChat()) {
                 <span class="group-tabs__badge">{{ unreadChat() }}</span>
+              }
+              @if (t === 'board' && unreadBoard()) {
+                <span class="group-tabs__badge">{{ unreadBoard() }}</span>
               }
             </a>
           }
@@ -116,7 +117,6 @@ export class GroupSpaceComponent {
   readonly tabs = computed(() => (this.group() ? groupTabs(this.group()!, this.canManage()) : []));
   readonly tab = computed(() => (this.group() ? resolveGroupTab(this.requestedTab(), this.group()!, this.canManage()) : 'members'));
 
-  private chat = inject(ChatService);
   private notify = inject(GroupNotificationsService);
   readonly notifyOptions = Object.entries(GROUP_NOTIFY_LABELS) as [GroupNotifyMode, string][];
   readonly notifyMode = computed(() => this.notify.modeFor(this.access.memberId(), this.group()?.id ?? 0));
@@ -127,13 +127,10 @@ export class GroupSpaceComponent {
     if (memberId && g) this.notify.setMode(memberId, g.id, mode);
   }
 
-  // Nepřečtené zprávy chatu – jen běžné zprávy (aktivitu příspěvků ukazuje nástěnka)
-  readonly unreadChat = computed(() => {
-    const g = this.group();
-    const memberId = this.access.memberId();
-    if (!g || !memberId) return 0;
-    return unreadChatCount(this.chat.messages(), g.id, memberId, this.chat.lastReadAt(g.id), chatVisibility(g, this.access.currentMember() ?? undefined));
-  });
+  // Počty na záložkách ze stejného zdroje jako badge skupiny v menu – jejich součet mu odpovídá
+  private navigation = inject(NavigationService);
+  readonly unreadChat = computed(() => this.navigation.groupBadgeParts().get(this.group()?.id ?? 0)?.chat ?? 0);
+  readonly unreadBoard = computed(() => this.navigation.groupBadgeParts().get(this.group()?.id ?? 0)?.board ?? 0);
 
   label(tab: GroupSpaceTab): string {
     return TAB_LABELS[tab];

@@ -72,11 +72,29 @@ export class NavigationService {
       .filter((r) => (r.status === 'awaiting-manager' ? isGroupManager(s, r.groupId) : r.memberId === s.memberId)).length;
   });
 
+  // Jediný zdroj počtů nepřečteného ve skupinách: nástěnka (nepřečtené příspěvky + zmínky) a chat.
+  // Záložky skupiny, seznam skupin, položka skupiny v menu i badge „Skupiny“ z něj počítají stejně.
+  readonly groupBadgeParts = computed(() => {
+    const parts = new Map<number, { board: number; chat: number }>();
+    for (const g of this.access.myGroups().filter((x) => !isGroupArchived(x))) {
+      parts.set(g.id, { board: hasBoard(g) ? (this.groupBadges().get(g.id) ?? 0) : 0, chat: hasChat(g) ? this.chatBadge(g.id) : 0 });
+    }
+    return parts;
+  });
+
+  groupBadge(groupId: number): number {
+    const part = this.groupBadgeParts().get(groupId);
+    return part ? part.board + part.chat : 0;
+  }
+
+  // Badge „Skupiny“ = součet všech skupin + žádosti a pozvánky (v rozcestníku má každá položka své číslo)
+  readonly groupsHubBadge = computed(() => this.pendingRequests() + [...this.groupBadgeParts().values()].reduce((sum, p) => sum + p.board + p.chat, 0));
+
   readonly groupItems = computed<NavItem[]>(() =>
     this.access
       .myGroups()
       .filter((g) => (hasBoard(g) || hasChat(g)) && !isGroupArchived(g))
-      .map((g) => ({ path: `/app/boards/${g.slug}`, label: g.name, icon: g.icon ?? 'megaphone', badge: (this.groupBadges().get(g.id) ?? 0) + (hasChat(g) ? this.chatBadge(g.id) : 0) || undefined })),
+      .map((g) => ({ path: `/app/boards/${g.slug}`, label: g.name, icon: g.icon ?? 'megaphone', badge: this.groupBadge(g.id) || undefined })),
   );
 
   readonly mainItems = computed<NavItem[]>(() => {
@@ -97,7 +115,7 @@ export class NavigationService {
       : [],
   );
 
-  readonly groupsHub = computed<NavItem>(() => ({ path: '/app/boards', label: 'Skupiny', icon: 'users', badge: this.pendingRequests() || undefined }));
+  readonly groupsHub = computed<NavItem>(() => ({ path: '/app/boards', label: 'Skupiny', icon: 'users', badge: this.groupsHubBadge() || undefined }));
 
   readonly manageItems = computed<NavItem[]>(() =>
     this.access.isEnsembleAdmin() ? [{ path: '/app/manage', label: 'Správa', icon: 'settings' }] : [],
@@ -125,10 +143,10 @@ export class NavigationService {
         path: `/app/boards/${g.slug}`,
         label: g.name,
         icon: g.icon ?? 'megaphone',
-        badge: (this.groupBadges().get(g.id) ?? 0) + (hasChat(g) ? this.chatBadge(g.id) : 0) || undefined,
+        badge: this.groupBadge(g.id) || undefined,
         category: 'group',
       })),
-      { key: GROUPS_HUB_KEY, path: '/app/boards', label: 'Skupiny', icon: 'users', badge: this.pendingRequests() || undefined, category: 'hub' },
+      { key: GROUPS_HUB_KEY, path: '/app/boards', label: 'Skupiny', icon: 'users', badge: this.groupsHubBadge() || undefined, category: 'hub' },
       ...(modules.costumes ? [{ key: 'costumes', path: '/app/costumes', label: 'Moje kroje', icon: 'shirt' as IconName, category: 'costumes' as const, suggest: this.hasCostumeLoan() }] : []),
       ...(modules.events && this.access.canViewAttendanceReport() ? [{ key: 'attendance', path: '/app/attendance', label: 'Docházka', icon: 'clipboard-check' as IconName, category: 'agenda' as const, writes: true }] : []),
       ...(modules.costumes && this.access.canViewCostumeStock() ? [{ key: 'wardrobe', path: '/app/wardrobe', label: 'Správa krojů', icon: 'clipboard-check' as IconName, category: 'agenda' as const, writes: this.access.canManageCostumes() }] : []),
@@ -158,13 +176,9 @@ export class NavigationService {
   // Lišta na mobilu: Přehled + osobní výběr (nejvýš 4 pozice), přetečení pod „Více“. Neposouvá se.
   readonly bottomItems = computed<NavItem[]>(() => {
     const { bar, overflow } = this.resolvedBar();
-    const inBar = new Set(bar.map((p) => p.key));
-    // Skupiny mimo lištu se propisují do badge rozcestníku Skupiny
-    const hiddenGroups = this.places().filter((p) => p.category === 'group' && !inBar.has(p.key));
-    const items: NavItem[] = bar.map((p) => (p.key === GROUPS_HUB_KEY ? { ...p, badge: (p.badge ?? 0) + sumBadges(hiddenGroups) || undefined } : p));
     return [
       { path: '/app/dashboard', label: 'Přehled', icon: 'home' },
-      ...items,
+      ...bar,
       ...(overflow.length ? [{ path: '/app/more', label: 'Více', icon: 'menu' as IconName, badge: sumBadges(overflow) || undefined }] : []),
     ];
   });
