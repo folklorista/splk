@@ -2068,3 +2068,10 @@ a.mobile-header__user {
   line-height: 1;
   vertical-align: middle;
 }
+
+// Záložky (prostor skupiny, detail akce)
+.group-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--color-border); margin-bottom: var(--spacing-md); overflow-x: auto; }
+.group-tabs__link { padding: 8px 12px; font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-muted); border-bottom: 2px solid transparent; white-space: nowrap; }
+.group-tabs__link:hover { color: var(--color-text); }
+.group-tabs__link--active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+.group-tabs__badge { margin-left: 4px; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--color-primary); color: #fff; font-size: 11px; display: inline-block; text-align: center; }

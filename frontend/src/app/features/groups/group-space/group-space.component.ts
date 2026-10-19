@@ -86,12 +86,7 @@ import { NavigationService } from '../../../core/layout/navigation.service';
     .group-space__archived { font-size: var(--font-size-sm); padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid var(--color-text-muted); background: var(--color-surface-alt); border-radius: 6px; margin-bottom: var(--spacing-md); }
     .group-space__header .page__title { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); }
     .group-space__description { color: var(--color-text-muted); font-size: var(--font-size-sm); margin-bottom: var(--spacing-sm); }
-    .group-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--color-border); margin-bottom: var(--spacing-md); overflow-x: auto; }
-    .group-tabs__link { padding: 8px 12px; font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-muted); border-bottom: 2px solid transparent; white-space: nowrap; }
-    .group-tabs__link:hover { color: var(--color-text); }
-    .group-tabs__link--active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
     .group-space__notify select { padding: 4px 6px; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-surface); color: var(--color-text); font-size: var(--font-size-sm); }
-    .group-tabs__badge { margin-left: 4px; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--color-primary); color: #fff; font-size: 11px; display: inline-block; text-align: center; }
   `],
 })
 export class GroupSpaceComponent {

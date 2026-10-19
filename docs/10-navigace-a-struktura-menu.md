@@ -110,7 +110,7 @@ Seznam obsahuje i obrazovky dosažitelné jen ze souvisejících míst, nejen p�
   - **Kalendář** ✅ (`?view=calendar`; výchozí pohled si člen nastaví v Nastavení)
     - Měsíc, přechod na Dnes ✅
     - Týden / agenda `[?]`
-  - **Detail akce** ✅ `/events/:id`
+  - **Detail akce** ✅ `/events/:id?tab=…` – záložky **Detail** (informace, souhrn účasti) / **Účast** (moje odpověď, odpovědi členů; po skončení akce jen ke čtení) / **Chat** (jen s povoleným chatem akce) / **Docházka** (od začátku akce, jen s pověřením; nevyplnění nahoře podle nahlášené účasti, hromadné označení, filtr podle skupin) / **Zobrazení** (organizátoři)
     - Popis: název, termín, místo, popis, pokyny ✅
     - **Moje účast** ✅ – odpověď, poznámka, zrušení odpovědi
     - **Účast** ✅ – kdo přijde / nepřijde / neodpověděl; → Detail osoby `[?]`
