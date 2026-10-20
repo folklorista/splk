@@ -73,7 +73,7 @@
               }
               @if (targetGroups().length) {
                 <dt><app-icon class="detail__meta-icon" name="users" /> Pro skupiny</dt>
-                <dd>
+                <dd class="detail__chips">
                   @for (group of targetGroups(); track group.id) {
                     <span class="badge">
                       @if (group.icon) {
