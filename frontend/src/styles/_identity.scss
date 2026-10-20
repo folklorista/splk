@@ -282,7 +282,51 @@ $ornament-star: '/identity/ornaments/ornament-star.svg';
   }
 }
 
-// --- Dekorativní oddělovač obsahových celků: linka s křížkovou hvězdičkou uprostřed ---
+// --- Oddělovače ---
+// a) Obsahové celky: linka s vyšívanou hvězdičkou uprostřed (pseudo-elementy nahoře nad obsahem prvku)
+@mixin ornament-rule($space: var(--spacing-lg)) {
+  position: relative;
+  border-top: none;
+  padding-top: $space;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    // Linka s mezerou uprostřed pro motiv
+    background:
+      linear-gradient(var(--color-border-strong), var(--color-border-strong)) left / calc(50% - 16px) 100% no-repeat,
+      linear-gradient(var(--color-border-strong), var(--color-border-strong)) right / calc(50% - 16px) 100% no-repeat;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: calc(50% - 8px);
+    width: 16px;
+    height: 16px;
+    background: var(--color-accent);
+    pointer-events: none;
+    @include motif($ornament-star, contain, no-repeat);
+  }
+}
+
+// b) Tenká bordura – tam, kde uprostřed už je obsah (tlačítko, rozbalovací nadpis)
+@mixin bordura-line {
+  content: '';
+  flex: 1;
+  height: 5px;
+  border: none;
+  background: var(--color-accent);
+  opacity: 0.45;
+  @include motif($ornament-underline);
+}
+
+// Samostatný prvek <div class="ornament-divider"><span class="ornament-divider__motif"></span></div>
 .ornament-divider {
   display: flex;
   align-items: center;
@@ -298,11 +342,68 @@ $ornament-star: '/identity/ornaments/ornament-star.svg';
   }
 
   &__motif {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     background: currentColor;
     @include motif($ornament-star, contain, no-repeat);
   }
+}
+
+// Detail akce / příspěvku: sekce (Účast, Přílohy…) oddělené od popisu
+.detail__section {
+  @include ornament-rule(var(--spacing-lg));
+}
+
+// Přehled: mezi sekcemi Nejbližší akce / Připnutá oznámení
+.dashboard__section + .dashboard__section {
+  @include ornament-rule(var(--spacing-lg));
+}
+
+// Nástěnka: „Zobrazit archivované“ mezi dvěma tenkými bordurami
+.board-archive {
+  &::before,
+  &::after {
+    @include bordura-line;
+  }
+
+  &__toggle {
+    border-radius: var(--radius-sm);
+  }
+}
+
+// Seznam akcí: „▸ Uplynulé (17)“ a za ním tenká bordura
+.events-past__summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &::before {
+    content: '▸';
+    transition: transform 0.15s;
+  }
+
+  &::after {
+    @include bordura-line;
+  }
+}
+
+.events-past[open] > .events-past__summary::before {
+  transform: rotate(90deg);
+}
+
+// Sbalené boční menu: místo prosté čáry mezi sekcemi malá vyšívaná hvězdička
+.sidebar--compact .sidebar__nav-section-label {
+  height: 14px;
+  margin: var(--spacing-sm) auto;
+  width: 14px;
+  background: var(--color-accent);
+  opacity: 0.8;
+  @include motif($ornament-star, contain, no-repeat);
 }
 
 // --- Chat: oddělovač dne s křížkovým srdíčkem ---
