@@ -18,6 +18,7 @@ import { AuditService } from '../../audit/audit.service';
 import { AuditTextContext, auditText } from '../../audit/audit-text';
 import { EventsService } from '../../events/events.service';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { ConfirmService } from '../../../shared/dialog/confirm.service';
 
 interface MemberRow {
   member: Member;
@@ -285,6 +286,7 @@ interface MemberRow {
   ],
 })
 export class GroupAdminPanelComponent {
+  private readonly confirmDialog = inject(ConfirmService);
   readonly membership = inject(MembershipService);
   private accessService = inject(AccessService);
   private membersService = inject(MembersService);
@@ -402,9 +404,15 @@ export class GroupAdminPanelComponent {
     }
   }
 
-  archive(): void {
+  async archive(): Promise<void> {
     const g = this.group();
-    if (!g || !confirm(`Archivovat skupinu ${g.name}? Zůstane jen ke čtení, bez upozornění a zmizí z menu.`)) return;
+    if (!g) return;
+    const ok = await this.confirmDialog.confirm({
+      title: `Archivovat skupinu ${g.name}?`,
+      message: 'Zůstane jen ke čtení, bez upozornění a zmizí z menu.',
+      confirmLabel: 'Archivovat',
+    });
+    if (!ok) return;
     this.feedback.run(this.membership.archiveGroup(g.id), undefined, 'Skupina archivována');
   }
 
@@ -437,10 +445,16 @@ export class GroupAdminPanelComponent {
     this.feedback.run(this.membership.setGroupRole(groupId, memberId, value === 'deputy' ? 'deputy' : null));
   }
 
-  transferOwnership(groupId: number, select: HTMLSelectElement): void {
+  async transferOwnership(groupId: number, select: HTMLSelectElement): Promise<void> {
     const id = Number(select.value);
     select.value = '';
-    if (!id || !confirm(`Předat hlavní správu skupiny osobě ${this.name(id)}?`)) return;
+    if (!id) return;
+    const ok = await this.confirmDialog.confirm({
+      title: 'Předat hlavní správu skupiny?',
+      message: `Hlavním správcem se stane ${this.name(id)}.`,
+      confirmLabel: 'Předat správu',
+    });
+    if (!ok) return;
     this.feedback.run(this.membership.setGroupRole(groupId, id, 'owner'), undefined, 'Hlavní správa předána');
   }
 

@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { DemoDataService } from '../../services/demo-data.service';
+import { ConfirmService } from '../../../shared/dialog/confirm.service';
 
 @Component({
   selector: 'app-demo-banner',
@@ -12,11 +13,16 @@ import { DemoDataService } from '../../services/demo-data.service';
   `,
 })
 export class DemoBannerComponent {
+  private readonly confirmDialog = inject(ConfirmService);
   constructor(private demoData: DemoDataService) {}
 
-  reset(): void {
-    if (confirm('Zahodit všechny tvoje změny a obnovit výchozí demo data?')) {
-      this.demoData.reset();
-    }
+  async reset(): Promise<void> {
+    const ok = await this.confirmDialog.confirm({
+      title: 'Obnovit demo data?',
+      message: 'Zahodí všechny tvoje změny a obnoví výchozí demo data.',
+      confirmLabel: 'Obnovit',
+      danger: true,
+    });
+    if (ok) this.demoData.reset();
   }
 }

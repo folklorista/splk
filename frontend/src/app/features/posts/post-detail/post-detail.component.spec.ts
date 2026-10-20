@@ -14,6 +14,7 @@ import { Post } from '../models/post.model';
 import { PostComment } from '../models/comment.model';
 import { BoardsService } from '../../boards/boards.service';
 import { Group } from '../../../core/models/group.model';
+import { ConfirmService } from '../../../shared/dialog/confirm.service';
 
 const board: Group = { id: 1, ensembleId: 1, name: 'Dospělí', slug: 'dospeli' };
 
@@ -166,14 +167,14 @@ describe('PostDetailComponent', () => {
     env.mandates.set([]);
   });
 
-  it('archivePost po potvrzení zavolá archivaci a příspěvek zůstane otevřený jako archivovaný', () => {
+  it('archivePost po potvrzení zavolá archivaci a příspěvek zůstane otevřený jako archivovaný', async () => {
     configure(authorUser);
     postsSpy.archivePost.and.returnValue(of({ ...post, archivedAt: '2026-02-01T00:00:00' }));
-    spyOn(window, 'confirm').and.returnValue(true);
+    spyOn(TestBed.inject(ConfirmService), 'confirm').and.resolveTo(true);
     const fixture = TestBed.createComponent(PostDetailComponent);
     fixture.detectChanges();
 
-    fixture.componentInstance.archivePost();
+    await fixture.componentInstance.archivePost();
 
     expect(postsSpy.archivePost).toHaveBeenCalledWith(5);
     expect(fixture.componentInstance.post()?.archivedAt).toBeTruthy();
@@ -188,13 +189,13 @@ describe('PostDetailComponent', () => {
     expect(fixture.componentInstance.notFound()).toBeTrue();
   });
 
-  it('archivePost nic neudělá bez potvrzení', () => {
+  it('archivePost nic neudělá bez potvrzení', async () => {
     configure(authorUser);
-    spyOn(window, 'confirm').and.returnValue(false);
+    spyOn(TestBed.inject(ConfirmService), 'confirm').and.resolveTo(false);
     const fixture = TestBed.createComponent(PostDetailComponent);
     fixture.detectChanges();
 
-    fixture.componentInstance.archivePost();
+    await fixture.componentInstance.archivePost();
 
     expect(postsSpy.archivePost).not.toHaveBeenCalled();
   });

@@ -9,6 +9,7 @@ import { canDeleteGroup, canReadGroupContent } from '../../core/access/access.ut
 import { GroupAdminPanelComponent } from '../groups/group-admin/group-admin-panel.component';
 import { GROUP_ICON_OPTIONS, IconComponent, IconName } from '../../shared/icon/icon.component';
 import { ActionFeedback } from '../../shared/ui/form-ui';
+import { ConfirmService } from '../../shared/dialog/confirm.service';
 
 // Diakritiku pryč, mezery na pomlčky – návrh slugu z názvu
 export function slugify(name: string): string {
@@ -99,6 +100,7 @@ export function slugify(name: string): string {
   ],
 })
 export class ManageGroupComponent {
+  private readonly confirmDialog = inject(ConfirmService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private groupsService = inject(GroupsService);
@@ -147,8 +149,14 @@ export class ManageGroupComponent {
     );
   }
 
-  remove(id: number, name: string): void {
-    if (!confirm(`Opravdu nevratně smazat archivovanou skupinu ${name} včetně příspěvků a chatu?`)) return;
+  async remove(id: number, name: string): Promise<void> {
+    const ok = await this.confirmDialog.confirm({
+      title: `Smazat skupinu ${name}?`,
+      message: 'Archivovaná skupina se nevratně smaže včetně příspěvků a chatu.',
+      confirmLabel: 'Smazat nevratně',
+      danger: true,
+    });
+    if (!ok) return;
     this.feedback.run(this.membership.deleteGroup(id), () => this.router.navigate(['/app/manage/groups']));
   }
 }

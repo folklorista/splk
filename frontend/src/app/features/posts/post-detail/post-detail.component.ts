@@ -20,6 +20,7 @@ import { errorMessage } from '../../../shared/ui/form-ui';
 import { RichTextComponent } from '../../../shared/rich-text/rich-text.component';
 import { MentionInputComponent, MentionSubmit } from '../../../shared/mention-input/mention-input.component';
 import { EventsService } from '../../events/events.service';
+import { ConfirmService } from '../../../shared/dialog/confirm.service';
 @Component({
   selector: 'app-post-detail',
   standalone: true,
@@ -27,6 +28,7 @@ import { EventsService } from '../../events/events.service';
   templateUrl: './post-detail.component.html',
 })
 export class PostDetailComponent implements OnInit, OnDestroy {
+  private readonly confirmDialog = inject(ConfirmService);
   post = signal<Post | null>(null);
   board = signal<Group | null>(null);
   loading = signal(true);
@@ -197,10 +199,11 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  archivePost(): void {
+  async archivePost(): Promise<void> {
     const post = this.post();
     if (!post || !this.canArchive()) return;
-    if (!confirm('Opravdu chcete tento příspěvek archivovat?')) return;
+    const ok = await this.confirmDialog.confirm({ title: 'Archivovat příspěvek?', confirmLabel: 'Archivovat' });
+    if (!ok) return;
     this.moderate(this.postsService.archivePost(post.id));
   }
 
@@ -214,10 +217,17 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     if (post) this.moderate(this.postsService.setPinned(post.id, !post.isPinned));
   }
 
-  toggleHidden(): void {
+  async toggleHidden(): Promise<void> {
     const post = this.post();
     if (!post) return;
-    if (!post.hiddenAt && !confirm('Skrýt příspěvek? Uvidí ho jen autor a správci skupiny. Zásah se zapíše do historie skupiny.')) return;
+    if (!post.hiddenAt) {
+      const ok = await this.confirmDialog.confirm({
+        title: 'Skrýt příspěvek?',
+        message: 'Uvidí ho jen autor a správci skupiny. Zásah se zapíše do historie skupiny.',
+        confirmLabel: 'Skrýt',
+      });
+      if (!ok) return;
+    }
     this.moderate(this.postsService.setHidden(post.id, !post.hiddenAt));
   }
 }

@@ -31,6 +31,7 @@ const PREVIEW_LENGTH = 140;
 // Komentáře jen odkazuje (originál je pod příspěvkem) a odpověď z karty ukládá do diskuze příspěvku.
 import { chatVisibility } from '../utils/chat-history';
 import { RichTextComponent } from '../../../shared/rich-text/rich-text.component';
+import { ConfirmService } from '../../../shared/dialog/confirm.service';
 @Component({
   selector: 'app-group-chat',
   standalone: true,
@@ -139,6 +140,7 @@ import { RichTextComponent } from '../../../shared/rich-text/rich-text.component
   `,
 })
 export class GroupChatComponent implements OnInit, OnDestroy {
+  private readonly confirmDialog = inject(ConfirmService);
   readonly group = input.required<Group>();
 
   private access = inject(AccessService);
@@ -319,9 +321,14 @@ export class GroupChatComponent implements OnInit, OnDestroy {
     this.commentsService.addComment(postId, memberId, input.body, input.mentionedMemberIds).subscribe(() => this.replyTo.set(null));
   }
 
-  remove(message: ChatMessage): void {
+  async remove(message: ChatMessage): Promise<void> {
     const own = message.authorId === this.me();
-    if (!confirm(own ? 'Smazat zprávu?' : 'Smazat cizí zprávu jako moderátor?')) return;
+    const ok = await this.confirmDialog.confirm({
+      title: own ? 'Smazat zprávu?' : 'Smazat cizí zprávu jako moderátor?',
+      confirmLabel: 'Smazat',
+      danger: true,
+    });
+    if (!ok) return;
     this.chat.remove(message.id).subscribe({ error: (e) => this.error.set(errorMessage(e)) });
   }
 }

@@ -21,6 +21,7 @@ const EMPTY_PERSON: PersonInput = { firstName: '', lastName: '', nickname: '', e
 // Změny členství se okamžitě promítnou i do detailu skupiny (sdílený živý stav).
 import { CostumesService } from '../costumes/costumes.service';
 import { defaultCostumeOf } from '../costumes/utils/costume-logic';
+import { ConfirmService } from '../../shared/dialog/confirm.service';
 @Component({
   selector: 'app-manage-person',
   standalone: true,
@@ -224,6 +225,7 @@ import { defaultCostumeOf } from '../costumes/utils/costume-logic';
   ],
 })
 export class ManagePersonComponent {
+  private readonly confirmDialog = inject(ConfirmService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private membersService = inject(MembersService);
@@ -348,14 +350,28 @@ export class ManagePersonComponent {
     this.feedback.run(this.membership.grantMandate(member.id, this.grantKind(), target), undefined, 'Pověření přiděleno');
   }
 
-  revoke(mandate: Mandate): void {
-    if (!confirm(`Odebrat pověření ${this.label(mandate.kind)}?`)) return;
+  async revoke(mandate: Mandate): Promise<void> {
+    const ok = await this.confirmDialog.confirm({
+      title: `Odebrat pověření ${this.label(mandate.kind)}?`,
+      confirmLabel: 'Odebrat',
+      danger: true,
+    });
+    if (!ok) return;
     this.feedback.run(this.membership.revokeMandate(mandate.id), undefined, 'Pověření odebráno');
   }
 
-  setActive(member: Member, active: boolean): void {
-    const question = active ? `Obnovit aktivní členství – ${member.nickname}?` : `Ukončit aktivní členství – ${member.nickname}? Osoba se odhlásí ze všech skupin a přijde o pověření.`;
-    if (!confirm(question)) return;
+  async setActive(member: Member, active: boolean): Promise<void> {
+    const ok = await this.confirmDialog.confirm(
+      active
+        ? { title: `Obnovit aktivní členství – ${member.nickname}?`, confirmLabel: 'Obnovit členství' }
+        : {
+            title: `Ukončit aktivní členství – ${member.nickname}?`,
+            message: 'Osoba se odhlásí ze všech skupin a přijde o pověření.',
+            confirmLabel: 'Ukončit členství',
+            danger: true,
+          },
+    );
+    if (!ok) return;
     this.feedback.run(this.membership.setPersonActive(member.id, active), undefined, active ? 'Členství obnoveno' : 'Členství ukončeno');
   }
 }

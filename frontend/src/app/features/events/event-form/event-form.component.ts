@@ -17,6 +17,7 @@ import { AttendanceRecord, AttendanceStatus } from '../../attendance/models/atte
 import { Member } from '../../../core/models/member.model';
 import { ActionFeedback } from '../../../shared/ui/form-ui';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
+import { ConfirmService } from '../../../shared/dialog/confirm.service';
 
 const STATUS_LABELS: Record<AttendanceStatus, string> = { yes: 'Přijde', no: 'Nepřijde', maybe: 'Možná', pending: 'Nezadáno' };
 
@@ -258,6 +259,7 @@ export const EVENT_TYPE_OPTIONS: [EventType, string][] = [
   ],
 })
 export class EventFormComponent implements OnInit {
+  private readonly confirmDialog = inject(ConfirmService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private eventsService = inject(EventsService);
@@ -492,8 +494,15 @@ export class EventFormComponent implements OnInit {
     });
   }
 
-  remove(): void {
-    if (!this.eventId || !confirm('Opravdu akci smazat? Smaže se i nahlášená účast.')) return;
+  async remove(): Promise<void> {
+    if (!this.eventId) return;
+    const ok = await this.confirmDialog.confirm({
+      title: 'Smazat akci?',
+      message: 'Smaže se i nahlášená účast. Akci nelze obnovit.',
+      confirmLabel: 'Smazat akci',
+      danger: true,
+    });
+    if (!ok) return;
     this.feedback.run(this.eventsService.deleteEvent(this.eventId), () => this.router.navigate(['/app/events']));
   }
 }

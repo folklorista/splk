@@ -8,6 +8,7 @@ import { MandatesService } from '../../mandates/mandates.service';
 import { MembershipService } from '../membership.service';
 import { ActionFeedback } from '../../../shared/ui/form-ui';
 import { AvatarComponent } from '../../../shared/avatar/avatar.component';
+import { ConfirmService } from '../../../shared/dialog/confirm.service';
 
 // Záložka Členové: kdo ve skupině je a kdo ji spravuje (transparentně pro všechny členy),
 // návrh nového člena (rozhodne správce, pak pozvaný) a odchod ze skupiny
@@ -70,6 +71,7 @@ import { AvatarComponent } from '../../../shared/avatar/avatar.component';
   ],
 })
 export class GroupMembersComponent {
+  private readonly confirmDialog = inject(ConfirmService);
   readonly group = input.required<Group>();
 
   private access = inject(AccessService);
@@ -121,8 +123,14 @@ export class GroupMembersComponent {
     this.feedback.run(this.membership.invite(this.group().id, id), () => this.candidateId.set(null), 'Návrh odeslán správci');
   }
 
-  leave(): void {
-    if (!confirm(`Opravdu opustit skupinu ${this.group().name}? Přestanete vidět její chat a nástěnku.`)) return;
+  async leave(): Promise<void> {
+    const ok = await this.confirmDialog.confirm({
+      title: `Opustit skupinu ${this.group().name}?`,
+      message: 'Přestanete vidět její chat a nástěnku.',
+      confirmLabel: 'Opustit skupinu',
+      danger: true,
+    });
+    if (!ok) return;
     this.feedback.run(this.membership.leaveGroup(this.group().id), () => this.router.navigate(['/app/boards']));
   }
 }
