@@ -32,7 +32,7 @@ export interface UpcomingEventRow {
   imports: [RouterLink, EventRsvpRowComponent],
   templateUrl: './dashboard.component.html',
   styles: [`
-    .pending { margin-bottom: var(--spacing-lg); border-left: 4px solid var(--color-primary); background: var(--color-surface-alt); border-radius: 8px; padding: var(--spacing-sm) var(--spacing-md); }
+    .pending { margin-bottom: var(--spacing-lg); border-left: 4px solid var(--color-primary); background: var(--color-surface-alt); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md); }
     .pending__title { font-size: var(--font-size-sm); font-weight: 700; margin: 0 0 var(--spacing-xs); }
     .pending__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
     .pending__item { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-sm); flex-wrap: wrap; padding: 6px 0; border-top: 1px solid var(--color-border); }

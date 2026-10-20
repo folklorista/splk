@@ -34,7 +34,7 @@ export function safeReturnUrl(url: string | null | undefined): string {
     .login-card {
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      border-radius: 8px;
+      border-radius: var(--radius-md);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       padding: 2rem;
       max-width: 500px;
@@ -76,7 +76,7 @@ export function safeReturnUrl(url: string | null | undefined): string {
     .form-field input {
       padding: 0.75rem;
       border: 1px solid var(--color-border);
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       background: var(--color-surface);
       color: var(--color-text);
       font-size: 0.95rem;
@@ -94,7 +94,7 @@ export function safeReturnUrl(url: string | null | undefined): string {
       background: var(--color-primary-fill);
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       font-size: 1rem;
       font-weight: 500;
       cursor: pointer;
@@ -114,7 +114,7 @@ export function safeReturnUrl(url: string | null | undefined): string {
       padding: 0.75rem;
       background: var(--color-primary-soft);
       color: var(--color-primary);
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       border-left: 4px solid var(--color-primary);
       margin: 0;
       font-size: 0.9rem;
@@ -143,7 +143,7 @@ export function safeReturnUrl(url: string | null | undefined): string {
       min-width: 0;
       padding: 0.65rem;
       border: 1px solid var(--color-border);
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       background: var(--color-surface);
       color: var(--color-text);
       font-size: 0.9rem;
@@ -154,7 +154,7 @@ export function safeReturnUrl(url: string | null | undefined): string {
       background: var(--color-surface-alt);
       color: var(--color-text);
       border: 1px solid var(--color-border);
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       font-size: 0.9rem;
       cursor: pointer;
       transition: all 0.2s;

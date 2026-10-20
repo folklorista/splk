@@ -254,42 +254,163 @@ $ornament-crosses-col: '/identity/ornaments/ornament-cross-col.svg'; // totéž 
   box-shadow: var(--shadow-card);
 }
 
-// --- Tlačítka ---
-.btn-primary {
-  background: var(--color-primary-fill);
-  border-radius: 8px;
-
-  &:hover:not(:disabled) {
-    background: var(--color-primary-dark);
-  }
-
-  // Výjimečně (hlavní akce obrazovky) s ornamentem vpravo
-  &--ornament {
-    @include ornament-edge($width: 6px, $right: 10px, $opacity: 0.7);
-  }
-}
-
-.btn-secondary {
+// --- Tlačítka: čtyři druhy pro celou aplikaci ---
+// 1) primární (sytá červená), 2) sekundární (obrys), 3) odkazové, 4) segmentový přepínač.
+// Historické třídy (cs-btn, toolbar__btn, attendance-btn, btn-demo) se mapují na stejný vzhled.
+.btn-primary,
+.btn-secondary,
+.cs-btn,
+.toolbar__btn,
+.attendance-btn,
+.btn-demo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 16px;
-  border-radius: 8px;
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+// Sekundární: jemný podklad a obrys
+.btn-secondary,
+.cs-btn,
+.toolbar__btn,
+.attendance-btn,
+.btn-demo {
   border: 1px solid var(--color-border-strong);
-  background: var(--color-surface-sunken);
+  background: var(--color-surface);
   color: var(--color-text);
-  font-size: var(--font-size-base);
-  font-weight: 500;
 
   &:hover:not(:disabled) {
     border-color: var(--color-primary);
     color: var(--color-primary);
+    background: var(--color-surface);
   }
+}
 
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+// Primární: sytá folklorní červená
+.btn-primary,
+.cs-btn--primary,
+.toolbar__btn--primary,
+.attendance-btn--active {
+  border: 1px solid var(--color-primary-fill);
+  background: var(--color-primary-fill);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+    color: #fff;
+    filter: none;
+  }
+}
+
+// Hlavní tlačítko formuláře / obrazovky – větší dotyková plocha
+.btn-primary:not(.btn-primary--sm) {
+  min-height: 42px;
+  padding: 8px 18px;
+  font-size: var(--font-size-base);
+}
+
+// Výjimečně (hlavní akce obrazovky) s ornamentem vpravo
+.btn-primary--ornament {
+  @include ornament-edge($width: 5px, $right: 10px, $opacity: 0.7);
+}
+
+// Nebezpečná akce (smazat, odebrat) – obrys v barvě chyby, ne folklorní červená
+.cs-btn--danger,
+.btn-danger {
+  border-color: var(--status-danger-border);
+  color: var(--status-danger-fg);
+
+  &:hover:not(:disabled) {
+    border-color: var(--status-danger-fg);
+    color: var(--status-danger-fg);
+    background: var(--status-danger-bg);
+  }
+}
+
+// Odkazové tlačítko
+.btn-link,
+.cs-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-primary);
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Segmentový přepínač (Seznam / Kalendář, volby v nastavení)
+.segmented,
+.view-toggle {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+
+  &__btn {
+    min-height: 34px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+
+    & + & {
+      border-left-color: var(--color-border-strong);
+    }
+
+    &:hover:not([class*='--active']) {
+      color: var(--color-primary);
+    }
+
+    &--active {
+      background: var(--color-primary-fill);
+      color: #fff;
+    }
+  }
+}
+
+// Filtrační přepínače (Účast: Všichni / Přijdou…) – tvar chipu, aktivní = primární
+.aa-chip {
+  border-radius: var(--radius-sm);
+  border-color: var(--color-border-strong);
+  font-weight: 600;
+
+  &--active {
+    border-color: var(--color-primary-fill);
+  }
+}
+
+// Volba účasti (Ano / Možná / Ne) – sjednocená výška a zaoblení, barvy podle významu
+.rsvp-btn {
+  min-height: 32px;
+  border-radius: var(--radius-sm);
+  border-color: var(--color-border-strong);
+}
+
+// Viditelný focus pro klávesnici
+a,
+button,
+summary,
+input,
+select,
+textarea,
+[tabindex] {
+  &:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-primary) 70%, transparent);
+    outline-offset: 2px;
   }
 }
 

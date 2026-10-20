@@ -18,7 +18,7 @@
   width: 100%;
   max-width: 400px;
   background: var(--color-surface);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: var(--spacing-xl);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
@@ -46,7 +46,7 @@
   font-size: var(--font-size-sm);
   padding: var(--spacing-sm);
   background: var(--color-primary-soft);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .form-field {
@@ -594,7 +594,7 @@
   gap: var(--spacing-md);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: var(--spacing-lg);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 
@@ -688,7 +688,7 @@
   &__item {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: var(--spacing-md);
     display: flex;
     flex-direction: column;
@@ -732,7 +732,7 @@
 .badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   font-size: var(--font-size-xs);
   font-weight: 600;
   white-space: nowrap;
@@ -776,7 +776,7 @@
   font-size: var(--font-size-xs);
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   white-space: nowrap;
   background: var(--color-surface-alt);
   color: var(--color-text-muted);
@@ -1123,7 +1123,7 @@
   gap: var(--spacing-sm);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-sm) var(--spacing-md);
 
   &--pending {
@@ -1217,9 +1217,9 @@
   }
 
   &--active {
-    &[data-status="yes"]   { background: var(--status-ok-bg); color: var(--status-ok-fg); border-color: #66bb6a; }
-    &[data-status="maybe"] { background: var(--status-warn-bg); color: var(--status-warn-fg); border-color: #ffca28; }
-    &[data-status="no"]    { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: #ef5350; }
+    &[data-status="yes"]   { background: var(--status-ok-bg); color: var(--status-ok-fg); border-color: var(--status-ok-border); }
+    &[data-status="maybe"] { background: var(--status-warn-bg); color: var(--status-warn-fg); border-color: var(--status-warn-border); }
+    &[data-status="no"]    { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
   }
 }
 
@@ -1360,9 +1360,9 @@
     background: var(--color-surface);
     border: 1.5px solid var(--color-text-muted);
 
-    &[data-status="yes"]   { background: #43a047; border-color: #43a047; }
-    &[data-status="maybe"] { background: #ffb300; border-color: #ffb300; }
-    &[data-status="no"]    { background: #e53935; border-color: #e53935; }
+    &[data-status="yes"]   { background: var(--status-ok-fg); border-color: var(--status-ok-fg); }
+    &[data-status="maybe"] { background: var(--status-warn-fg); border-color: var(--status-warn-fg); }
+    &[data-status="no"]    { background: var(--status-danger-fg); border-color: var(--status-danger-fg); }
   }
 
   &__legend {
@@ -1394,7 +1394,7 @@
   margin-bottom: var(--spacing-md);
   padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--status-warn-border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--status-warn-bg);
   color: var(--status-warn-fg);
   font-size: var(--font-size-sm);
@@ -1427,7 +1427,7 @@
   width: max-content;
   max-width: calc(100% - 2 * var(--spacing-md));
   padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-sm) var(--spacing-md);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--color-text);
   color: #fff;
   font-size: var(--font-size-sm);
@@ -1484,7 +1484,7 @@
   &__entry {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: var(--spacing-md);
   }
 
@@ -1547,7 +1547,7 @@
   font-weight: 400;
   color: var(--color-text-muted);
   border: 1px dashed var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 0 4px;
 }
 
@@ -1568,14 +1568,14 @@
   padding: var(--spacing-sm) var(--spacing-md);
   border: 1px solid var(--status-danger-border);
   border-left: 4px solid var(--color-primary);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--status-danger-bg);
-  color: #b71c1c;
+  color: var(--status-danger-fg);
   font-size: var(--font-size-sm);
   text-align: left;
 
   &:hover {
-    background: #ffdde1;
+    border-color: var(--status-danger-fg);
   }
 }
 
@@ -1640,9 +1640,9 @@
 
 // Board: mention badge and archive
 .badge--mention {
-  background: #e3f2fd;
-  color: #1565c0;
-  border-color: #90caf9;
+  background: var(--status-info-bg);
+  color: var(--status-info-fg);
+  border-color: var(--status-info-border);
 }
 
 .item-list .item-list__item--archived {
@@ -1719,7 +1719,7 @@ a.sidebar__user {
     margin-bottom: var(--spacing-lg);
     padding: var(--spacing-md);
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: var(--color-surface);
   }
 
@@ -1793,8 +1793,8 @@ a.sidebar__user {
 .mention {
   padding: 0 1px;
   border-radius: 4px;
-  background: #e3f2fd;
-  color: #1565c0;
+  background: var(--status-info-bg);
+  color: var(--status-info-fg);
   font-weight: 600;
 }
 
@@ -1817,7 +1817,7 @@ a.sidebar__user {
     padding: 4px 0;
     list-style: none;
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     background: var(--color-surface);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     // Víc výsledků (akce) – posuvník místo přetečení přes stránku
@@ -2070,9 +2070,6 @@ a.sidebar__user {
   }
 }
 
-:root[data-theme='dark'] .attendance-report__cell--present {
-  color: #66bb6a;
-}
 
 // Krojový sklad – záložky, souhrn, sestavy
 .costumes-nav {
@@ -2114,7 +2111,7 @@ a.sidebar__user {
   padding: var(--spacing-md);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--color-text);
 
   &:hover { border-color: var(--color-primary); }

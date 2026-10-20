@@ -246,8 +246,8 @@ export const EVENT_TYPE_OPTIONS: [EventType, string][] = [
   styles: [
     `
       .event-form { max-width: 640px; }
-      .event-form__unavailable { font-size: var(--font-size-sm); padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid #e0a800; background: var(--color-surface-alt); border-radius: 6px; }
-      .event-form__fieldset { border: 1px solid var(--color-border); border-radius: 8px; padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md); display: flex; flex-direction: column; gap: var(--spacing-sm); }
+      .event-form__unavailable { font-size: var(--font-size-sm); padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid var(--status-warn-border); background: var(--color-surface-alt); border-radius: 6px; }
+      .event-form__fieldset { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md); display: flex; flex-direction: column; gap: var(--spacing-sm); }
       .event-form__fieldset legend { font-size: var(--font-size-sm); font-weight: 600; padding: 0 4px; }
       .event-form__options { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--spacing-xs); }
       .event-form__guests { list-style: none; display: flex; flex-direction: column; gap: var(--spacing-xs); font-size: var(--font-size-sm); }

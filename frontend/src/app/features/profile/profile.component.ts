@@ -48,7 +48,7 @@ import { getFullName } from '../../core/utils/member.utils';
       padding: 0.75rem;
       margin-bottom: 0.75rem;
       background: #f9f9f9;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       border-left: 3px solid #0066cc;
     }
 
@@ -95,7 +95,7 @@ import { getFullName } from '../../core/utils/member.utils';
     .contact-form input {
       padding: 0.75rem;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       font-size: 0.95rem;
       font-family: inherit;
       text-transform: none;
@@ -128,7 +128,7 @@ import { getFullName } from '../../core/utils/member.utils';
       background: #c94a3a;
       color: white;
       border: none;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       font-size: 1rem;
       font-weight: 500;
       cursor: pointer;

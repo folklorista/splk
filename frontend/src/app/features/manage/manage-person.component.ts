@@ -216,7 +216,7 @@ import { defaultCostumeOf } from '../costumes/utils/costume-logic';
       .mp__row { display: flex; align-items: center; gap: var(--spacing-sm); padding: 6px 0; border-bottom: 1px solid var(--color-border); font-size: var(--font-size-sm); flex-wrap: wrap; }
       .mp__grow { flex: 1; min-width: 160px; }
       .mp__inline { max-width: 360px; }
-      .mp__preview { padding: var(--spacing-md); border-radius: 8px; background: var(--color-surface-alt); border: 1px solid var(--color-border); }
+      .mp__preview { padding: var(--spacing-md); border-radius: var(--radius-md); background: var(--color-surface-alt); border: 1px solid var(--color-border); }
       .mp__dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px var(--spacing-md); font-size: var(--font-size-sm); }
       .mp__dl dt { color: var(--color-text-muted); }
       @media (max-width: 480px) { .mp__dl { grid-template-columns: 1fr; } .mp__dl dd { margin-bottom: 6px; } }

@@ -49,7 +49,7 @@ const FILTERS: Record<HistoryFilter, (e: AuditEntry) => boolean> = {
       }
     </ul>
   `,
-  styles: [`.mh__filter { width: auto; } .mh__extraordinary { border-left-color: #f9a825; }`],
+  styles: [`.mh__filter { width: auto; } .mh__extraordinary { border-left-color: var(--status-warn-border); }`],
 })
 export class ManageHistoryComponent {
   private audit = inject(AuditService);

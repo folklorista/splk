@@ -31,26 +31,21 @@
   }
   .cs-warning {
     padding: var(--spacing-sm) var(--spacing-md); border-radius: 6px; font-size: var(--font-size-sm);
-    border: 1px solid #f9a825; border-left-width: 4px; color: var(--color-text);
-    background: color-mix(in srgb, #f9a825 14%, transparent);
+    border: 1px solid var(--status-warn-border); border-left-width: 4px; color: var(--color-text);
+    background: var(--status-warn-bg);
   }
   .cs-success { font-size: var(--font-size-sm); font-weight: 600; color: var(--status-ok-fg); }
-  :root[data-theme='dark'] .cs-success { color: #81c784; }
   .cs-status { border-color: currentColor; background: transparent; }
   .cs-status--available { color: var(--status-ok-fg); }
-  .cs-status--on-loan { color: #1565c0; }
+  .cs-status--on-loan { color: var(--status-info-fg); }
   .cs-status--not-ready { color: var(--status-warn-fg); }
   .cs-status--retired { color: var(--color-text-muted); }
   .cs-status--complete { color: var(--status-ok-fg); }
   .cs-status--incomplete { color: var(--status-warn-fg); }
   .cs-status--needs-check { color: var(--status-danger-fg); }
-  :root[data-theme='dark'] .cs-status--available, :root[data-theme='dark'] .cs-status--complete { color: #81c784; }
-  :root[data-theme='dark'] .cs-status--on-loan { color: #64b5f6; }
-  :root[data-theme='dark'] .cs-status--not-ready, :root[data-theme='dark'] .cs-status--incomplete { color: #ffb74d; }
-  :root[data-theme='dark'] .cs-status--needs-check { color: var(--status-danger-border); }
   .cs-link { color: var(--color-primary); }
   .cs-link:hover { text-decoration: underline; }
-  .cs-panel { border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); }
+  .cs-panel { border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); }
   .cs-panel > summary { padding: var(--spacing-sm) var(--spacing-md); cursor: pointer; font-weight: 600; font-size: var(--font-size-sm); }
   .cs-panel__body { padding: 0 var(--spacing-md) var(--spacing-md); display: flex; flex-direction: column; gap: var(--spacing-sm); }
   .cs-actions { display: flex; flex-direction: column; gap: var(--spacing-sm); }

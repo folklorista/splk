@@ -106,10 +106,10 @@ interface Batch {
     .batch { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-bottom: 6px; opacity: 0.6; }
     .batch--latest { opacity: 1; }
     .result[data-outcome='verified'] { background: var(--status-ok-fg); color: #fff; border-color: var(--status-ok-fg); }
-    .result[data-outcome='duplicate'], .result[data-outcome='repeated'] { background: #fff3cd; color: #6d4c00; border: 1px solid #e0a800; }
+    .result[data-outcome='duplicate'], .result[data-outcome='repeated'] { background: var(--status-warn-bg); color: var(--status-warn-fg); border: 1px solid var(--status-warn-border); }
     .result[data-outcome='unknown'], .result[data-outcome='retired'], .result[data-outcome='out-of-scope'], .result[data-outcome='on-loan'], .result[data-outcome='away'] { background: var(--color-primary-fill); color: #fff; border-color: var(--color-primary); }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; margin: var(--spacing-md) 0; }
-    .cell { min-height: 56px; border-radius: 8px; border: 2px solid var(--color-border); background: var(--color-surface); color: var(--color-text); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; font: inherit; padding: 2px; }
+    .cell { min-height: 56px; border-radius: var(--radius-md); border: 2px solid var(--color-border); background: var(--color-surface); color: var(--color-text); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; font: inherit; padding: 2px; }
     .cell__num { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
     .cell__flag { font-size: 0.6rem; line-height: 1; }
     .cell[data-state='verified'] { background: var(--status-ok-fg); border-color: var(--status-ok-fg); color: #fff; }

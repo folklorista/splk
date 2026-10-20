@@ -280,7 +280,7 @@ interface MemberRow {
       .ga__icons { display: flex; flex-wrap: wrap; gap: 4px; }
       .ga__icon { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--color-border); border-radius: 6px; background: var(--color-surface); color: var(--color-text); }
       .ga__icon--active { border-color: var(--color-primary); color: var(--color-primary); box-shadow: inset 0 0 0 1px var(--color-primary); }
-      .ga__extraordinary { border-left-color: #f9a825; }
+      .ga__extraordinary { border-left-color: var(--status-warn-border); }
     `,
   ],
 })
