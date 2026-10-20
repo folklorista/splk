@@ -53,6 +53,27 @@ describe('SidebarComponent', () => {
     expect(TestBed.inject(SettingsService).settings().sidebarCompact).toBeTrue();
   });
 
+  it('sbalené menu předá tooltipu svislou polohu položky (tooltip je fixed kvůli posuvníku)', () => {
+    const fixture = render();
+    const el: HTMLElement = fixture.nativeElement;
+    toggle(el).click();
+    fixture.detectChanges();
+
+    const item = el.querySelector<HTMLElement>('.sidebar__nav-item')!;
+    item.querySelector('.sidebar__label')!.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+    const rect = item.getBoundingClientRect();
+    expect(item.style.getPropertyValue('--tip-y')).toBe(`${rect.top + rect.height / 2}px`);
+  });
+
+  it('rozbalené menu polohu tooltipu nenastavuje', () => {
+    const fixture = render();
+    const item = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('.sidebar__nav-item')!;
+    item.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+    expect(item.style.getPropertyValue('--tip-y')).toBe('');
+  });
+
   it('skryté položky jsou pod „Další“ se součtem badge a dají se rozbalit', () => {
     const fixture = render();
     const el: HTMLElement = fixture.nativeElement;

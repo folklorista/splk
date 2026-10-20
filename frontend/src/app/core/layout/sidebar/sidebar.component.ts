@@ -40,6 +40,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.navigation.stop();
   }
 
+  // Sbalené menu: tooltip s názvem je position: fixed (seznam se posouvá a přetečení by ho usekl),
+  // proto mu při najetí / fokusu předáme svislou polohu položky
+  placeTooltip(event: Event): void {
+    if (!this.compact()) return;
+    const item = (event.target as HTMLElement | null)?.closest<HTMLElement>('.sidebar__nav-item');
+    if (!item) return;
+    const rect = item.getBoundingClientRect();
+    item.style.setProperty('--tip-y', `${rect.top + rect.height / 2}px`);
+  }
+
   toggleCompact(): void {
     this.settings.update({ sidebarCompact: !this.compact() });
   }

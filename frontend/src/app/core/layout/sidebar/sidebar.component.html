@@ -16,7 +16,7 @@
   </div>
   <div class="bordura" aria-hidden="true"></div>
 
-  <nav class="sidebar__nav" aria-label="Hlavní navigace">
+  <nav class="sidebar__nav" aria-label="Hlavní navigace" (mouseover)="placeTooltip($event)" (focusin)="placeTooltip($event)">
     @for (section of navSections(); track section.key) {
       <div class="sidebar__nav-section">
         @if (section.label) {
