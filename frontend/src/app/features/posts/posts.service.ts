@@ -52,6 +52,14 @@ export class PostsService {
     return post.authorId === this.access.memberId();
   }
 
+  hasAuthored(memberId: number): boolean {
+    return postsCache.some((p) => p.authorId === memberId);
+  }
+
+  mentions(memberId: number): boolean {
+    return postsCache.some((p) => p.mentionedMemberIds?.includes(memberId));
+  }
+
   createPost(post: Omit<Post, 'id'>): Observable<Post> {
     const group = this.groupsService.findGroup(post.groupId);
     if (!group || !canPostInGroup(this.access.subject(), group) || post.authorId !== this.access.memberId()) {

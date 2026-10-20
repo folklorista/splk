@@ -67,6 +67,10 @@ export class EventsService {
     return this.eventsSubject.value.find((e) => e.id === id);
   }
 
+  isGuest(memberId: number): boolean {
+    return this.eventsSubject.value.some((e) => e.guestMemberIds?.includes(memberId));
+  }
+
   getEvents(): Observable<AppEvent[]> {
     return this.eventsWithAttendance$.pipe(delay(300));
   }

@@ -42,6 +42,14 @@ export class EventChatService {
     return this.messages().filter((m) => m.eventId === event.id);
   }
 
+  isAuthor(memberId: number): boolean {
+    return this.messages().some((m) => m.authorId === memberId);
+  }
+
+  mentions(memberId: number): boolean {
+    return this.messages().some((m) => m.mentionedMemberIds.includes(memberId));
+  }
+
   canWrite(event: AppEvent): boolean {
     const member = this.access.currentMember();
     return isEventChatEnabled(event) && !!member && (isEventAudience(member, event) || canEditEvent(this.access.subject(), event));

@@ -24,6 +24,7 @@ export type AuditAction =
   | 'person-updated'
   | 'person-deactivated'
   | 'person-reactivated'
+  | 'person-deleted'
   | 'post-published'
   | 'post-pinned'
   | 'post-unpinned'

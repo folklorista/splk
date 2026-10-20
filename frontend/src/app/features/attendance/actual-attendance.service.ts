@@ -30,6 +30,10 @@ export class ActualAttendanceService {
   }
 
   // Zapíše (nebo opraví) přítomnost jednoho člena
+  hasRecords(memberId: number): boolean {
+    return this.recordsSubject.value.some((r) => r.memberId === memberId || r.recordedByMemberId === memberId);
+  }
+
   mark(eventId: number, memberId: number, present: boolean, recordedByMemberId: number): Observable<ActualAttendance> {
     const [record] = this.upsert(eventId, [memberId], present, recordedByMemberId);
     return of({ ...record }).pipe(delay(300));

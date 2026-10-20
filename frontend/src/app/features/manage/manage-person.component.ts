@@ -22,6 +22,7 @@ const EMPTY_PERSON: PersonInput = { firstName: '', lastName: '', nickname: '', e
 import { CostumesService } from '../costumes/costumes.service';
 import { defaultCostumeOf } from '../costumes/utils/costume-logic';
 import { ConfirmOptions, ConfirmService } from '../../shared/dialog/confirm.service';
+import { PersonDeletionService } from './person-deletion.service';
 // Dotaz před ukončením / obnovením – externista není člen, proto „vyřadit z evidence“
 export function personActiveQuestion(member: Pick<Member, 'nickname' | 'isExternal'>, active: boolean): ConfirmOptions {
   if (member.isExternal) {
@@ -237,6 +238,21 @@ export function personActiveQuestion(member: Pick<Member, 'nickname' | 'isExtern
               }
             }
           </section>
+
+          <section class="mp__section">
+            <h3 class="mp__heading">Trvalé smazání</h3>
+            @let blockers = deletionBlockers(m.id);
+            @if (blockers.length) {
+              <p class="cs-hint">Osobu nelze smazat, protože:</p>
+              <ul class="mp__blockers">
+                @for (reason of blockers; track reason) { <li>{{ reason }}</li> }
+              </ul>
+              <p class="cs-hint">{{ m.isExternal ? 'Externistu můžete vyřadit z evidence.' : 'Můžete ukončit její aktivní členství.' }} Historie a zápůjčky tak zůstanou zachované.</p>
+            } @else {
+              <p class="cs-hint">Jen pro osobu založenou omylem – nemá žádné odpovědi, docházku, obsah ani záznamy v krojích. Smazání nelze vrátit.</p>
+              <button type="button" class="cs-btn cs-btn--danger" (click)="deletePerson(m)">Smazat osobu trvale</button>
+            }
+          </section>
         }
       </div>
     }
@@ -246,6 +262,7 @@ export function personActiveQuestion(member: Pick<Member, 'nickname' | 'isExtern
       .mp { display: flex; flex-direction: column; gap: var(--spacing-md); }
       .mp__title { font-size: var(--font-size-lg); display: flex; gap: var(--spacing-sm); align-items: center; flex-wrap: wrap; }
       .mp__section { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+      .mp__blockers { margin: 0 0 var(--spacing-xs) var(--spacing-lg); font-size: var(--font-size-sm); color: var(--color-text); }
       .mp__heading { font-size: var(--font-size-xs); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-muted); }
       .mp__list { list-style: none; display: flex; flex-direction: column; }
       .mp__row { display: flex; align-items: center; gap: var(--spacing-sm); padding: 6px 0; border-bottom: 1px solid var(--color-border); font-size: var(--font-size-sm); flex-wrap: wrap; }
@@ -260,6 +277,7 @@ export function personActiveQuestion(member: Pick<Member, 'nickname' | 'isExtern
 })
 export class ManagePersonComponent {
   private readonly confirmDialog = inject(ConfirmService);
+  private readonly deletion = inject(PersonDeletionService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private membersService = inject(MembersService);
@@ -392,6 +410,21 @@ export class ManagePersonComponent {
     });
     if (!ok) return;
     this.feedback.run(this.membership.revokeMandate(mandate.id), undefined, 'Pověření odebráno');
+  }
+
+  deletionBlockers(memberId: number): string[] {
+    return this.deletion.blockers(memberId);
+  }
+
+  async deletePerson(member: Member): Promise<void> {
+    const ok = await this.confirmDialog.confirm({
+      title: `Trvale smazat osobu ${member.nickname}?`,
+      message: 'Osoba zmizí z evidence včetně skupin a pověření. Smazání nelze vrátit.',
+      confirmLabel: 'Smazat trvale',
+      danger: true,
+    });
+    if (!ok) return;
+    this.feedback.run(this.deletion.deletePerson(member.id), () => this.router.navigate(['/app/manage/members']), 'Osoba smazána');
   }
 
   async setActive(member: Member, active: boolean): Promise<void> {

@@ -61,6 +61,11 @@ export class AvailabilityService {
   }
 
   // U existující akce jen pro pověřené organizátory (úprava akce nebo evidence docházky)
+  // Při trvalém smazání osoby (Správa souboru) – nedostupnost je jen osobní poznámka, historie ne
+  removeAllFor(memberId: number): void {
+    this.commit(this.items().filter((u) => u.memberId !== memberId));
+  }
+
   forEvent(event: EventScope & { startsAt: string; endsAt: string }): Unavailability[] {
     const s = this.access.subject();
     if (!canEditEvent(s, event) && !canRecordAttendance(s, event)) return [];

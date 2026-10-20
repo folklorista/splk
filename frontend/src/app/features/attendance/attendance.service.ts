@@ -37,6 +37,11 @@ export class AttendanceService {
 
   // Otevření detailu akce: první a poslední zobrazení (jediný údaj osoba × akce), beze změny účasti.
   // Rychlá odpověď ze seznamu se sem nevolá – není to zobrazení detailu.
+  // Odpověděla osoba někdy na akci? (samotné zobrazení detailu se nepočítá)
+  hasResponses(memberId: number): boolean {
+    return this.recordsSubject.value.some((r) => r.memberId === memberId && r.status !== 'pending');
+  }
+
   markViewed(eventId: number, memberId: number, at = new Date().toISOString()): Observable<void> {
     this.patchRecord(eventId, memberId, (r) => ({ ...r, firstViewedAt: r.firstViewedAt ?? at, lastViewedAt: at }));
     return of(undefined).pipe(delay(300));

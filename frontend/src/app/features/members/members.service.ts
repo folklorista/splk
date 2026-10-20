@@ -21,7 +21,8 @@ let membersCache = loadDemoData('members', seedMembers);
 const isNicknameTaken = (nickname: string, exceptId?: number) =>
   membersCache.some((m) => m.id !== exceptId && nicknameKey(m.nickname) === nicknameKey(nickname));
 
-// Osoby se nemažou – odchod ze souboru jen ukončí aktivní členství (historie a zápůjčky zůstávají).
+// Odchod ze souboru jen ukončí aktivní členství (historie a zápůjčky zůstávají). Trvale smazat lze jen
+// „čistou“ osobu bez stop v evidenci – rozhoduje PersonDeletionService.
 // Členství ve skupinách mění MembershipService (kontroluje oprávnění a zapisuje historii).
 @Injectable({ providedIn: 'root' })
 export class MembersService {
@@ -127,6 +128,10 @@ export class MembersService {
     const updated = { ...member, isActive };
     this.commit(membersCache.map((m) => (m.id === memberId ? updated : m)));
     return updated;
+  }
+
+  remove(memberId: number): void {
+    this.commit(membersCache.filter((m) => m.id !== memberId));
   }
 
   resetCache(): void {

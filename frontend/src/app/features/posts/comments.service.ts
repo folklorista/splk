@@ -54,6 +54,14 @@ export class CommentsService {
   }
 
   // Komentovat smí jen člen skupiny příspěvku a jen sám za sebe (i při odpovědi z chatové karty)
+  isAuthor(memberId: number): boolean {
+    return this.commentsSubject.value.some((c) => c.authorId === memberId);
+  }
+
+  mentions(memberId: number): boolean {
+    return this.commentsSubject.value.some((c) => c.mentionedMemberIds.includes(memberId));
+  }
+
   addComment(postId: number, authorId: number, body: string, mentionedMemberIds: number[]): Observable<PostComment> {
     const post = this.posts.findPost(postId);
     const group = post && this.groups.findGroup(post.groupId);

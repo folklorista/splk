@@ -40,6 +40,7 @@ export function auditText(entry: AuditEntry, ctx: AuditTextContext): string {
     'person-updated': `Upraveny údaje osoby ${who}`,
     'person-deactivated': entry.details === EXTERNAL_DETAIL ? `${who}: externista vyřazen z evidence` : `${who}: ukončeno aktivní členství v souboru`,
     'person-reactivated': entry.details === EXTERNAL_DETAIL ? `${who}: externista vrácen do evidence` : `${who}: obnoveno aktivní členství v souboru`,
+    'person-deleted': `Trvale smazána osoba ${entry.details ?? ''} (založená omylem, bez stop v evidenci)`,
     'post-published': `Nový příspěvek ve skupině ${group}`,
     'post-pinned': `Příspěvek připnut ve skupině ${group}`,
     'post-unpinned': `Příspěvek odepnut ve skupině ${group}`,

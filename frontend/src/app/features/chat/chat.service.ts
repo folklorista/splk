@@ -56,6 +56,14 @@ export class ChatService {
     return this._messages().filter((m) => m.groupId === groupId);
   }
 
+  isAuthor(memberId: number): boolean {
+    return this._messages().some((m) => m.authorId === memberId);
+  }
+
+  mentions(memberId: number): boolean {
+    return this._messages().some((m) => m.mentionedMemberIds.includes(memberId));
+  }
+
   send(groupId: number, body: string, mentionedMemberIds: number[]): Observable<ChatMessage> {
     return defer(() => {
       const group = this.group(groupId);
