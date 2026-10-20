@@ -23,6 +23,7 @@ import { PostsService } from '../posts/posts.service';
 import { withChatHistoryChange } from '../chat/utils/chat-history';
 import { CommentsService } from '../posts/comments.service';
 import { ChatService } from '../chat/chat.service';
+import { EXTERNAL_DETAIL } from '../audit/audit-text';
 
 export type GroupPatch = Partial<Omit<Group, 'id' | 'ensembleId'>>;
 
@@ -542,7 +543,7 @@ export class MembershipService {
         });
       }
       this.membersService.setActive(memberId, isActive);
-      this.log(isActive ? 'person-reactivated' : 'person-deactivated', s.memberId, { memberId });
+      this.log(isActive ? 'person-reactivated' : 'person-deactivated', s.memberId, { memberId, ...(member.isExternal ? { details: EXTERNAL_DETAIL } : {}) });
     });
   }
 }

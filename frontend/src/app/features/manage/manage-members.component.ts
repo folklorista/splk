@@ -35,8 +35,8 @@ type StatusFilter = 'active' | 'external' | 'former' | 'all';
           <div class="item-list__row">
             <span class="item-list__title">{{ member.nickname }} <span class="cs-muted">{{ fullName(member) }}</span></span>
             <div class="item-list__badges">
-              @if (!member.isActive) { <span class="badge">bývalý člen</span> }
-              @if (member.isExternal) { <span class="badge">externista</span> }
+              @if (!member.isActive) { <span class="badge">{{ member.isExternal ? 'vyřazený externista' : 'bývalý člen' }}</span> }
+              @else if (member.isExternal) { <span class="badge">externista</span> }
               @for (label of mandateLabels(member.id); track label) {
                 <span class="badge badge--pinned">{{ label }}</span>
               }

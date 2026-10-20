@@ -21,7 +21,29 @@ const EMPTY_PERSON: PersonInput = { firstName: '', lastName: '', nickname: '', e
 // Změny členství se okamžitě promítnou i do detailu skupiny (sdílený živý stav).
 import { CostumesService } from '../costumes/costumes.service';
 import { defaultCostumeOf } from '../costumes/utils/costume-logic';
-import { ConfirmService } from '../../shared/dialog/confirm.service';
+import { ConfirmOptions, ConfirmService } from '../../shared/dialog/confirm.service';
+// Dotaz před ukončením / obnovením – externista není člen, proto „vyřadit z evidence“
+export function personActiveQuestion(member: Pick<Member, 'nickname' | 'isExternal'>, active: boolean): ConfirmOptions {
+  if (member.isExternal) {
+    return active
+      ? { title: `Vrátit ${member.nickname} do evidence externistů?`, confirmLabel: 'Vrátit do evidence' }
+      : {
+          title: `Vyřadit externistu ${member.nickname} z evidence?`,
+          message: 'Zmizí z nabídek a přijde o případné skupiny a pověření. Historie i zápůjčky zůstanou.',
+          confirmLabel: 'Vyřadit',
+          danger: true,
+        };
+  }
+  return active
+    ? { title: `Obnovit aktivní členství – ${member.nickname}?`, confirmLabel: 'Obnovit členství' }
+    : {
+        title: `Ukončit aktivní členství – ${member.nickname}?`,
+        message: 'Osoba se odhlásí ze všech skupin a přijde o pověření.',
+        confirmLabel: 'Ukončit členství',
+        danger: true,
+      };
+}
+
 @Component({
   selector: 'app-manage-person',
   standalone: true,
@@ -195,12 +217,24 @@ import { ConfirmService } from '../../shared/dialog/confirm.service';
           </section>
 
           <section class="mp__section">
-            <h3 class="mp__heading">Členství v souboru</h3>
-            @if (m.isActive) {
-              <p class="cs-hint">Ukončení odebere skupiny a pověření. Osoba, její historie, docházka i zápůjčky v evidenci zůstanou.</p>
-              <button type="button" class="cs-btn cs-btn--danger" (click)="setActive(m, false)">Ukončit aktivní členství</button>
+            @if (m.isExternal) {
+              <!-- Externista není členem souboru – nemá co „ukončit“, jen se vyřadí z evidence -->
+              <h3 class="mp__heading">Evidence externisty</h3>
+              @if (m.isActive) {
+                <p class="cs-hint">Externista není členem souboru. Vyřazení ho skryje z nabídek (výdej krojů, hosté akcí) a odebere případné skupiny a pověření. Jeho historie i zápůjčky v evidenci zůstanou.</p>
+                <button type="button" class="cs-btn cs-btn--danger" (click)="setActive(m, false)">Vyřadit z evidence</button>
+              } @else {
+                <p class="cs-hint">Vyřazený externista – v nabídkách se nezobrazuje.</p>
+                <button type="button" class="cs-btn" (click)="setActive(m, true)">Vrátit do evidence</button>
+              }
             } @else {
-              <button type="button" class="cs-btn" (click)="setActive(m, true)">Obnovit aktivní členství</button>
+              <h3 class="mp__heading">Členství v souboru</h3>
+              @if (m.isActive) {
+                <p class="cs-hint">Ukončení odebere skupiny a pověření. Osoba, její historie, docházka i zápůjčky v evidenci zůstanou.</p>
+                <button type="button" class="cs-btn cs-btn--danger" (click)="setActive(m, false)">Ukončit aktivní členství</button>
+              } @else {
+                <button type="button" class="cs-btn" (click)="setActive(m, true)">Obnovit aktivní členství</button>
+              }
             }
           </section>
         }
@@ -361,17 +395,9 @@ export class ManagePersonComponent {
   }
 
   async setActive(member: Member, active: boolean): Promise<void> {
-    const ok = await this.confirmDialog.confirm(
-      active
-        ? { title: `Obnovit aktivní členství – ${member.nickname}?`, confirmLabel: 'Obnovit členství' }
-        : {
-            title: `Ukončit aktivní členství – ${member.nickname}?`,
-            message: 'Osoba se odhlásí ze všech skupin a přijde o pověření.',
-            confirmLabel: 'Ukončit členství',
-            danger: true,
-          },
-    );
+    const ok = await this.confirmDialog.confirm(personActiveQuestion(member, active));
     if (!ok) return;
-    this.feedback.run(this.membership.setPersonActive(member.id, active), undefined, active ? 'Členství obnoveno' : 'Členství ukončeno');
+    const done = member.isExternal ? (active ? 'Externista vrácen do evidence' : 'Externista vyřazen z evidence') : active ? 'Členství obnoveno' : 'Členství ukončeno';
+    this.feedback.run(this.membership.setPersonActive(member.id, active), undefined, done);
   }
 }

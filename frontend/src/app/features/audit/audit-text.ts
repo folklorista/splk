@@ -1,6 +1,9 @@
 import { MANDATE_LABELS } from '../../core/models/mandate.model';
 import { AuditAction, AuditEntry } from './audit.model';
 
+// Příznak v details: ukončení/obnovení se týká externisty (není člen, „vyřazení z evidence“)
+export const EXTERNAL_DETAIL = 'externista';
+
 export interface AuditTextContext {
   memberName: (id: number | undefined) => string;
   groupName: (id: number | undefined) => string;
@@ -35,8 +38,8 @@ export function auditText(entry: AuditEntry, ctx: AuditTextContext): string {
     'group-deleted': `Smazána skupina ${group}`,
     'person-created': `Založena osoba ${who}`,
     'person-updated': `Upraveny údaje osoby ${who}`,
-    'person-deactivated': `${who}: ukončeno aktivní členství v souboru`,
-    'person-reactivated': `${who}: obnoveno aktivní členství v souboru`,
+    'person-deactivated': entry.details === EXTERNAL_DETAIL ? `${who}: externista vyřazen z evidence` : `${who}: ukončeno aktivní členství v souboru`,
+    'person-reactivated': entry.details === EXTERNAL_DETAIL ? `${who}: externista vrácen do evidence` : `${who}: obnoveno aktivní členství v souboru`,
     'post-published': `Nový příspěvek ve skupině ${group}`,
     'post-pinned': `Příspěvek připnut ve skupině ${group}`,
     'post-unpinned': `Příspěvek odepnut ve skupině ${group}`,
