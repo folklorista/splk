@@ -1649,34 +1649,6 @@
   opacity: 0.7;
 }
 
-.board-archive {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  margin: var(--spacing-lg) 0 var(--spacing-md);
-
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    border-top: 1px solid var(--color-border);
-  }
-
-  &__toggle {
-    padding: 4px 12px;
-    border: 1px solid var(--color-border);
-    border-radius: 14px;
-    background: var(--color-surface);
-    color: var(--color-text-muted);
-    font-size: var(--font-size-sm);
-
-    &:hover {
-      color: var(--color-primary);
-      border-color: var(--color-primary);
-    }
-  }
-}
-
 // Narrow screens: badges above the title so the title keeps the full width
 @media (max-width: 479px) {
   .item-list__row {

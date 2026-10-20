@@ -22,7 +22,7 @@ import { EventRsvpRowComponent } from '../event-rsvp-row/event-rsvp-row.componen
     }
     @if (past().length) {
       <details class="events-past">
-        <summary class="events-past__summary">Uplynulé ({{ past().length }})</summary>
+        <summary class="toggle-divider"><span class="toggle-divider__btn">Uplynulé ({{ past().length }})</span></summary>
         <ul class="rsvp-list">
           @for (event of past(); track event.id) {
             <li><app-event-rsvp-row [event]="event" [status]="status(event)" [counts]="countsFor()(event)" /></li>

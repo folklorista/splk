@@ -19,8 +19,8 @@
     }
 
     @if (archivedPosts().length) {
-      <div class="board-archive">
-        <button type="button" class="board-archive__toggle" [attr.aria-expanded]="showArchived()" (click)="showArchived.set(!showArchived())">
+      <div class="toggle-divider">
+        <button type="button" class="toggle-divider__btn" [attr.aria-expanded]="showArchived()" (click)="showArchived.set(!showArchived())">
           {{ showArchived() ? 'Skrýt archivované' : 'Zobrazit archivované' }} ({{ archivedPosts().length }})
         </button>
       </div>

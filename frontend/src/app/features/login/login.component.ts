@@ -32,27 +32,13 @@ export function safeReturnUrl(url: string | null | undefined): string {
     }
 
     .login-card {
-      position: relative;
-      overflow: hidden;
       background: var(--color-surface);
       border: 1px solid var(--color-border);
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      padding: calc(2rem + 14px) 2rem 2rem;
+      padding: 2rem;
       max-width: 500px;
       width: 100%;
-    }
-
-    /* Souborová bordura přes horní okraj karty */
-    .login-bordura {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 14px;
-      background: var(--color-accent);
-      -webkit-mask: url('/identity/bordura-tile.png') repeat-x center / auto 100%;
-      mask: url('/identity/bordura-tile.png') repeat-x center / auto 100%;
     }
 
     .login-title {

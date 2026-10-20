@@ -3,17 +3,27 @@
 // Intenzita dekorace: výrazná = hlavička, bordura, aktivní navigace, titulky; jemná = chipy, vybrané karty,
 // hlavní tlačítka, oddělovače; žádná = formuláře, tabulky, přepínače, číselné badge, chat, inventury.
 
-$ornament-underline: '/identity/bordura-tile.png';
+$bordura: '/identity/bordura-tile.png';
 $ornament-chip: '/identity/ornaments/ornament-chip.svg';
 $ornament-flower: '/identity/ornaments/ornament-flower.svg';
 $ornament-star: '/identity/ornaments/ornament-star.svg';
+$ornament-crosses: '/identity/ornaments/ornament-cross-row.svg'; // dlaždice křížek + mezera
 
 @mixin motif($url, $size: auto 100%, $repeat: repeat-x, $position: center) {
   -webkit-mask: url($url) $repeat $position / $size;
   mask: url($url) $repeat $position / $size;
 }
 
-// Ornamentální podtržení aktivní položky – stejné pro záložky, dolní lištu i boční menu.
+// Řada vyšívaných křížků (5 px vysokých) – podtržení aktivní položky, oddělovací linky.
+// `space` rozloží celé křížky po šířce bez useknutých okrajů.
+@mixin cross-row {
+  height: 5px;
+  background: var(--color-accent);
+  -webkit-mask: url($ornament-crosses) space left center / auto 100%;
+  mask: url($ornament-crosses) space left center / auto 100%;
+}
+
+// Podtržení aktivní položky – stejné pro záložky, dolní lištu i boční menu.
 // Je absolutně umístěné, takže nemění výšku navigace a layout neposkakuje.
 @mixin ornament-underline($left: 8px, $right: 8px, $bottom: -1px) {
   position: relative;
@@ -24,10 +34,8 @@ $ornament-star: '/identity/ornaments/ornament-star.svg';
     left: $left;
     right: $right;
     bottom: $bottom;
-    height: 5px;
-    background: var(--color-accent);
     pointer-events: none;
-    @include motif($ornament-underline);
+    @include cross-row;
   }
 }
 
@@ -72,19 +80,13 @@ $ornament-star: '/identity/ornaments/ornament-star.svg';
   .logo__img--dark { display: block; }
 }
 
-// --- Pruh bordury – pod horní lištou (mobil) a pod hlavičkou bočního menu ---
+// --- Pruh bordury – jen pod logem v bočním menu ---
 .bordura {
   flex-shrink: 0;
   height: 14px;
   margin: 4px 0;
   background: var(--color-accent);
-  @include motif($ornament-underline);
-
-  &--mobile {
-    @media (min-width: 768px) {
-      display: none;
-    }
-  }
+  @include motif($bordura);
 }
 
 // --- Typografie: nadpisy patkovým písmem, UI bezpatkové ---
@@ -113,13 +115,13 @@ $ornament-star: '/identity/ornaments/ornament-star.svg';
   @include ornament-underline($left: 44px, $right: auto, $bottom: 3px);
 
   &::after {
-    width: 40px;
+    width: 45px;
   }
 }
 
 .sidebar--compact .sidebar__nav-item--active::after {
-  left: calc(50% - 14px);
-  width: 28px;
+  left: calc(50% - 12px);
+  width: 25px;
 }
 
 // --- Chipy a štítky: jemně zaoblené, tenké ohraničení, ornament vpravo ---
@@ -315,17 +317,6 @@ $ornament-star: '/identity/ornaments/ornament-star.svg';
   }
 }
 
-// b) Tenká bordura – tam, kde uprostřed už je obsah (tlačítko, rozbalovací nadpis)
-@mixin bordura-line {
-  content: '';
-  flex: 1;
-  height: 5px;
-  border: none;
-  background: var(--color-accent);
-  opacity: 0.45;
-  @include motif($ornament-underline);
-}
-
 // Samostatný prvek <div class="ornament-divider"><span class="ornament-divider__motif"></span></div>
 .ornament-divider {
   display: flex;
@@ -359,51 +350,77 @@ $ornament-star: '/identity/ornaments/ornament-star.svg';
   @include ornament-rule(var(--spacing-lg));
 }
 
-// Nástěnka: „Zobrazit archivované“ mezi dvěma tenkými bordurami
-.board-archive {
-  &::before,
-  &::after {
-    @include bordura-line;
-  }
-
-  &__toggle {
-    border-radius: var(--radius-sm);
-  }
+// Boční menu: sekce oddělené linkou s hvězdičkou (rozbalené) / krátkou řadou křížků (sbalené)
+.sidebar:not(.sidebar--compact) .sidebar__nav-section + .sidebar__nav-section {
+  @include ornament-rule(14px);
+  margin-top: 6px;
 }
 
-// Seznam akcí: „▸ Uplynulé (17)“ a za ním tenká bordura
-.events-past__summary {
+.sidebar--compact .sidebar__nav-section-label {
+  width: 25px; // 3 křížky
+  margin: var(--spacing-sm) auto;
+  padding: 0;
+  opacity: 0.85;
+  @include cross-row;
+}
+
+// --- Rozbalovací přepínač mezi dvěma řadami křížků (Zobrazit archivované, Uplynulé…) ---
+// <div class="toggle-divider"><button class="toggle-divider__btn" aria-expanded>…</button></div>
+// <details><summary class="toggle-divider"><span class="toggle-divider__btn">…</span></summary>…</details>
+.toggle-divider {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin: var(--spacing-lg) 0 var(--spacing-md);
   list-style: none;
+  cursor: pointer;
 
   &::-webkit-details-marker {
     display: none;
   }
 
-  &::before {
-    content: '▸';
-    transition: transform 0.15s;
-  }
-
+  &::before,
   &::after {
-    @include bordura-line;
+    content: '';
+    flex: 1;
+    opacity: 0.5;
+    @include cross-row;
   }
-}
 
-.events-past[open] > .events-past__summary::before {
-  transform: rotate(90deg);
-}
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    white-space: nowrap;
 
-// Sbalené boční menu: místo prosté čáry mezi sekcemi malá vyšívaná hvězdička
-.sidebar--compact .sidebar__nav-section-label {
-  height: 14px;
-  margin: var(--spacing-sm) auto;
-  width: 14px;
-  background: var(--color-accent);
-  opacity: 0.8;
-  @include motif($ornament-star, contain, no-repeat);
+    &::before {
+      content: '';
+      width: 0;
+      height: 0;
+      border-left: 5px solid currentColor;
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+      transition: transform 0.15s;
+    }
+  }
+
+  &:hover &__btn,
+  &__btn:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  &__btn[aria-expanded='true']::before,
+  details[open] > &  &__btn::before {
+    transform: rotate(90deg);
+  }
 }
 
 // --- Chat: oddělovač dne s křížkovým srdíčkem ---
