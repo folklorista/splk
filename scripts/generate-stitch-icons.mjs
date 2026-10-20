@@ -53,7 +53,9 @@ function ornamentSvg(item) {
       parts.push(`M${a} ${c}L${b} ${d}M${a} ${d}L${b} ${c}`);
     }),
   );
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width * CELL} ${item.rows.length * CELL}" fill="none" stroke="#000" stroke-width="${STROKE}" stroke-linecap="round"><path d="${parts.join('')}"/></svg>\n`;
+  // tileWidth/tileHeight (in cells) resize the tile – stitch spacing in repeated rows
+  const w = (item.tileWidth ?? width) * CELL, h = (item.tileHeight ?? item.rows.length) * CELL;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" fill="none" stroke="#000" stroke-width="${STROKE}" stroke-linecap="round"><path d="${parts.join('')}"/></svg>\n`;
 }
 
 const icons = collection.items.filter((i) => i.category !== 'ornament');

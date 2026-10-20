@@ -4,23 +4,33 @@
 // hlavní tlačítka, oddělovače; žádná = formuláře, tabulky, přepínače, číselné badge, chat, inventury.
 
 $bordura: '/identity/bordura-tile.png';
-$ornament-chip: '/identity/ornaments/ornament-chip.svg';
 $ornament-flower: '/identity/ornaments/ornament-flower.svg';
-$ornament-star: '/identity/ornaments/ornament-star.svg';
-$ornament-crosses: '/identity/ornaments/ornament-cross-row.svg'; // dlaždice křížek + mezera
+$ornament-crosses: '/identity/ornaments/ornament-cross-row.svg'; // dlaždice: křížek + mezera ≈ 1 : 1
+$ornament-crosses-col: '/identity/ornaments/ornament-cross-col.svg'; // totéž svisle
 
 @mixin motif($url, $size: auto 100%, $repeat: repeat-x, $position: center) {
   -webkit-mask: url($url) $repeat $position / $size;
   mask: url($url) $repeat $position / $size;
 }
 
-// Řada vyšívaných křížků (5 px vysokých) – podtržení aktivní položky, oddělovací linky.
-// `space` rozloží celé křížky po šířce bez useknutých okrajů.
+// Řada vyšívaných křížků – křížek je všude 5 px vysoký. `round` dorovná dlaždice
+// na celý počet křížků (žádné useknuté okraje) a drží rozteč křížek : mezera ≈ 1 : 1.
 @mixin cross-row {
   height: 5px;
   background: var(--color-accent);
-  -webkit-mask: url($ornament-crosses) space left center / auto 100%;
-  mask: url($ornament-crosses) space left center / auto 100%;
+  -webkit-mask: url($ornament-crosses) left center / auto 100%;
+  mask: url($ornament-crosses) left center / auto 100%;
+  -webkit-mask-repeat: round no-repeat;
+  mask-repeat: round no-repeat;
+}
+
+// Svislý sloupec 5px křížků (pravý okraj chipů, oddělovač v součtech)
+@mixin cross-col {
+  width: 5px;
+  -webkit-mask: url($ornament-crosses-col) center top / 100% auto;
+  mask: url($ornament-crosses-col) center top / 100% auto;
+  -webkit-mask-repeat: no-repeat round;
+  mask-repeat: no-repeat round;
 }
 
 // Podtržení aktivní položky – stejné pro záložky, dolní lištu i boční menu.
@@ -54,7 +64,7 @@ $ornament-crosses: '/identity/ornaments/ornament-cross-row.svg'; // dlaždice k�
     background: currentColor;
     opacity: $opacity;
     pointer-events: none;
-    @include motif($ornament-chip, contain, no-repeat);
+    @include cross-col;
   }
 }
 
@@ -181,11 +191,10 @@ $ornament-crosses: '/identity/ornaments/ornament-cross-row.svg'; // dlaždice k�
 
   &__sep {
     align-self: stretch;
-    width: 5px;
     margin: 1px 0;
     background: currentColor;
     opacity: 0.55;
-    @include motif($ornament-chip, contain, no-repeat);
+    @include cross-col;
   }
 
   &--yes { background: var(--status-ok-bg); color: var(--status-ok-fg); border-color: var(--status-ok-border); }
@@ -300,20 +309,19 @@ $ornament-crosses: '/identity/ornaments/ornament-cross-row.svg'; // dlaždice k�
     height: 1px;
     // Linka s mezerou uprostřed pro motiv
     background:
-      linear-gradient(var(--color-border-strong), var(--color-border-strong)) left / calc(50% - 16px) 100% no-repeat,
-      linear-gradient(var(--color-border-strong), var(--color-border-strong)) right / calc(50% - 16px) 100% no-repeat;
+      linear-gradient(var(--color-border-strong), var(--color-border-strong)) left / calc(50% - 22px) 100% no-repeat,
+      linear-gradient(var(--color-border-strong), var(--color-border-strong)) right / calc(50% - 22px) 100% no-repeat;
   }
 
+  // Uprostřed tři obyčejné křížky (3 dlaždice; poslední mezera se odečte kvůli vycentrování)
   &::after {
     content: '';
     position: absolute;
-    top: 0;
-    left: calc(50% - 8px);
-    width: 16px;
-    height: 16px;
-    background: var(--color-accent);
+    top: 6px;
+    left: calc(50% - 11px);
+    width: 24px;
     pointer-events: none;
-    @include motif($ornament-star, contain, no-repeat);
+    @include cross-row;
   }
 }
 
@@ -333,10 +341,8 @@ $ornament-crosses: '/identity/ornaments/ornament-cross-row.svg'; // dlaždice k�
   }
 
   &__motif {
-    width: 16px;
-    height: 16px;
-    background: currentColor;
-    @include motif($ornament-star, contain, no-repeat);
+    width: 24px;
+    @include cross-row;
   }
 }
 
@@ -357,11 +363,8 @@ $ornament-crosses: '/identity/ornaments/ornament-cross-row.svg'; // dlaždice k�
 }
 
 .sidebar--compact .sidebar__nav-section-label {
-  width: 25px; // 3 křížky
-  margin: var(--spacing-sm) auto;
-  padding: 0;
-  opacity: 0.85;
-  @include cross-row;
+  // Sbalené menu: jen prostá linka, aby se oddělovač nepletl s křížky aktivní položky
+  margin: var(--spacing-sm) var(--spacing-md);
 }
 
 // --- Rozbalovací přepínač mezi dvěma řadami křížků (Zobrazit archivované, Uplynulé…) ---
