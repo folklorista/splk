@@ -1,12 +1,56 @@
-// Souborová identita Vonica – logo, bordura a drobné akcenty z křížkového motivu (podklady v identity/).
+// Souborová identita Vonica – logo, bordura a drobné křížkové ornamenty (podklady v identity/).
 // Motivy jsou masky (PNG/SVG s průhledností), barvu jim dává background – sedí tak do obou témat.
+// Intenzita dekorace: výrazná = hlavička, bordura, aktivní navigace, titulky; jemná = chipy, vybrané karty,
+// hlavní tlačítka, oddělovače; žádná = formuláře, tabulky, přepínače, číselné badge, chat, inventury.
+
+$ornament-underline: '/identity/bordura-tile.png';
+$ornament-chip: '/identity/ornaments/ornament-chip.svg';
+$ornament-flower: '/identity/ornaments/ornament-flower.svg';
+$ornament-star: '/identity/ornaments/ornament-star.svg';
 
 @mixin motif($url, $size: auto 100%, $repeat: repeat-x, $position: center) {
   -webkit-mask: url($url) $repeat $position / $size;
   mask: url($url) $repeat $position / $size;
 }
 
-// Logo: světlá varianta (černý nápis) vs. tmavá (krémový nápis)
+// Ornamentální podtržení aktivní položky – stejné pro záložky, dolní lištu i boční menu.
+// Je absolutně umístěné, takže nemění výšku navigace a layout neposkakuje.
+@mixin ornament-underline($left: 8px, $right: 8px, $bottom: -1px) {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: $left;
+    right: $right;
+    bottom: $bottom;
+    height: 5px;
+    background: var(--color-accent);
+    pointer-events: none;
+    @include motif($ornament-underline);
+  }
+}
+
+// Malý křížkový ornament při pravém okraji (chipy, stavové badge, hlavní tlačítko)
+@mixin ornament-edge($width: 5px, $right: 6px, $opacity: 0.6) {
+  position: relative;
+  padding-right: calc(#{$right} + #{$width} + 6px);
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    right: $right;
+    width: $width;
+    background: currentColor;
+    opacity: $opacity;
+    pointer-events: none;
+    @include motif($ornament-chip, contain, no-repeat);
+  }
+}
+
+// --- Logo: světlá varianta (černý nápis) vs. tmavá (krémový nápis) ---
 .logo {
   display: inline-flex;
   align-items: center;
@@ -28,13 +72,13 @@
   .logo__img--dark { display: block; }
 }
 
-// Pruh bordury – pod horní lištou (mobil) a pod hlavičkou bočního menu
+// --- Pruh bordury – pod horní lištou (mobil) a pod hlavičkou bočního menu ---
 .bordura {
   flex-shrink: 0;
   height: 14px;
   margin: 4px 0;
   background: var(--color-accent);
-  @include motif('/identity/bordura-tile.png');
+  @include motif($ornament-underline);
 
   &--mobile {
     @media (min-width: 768px) {
@@ -43,7 +87,7 @@
   }
 }
 
-// Nadpisy – serifová antikva
+// --- Typografie: nadpisy patkovým písmem, UI bezpatkové ---
 .page__title,
 .detail__title,
 .placeholder-page h1 {
@@ -52,56 +96,169 @@
   letter-spacing: 0.005em;
 }
 
-// Aktivní záložka skupiny – podtržení motivem místo plné čáry
-.group-tabs__link--active {
-  position: relative;
+// --- Navigace: aktivní položka = červený text/ikona + krátký úsek ornamentu ---
+.group-tabs__link--active,
+.costumes-nav__link--active {
+  color: var(--color-primary);
   border-bottom-color: transparent;
+  @include ornament-underline();
+}
+
+.bottom-nav__item--active {
+  @include ornament-underline($left: calc(50% - 20px), $right: calc(50% - 20px), $bottom: 3px);
+}
+
+.sidebar__nav-item--active {
+  border-left-color: transparent;
+  @include ornament-underline($left: 44px, $right: auto, $bottom: 3px);
 
   &::after {
-    content: '';
-    position: absolute;
-    left: 6px;
-    right: 6px;
-    bottom: -1px;
-    height: 6px;
-    background: var(--color-accent);
-    @include motif('/identity/bordura-tile.png');
+    width: 40px;
   }
 }
 
-// Dolní navigace – drobný motiv pod aktivní položkou
-.bottom-nav__item--active::after {
-  content: '';
-  position: absolute;
-  bottom: 3px;
-  left: 50%;
-  width: 36px;
-  height: 5px;
-  transform: translateX(-50%);
-  background: var(--color-accent);
-  @include motif('/identity/bordura-tile.png');
+.sidebar--compact .sidebar__nav-item--active::after {
+  left: calc(50% - 14px);
+  width: 28px;
 }
 
-// Karta, která čeká na akci (nepřečtený příspěvek, akce bez odpovědi) – jemný motiv u spodního okraje
-.item-list .item-list__item--requires-action {
+// --- Chipy a štítky: jemně zaoblené, tenké ohraničení, ornament vpravo ---
+.chip,
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--radius-sm);
+  padding: 3px 9px;
+}
+
+// Neutrální chip (typ akce, skupina, kategorie krojů) a stavové badge dostanou ornament;
+// upozornění (Nepřečteno, Důležité, varování) zůstávají čisté a dobře čitelné.
+.chip,
+.badge:not([class*='badge--']),
+.badge--attendance,
+[class*='badge--condition'] {
+  @include ornament-edge();
+}
+
+.chip {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+
+  &::after {
+    background: var(--color-accent);
+  }
+
+  &--accent {
+    background: var(--color-primary-soft);
+    border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+  }
+}
+
+// --- Karty a panely: teplý povrch, jemné ohraničení místo stínu ---
+.card {
   position: relative;
-  padding-bottom: calc(var(--spacing-md) + 6px);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: var(--spacing-md);
+}
 
-  &::after {
+// Vybraná důležitá karta – poloprůhledný květ v pravém horním rohu (obsah zůstává nad ním)
+.card--ornament {
+  overflow: hidden;
+
+  &::before {
     content: '';
     position: absolute;
-    left: var(--spacing-md);
-    right: var(--spacing-md);
-    bottom: 6px;
-    height: 6px;
+    top: 10px;
+    right: 10px;
+    width: 72px;
+    height: 72px;
     background: var(--color-accent);
-    opacity: 0.35;
+    opacity: 0.16;
     pointer-events: none;
-    @include motif('/identity/bordura-tile.png');
+    @include motif($ornament-flower, contain, no-repeat);
+  }
+
+  > * {
+    position: relative;
   }
 }
 
-// Chat – oddělovač dne s křížkovým srdíčkem
+.item-list__item {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+// --- Tlačítka ---
+.btn-primary {
+  background: var(--color-primary-fill);
+  border-radius: 8px;
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+  }
+
+  // Výjimečně (hlavní akce obrazovky) s ornamentem vpravo
+  &--ornament {
+    @include ornament-edge($width: 6px, $right: 10px, $opacity: 0.7);
+  }
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-sunken);
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// --- Dekorativní oddělovač obsahových celků: linka s křížkovou hvězdičkou uprostřed ---
+.ornament-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: var(--spacing-lg) 0;
+  color: var(--color-accent);
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid var(--color-border-strong);
+  }
+
+  &__motif {
+    width: 18px;
+    height: 18px;
+    background: currentColor;
+    @include motif($ornament-star, contain, no-repeat);
+  }
+}
+
+// --- Chat: oddělovač dne s křížkovým srdíčkem ---
 .chat__day {
   display: flex;
   flex-direction: column;

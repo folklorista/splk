@@ -1,8 +1,8 @@
+@use 'sass:meta';
 @use 'styles/variables';
 @use 'styles/reset';
 @use 'styles/form-ui';
 @use 'styles/chat';
-@use 'styles/identity';
 
 // Login page
 .login-page {
@@ -45,7 +45,7 @@
   color: var(--color-primary);
   font-size: var(--font-size-sm);
   padding: var(--spacing-sm);
-  background: #fdf0ef;
+  background: var(--color-primary-soft);
   border-radius: 4px;
 }
 
@@ -76,7 +76,7 @@
 
 .btn-primary {
   padding: 12px;
-  background: var(--color-primary);
+  background: var(--color-primary-fill);
   color: #fff;
   border-radius: 6px;
   font-size: var(--font-size-base);
@@ -154,19 +154,82 @@
     flex-shrink: 0;
   }
 
-  &__user {
-    font-size: var(--font-size-sm);
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+// Ikonové akce v hlavičce – dotyková plocha 44 px
+.header-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+
+  &:hover,
+  &[aria-expanded='true'] {
+    color: var(--color-primary);
+    background: var(--color-surface-sunken);
+  }
+}
+
+// Menu ⋮ v mobilní hlavičce
+.header-menu {
+  position: relative;
+
+  &__list {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 200;
+    min-width: 220px;
+    display: flex;
+    flex-direction: column;
+    padding: 6px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 24px rgba(40, 25, 10, 0.16);
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    text-align: left;
+    background: none;
+
+    &:hover {
+      background: var(--color-surface-sunken);
+    }
+
+    &--logout {
+      color: var(--color-primary);
+    }
+  }
+
+  &__label small {
+    display: block;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
   }
 
-  &__logout {
-    font-size: var(--font-size-sm);
-    color: var(--color-primary);
-    font-weight: 500;
-
-    &:hover {
-      text-decoration: underline;
-    }
+  &__version {
+    padding: 6px 10px;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    margin: 4px 0;
+    font-size: var(--font-size-xs);
   }
 }
 
@@ -301,7 +364,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-primary);
+    background: var(--color-primary-fill);
     color: #fff;
     border-radius: 10px;
     font-size: 11px;
@@ -469,7 +532,7 @@
     justify-content: center;
     padding: 0 4px;
     border-radius: 9px;
-    background: var(--color-primary);
+    background: var(--color-primary-fill);
     color: #fff;
     font-size: 10px;
     font-weight: 700;
@@ -678,32 +741,32 @@
   border: 1px solid var(--color-border);
 
   &--pinned {
-    background: #fff3e0;
-    color: #e65100;
-    border-color: #ffcc80;
+    background: var(--status-warn-bg);
+    color: var(--status-warn-fg);
+    border-color: var(--status-warn-border);
   }
 
   &--requires-action {
-    background: #ffebee;
-    color: #c62828;
-    border-color: #ef9a9a;
+    background: var(--status-danger-bg);
+    color: var(--status-danger-fg);
+    border-color: var(--status-danger-border);
   }
 
   &--attendance {
     &[data-status="yes"] {
-      background: #e8f5e9;
-      color: #2e7d32;
-      border-color: #a5d6a7;
+      background: var(--status-ok-bg);
+      color: var(--status-ok-fg);
+      border-color: var(--status-ok-border);
     }
     &[data-status="no"] {
-      background: #ffebee;
-      color: #c62828;
-      border-color: #ef9a9a;
+      background: var(--status-danger-bg);
+      color: var(--status-danger-fg);
+      border-color: var(--status-danger-border);
     }
     &[data-status="maybe"] {
-      background: #fff8e1;
-      color: #f57f17;
-      border-color: #ffe082;
+      background: var(--status-warn-bg);
+      color: var(--status-warn-fg);
+      border-color: var(--status-warn-border);
     }
   }
 }
@@ -719,9 +782,9 @@
   color: var(--color-text-muted);
   border: 1px solid var(--color-border);
 
-  &--yes    { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
-  &--no     { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
-  &--maybe  { background: #fff8e1; color: #f57f17; border-color: #ffe082; }
+  &--yes    { background: var(--status-ok-bg); color: var(--status-ok-fg); border-color: var(--status-ok-border); }
+  &--no     { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+  &--maybe  { background: var(--status-warn-bg); color: var(--status-warn-fg); border-color: var(--status-warn-border); }
   &--pending { /* default gray */ }
 }
 
@@ -893,7 +956,7 @@
   }
 
   &--active {
-    background: var(--color-primary);
+    background: var(--color-primary-fill);
     border-color: var(--color-primary);
     color: #fff;
 
@@ -1040,9 +1103,9 @@
 
 // Condition badges for costumes
 .badge {
-  &--condition-good         { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
-  &--condition-needs-repair { background: #fff8e1; color: #f57f17; border-color: #ffe082; }
-  &--condition-damaged      { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+  &--condition-good         { background: var(--status-ok-bg); color: var(--status-ok-fg); border-color: var(--status-ok-border); }
+  &--condition-needs-repair { background: var(--status-warn-bg); color: var(--status-warn-fg); border-color: var(--status-warn-border); }
+  &--condition-damaged      { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
   &--condition-retired      { background: var(--color-surface-alt); color: var(--color-text-muted); }
 }
 
@@ -1154,9 +1217,9 @@
   }
 
   &--active {
-    &[data-status="yes"]   { background: #e8f5e9; color: #2e7d32; border-color: #66bb6a; }
-    &[data-status="maybe"] { background: #fff8e1; color: #f57f17; border-color: #ffca28; }
-    &[data-status="no"]    { background: #ffebee; color: #c62828; border-color: #ef5350; }
+    &[data-status="yes"]   { background: var(--status-ok-bg); color: var(--status-ok-fg); border-color: #66bb6a; }
+    &[data-status="maybe"] { background: var(--status-warn-bg); color: var(--status-warn-fg); border-color: #ffca28; }
+    &[data-status="no"]    { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: #ef5350; }
   }
 }
 
@@ -1186,7 +1249,7 @@
     }
 
     &--active {
-      background: var(--color-primary);
+      background: var(--color-primary-fill);
       color: #fff;
     }
   }
@@ -1263,7 +1326,7 @@
     }
 
     &--today .calendar__day-number {
-      background: var(--color-primary);
+      background: var(--color-primary-fill);
       color: #fff;
     }
 
@@ -1330,24 +1393,23 @@
   gap: var(--spacing-xs) var(--spacing-sm);
   margin-bottom: var(--spacing-md);
   padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid #ffe082;
+  border: 1px solid var(--status-warn-border);
   border-radius: 8px;
-  background: #fff8e1;
-  color: #6d4c00;
+  background: var(--status-warn-bg);
+  color: var(--status-warn-fg);
   font-size: var(--font-size-sm);
 
   &__reset {
     padding: 4px 10px;
-    border: 1px solid #f5c542;
+    border: 1px solid var(--status-warn-border);
     border-radius: 6px;
-    // Banner je žlutý i v tmavém režimu – tlačítko drží světlé pozadí
-    background: #fff;
+    background: var(--color-surface);
     color: inherit;
     font-size: var(--font-size-xs);
     white-space: nowrap;
 
     &:hover {
-      background: #fff3cd;
+      border-color: currentColor;
     }
   }
 }
@@ -1378,7 +1440,7 @@
   &__btn {
     padding: 6px 12px;
     border-radius: 6px;
-    background: var(--color-primary);
+    background: var(--color-primary-fill);
     color: #fff;
     font-weight: 600;
     white-space: nowrap;
@@ -1401,25 +1463,6 @@
   }
 }
 
-// Flex položkou je hostitelský element komponenty, ne odkaz uvnitř
-.mobile-header app-version-label {
-  flex: 0 1 auto;
-  min-width: 0;
-  margin-left: auto;
-  overflow: hidden;
-
-  .version-label {
-    display: block;
-  }
-}
-
-.mobile-header__user {
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
 // Changelog page
 .changelog {
@@ -1523,10 +1566,10 @@
   width: 100%;
   margin-bottom: var(--spacing-md);
   padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid #ef9a9a;
+  border: 1px solid var(--status-danger-border);
   border-left: 4px solid var(--color-primary);
   border-radius: 8px;
-  background: #ffebee;
+  background: var(--status-danger-bg);
   color: #b71c1c;
   font-size: var(--font-size-sm);
   text-align: left;
@@ -1646,9 +1689,8 @@
   }
 }
 
-// User name → profile (sidebar footer, mobile header)
-a.sidebar__user,
-a.mobile-header__user {
+// User name → profile (sidebar footer)
+a.sidebar__user {
   color: var(--color-text);
   font-weight: 500;
   text-decoration: none;
@@ -1684,10 +1726,6 @@ a.mobile-header__user {
     color: var(--color-primary);
     background: var(--color-surface-alt);
   }
-}
-
-.mobile-header .settings-link {
-  flex-shrink: 0;
 }
 
 .sidebar__footer-actions {
@@ -1750,7 +1788,7 @@ a.mobile-header__user {
   }
 
   &__ok {
-    color: #2e7d32;
+    color: var(--status-ok-fg);
     font-size: var(--font-size-sm);
   }
 }
@@ -1773,15 +1811,10 @@ a.mobile-header__user {
     }
 
     &--active {
-      background: var(--color-primary);
+      background: var(--color-primary-fill);
       color: #fff;
     }
   }
-}
-
-.mobile-header__logout {
-  flex-shrink: 0;
-  white-space: nowrap;
 }
 
 // Mentions: highlighted in comments, suggestion menu under the textarea
@@ -1924,12 +1957,12 @@ a.mobile-header__user {
     &:hover { color: var(--color-text); }
 
     &--present.actual-attendance__btn--active {
-      background: #2e7d32;
+      background: var(--status-ok-fg);
       color: #fff;
     }
 
     &--absent.actual-attendance__btn--active {
-      background: var(--color-primary);
+      background: var(--color-primary-fill);
       color: #fff;
     }
   }
@@ -2048,7 +2081,7 @@ a.mobile-header__user {
     text-align: center;
     color: var(--color-text-muted);
 
-    &--present { color: #2e7d32; font-weight: 700; }
+    &--present { color: var(--status-ok-fg); font-weight: 700; }
     &--absent { color: var(--color-primary); font-weight: 700; }
   }
 
@@ -2217,7 +2250,7 @@ a.mobile-header__user {
   height: 20px;
   padding: 0 6px;
   border-radius: 10px;
-  background: var(--color-primary);
+  background: var(--color-primary-fill);
   color: #fff;
   font-size: 11px;
   font-weight: 700;
@@ -2230,7 +2263,7 @@ a.mobile-header__user {
 .group-tabs__link { padding: 8px 12px; font-size: var(--font-size-sm); font-weight: 600; color: var(--color-text-muted); border-bottom: 2px solid transparent; white-space: nowrap; }
 .group-tabs__link:hover { color: var(--color-text); }
 .group-tabs__link--active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
-.group-tabs__badge { margin-left: 4px; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--color-primary); color: #fff; font-size: 11px; display: inline-block; text-align: center; }
+.group-tabs__badge { margin-left: 4px; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--color-primary-fill); color: #fff; font-size: 11px; display: inline-block; text-align: center; }
 
 // Rozbalovací sekce detailu (Přečteno – výchozí sbaleno, Komentáře – výchozí rozbaleno)
 .detail__toggle > summary {
@@ -2322,7 +2355,7 @@ a.mobile-header__user {
     }
 
     &--primary {
-      background: var(--color-primary);
+      background: var(--color-primary-fill);
       border-color: var(--color-primary);
       color: #fff;
 
@@ -2353,3 +2386,6 @@ a.mobile-header__user {
     margin-bottom: var(--spacing-sm);
   }
 }
+
+// Identita Vonica až na konci – její pravidla mají přednost před obecnými výše
+@include meta.load-css('styles/identity');

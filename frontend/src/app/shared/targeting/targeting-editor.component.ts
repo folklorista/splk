@@ -21,7 +21,7 @@ import { IconComponent } from '../icon/icon.component';
               <label class="targeting-editor__group-option">
                 <input type="checkbox" [checked]="isGroupSelected(group.id)" (change)="toggleGroup(group.id)" />
                 @if (group.icon) {
-                  <app-icon [name]="group.icon" [size]="14" />
+                  <app-icon [name]="group.icon" [size]="16" />
                 }
                 {{ group.name }}
               </label>

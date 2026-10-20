@@ -8,7 +8,7 @@
   }
   .cs-btn:hover:not(:disabled) { border-color: var(--color-primary); color: var(--color-primary); }
   .cs-btn:disabled, .cs-btn--disabled { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
-  .cs-btn--primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; font-weight: 600; }
+  .cs-btn--primary { background: var(--color-primary-fill); border-color: var(--color-primary); color: #fff; font-weight: 600; }
   .cs-btn--primary:hover:not(:disabled) { background: var(--color-primary-dark); color: #fff; }
   .cs-btn--danger { color: var(--color-primary); border-color: var(--color-primary); }
   .cs-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
@@ -34,20 +34,20 @@
     border: 1px solid #f9a825; border-left-width: 4px; color: var(--color-text);
     background: color-mix(in srgb, #f9a825 14%, transparent);
   }
-  .cs-success { font-size: var(--font-size-sm); font-weight: 600; color: #2e7d32; }
+  .cs-success { font-size: var(--font-size-sm); font-weight: 600; color: var(--status-ok-fg); }
   :root[data-theme='dark'] .cs-success { color: #81c784; }
   .cs-status { border-color: currentColor; background: transparent; }
-  .cs-status--available { color: #2e7d32; }
+  .cs-status--available { color: var(--status-ok-fg); }
   .cs-status--on-loan { color: #1565c0; }
-  .cs-status--not-ready { color: #e65100; }
+  .cs-status--not-ready { color: var(--status-warn-fg); }
   .cs-status--retired { color: var(--color-text-muted); }
-  .cs-status--complete { color: #2e7d32; }
-  .cs-status--incomplete { color: #e65100; }
-  .cs-status--needs-check { color: #c62828; }
+  .cs-status--complete { color: var(--status-ok-fg); }
+  .cs-status--incomplete { color: var(--status-warn-fg); }
+  .cs-status--needs-check { color: var(--status-danger-fg); }
   :root[data-theme='dark'] .cs-status--available, :root[data-theme='dark'] .cs-status--complete { color: #81c784; }
   :root[data-theme='dark'] .cs-status--on-loan { color: #64b5f6; }
   :root[data-theme='dark'] .cs-status--not-ready, :root[data-theme='dark'] .cs-status--incomplete { color: #ffb74d; }
-  :root[data-theme='dark'] .cs-status--needs-check { color: #ef9a9a; }
+  :root[data-theme='dark'] .cs-status--needs-check { color: var(--status-danger-border); }
   .cs-link { color: var(--color-primary); }
   .cs-link:hover { text-decoration: underline; }
   .cs-panel { border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); }

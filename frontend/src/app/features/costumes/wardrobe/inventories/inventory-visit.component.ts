@@ -149,7 +149,7 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
     </div>
   `,
   styles: [WARDROBE_STYLES, `
-    .visit-item[data-state='verified'] { border-left: 4px solid #2e7d32; }
+    .visit-item[data-state='verified'] { border-left: 4px solid var(--status-ok-fg); }
     .visit-item[data-state='not-presented'] { border-left: 4px solid var(--color-primary); }
     .check-buttons { margin: var(--spacing-xs) 0; }
     .check-buttons .btn-secondary { min-height: 44px; }

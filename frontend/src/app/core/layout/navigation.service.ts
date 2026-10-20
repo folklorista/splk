@@ -123,7 +123,7 @@ export class NavigationService {
   readonly groupsHub = computed<NavItem>(() => ({ path: '/app/boards', label: 'Skupiny', icon: 'users', badge: this.groupsHubBadge() || undefined }));
 
   readonly manageItems = computed<NavItem[]>(() =>
-    this.access.isEnsembleAdmin() ? [{ path: '/app/manage', label: 'Správa', icon: 'settings' }] : [],
+    this.access.isEnsembleAdmin() ? [{ path: '/app/manage', label: 'Správa', icon: 'manage' }] : [],
   );
 
   // --- Osobní spodní lišta a pořadí míst (docs/10 kap. 6) ---
@@ -155,7 +155,7 @@ export class NavigationService {
       ...(modules.events && this.access.canViewAttendanceReport() ? [{ key: 'attendance', path: '/app/attendance', label: 'Docházka', icon: 'clipboard-check' as IconName, category: 'agenda' as const, writes: true }] : []),
       ...(modules.costumes ? [{ key: 'costumes', path: '/app/costumes', label: 'Moje kroje', icon: 'shirt' as IconName, category: 'costumes' as const, suggest: this.hasCostumeLoan() }] : []),
       ...(modules.costumes && this.access.canViewCostumeStock() ? [{ key: 'wardrobe', path: '/app/wardrobe', label: 'Správa krojů', icon: 'hanger' as IconName, category: 'agenda' as const, writes: this.access.canManageCostumes() }] : []),
-      ...(this.access.isEnsembleAdmin() ? [{ key: 'manage', path: '/app/manage', label: 'Správa', icon: 'settings' as IconName, category: 'agenda' as const }] : []),
+      ...(this.access.isEnsembleAdmin() ? [{ key: 'manage', path: '/app/manage', label: 'Správa', icon: 'manage' as IconName, category: 'agenda' as const }] : []),
       { key: 'search', path: '/app/search', label: 'Hledat', icon: 'search', category: 'tool' },
     ];
   });

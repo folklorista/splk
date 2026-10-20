@@ -93,4 +93,36 @@ describe('MainLayoutComponent', () => {
 
     expect(notificationSpy.notify).not.toHaveBeenCalled();
   }));
+  describe('menu v mobilní hlavičce', () => {
+    function open(): { fixture: ReturnType<typeof TestBed.createComponent<MainLayoutComponent>>; el: HTMLElement } {
+      configure();
+      const fixture = TestBed.createComponent(MainLayoutComponent);
+      fixture.detectChanges();
+      const el: HTMLElement = fixture.nativeElement;
+      (el.querySelector('.header-menu button') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      return { fixture, el };
+    }
+
+    it('otevře se tlačítkem ⋮ a nabídne profil, všechna místa, nastavení a odhlášení', () => {
+      const { el } = open();
+      const labels = Array.from(el.querySelectorAll('.header-menu__item')).map((i) => i.textContent!.replace(/\s+/g, ' ').trim());
+
+      expect(el.querySelector('.header-menu button')!.getAttribute('aria-expanded')).toBe('true');
+      expect(labels).toEqual(['Staňa Můj profil', 'Všechna místa', 'Nastavení', 'Odhlásit se']);
+    });
+
+    it('zavře se klávesou Escape a kliknutím mimo menu', () => {
+      const { fixture, el } = open();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      fixture.detectChanges();
+      expect(el.querySelector('.header-menu__list')).toBeNull();
+
+      (el.querySelector('.header-menu button') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      document.body.click();
+      fixture.detectChanges();
+      expect(el.querySelector('.header-menu__list')).toBeNull();
+    });
+  });
 });

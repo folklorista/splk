@@ -1,7 +1,8 @@
-import { Component, OnInit, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, DestroyRef, ElementRef, HostListener, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterOutlet } from '@angular/router';
-import { Router } from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { BottomNavComponent } from '../bottom-nav/bottom-nav.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { IconComponent } from '../../../shared/icon/icon.component';
@@ -33,8 +34,36 @@ export class MainLayoutComponent implements OnInit {
   ) {}
 
   private destroyRef = inject(DestroyRef);
+  private host = inject(ElementRef<HTMLElement>);
+
+  // Mobilní hlavička: logo + Hledat + menu ⋮ se sekundárními akcemi (profil, nastavení, všechna místa, odhlášení)
+  readonly headerMenuOpen = signal(false);
+
+  toggleHeaderMenu(): void {
+    this.headerMenuOpen.update((open) => !open);
+  }
+
+  closeHeaderMenu(): void {
+    this.headerMenuOpen.set(false);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.headerMenuOpen()) return;
+    const menu = this.host.nativeElement.querySelector('.header-menu');
+    if (menu && !menu.contains(event.target as Node)) this.closeHeaderMenu();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeHeaderMenu();
+  }
 
   ngOnInit(): void {
+    this.router.events
+      .pipe(filter((e) => e instanceof NavigationStart), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.closeHeaderMenu());
+
     const user = this.auth.currentUser();
     if (!user) return;
 
@@ -74,6 +103,7 @@ export class MainLayoutComponent implements OnInit {
   }
 
   logout(): void {
+    this.closeHeaderMenu();
     this.auth.logout();
     this.router.navigate(['/login']);
   }

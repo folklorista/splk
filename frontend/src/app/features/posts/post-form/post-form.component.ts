@@ -69,7 +69,7 @@ import { Group } from '../../../core/models/group.model';
     .post-form__error { font-size: var(--font-size-sm); color: #d32f2f; }
     .post-form__hint { font-size: var(--font-size-xs); color: var(--color-text-muted); }
     .post-form__actions { display: flex; gap: 0.75rem; align-items: center; }
-    .post-form__error-message { padding: 0.75rem; background: #ffebee; color: #d32f2f; border-radius: 4px; border-left: 4px solid #d32f2f; }
+    .post-form__error-message { padding: 0.75rem; background: var(--status-danger-bg); color: #d32f2f; border-radius: 4px; border-left: 4px solid #d32f2f; }
   `],
 })
 export class PostFormComponent implements OnInit {

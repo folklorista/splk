@@ -52,7 +52,7 @@ import { Place } from '../../core/layout/bottom-bar';
     .more__tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: var(--spacing-md) var(--spacing-sm); border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-surface); color: var(--color-text); text-decoration: none; text-align: center; }
     .more__tile:hover { border-color: var(--color-primary); color: var(--color-primary); }
     .more__label { font-size: var(--font-size-sm); }
-    .more__badge { position: absolute; top: 6px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--color-primary); color: #fff; font-size: 11px; line-height: 18px; }
+    .more__badge { position: absolute; top: 6px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--color-primary-fill); color: #fff; font-size: 11px; line-height: 18px; }
     .more__edit { display: inline-block; margin-top: var(--spacing-lg); font-size: var(--font-size-sm); }
   `],
 })

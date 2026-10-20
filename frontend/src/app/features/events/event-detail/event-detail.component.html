@@ -77,7 +77,7 @@
                   @for (group of targetGroups(); track group.id) {
                     <span class="badge">
                       @if (group.icon) {
-                        <app-icon [name]="group.icon" [size]="12" />
+                        <app-icon [name]="group.icon" [size]="16" />
                       }
                       {{ group.name }}
                     </span>
@@ -160,7 +160,7 @@
                             <li>
                               @if (noteFor(m.id); as note) {
                                 <button type="button" class="member-note" [title]="note" [attr.aria-expanded]="openNoteMemberId() === m.id" (click)="toggleNote(m.id)">
-                                  {{ m.nickname }} <app-icon name="comment" [size]="13" />
+                                  {{ m.nickname }} <app-icon name="comment" [size]="16" />
                                 </button>
                                 @if (openNoteMemberId() === m.id) { <span class="member-note__text">{{ note }}</span> }
                               } @else {

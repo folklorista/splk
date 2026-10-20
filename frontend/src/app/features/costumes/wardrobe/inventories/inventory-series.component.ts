@@ -105,20 +105,20 @@ interface Batch {
     .quick__input { font-size: 1.5rem; padding: 12px; }
     .batch { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-bottom: 6px; opacity: 0.6; }
     .batch--latest { opacity: 1; }
-    .result[data-outcome='verified'] { background: #2e7d32; color: #fff; border-color: #2e7d32; }
+    .result[data-outcome='verified'] { background: var(--status-ok-fg); color: #fff; border-color: var(--status-ok-fg); }
     .result[data-outcome='duplicate'], .result[data-outcome='repeated'] { background: #fff3cd; color: #6d4c00; border: 1px solid #e0a800; }
-    .result[data-outcome='unknown'], .result[data-outcome='retired'], .result[data-outcome='out-of-scope'], .result[data-outcome='on-loan'], .result[data-outcome='away'] { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+    .result[data-outcome='unknown'], .result[data-outcome='retired'], .result[data-outcome='out-of-scope'], .result[data-outcome='on-loan'], .result[data-outcome='away'] { background: var(--color-primary-fill); color: #fff; border-color: var(--color-primary); }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; margin: var(--spacing-md) 0; }
     .cell { min-height: 56px; border-radius: 8px; border: 2px solid var(--color-border); background: var(--color-surface); color: var(--color-text); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; font: inherit; padding: 2px; }
     .cell__num { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
     .cell__flag { font-size: 0.6rem; line-height: 1; }
-    .cell[data-state='verified'] { background: #2e7d32; border-color: #2e7d32; color: #fff; }
+    .cell[data-state='verified'] { background: var(--status-ok-fg); border-color: var(--status-ok-fg); color: #fff; }
     .cell[data-state='not-presented'] { border-color: var(--color-primary); color: var(--color-primary); }
     .cell--away { border-style: dashed; }
     .cell--selected { outline: 3px solid var(--color-primary); outline-offset: 1px; }
     .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
     .dot { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 2px solid var(--color-border); }
-    .dot--verified { background: #2e7d32; border-color: #2e7d32; }
+    .dot--verified { background: var(--status-ok-fg); border-color: var(--status-ok-fg); }
     .dot--not-presented { border-color: var(--color-primary); }
   `],
 })

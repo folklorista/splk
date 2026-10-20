@@ -5,20 +5,51 @@
       <a class="mobile-header__logo" routerLink="/app/dashboard" title="Přehled">
         <app-logo [height]="34" />
       </a>
-      @if (auth.currentUser(); as user) {
-        <a class="mobile-header__user" routerLink="/app/profile" title="Můj profil">{{ user.name }}</a>
-      }
-      <app-version-label />
-      <a class="settings-link" routerLink="/app/search" title="Hledat" aria-label="Hledat">
-        <app-icon name="search" [size]="18" />
-      </a>
-      <a class="settings-link" routerLink="/app/settings" title="Nastavení" aria-label="Nastavení">
-        <app-icon name="settings" [size]="18" />
-      </a>
-      <a class="settings-link" routerLink="/app/more" title="Všechna místa" aria-label="Všechna místa">
-        <app-icon name="menu" [size]="18" />
-      </a>
-      <button class="mobile-header__logout" (click)="logout()">Odhlásit se</button>
+      <div class="mobile-header__actions">
+        <a class="header-action" routerLink="/app/search" title="Hledat" aria-label="Hledat">
+          <app-icon name="search" [size]="22" />
+        </a>
+        <div class="header-menu">
+          <button
+            type="button"
+            class="header-action"
+            (click)="toggleHeaderMenu()"
+            [attr.aria-expanded]="headerMenuOpen()"
+            aria-haspopup="menu"
+            aria-controls="header-menu-list"
+            title="Další možnosti"
+            aria-label="Další možnosti"
+          >
+            <app-icon name="menu" [size]="22" />
+          </button>
+          @if (headerMenuOpen()) {
+            <div class="header-menu__list" id="header-menu-list" role="menu">
+              @if (auth.currentUser(); as user) {
+                <a class="header-menu__item" role="menuitem" routerLink="/app/profile">
+                  <app-icon name="user" />
+                  <span class="header-menu__label">
+                    {{ user.name }}
+                    <small>Můj profil</small>
+                  </span>
+                </a>
+              }
+              <a class="header-menu__item" role="menuitem" routerLink="/app/more">
+                <app-icon name="menu" />
+                <span class="header-menu__label">Všechna místa</span>
+              </a>
+              <a class="header-menu__item" role="menuitem" routerLink="/app/settings">
+                <app-icon name="settings" />
+                <span class="header-menu__label">Nastavení</span>
+              </a>
+              <div class="header-menu__version"><app-version-label /></div>
+              <button type="button" class="header-menu__item header-menu__item--logout" role="menuitem" (click)="logout()">
+                <app-icon name="logout" />
+                <span class="header-menu__label">Odhlásit se</span>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
     </header>
     <div class="bordura bordura--mobile" aria-hidden="true"></div>
     <main class="app-shell__content">

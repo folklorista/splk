@@ -116,7 +116,7 @@ import { getFullName } from '../../core/utils/member.utils';
     }
 
     .contact-form__saved {
-      color: #2e7d32;
+      color: var(--status-ok-fg);
       font-size: 0.9rem;
     }
 

@@ -105,7 +105,7 @@ export function safeReturnUrl(url: string | null | undefined): string {
 
     .btn-primary {
       padding: 0.85rem 1.5rem;
-      background: var(--color-primary);
+      background: var(--color-primary-fill);
       color: white;
       border: none;
       border-radius: 4px;

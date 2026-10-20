@@ -14,6 +14,7 @@
     "frontend:build": "node scripts/build.mjs",
     "build": "npm run frontend:build",
     "build-info": "node scripts/build-info.mjs",
+    "icons:generate": "node scripts/generate-stitch-icons.mjs",
     "deploy": "node scripts/deploy.mjs"
   },
   "devDependencies": {
