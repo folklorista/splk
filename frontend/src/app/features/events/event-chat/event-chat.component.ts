@@ -32,7 +32,7 @@ import { RichTextComponent } from '../../../shared/rich-text/rich-text.component
           <p class="state-note">Zatím tu nic není. Zeptejte se nebo domluvte podrobnosti k akci.</p>
         }
       </div>
-      @if (error()) { <p class="login-error" role="alert">{{ error() }}</p> }
+      @if (error()) { <p class="cs-error" role="alert">{{ error() }}</p> }
       @if (canWrite()) {
         <div class="chat__composer">
           <app-mention-input [candidates]="members()" [events]="linkableEvents()" [sendOnEnter]="true" placeholder="Zpráva k akci… (@ člen, # akce)" label="Zpráva do chatu akce" (submitted)="send($event)" />

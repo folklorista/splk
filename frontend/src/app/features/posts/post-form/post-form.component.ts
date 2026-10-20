@@ -61,11 +61,6 @@ import { Group } from '../../../core/models/group.model';
     .post-form { display: flex; flex-direction: column; gap: 1.25rem; max-width: 600px; }
     .post-form__field { display: flex; flex-direction: column; gap: 0.5rem; }
     .post-form__field label { font-weight: 500; color: var(--color-text); font-size: var(--font-size-sm); }
-    .post-form__field input, .post-form__field textarea {
-      padding: 0.75rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm);
-      font-size: var(--font-size-base); font-family: inherit; outline: none;
-    }
-    .post-form__field input:focus, .post-form__field textarea:focus { border-color: var(--color-primary); }
     .post-form__error { font-size: var(--font-size-sm); color: var(--status-danger-fg); }
     .post-form__hint { font-size: var(--font-size-xs); color: var(--color-text-muted); }
     .post-form__actions { display: flex; gap: 0.75rem; align-items: center; }

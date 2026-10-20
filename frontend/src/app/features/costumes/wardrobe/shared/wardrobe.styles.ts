@@ -4,11 +4,7 @@ export const WARDROBE_STYLES = `
   .toolbar__spacer { flex: 1; }
   .btn-secondary--active { border-color: var(--color-primary); color: var(--color-primary); font-weight: 600; }
   .btn-link { background: none; border: none; padding: 0; color: var(--color-primary); cursor: pointer; font-size: var(--font-size-sm); }
-  .input, select.input, textarea.input {
-    padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; font-size: var(--font-size-base);
-    background: var(--color-surface); color: var(--color-text); font-family: inherit; min-width: 0;
-  }
-  .input:focus { outline: none; border-color: var(--color-primary); }
+  .input, select.input, textarea.input { min-width: 0; }
   .input--search { flex: 1; min-width: 160px; }
   .input--short { width: 90px; }
   .field { display: flex; flex-direction: column; gap: 4px; font-size: var(--font-size-sm); color: var(--color-text-muted); }

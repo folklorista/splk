@@ -5,7 +5,7 @@
 
     <form class="login-form" (ngSubmit)="onSubmit()">
       @if (error()) {
-        <p class="login-error">{{ error() }}</p>
+        <p class="cs-error login-error">{{ error() }}</p>
       }
 
       <div class="form-field">
@@ -38,6 +38,8 @@
         {{ loading() ? 'Přihlašování…' : 'Přihlásit se' }}
       </button>
     </form>
+
+    <div class="ornament-divider" aria-hidden="true"><span class="ornament-divider__motif"></span></div>
 
     <div class="demo-section">
       <p class="demo-label">Demo profily:</p>

@@ -15,11 +15,9 @@
   .cs-field { display: flex; flex-direction: column; gap: 4px; font-size: var(--font-size-sm); }
   .cs-field > span, .cs-field__label { color: var(--color-text-muted); font-weight: 500; }
   .cs-field--inline { flex-direction: row; align-items: center; gap: var(--spacing-sm); color: var(--color-text); }
-  .cs-field input:not([type='checkbox']), .cs-field select, .cs-field textarea, .cs-input {
-    width: 100%; padding: 8px; border: 1px solid var(--color-border); border-radius: 6px;
-    background: var(--color-surface); color: var(--color-text); font: inherit; font-size: var(--font-size-base);
-  }
-  .cs-field input:focus, .cs-field select:focus, .cs-field textarea:focus { outline: none; border-color: var(--color-primary); }
+  // Vzhled polí je společný pro celou aplikaci (_identity.scss – sekce Formuláře); tady jen rozložení
+  .cs-field input:not([type='checkbox']):not([type='radio']), .cs-field select, .cs-field textarea, .cs-input { width: 100%; }
+  .cs-field__error { font-size: var(--font-size-xs); font-weight: 600; color: var(--status-danger-fg); }
   .cs-hint { font-size: var(--font-size-xs); color: var(--color-text-muted); }
   .cs-form { display: flex; flex-direction: column; gap: var(--spacing-md); }
   .cs-form__row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--spacing-sm); align-items: end; }

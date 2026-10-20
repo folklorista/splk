@@ -109,7 +109,7 @@ import { RichTextComponent } from '../../../shared/rich-text/rich-text.component
       }
 
       @if (error()) {
-        <p class="login-error" role="alert">{{ error() }}</p>
+        <p class="cs-error" role="alert">{{ error() }}</p>
       }
 
       @if (canPost()) {

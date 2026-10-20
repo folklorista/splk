@@ -1,62 +1,59 @@
-<div class="profile-page">
-  <div class="profile-header">
-    <h1>Můj profil</h1>
-  </div>
+<div class="page profile-page">
+  <h1 class="page__title">Můj profil</h1>
 
   @if (currentUser()) {
-    <div class="profile-section">
-      <h2>Osobní údaje</h2>
+    <section class="card profile-section">
+      <h2 class="detail__section-title">Osobní údaje</h2>
 
-      <div class="profile-field">
-        <div class="profile-field-label">Jméno a příjmení</div>
-        <div class="profile-field-value">{{ fullName() }}</div>
-        <div class="profile-field-hint">Vidí ho jen administrátor, změnit ho může jen on.</div>
+      <div class="profile-readonly">
+        <span class="cs-field__label">Jméno a příjmení</span>
+        <strong>{{ fullName() }}</strong>
+        <span class="cs-hint">Vidí ho jen administrátor, změnit ho může jen on.</span>
       </div>
 
-      <form class="contact-form" [formGroup]="contactForm" (ngSubmit)="saveContact()">
-        <label>
-          Přezdívka
+      <form class="cs-form" [formGroup]="contactForm" (ngSubmit)="saveContact()">
+        <label class="cs-field">
+          <span>Přezdívka</span>
           <input type="text" formControlName="nickname" (input)="saved = false" />
-          <span class="profile-field-hint">Pod tímto jménem vás vidí ostatní členové.</span>
+          <span class="cs-hint">Pod tímto jménem vás vidí ostatní členové.</span>
           @if (contactForm.get('nickname')?.invalid && contactForm.get('nickname')?.touched) {
-            <span class="contact-form__error">Přezdívka je povinná</span>
+            <span class="cs-field__error">Přezdívka je povinná</span>
           }
         </label>
 
-        <label>
-          E-mail
+        <label class="cs-field">
+          <span>E-mail</span>
           <input type="email" formControlName="email" autocomplete="email" (input)="saved = false" />
           @if (contactForm.get('email')?.invalid && contactForm.get('email')?.touched) {
-            <span class="contact-form__error">Zadejte platný e-mail</span>
+            <span class="cs-field__error">Zadejte platný e-mail</span>
           }
         </label>
 
-        <label>
-          Telefon
+        <label class="cs-field">
+          <span>Telefon</span>
           <input type="tel" formControlName="phone" autocomplete="tel" (input)="saved = false" />
         </label>
 
-        <div class="contact-form__actions">
-          <button
-            type="submit"
-            class="attendance-btn attendance-btn--active"
-            [disabled]="contactForm.invalid || contactForm.pristine || isSaving"
-          >
+        <div class="cs-form__actions">
+          <button type="submit" class="btn-primary" [disabled]="contactForm.invalid || contactForm.pristine || isSaving">
             {{ isSaving ? 'Ukládám…' : 'Uložit' }}
           </button>
           @if (saved) {
-            <span class="contact-form__saved">✓ Uloženo</span>
+            <span class="cs-success">✓ Uloženo</span>
           }
         </div>
 
         @if (saveError) {
-          <span class="contact-form__error">{{ saveError }}</span>
+          <p class="cs-error">{{ saveError }}</p>
         }
       </form>
-    </div>
+    </section>
 
     <app-my-unavailability />
 
-    <button class="logout-btn" (click)="logout()">Odhlásit se</button>
+    <button type="button" class="btn-secondary btn-danger profile-logout" (click)="logout()">
+      <app-icon name="logout" [size]="18" />
+      Odhlásit se
+    </button>
   }
 </div>

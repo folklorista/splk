@@ -445,6 +445,87 @@ textarea,
   }
 }
 
+// --- Formuláře: jeden vzhled polí pro celou aplikaci (bez dekorace) ---
+// :where() = nulová specifičnost – výchozí vzhled, který komponenty se záměrně jiným polem
+// (chat, zmínky) mohou přepsat.
+$text-control: "input:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='color'], [type='hidden'])";
+
+:where(#{$text-control}, select, textarea) {
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--font-size-base);
+  transition: border-color 0.1s, box-shadow 0.1s;
+}
+
+:where(textarea) {
+  line-height: 1.5;
+  resize: vertical;
+}
+
+:where(#{$text-control}, select, textarea)::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.8;
+}
+
+:where(#{$text-control}, select, textarea):focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+:where(#{$text-control}, select, textarea):disabled {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+// Chybný vstup (reaktivní formuláře po opuštění pole, nebo aria-invalid)
+:where(#{$text-control}, select, textarea):is(.ng-invalid.ng-touched, [aria-invalid='true']) {
+  border-color: var(--status-danger-fg);
+}
+
+:where(input[type='checkbox'], input[type='radio']) {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--color-primary-fill);
+}
+
+// Skupiny polí (fieldset) – karta s nadpisem jako sekce detailu
+.cs-fieldset,
+.event-form__fieldset,
+.mc__fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: var(--spacing-md);
+
+  > legend {
+    padding: 0 6px;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+  }
+}
+
+// Volby (radio/checkbox s popiskem) – zarovnané vlevo, popisek vedle
+.cs-field--inline {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  text-align: left;
+  color: var(--color-text);
+}
+
 // --- Oddělovače ---
 // a) Obsahové celky: linka s vyšívanou hvězdičkou uprostřed (pseudo-elementy nahoře nad obsahem prvku)
 @mixin ornament-rule($space: var(--spacing-lg)) {
