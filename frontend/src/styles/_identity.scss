@@ -159,6 +159,53 @@ $ornament-star: '/identity/ornaments/ornament-star.svg';
   }
 }
 
+// Součty stavů (účast): [ikona | ornament | počet], barva podle významu, ne folklorní červená
+.status-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 3px 10px 3px 7px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--status-neutral-border);
+  background: var(--status-neutral-bg);
+  color: var(--status-neutral-fg);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  // Ikona celá v barvě stavu (bez červené nitě)
+  --stitch-accent: currentColor;
+
+  &__sep {
+    align-self: stretch;
+    width: 5px;
+    margin: 1px 0;
+    background: currentColor;
+    opacity: 0.55;
+    @include motif($ornament-chip, contain, no-repeat);
+  }
+
+  &--yes { background: var(--status-ok-bg); color: var(--status-ok-fg); border-color: var(--status-ok-border); }
+  &--maybe { background: var(--status-warn-bg); color: var(--status-warn-fg); border-color: var(--status-warn-border); }
+  &--no { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+}
+
+// Řádkový stav účasti (tabulky) – bez ornamentu, ale stejné zaoblení jako chipy
+.attendance-status {
+  border-radius: var(--radius-sm);
+}
+
+// Text jen pro čtečky obrazovky
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 // --- Karty a panely: teplý povrch, jemné ohraničení místo stínu ---
 .card {
   position: relative;

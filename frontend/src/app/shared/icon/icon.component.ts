@@ -49,7 +49,8 @@ export type IconName =
   | 'repeat'
   | 'back'
   | 'plus'
-  | 'manage';
+  | 'manage'
+  | 'question';
 
 // Sada ikon nabízených při výběru ikony skupiny (app/admin/groups)
 export const GROUP_ICON_OPTIONS: IconName[] = [

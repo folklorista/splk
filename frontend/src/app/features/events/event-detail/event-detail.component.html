@@ -92,10 +92,13 @@
               <section class="detail__section">
                 <h2 class="detail__section-title">Účast</h2>
                 <p class="detail__summary">
-                  <span class="attendance-status attendance-status--yes">Přijde {{ attendanceSummary().yes }}</span>
-                  <span class="attendance-status attendance-status--maybe">Možná {{ attendanceSummary().maybe }}</span>
-                  <span class="attendance-status attendance-status--no">Nepřijde {{ attendanceSummary().no }}</span>
-                  <span class="attendance-status attendance-status--pending">Bez odpovědi {{ attendanceSummary().pending }}</span>
+                  @for (c of summaryCounts(); track c.status) {
+                    <span class="status-count status-count--{{ c.status }}" [title]="c.label + ': ' + c.count">
+                      <app-icon [name]="c.icon" [size]="18" />
+                      <span class="status-count__sep" aria-hidden="true"></span>
+                      <span class="sr-only">{{ c.label }}: </span>{{ c.count }}
+                    </span>
+                  }
                 </p>
                 @if (isAudience()) {
                   <p class="detail__deadline" [class.detail__deadline--due]="needsMyResponse()">

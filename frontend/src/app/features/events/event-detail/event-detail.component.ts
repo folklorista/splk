@@ -13,7 +13,7 @@ import { MembersService } from '../../members/members.service';
 import { GroupsService } from '../../groups/groups.service';
 import { Group } from '../../../core/models/group.model';
 import { Member } from '../../../core/models/member.model';
-import { IconComponent } from '../../../shared/icon/icon.component';
+import { IconComponent, IconName } from '../../../shared/icon/icon.component';
 import { AccessService } from '../../../core/access/access.service';
 import { canEditEvent, canRecordAttendance, canSeeEvent, canSeeEventResponses, isEventAudience } from '../../../core/access/access.utils';
 import { ActualAttendanceService } from '../../attendance/actual-attendance.service';
@@ -61,7 +61,7 @@ import { formatRange } from '../../availability/unavailability.utils';
   standalone: true,
   imports: [CommonModule, DatePipe, RouterLink, FormsModule, IconComponent, EventChatComponent],
   templateUrl: './event-detail.component.html',
-  styles: [`.detail__deadline { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--spacing-sm); } .detail__deadline--due { color: var(--color-primary); font-weight: 600; } .detail__change { margin: var(--spacing-sm) 0 var(--spacing-md); padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid #e0a800; background: var(--color-surface-alt); border-radius: 6px; display: flex; flex-wrap: wrap; gap: var(--spacing-sm); align-items: center; } .detail__change--confirm { border-left-color: var(--color-primary); } .detail__change-ok { color: var(--status-ok-fg); font-weight: 600; } .detail__title--compact { font-size: var(--font-size-lg); line-height: 1.3; } .detail__when { font-weight: 400; color: var(--color-text-muted); white-space: nowrap; } .detail__meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); } .detail__summary { display: flex; flex-wrap: wrap; gap: 6px; } .aa-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--spacing-md); } .aa-chip { padding: 4px 12px; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: var(--font-size-sm); } .aa-chip--active { border-color: var(--color-primary); background: var(--color-primary-fill); color: #fff; } .aa-section { margin-bottom: var(--spacing-md); } .aa-section__header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); } .aa-section__title { font-size: var(--font-size-sm); font-weight: 700; margin: 0; } .aa-section__bulk { display: flex; gap: 6px; } .aa-section--done { opacity: 0.85; } .member-unavailable { font-size: var(--font-size-xs); color: var(--color-text-muted); border: 1px dashed var(--color-border); border-radius: 4px; padding: 0 4px; margin-left: 4px; white-space: nowrap; }`],
+  styles: [`.detail__deadline { font-size: var(--font-size-sm); color: var(--color-text-muted); margin-bottom: var(--spacing-sm); } .detail__deadline--due { color: var(--color-primary); font-weight: 600; } .detail__change { margin: var(--spacing-sm) 0 var(--spacing-md); padding: var(--spacing-sm) var(--spacing-md); border-left: 4px solid #e0a800; background: var(--color-surface-alt); border-radius: 6px; display: flex; flex-wrap: wrap; gap: var(--spacing-sm); align-items: center; } .detail__change--confirm { border-left-color: var(--color-primary); } .detail__change-ok { color: var(--status-ok-fg); font-weight: 600; } .detail__title--compact { font-size: var(--font-size-lg); line-height: 1.3; } .detail__when { font-weight: 400; color: var(--color-text-muted); white-space: nowrap; } .detail__meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); } .detail__summary { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--spacing-sm); } .aa-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--spacing-md); } .aa-chip { padding: 4px 12px; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-surface); color: var(--color-text); cursor: pointer; font-size: var(--font-size-sm); } .aa-chip--active { border-color: var(--color-primary); background: var(--color-primary-fill); color: #fff; } .aa-section { margin-bottom: var(--spacing-md); } .aa-section__header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); } .aa-section__title { font-size: var(--font-size-sm); font-weight: 700; margin: 0; } .aa-section__bulk { display: flex; gap: 6px; } .aa-section--done { opacity: 0.85; } .member-unavailable { font-size: var(--font-size-xs); color: var(--color-text-muted); border: 1px dashed var(--color-border); border-radius: 4px; padding: 0 4px; margin-left: 4px; white-space: nowrap; }`],
 })
 export class EventDetailComponent implements OnInit {
   event = signal<AppEvent | null>(null);
@@ -143,6 +143,17 @@ export class EventDetailComponent implements OnInit {
       maybe: byStatus.maybe.length,
       pending: byStatus.pending.length,
     };
+  });
+
+  // Součty účasti jako [ikona | ornament | počet] – plný popisek v title a pro čtečky
+  readonly summaryCounts = computed(() => {
+    const s = this.attendanceSummary();
+    return [
+      { status: 'yes', label: 'Přijde', icon: 'check' as IconName, count: s.yes },
+      { status: 'maybe', label: 'Možná', icon: 'question' as IconName, count: s.maybe },
+      { status: 'no', label: 'Nepřijde', icon: 'close' as IconName, count: s.no },
+      { status: 'pending', label: 'Bez odpovědi', icon: 'clock' as IconName, count: s.pending },
+    ];
   });
 
   // Kdo otevřel detail (po poslední důležité změně, je-li nějaká) a kdo ji potvrdil – pro organizátory
