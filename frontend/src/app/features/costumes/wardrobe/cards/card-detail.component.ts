@@ -61,7 +61,7 @@ import { errorMessage } from '../shared/wardrobe-ui';
           @for (m of group.missing; track m.templateName) {
             <p class="warn-box">Podle šablony „{{ m.templateName }}“ v kartě chybí: {{ m.partTypes.join(', ') }}. (Jen upozornění – komplet není podmínkou výpůjčky.)</p>
           }
-          <ul class="item-list">
+          <ul class="item-list item-list--rows">
             @for (h of group.holdings; track h.loan.id) {
               <li class="item-list__item">
                 <div class="item-list__row">

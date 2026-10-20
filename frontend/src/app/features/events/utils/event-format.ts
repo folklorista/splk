@@ -7,3 +7,29 @@ export function formatEventRange(startsAt: string, endsAt: string): string {
   const sameDay = start.toDateString() === end.toDateString();
   return sameDay ? `${date(start)} ${time(start)} – ${time(end)}` : `${date(start)} ${time(start)} – ${date(end)} ${time(end)}`;
 }
+
+const MONTHS = ['leden', 'únor', 'březen', 'duben', 'květen', 'červen', 'červenec', 'srpen', 'září', 'říjen', 'listopad', 'prosinec'];
+
+export interface MonthGroup<T> {
+  key: string;
+  label: string;
+  items: T[];
+}
+
+// Rozdělí (už seřazené) akce do měsíců se zachováním pořadí: „říjen 2026“, „listopad 2026“…
+// Rok se u aktuálního roku vynechává, aby nadpisy byly krátké.
+export function groupByMonth<T extends { startsAt: string }>(items: T[], now = new Date()): MonthGroup<T>[] {
+  const groups: MonthGroup<T>[] = [];
+  for (const item of items) {
+    const d = new Date(item.startsAt);
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    let group = groups[groups.length - 1];
+    if (!group || group.key !== key) {
+      const label = d.getFullYear() === now.getFullYear() ? MONTHS[d.getMonth()] : `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+      group = { key, label, items: [] };
+      groups.push(group);
+    }
+    group.items.push(item);
+  }
+  return groups;
+}

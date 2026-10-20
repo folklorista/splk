@@ -188,7 +188,7 @@ type Panel = 'none' | 'condition' | 'location' | 'work-order' | 'retire';
         </div>
 
         <h2 class="group-title">Změny a pohyby</h2>
-        <ul class="item-list">
+        <ul class="item-list item-list--rows">
           @for (e of v.events; track e.id) {
             <li class="item-list__item"><div class="item-list__meta">{{ e.at | date: 'd. M. yyyy H:mm' }} · {{ name(e.byMemberId) }}</div>{{ e.text }}@if (e.note) { <span class="muted"> – {{ e.note }}</span> }</li>
           } @empty { <li class="muted">Žádné záznamy.</li> }

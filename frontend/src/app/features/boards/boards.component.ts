@@ -33,7 +33,7 @@ import { NavigationService } from '../../core/layout/navigation.service';
 
       @if (invitations().length) {
         <h2 class="hub__heading">Pozvánky pro vás <span class="count-badge">{{ invitations().length }}</span></h2>
-        <ul class="item-list">
+        <ul class="item-list item-list--rows">
           @for (inv of invitations(); track inv.id) {
             <li class="item-list__item item-list__item--requires-action">
               <div class="item-list__row">
@@ -57,7 +57,7 @@ import { NavigationService } from '../../core/layout/navigation.service';
       @if (!mine().length) {
         <p class="state-note">Nejste členem žádné skupiny.</p>
       } @else {
-        <ul class="item-list">
+        <ul class="item-list item-list--rows">
           @for (group of mine(); track group.id) {
             <li class="item-list__item item-list__item--link" [routerLink]="['/app/boards', group.slug]">
               <div class="item-list__row">
@@ -77,7 +77,7 @@ import { NavigationService } from '../../core/layout/navigation.service';
 
       @if (others().length) {
         <h2 class="hub__heading">Další skupiny</h2>
-        <ul class="item-list">
+        <ul class="item-list item-list--rows">
           @for (group of others(); track group.id) {
             <li class="item-list__item">
               <div class="item-list__row">
@@ -108,7 +108,7 @@ import { NavigationService } from '../../core/layout/navigation.service';
 
       @if (archived().length) {
         <h2 class="hub__heading">Archivované skupiny</h2>
-        <ul class="item-list">
+        <ul class="item-list item-list--rows">
           @for (group of archived(); track group.id) {
             <li class="item-list__item item-list__item--link" [routerLink]="['/app/boards', group.slug]">
               <div class="item-list__row">

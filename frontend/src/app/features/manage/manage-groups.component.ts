@@ -22,7 +22,7 @@ import { IconComponent } from '../../shared/icon/icon.component';
         <a class="cs-btn cs-btn--primary" routerLink="/app/manage/groups/new">+ Založit skupinu</a>
       }
     </div>
-    <ul class="item-list">
+    <ul class="item-list item-list--rows">
       @for (row of rows(); track row.group.id) {
         <li class="item-list__item item-list__item--link" [class.item-list__item--requires-action]="!row.owner" [routerLink]="['/app/manage/groups', row.group.id]">
           <div class="item-list__row">

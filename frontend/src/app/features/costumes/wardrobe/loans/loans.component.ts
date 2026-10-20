@@ -34,7 +34,7 @@ import { IconComponent } from '../../../../shared/icon/icon.component';
         <input class="input input--search" type="search" placeholder="Hledat držitele nebo kus…" [value]="search()" (input)="search.set($any($event.target).value)" />
         <button type="button" class="btn-secondary" (click)="exportCsv()"><app-icon class="dl-icon" name="download" [size]="16" />Export CSV</button>
       </div>
-      <ul class="item-list">
+      <ul class="item-list item-list--rows">
         @for (row of rows(); track row.loan.id) {
           <li class="item-list__item">
             <div class="item-list__row">

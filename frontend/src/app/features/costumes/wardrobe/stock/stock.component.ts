@@ -106,7 +106,7 @@ import { IconComponent } from '../../../../shared/icon/icon.component';
 
         @for (group of groups(); track group.seriesId) {
           <h2 class="group-title">{{ group.label }} <span class="muted">({{ group.items.length }})</span></h2>
-          <ul class="item-list">
+          <ul class="item-list item-list--rows">
             @for (item of group.items; track item.id) {
               <li class="item-list__item item-list__item--link" [routerLink]="['/app/wardrobe/stock', item.id]">
                 <div class="item-list__row">

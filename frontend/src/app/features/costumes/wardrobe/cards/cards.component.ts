@@ -23,7 +23,7 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
         <input class="input input--search" type="search" placeholder="Hledat člena nebo externistu…" [value]="search()" (input)="search.set($any($event.target).value)" />
         <label class="check"><input type="checkbox" [checked]="all()" (change)="all.set($any($event.target).checked)" /> I lidé bez zapůjčených kusů</label>
       </div>
-      <ul class="item-list">
+      <ul class="item-list item-list--rows">
         @for (row of rows(); track row.key) {
           <li class="item-list__item item-list__item--link" [routerLink]="['/app/wardrobe/cards', row.key]">
             <div class="item-list__row">
@@ -52,7 +52,7 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
             <div class="row"><button type="button" class="btn-primary btn-primary--sm" (click)="addExternal()">Uložit</button><button type="button" class="btn-secondary" (click)="adding.set(false)">Zrušit</button></div>
           </div>
         }
-        <ul class="item-list">
+        <ul class="item-list item-list--rows">
           @for (e of state()?.externals ?? []; track e.id) {
             <li class="item-list__item item-list__item--link" [routerLink]="['/app/wardrobe/cards', 'external-' + e.id]">
               <span class="item-list__title">{{ e.name }}</span>

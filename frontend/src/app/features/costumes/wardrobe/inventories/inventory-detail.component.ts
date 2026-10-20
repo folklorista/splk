@@ -87,7 +87,7 @@ import { IconComponent } from '../../../../shared/icon/icon.component';
               </div>
               <input class="input input--search" type="search" placeholder="Hledat…" [value]="search()" (input)="search.set($any($event.target).value)" />
             </div>
-            <ul class="item-list">
+            <ul class="item-list item-list--rows">
               @for (r of people(); track r.key) {
                 <li class="item-list__item item-list__item--link" [routerLink]="['/app/wardrobe/inventories', v.inv.id, 'visit', r.key]">
                   <div class="item-list__row">
@@ -107,7 +107,7 @@ import { IconComponent } from '../../../../shared/icon/icon.component';
           }
           @case ('stock') {
             <p class="muted">Nezapůjčené kusy z rozsahu po evidenčních řadách. Otevřete řadu a zadávejte čísla (i diktovaná, např. „1, 3, 7, 12-15“).</p>
-            <ul class="item-list">
+            <ul class="item-list item-list--rows">
               @for (g of v.stock; track g.series.id) {
                 <li class="item-list__item item-list__item--link" [routerLink]="['/app/wardrobe/inventories', v.inv.id, 'stock', g.series.id]">
                   <div class="item-list__row">
@@ -121,7 +121,7 @@ import { IconComponent } from '../../../../shared/icon/icon.component';
           }
           @case ('slots') {
             <p class="muted">Termíny návštěv – přihlásit se mohou jen dotčení lidé, kapacita se dodržuje.</p>
-            <ul class="item-list">
+            <ul class="item-list item-list--rows">
               @for (s of v.slots; track s.slot.id) {
                 <li class="item-list__item">
                   <div class="item-list__row">
@@ -148,19 +148,19 @@ import { IconComponent } from '../../../../shared/icon/icon.component';
           }
           @case ('issues') {
             <h2 class="group-title">Nepředložené kusy ({{ v.issues.notPresented.length }})</h2>
-            <ul class="item-list">
+            <ul class="item-list item-list--rows">
               @for (r of v.issues.notPresented; track r.item.id) {
                 <li class="item-list__item"><a class="link" [routerLink]="['/app/wardrobe/stock', r.item.id]">{{ r.label }}</a><div class="item-list__meta">{{ r.holder }} @if (r.note) { · {{ r.note }} }</div></li>
               } @empty { <li class="muted">Žádné.</li> }
             </ul>
             <h2 class="group-title">Dosud nezkontrolované ({{ v.issues.unchecked.length }})</h2>
-            <ul class="item-list">
+            <ul class="item-list item-list--rows">
               @for (r of v.issues.unchecked; track r.item.id) {
                 <li class="item-list__item"><a class="link" [routerLink]="['/app/wardrobe/stock', r.item.id]">{{ r.label }}</a><div class="item-list__meta">{{ r.holder }}</div></li>
               } @empty { <li class="muted">Žádné.</li> }
             </ul>
             <h2 class="group-title">Poškozené / k úpravě a otevřené úkoly</h2>
-            <ul class="item-list">
+            <ul class="item-list item-list--rows">
               @for (r of v.issues.attention; track r.item.id) {
                 <li class="item-list__item"><a class="link" [routerLink]="['/app/wardrobe/stock', r.item.id]">{{ r.label }}</a><div class="item-list__meta">{{ r.holder }}</div></li>
               } @empty { <li class="muted">Žádné.</li> }

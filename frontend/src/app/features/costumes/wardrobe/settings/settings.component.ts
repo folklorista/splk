@@ -32,7 +32,7 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
             </div>
           }
           <h3 class="group-title">Varianty (doplňkové rozlišení)</h3>
-          <ul class="item-list">
+          <ul class="item-list item-list--rows">
             @for (v of st.classification.variants; track v.id) {
               <li class="item-list__item"><strong>{{ v.label }}</strong> <span class="muted">– platí pro: {{ partNames(v.partTypeIds) }}</span></li>
             }
@@ -99,7 +99,7 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
         <section class="section">
           <h2 class="detail__section-title">Komplety (šablony)</h2>
           <p class="info-box">Komplet je šablona druhů součástek, které kroj potřebuje. Nevynucuje se při výdeji – jen upozorní v krojové kartě, který druh držiteli chybí.</p>
-          <ul class="item-list">
+          <ul class="item-list item-list--rows">
             @for (t of st.kitTemplates; track t.id) {
               <li class="item-list__item">
                 <div class="item-list__row">

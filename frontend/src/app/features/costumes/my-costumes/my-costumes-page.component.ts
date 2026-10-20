@@ -61,7 +61,7 @@ import { WARDROBE_STYLES } from '../wardrobe/shared/wardrobe.styles';
             @if (!inv.slots.length) {
               <p class="state-note">Krojařky zatím nevypsaly žádné termíny.</p>
             }
-            <ul class="item-list">
+            <ul class="item-list item-list--rows">
               @for (s of inv.slots; track s.slot.id) {
                 <li class="item-list__item">
                   <div class="item-list__row">
@@ -86,7 +86,7 @@ import { WARDROBE_STYLES } from '../wardrobe/shared/wardrobe.styles';
         @if (list.length) {
           @for (group of list; track group.key) {
             <h2 class="group-title">{{ group.title }}</h2>
-            <ul class="item-list">
+            <ul class="item-list item-list--rows">
               @for (h of group.holdings; track h.loan.id) {
                 <li class="item-list__item">
                   <div class="item-list__row">

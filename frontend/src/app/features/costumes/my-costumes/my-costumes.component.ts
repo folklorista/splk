@@ -16,7 +16,7 @@ import { invitationsFor } from '../utils/inventory-logic';
       <p class="state-note"><strong>Inventura:</strong> {{ invitations().join(', ') }} – vyberte si termín v Mých krojích.</p>
     }
     @if (rows(); as list) {
-      <ul class="item-list">
+      <ul class="item-list item-list--rows">
         @for (row of list; track row.loanId) {
           <li class="item-list__item">
             <div class="item-list__row">

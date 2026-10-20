@@ -46,7 +46,7 @@ const KIND_LABELS: Record<SearchHitKind, string> = { post: 'Příspěvek', comme
         <p class="state-note">Nic nenalezeno.</p>
       } @else {
         <p class="cs-muted">{{ hits().length }} výsledků</p>
-        <ul class="item-list">
+        <ul class="item-list item-list--rows">
           @for (hit of hits(); track hit.kind + hit.id) {
             <li class="item-list__item item-list__item--link" [routerLink]="hit.link" [fragment]="hit.fragment" [queryParams]="hit.queryParams">
               <div class="item-list__row">

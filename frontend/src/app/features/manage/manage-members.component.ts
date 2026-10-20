@@ -29,7 +29,7 @@ type StatusFilter = 'active' | 'external' | 'former' | 'all';
     </div>
 
     <p class="cs-muted">{{ rows().length }} osob</p>
-    <ul class="item-list">
+    <ul class="item-list item-list--rows">
       @for (member of rows(); track member.id) {
         <li class="item-list__item item-list__item--link" [routerLink]="['/app/manage/members', member.id]">
           <div class="item-list__row">

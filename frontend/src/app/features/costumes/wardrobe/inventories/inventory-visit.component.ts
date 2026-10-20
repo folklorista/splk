@@ -72,7 +72,7 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
 
         <h2 class="group-title">Kusy z rozsahu inventury ({{ v.rows.length }})</h2>
         @if (!v.rows.length) { <p class="state-note">Osoba teď nedrží žádný kus z rozsahu.</p> }
-        <ul class="item-list">
+        <ul class="item-list item-list--rows">
           @for (r of v.rows; track r.item.id) {
             <li class="item-list__item visit-item" [attr.data-state]="r.check.state">
               <div class="item-list__row">
@@ -103,7 +103,7 @@ import { WARDROBE_STYLES } from '../shared/wardrobe.styles';
 
         @if (v.ended.length) {
           <h2 class="group-title">Během inventury vráceno / vyměněno</h2>
-          <ul class="item-list">
+          <ul class="item-list item-list--rows">
             @for (e of v.ended; track e.loan.id) {
               <li class="item-list__item">
                 <span class="item-list__title">{{ label(e.item) }}</span>

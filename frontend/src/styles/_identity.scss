@@ -734,3 +734,100 @@ $text-control: "input:not([type='checkbox'], [type='radio'], [type='range'], [ty
   background: #b3261e;
   border-color: #b3261e;
 }
+
+// --- Dlouhé seznamy: jedna karta s jemnými děliči místo samostatných karet ---
+// Řádky čekající na akci mají vlevo červený akcent (inset, nemění šířku řádku).
+.rsvp-list {
+  gap: 0;
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+
+  > li + li {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .rsvp-row {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    min-height: 60px;
+
+    &--pending {
+      box-shadow: inset 4px 0 0 var(--color-primary);
+      padding-left: var(--spacing-md);
+    }
+  }
+}
+
+// Nadpis měsíce v seznamu akcí
+.event-month {
+  & + & {
+    margin-top: var(--spacing-lg);
+  }
+
+  &__title {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: var(--spacing-sm);
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    text-transform: capitalize;
+    color: var(--color-text);
+  }
+
+  &__count {
+    font-family: var(--font-family);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+}
+
+.events-past .event-month__title {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+}
+
+// Řádkový seznam (členové, skupiny, sklad, výpůjčky, hledání…) – jedna karta s děliči.
+// Obsahově bohaté karty (příspěvky, oznámení, inventury s průběhem) zůstávají samostatné.
+.item-list--rows {
+  gap: 0;
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+
+  > li + li,
+  > .item-list__item + .item-list__item {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .item-list__item {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    padding: 12px var(--spacing-md);
+  }
+
+  .item-list__item--link:hover,
+  a.item-list__item:hover {
+    background: var(--color-surface-sunken);
+  }
+
+  .item-list__item--requires-action {
+    border-left: none;
+    box-shadow: inset 4px 0 0 var(--color-primary);
+  }
+}
+
+// Nadpis skupiny v seznamu (sklad: „Mužské / Horňácko / Čižmy (3)“)
+.group-title {
+  margin-top: var(--spacing-lg);
+}
