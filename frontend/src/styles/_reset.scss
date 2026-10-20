@@ -31,6 +31,6 @@ button {
   background: none;
 }
 
-input {
+:where(input) {
   font: inherit;
 }
