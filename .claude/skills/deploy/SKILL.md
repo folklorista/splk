@@ -1,13 +1,15 @@
 ---
 name: deploy
-description: Deploy a version of the SPLK app to production (https://moje.vonica.cz over SFTP) – check what production runs now, prepare and run database migrations (once a backend exists), upload changed files, verify the result on the production URL and report. Use when the user runs /deploy [version|commit|branch|working] or asks to "nasadit", "nasaď", "deploy" the app to production.
+description: Deploy a version of the SPLK app to the demo (https://demo.vonica.cz over SFTP) – check what the demo runs now, prepare and run database migrations (once a backend exists), upload changed files, verify the result on the demo URL and report. Use when the user runs /deploy [version|commit|branch|working] or asks to "nasadit", "nasaď", "deploy" the app (the demo; moje.vonica.cz only on explicit request).
 argument-hint: "[tag | commit | branch | working]"
 ---
 
-# Deploy to production
+# Deploy to the demo
 
 Talk to the user in Czech. All deploy logic lives in `scripts/deploy.mjs` (run via `npm run deploy -- …`);
-this skill orchestrates it. Configuration and credentials are in the git-ignored `.env` (template `.env.example`) –
+this skill orchestrates it. The script has no default target: every command below passes `--target demo`
+(https://demo.vonica.cz, the archived demo of the ensemble system). `moje.vonica.cz` is reserved for the future
+production app – since 2026-10-22 it is empty; never deploy there (`--target moje`) unless the user explicitly asks. Below, "production" means the deployed demo site. Configuration and credentials are in the git-ignored `.env` (template `.env.example`) –
 never print passwords from it.
 
 ## 1. Preconditions
@@ -18,7 +20,7 @@ never print passwords from it.
 ## 2. What runs on production now
 
 ```bash
-npm run deploy -- --status
+npm run deploy -- --target demo --status
 ```
 
 Prints the version tag, revision (`branch@commit[+dirty]`) and build time read from the `<meta>` tags of the
@@ -53,7 +55,7 @@ Add `--demo` while the app has no backend: production runs the demo build with r
 ## 5. Dry run and the single confirmation
 
 ```bash
-npm run deploy -- <options> --demo --dry-run
+npm run deploy -- --target demo <options> --demo --dry-run
 ```
 
 Builds the target and compares it with the server without uploading anything. Then show the user a short summary
@@ -66,7 +68,7 @@ and **wait for one explicit „ano“** before continuing:
 ## 6. Deploy
 
 ```bash
-npm run deploy -- <options> --demo --yes
+npm run deploy -- --target demo <options> --demo --yes
 ```
 
 It rebuilds the target, uploads `.htpasswd` + `.htaccess` first, then only changed files (content-hashed chunks
@@ -76,15 +78,15 @@ exactly which step failed and the output – do not retry blindly and do not dep
 
 ## 7. Verify on the production URL
 
-Credentials from `.env` (`SITE_URL`, `BASIC_AUTH_USER`, `BASIC_AUTH_PASSWORD`) – load them with node without
+Credentials from `.env` (`DEMO_SITE_URL`, `DEMO_BASIC_AUTH_USER`, `DEMO_BASIC_AUTH_PASSWORD`) – load them with node without
 echoing them (`source .env` breaks on values containing `#`):
 
 ```bash
-node -e 'process.loadEnvFile(".env"); const e=process.env, h={Authorization:"Basic "+Buffer.from(e.BASIC_AUTH_USER+":"+e.BASIC_AUTH_PASSWORD).toString("base64")};
+node -e 'process.loadEnvFile(".env"); const e=process.env, h={Authorization:"Basic "+Buffer.from(e.DEMO_BASIC_AUTH_USER+":"+e.DEMO_BASIC_AUTH_PASSWORD).toString("base64")};
 (async()=>{for (const p of ["/", "/app/dashboard", "/app/costumes", "/build-info.json"]) {
-  const r=await fetch(e.SITE_URL+p,{headers:h}); console.log(p, r.status, p.endsWith(".json")? await r.text() : "");
-} console.log("no auth", (await fetch(e.SITE_URL+"/")).status);})()'
-npm run deploy -- --status
+  const r=await fetch(e.DEMO_SITE_URL+p,{headers:h}); console.log(p, r.status, p.endsWith(".json")? await r.text() : "");
+} console.log("no auth", (await fetch(e.DEMO_SITE_URL+"/")).status);})()'
+npm run deploy -- --target demo --status
 ```
 
 Expect 200 for all paths (deep routes prove the SPA fallback), 401 without auth, and `build-info.json` / `--status`

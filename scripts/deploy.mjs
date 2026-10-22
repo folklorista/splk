@@ -1,5 +1,6 @@
-// Builds the frontend and uploads it over SFTP (moje.vonica.cz).
-// Usage: node scripts/deploy.mjs [--source working|commit|tag | --ref <tag|branch|commit>] [--demo] [--yes]
+// Builds the frontend and uploads it over SFTP to an explicitly chosen target domain.
+// Usage: node scripts/deploy.mjs --target <demo|moje> [--source working|commit|tag | --ref <tag|branch|commit>] [--demo] [--yes]
+//   --target – required, there is no default target: demo (demo.vonica.cz) or moje (moje.vonica.cz)
 //   working – current working copy incl. uncommitted changes (default)
 //   commit  – last commit of the current branch, built in a clean temporary worktree
 //   tag     – latest release tag (v*) on master, built in a clean temporary worktree
@@ -7,8 +8,10 @@
 //   --demo  – real (masked) members from dev/local/clenove.tsv; requires Basic Auth
 //   --yes   – skip the confirmation prompt
 //   --dry-run – build and print the summary incl. the upload plan, upload nothing
-//   --status  – only print which version production serves now
-// Configuration: .env in the repository root (see .env.example).
+//   --status  – only print which version the target serves now
+//   --allow-foreign-content – the target web root has files but no build-info.json (not deployed by this
+//                             script, e.g. the hosting placeholder page); replace them anyway
+// Configuration: .env in the repository root (see .env.example), variables <PREFIX>_* of the chosen target.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -30,6 +33,16 @@ const demo = args.includes('--demo');
 const assumeYes = args.includes('--yes');
 const dryRun = args.includes('--dry-run');
 const statusOnly = args.includes('--status');
+const allowForeignContent = args.includes('--allow-foreign-content');
+const targetName = option('--target');
+
+// Deploy targets of this app. The domain is fixed here, so a wrong *_SITE_URL in .env cannot redirect a deploy.
+const TARGETS = {
+  demo: { prefix: 'DEMO', domain: 'demo.vonica.cz' },
+  moje: { prefix: 'MOJE', domain: 'moje.vonica.cz' },
+};
+// Hosting accounts of other domains – the target must not share an SFTP account with any of them
+const OTHER_ACCOUNT_PREFIXES = ['VONICA', 'API', 'KROJARKA'];
 
 // Uploaded last, so clients never get an index.html pointing to chunks that are not there yet
 const UPLOAD_LAST = ['ngsw.json', 'index.html'];
@@ -66,21 +79,49 @@ function resolveRef(ref) {
 function loadConfig() {
   const envPath = path.join(rootDir, '.env');
   if (!fs.existsSync(envPath)) fail('Missing .env – copy .env.example and fill it in.');
+  if (!targetName) fail(`Missing --target (${Object.keys(TARGETS).join('|')}) – there is no default target.`);
+  const target = TARGETS[targetName];
+  if (!target) fail(`Unknown --target ${targetName} (${Object.keys(TARGETS).join('|')}); api and krojarka have no deployable app in this repo.`);
   process.loadEnvFile(envPath);
   const env = process.env;
-  for (const key of ['SFTP_HOST', 'SFTP_USER', 'SFTP_PASSWORD', 'SITE_URL']) {
-    if (!env[key]) fail(`Missing ${key} in .env`);
+  const name = (key) => `${target.prefix}_${key}`;
+  const value = (key) => env[name(key)];
+
+  const required = ['SFTP_HOST', 'SFTP_PORT', 'SFTP_USER', 'SFTP_PASSWORD', 'SFTP_REMOTE_DIR', 'SITE_URL'];
+  const missing = required.filter((key) => !value(key)).map(name);
+  if (missing.length) fail(`Missing in .env: ${missing.join(', ')}`);
+
+  let siteUrl;
+  try {
+    siteUrl = new URL(value('SITE_URL'));
+  } catch {
+    fail(`${name('SITE_URL')} is not a valid URL`);
   }
-  const auth = env.BASIC_AUTH_USER && env.BASIC_AUTH_PASSWORD
-    ? { user: env.BASIC_AUTH_USER, password: env.BASIC_AUTH_PASSWORD }
-    : null;
-  if (auth && !env.SITE_ROOT_PATH) fail('Basic Auth needs SITE_ROOT_PATH (absolute web root path on the server) in .env');
-  if (demo && !auth) fail('Demo build contains real member names – refusing to deploy it without Basic Auth.');
+  if (siteUrl.protocol !== 'https:' || siteUrl.host !== target.domain) {
+    fail(`${name('SITE_URL')} must be https://${target.domain} for --target ${targetName}`);
+  }
+  const otherPrefixes = [...Object.values(TARGETS).map((other) => other.prefix), ...OTHER_ACCOUNT_PREFIXES]
+    .filter((prefix) => prefix !== target.prefix);
+  const sharedWith = otherPrefixes.filter((prefix) => env[`${prefix}_SFTP_USER`] === value('SFTP_USER'));
+  if (sharedWith.length) {
+    fail(`${name('SFTP_USER')} is the same account as ${sharedWith.map((prefix) => `${prefix}_SFTP_USER`).join(', ')} – refusing to deploy`);
+  }
+
+  const authUser = value('BASIC_AUTH_USER');
+  const authPassword = value('BASIC_AUTH_PASSWORD');
+  if (Boolean(authUser) !== Boolean(authPassword)) fail(`Set both ${name('BASIC_AUTH_USER')} and ${name('BASIC_AUTH_PASSWORD')}, or neither`);
+  const auth = authUser ? { user: authUser, password: authPassword } : null;
+  if (auth && !value('SITE_ROOT_PATH')) fail(`Basic Auth needs ${name('SITE_ROOT_PATH')} (absolute web root path on the server) in .env`);
+  if (auth && !value('SITE_ROOT_PATH').replace(/\/$/, '').endsWith(`/${target.domain.split('.')[0]}`)) {
+    fail(`${name('SITE_ROOT_PATH')} does not look like the web root of ${target.domain}`);
+  }
+  if (demo && !auth) fail(`Demo build contains real member names – refusing to deploy it without Basic Auth (${name('BASIC_AUTH_USER')}, ${name('BASIC_AUTH_PASSWORD')}).`);
   return {
-    sftp: { host: env.SFTP_HOST, port: Number(env.SFTP_PORT || 22), username: env.SFTP_USER, password: env.SFTP_PASSWORD },
-    remoteDir: env.SFTP_REMOTE_DIR || '/',
-    siteUrl: env.SITE_URL.replace(/\/$/, ''),
-    siteRootPath: env.SITE_ROOT_PATH,
+    target: targetName,
+    sftp: { host: value('SFTP_HOST'), port: Number(value('SFTP_PORT')), username: value('SFTP_USER'), password: value('SFTP_PASSWORD') },
+    remoteDir: value('SFTP_REMOTE_DIR'),
+    siteUrl: siteUrl.origin,
+    siteRootPath: value('SITE_ROOT_PATH'),
     auth,
   };
 }
@@ -173,6 +214,8 @@ async function planUpload(sftp, config, distDir) {
     return parts.map((_, i) => parts.slice(0, i + 1).join('/'));
   }));
   return {
+    // Files on the server, but none from a deploy of this app – someone else's content
+    foreign: remoteFiles.some((file) => !KEEP_REMOTE.includes(file)) && !remoteSet.has('build-info.json'),
     upload: files.filter((file) => !(HASHED_FILE.test(file) && remoteSet.has(file))),
     unchanged: files.filter((file) => HASHED_FILE.test(file) && remoteSet.has(file)),
     staleFiles: remoteFiles.filter((file) => !localFiles.has(file) && !KEEP_REMOTE.includes(file)),
@@ -237,7 +280,7 @@ async function verify(config, expectedRevision) {
 
 const config = loadConfig();
 if (statusOnly) {
-  console.log(`Production (${config.siteUrl}): ${describeProduction(await productionInfo(config))}`);
+  console.log(`${config.target} (${config.siteUrl}): ${describeProduction(await productionInfo(config))}`);
   process.exit(0);
 }
 if (source === 'working' && git('status', '--porcelain') !== '') {
@@ -251,25 +294,34 @@ try {
   const revision = `${info.branch}@${info.commit}${info.dirty ? '+dirty' : ''}`;
 
   const production = await productionInfo(config);
+  if (production.status === 401 && !config.auth) {
+    throw new Error(`${config.siteUrl} is behind Basic Auth, but .env has no ${TARGETS[config.target].prefix}_BASIC_AUTH_* – the deploy would make it public`);
+  }
   const sftp = new SftpClient();
   await sftp.connect(config.sftp);
   let plan;
   try {
     plan = await planUpload(sftp, config, distDir);
+    if (plan.foreign && !allowForeignContent) {
+      throw new Error(`${config.siteUrl} web root contains files not deployed by this script (no build-info.json): `
+        + `${plan.staleFiles.slice(0, 10).join(', ')}${plan.staleFiles.length > 10 ? ', …' : ''} – check them, then use --allow-foreign-content`);
+    }
   } catch (error) {
     await sftp.end();
     throw error;
   }
 
   console.log('\n──────── Deploy summary ────────');
-  console.log(`Production: ${describeProduction(production)}`);
+  console.log(`Target:     ${config.target} → ${config.siteUrl}`);
+  console.log(`Now serves: ${describeProduction(production)}`);
   console.log(`Source:     ${source}${refArg ? ` ${refArg}` : ''}`);
   console.log(`Version:    ${info.tag ?? '(no release tag)'}${info.dance ? ` – ${info.dance.codename}` : ''}`);
   console.log(`Revision:   ${revision}`);
   console.log(`Members:    ${demo ? 'REAL (demo build, masked surnames)' : 'fictional'}`);
-  console.log(`Target:     ${config.sftp.username}@${config.sftp.host}:${config.remoteDir} → ${config.siteUrl}`);
+  console.log(`SFTP:       ${config.sftp.username}@${config.sftp.host}:${config.remoteDir}`);
   console.log(`Basic Auth: ${config.auth ? `yes (user ${config.auth.user})` : 'NO – site will be public'}`);
-  console.log(`Files:      ${plan.upload.length} to upload, ${plan.unchanged.length} unchanged, ${plan.staleFiles.length} stale to delete`);
+  console.log(`Files:      ${plan.upload.length} to upload, ${plan.unchanged.length} unchanged, ${plan.staleFiles.length} stale to delete`
+    + `${plan.foreign ? ' (FOREIGN CONTENT – replaced on --allow-foreign-content)' : ''}`);
   console.log('────────────────────────────────\n');
 
   try {
@@ -277,7 +329,7 @@ try {
       console.log('Dry run – nothing uploaded.');
     } else if (!assumeYes) {
       const prompt = readline.createInterface({ input: process.stdin, output: process.stdout });
-      const answer = await prompt.question('Deploy? [y/N] ');
+      const answer = await prompt.question(`Deploy to ${config.siteUrl}? [y/N] `);
       prompt.close();
       if (answer.trim().toLowerCase() !== 'y') throw new Error('Cancelled.');
     }
