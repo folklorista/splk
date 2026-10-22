@@ -49,7 +49,7 @@ Přihlášení: libovolný e-mail + heslo (mock, nekontroluje).
 
 ## Lokální Docker
 
-Napodobuje produkci (Apache 2.4 + PHP 8.5, MariaDB 11.4). Na produkci Docker není.
+Napodobuje produkci (Apache 2.4 + PHP 8.5 s `pdo_pgsql`, PostgreSQL 18). Na produkci Docker není.
 
 ```bash
 docker compose up -d --build
@@ -58,8 +58,8 @@ docker compose up -d --build
 | Služba | Adresa |
 |---|---|
 | Aplikace (produkční build za Apachem) | http://localhost:8080 |
-| Adminer | http://localhost:8081 (server `db`, uživatel/heslo `splk`/`splk`, root/`root`) |
-| MariaDB | `localhost:3307`, databáze `splk` |
+| Adminer | http://localhost:8081 (systém PostgreSQL, server `db`, uživatel/heslo/databáze `splk`/`splk`/`splk`) |
+| PostgreSQL 18 | `localhost:5433`, databáze `splk` (lokální hodnoty `DB_*`, produkční `PG_*` z `.env` se nepoužijí) |
 
 Kontejner s aplikací obsahuje produkční build – po změně kódu je potřeba znovu `docker compose up -d --build`. Pro vývoj s hot reloadem dál `ng serve`.
 

@@ -1,4 +1,5 @@
 # Lokální vývojové prostředí (na produkci Docker není)
+# Proměnné DB_* jsou jen pro lokální databázi; produkční PG_* z .env se tu záměrně nepoužívají.
 name: splk
 
 services:
@@ -7,27 +8,31 @@ services:
     ports:
       - "8080:80"
     environment:
-      DB_HOST: db
-      DB_NAME: ${DB_NAME:-splk}
-      DB_USER: ${DB_USER:-splk}
-      DB_PASSWORD: ${DB_PASSWORD:-splk}
+      PG_HOST: db
+      PG_PORT: "5432"
+      PG_DATABASE: ${DB_NAME:-splk}
+      PG_USER: ${DB_USER:-splk}
+      PG_PASSWORD: ${DB_PASSWORD:-splk}
+      PG_SSLMODE: disable
     depends_on:
       db:
         condition: service_healthy
 
   db:
-    image: mariadb:11.4
+    image: postgres:18
     environment:
-      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
-      MARIADB_DATABASE: ${DB_NAME:-splk}
-      MARIADB_USER: ${DB_USER:-splk}
-      MARIADB_PASSWORD: ${DB_PASSWORD:-splk}
+      POSTGRES_DB: ${DB_NAME:-splk}
+      POSTGRES_USER: ${DB_USER:-splk}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-splk}
+      # stejné české řazení jako na hostingu (cs_CZ.utf8)
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale-provider=icu --icu-locale=cs-CZ"
+      TZ: Europe/Prague
     ports:
-      - "3307:3306"
+      - "5433:5432"
     volumes:
-      - db-data:/var/lib/mysql
+      - pg-data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -42,4 +47,4 @@ services:
       - db
 
 volumes:
-  db-data:
+  pg-data:
