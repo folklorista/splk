@@ -32,6 +32,6 @@ Výčet osob odpovídá stavu k říjnu 2026. Vzorová data v `current/moje/08` 
 
 ## Možné nesoulady s ostatními podklady
 
-- vonicka.md uvádí jeden společný krojový fond I–III, krojařky jsou ale rozdělené podle složek → Q-01.
-- vonica.md: „přijatý člen“ nemá žádná práva navíc; identity-model-v2 z něj dělá podmínku funkce ve výboru → Q-07.
+- vonicka.md uvádí jeden společný krojový fond I–III. Podle rozhodnutí z 23. 10. jsou fondy rozdělené po složkách (D-29), takže údaj ve vonicka.md je **k aktualizaci**.
+- „Přijatý člen“ nemá v aplikaci žádná práva navíc; výbor se volí na schůzi (D-30, shodně s vonica.md).
 - vonica.md řadí muzikanty mezi členy dospělé složky, rozhodnutí 22. 10. vede muziku jako samostatnou složku → Q-08.

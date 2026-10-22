@@ -10,7 +10,9 @@ Co ještě musíme rozhodnout (úroveň **B**). Každá otázka uvádí, odkud p
 
 ## Blokuje Krojařku
 
-### Q-01 Vonička: jeden společný krojový fond, nebo fondy po složkách?
+### Q-01 Vonička: jeden společný krojový fond, nebo fondy po složkách? – *rozhodnuto → D-29*
+
+Původní znění:
 
 - `context/vonicka.md`: „jeden společný krojový fond pro skupiny I, II a III“.
 - Uživatel 2026-10-22: Gabča je krojařkou Voničky I, Anuška Voničky II a III; složkami úrovně 2 jsou Vonička I–III.
@@ -62,7 +64,9 @@ Je potřeba určit:
 
 `06` je stále **podklad ke schválení krojařkami**. Zaškrtávací seznam v kap. 14 je nevyplněný.
 
-### Q-17 Menu Krojařky – co se nevešlo do D-22
+### Q-17 Menu Krojařky – co se nevešlo do D-22 – *z větší části rozhodnuto → D-22 (rozšíření 2026-10-23)*
+
+Položky Lidé, Dokumenty a Přehledy byly doplněny do menu. **Otevřená zůstává podoba mobilní spodní lišty.** Původní znění:
 
 Zadání Krojařky má obrazovky, které schválené menu výslovně nezmiňuje:
 
@@ -102,7 +106,9 @@ Kód dema `/wardrobe` stojí na modelu `06` v0.4 (šablony místo fyzických kom
 
 ## Neblokuje Krojařku
 
-### Q-07 „Přijatý člen“ jako podmínka funkce ve výboru
+### Q-07 „Přijatý člen“ jako podmínka funkce ve výboru – *rozhodnuto → D-30*
+
+Původní znění:
 
 - `current/identity-model-v2.md` kap. 2.1 uvádí jako „potvrzené pravidlo“: funkce ve výboru vyžaduje aktivního a přijatého člena.
 - `context/vonica.md`: přijatý člen „nemá aktuálně žádná práva navíc“ a označení „nemá pro organizaci vlastně žádný vliv“.

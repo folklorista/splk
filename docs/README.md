@@ -72,7 +72,7 @@ Viz [`context/README.md`](context/README.md). Podrobné popisy `vonica.md` a `vo
 
 ## Otevřené otázky, které teď blokují Krojařku
 
-Q-01 fond Voničky · Q-02 omezení výdeje · **Q-03 rozsah financí** · **Q-04 detaily kompletů** · Q-05 body pro krojařky · **Q-10 API v1 a monorepo** · Q-11 hosting · Q-14 přihlašování a skeny. Podrobně v [`open-questions.md`](open-questions.md).
+Q-02 omezení výdeje · **Q-03 rozsah financí** · **Q-04 detaily kompletů** · Q-05 body pro krojařky · **Q-10 API v1 a monorepo** · Q-11 hosting · Q-14 přihlašování a skeny · Q-17 mobilní lišta. Podrobně v [`open-questions.md`](open-questions.md).
 
 ## Závazná pravidla pro vývojáře a AI asistenty
 

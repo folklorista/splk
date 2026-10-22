@@ -61,14 +61,17 @@ Značky: **P0** = pro první průchozí demo; **P1** = potřeba pro důvěryhodn
 |---|---|
 | **Přehled** | co dělat dál (K02) |
 | **Součástky** | katalog podle evidenčních řad, **včetně kompletů** (K08–K12) |
-| **Krojové karty** | lidé s výpůjčkami a jejich karty (K03–K07) |
+| **Krojové karty** | lidé s výpůjčkami a jejich karty (K05) |
+| **Lidé** | všechny osoby evidence včetně těch bez výpůjček; papírové karty a převod (K03, K04, K06, K07) |
 | **Výpůjčky** | skladové pohyby od nejnovějších po nejstarší (K13–K15) |
 | **Inventury** | K16–K22 |
+| **Dokumenty** | archiv skenů a podkladů (K23) |
+| **Přehledy** | tisk a export (K25) |
 | **Hledat** | osoba / komplet / řada a číslo |
 | **Nastavení** | katalog, řady, drobné nastavení (K24) |
 | **Můj účet** | přihlášená krojařka, odhlášení |
 
-Otevřené (Q-04, Q-17): zda vyčlenit Komplety do samostatné položky; kam patří archiv dokumentů (K23), přehledy a exporty (K25) a osoby **bez výpůjček** (papírová evidence, převod); podoba mobilní lišty.
+Položky Lidé, Dokumenty a Přehledy byly doplněny 23. 10. (D-22). Otevřené: zda vyčlenit Komplety do samostatné položky (Q-04) a podoba mobilní lišty (Q-17).
 
 *Původní návrh (nahrazen):* mobil Přehled · Lidé · Sklad · Inventury + Více; desktop Přehled · Lidé · Sklad · Komplety · Zápůjčky · Inventury · Dokumenty · Katalog a nastavení. Pojem „Sklad“ pro seznam součástí odporoval terminologii (sklad = místnost, D-17).
 
@@ -78,7 +81,7 @@ Primární akce `+` je kontextová; nemá působit jako globální univerzální
 
 ### 3.2 Návrh tras (pracovní, nikoli závazný refaktor stávajících routes)
 
-*Poznámka 22. 10.: trasy vznikly před rozhodnutím D-22. `/people` odpovídá položce Krojové karty a `/stock` + `/kits` položce Součástky; názvy tras se ověří při implementaci.*
+*Poznámka 22. 10.: trasy vznikly před rozhodnutím D-22. `/people` odpovídá položce Lidé, seznam Krojových karet je pohled na osoby s výpůjčkami (trasa zatím nenavržena), `/stock` + `/kits` položce Součástky, `/documents` Dokumentům a `/reports` Přehledům; názvy tras se ověří při implementaci.*
 
 ```text
 /                                 Přehled
@@ -127,7 +130,7 @@ Primární akce `+` je kontextová; nemá působit jako globální univerzální
 
 **Prázdný stav:** „Zatím nemáte žádné osoby ani kroje“ + průvodce pořadím: katalog → lidé → skeny → komplety → inventura.
 
-### K03 · Krojové karty – lidé (P0, `/people`)
+### K03 · Lidé (P0, `/people`)
 
 **Obsah:** seznam **všech** osob relevantních pro krojovou evidenci, nejen aktivních členů nebo držitelů zapůjčených věcí. Vyhledávání jména bez diakritiky, filtr `Papírová evidence / Převádí se / Digitální evidence`, volitelné `Má zápůjčky / Má sken / Bez skenu`, rozlišení stejnojmenných osob. Na řádku jméno, poslední sken, počet digitálních zápůjček, stav převodu, poslední inventurní ověření.
 

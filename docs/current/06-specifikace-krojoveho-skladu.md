@@ -50,7 +50,7 @@ Aplikace má být použitelná na mobilu přímo u krojů a současně umožňov
 11. **Stav, umístění, vydatelnost a držitel jsou různé informace** a nemíchají se do jednoho stavu (kap. 3.2).
 12. **Poznámky lze zapisovat ke kusu, k zápůjčce, k jejímu ukončení i k inventurní kontrole.** Historická poznámka se nepřepíše pozdějším vypráním či opravou.
 13. **Součástí první provozní verze je inventura a tisk či export seznamů**, nejen přehled v mobilu.
-14. **Krojový fond patří složce** (dospělá Vonica, Malá Vonica, Děvčice; u Voničky viz Q-01). Krojařka pracuje jen s fondem složky, ke které má pověření. Krojařky jiných složek vidí jen seznamy lidí, ne cizí evidenci (D-21).
+14. **Krojový fond patří složce** (dospělá Vonica, Malá Vonica, Děvčice; u Voničky I, II, III – D-29). Krojařka pracuje jen s fondem složky, ke které má pověření. Krojařky jiných složek vidí jen seznamy lidí, ne cizí evidenci (D-21).
 
 ## 3. Jednotlivé krojové součásti
 

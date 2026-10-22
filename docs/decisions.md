@@ -75,7 +75,7 @@ Implementovat podle `current/identity-model-v2.md`:
 - **formální členství ve spolku** (Vonička);
 - **„přijatý člen“** (Vonica).
 
-Jde o konceptuální model, ne o schválené databázové schéma. Otevřené detaily jsou Q-07 až Q-09.
+Jde o konceptuální model, ne o schválené databázové schéma. Otevřené detaily jsou Q-08 a Q-09; „přijatý člen“ viz D-30.
 **Zdroj:** uživatel 2026-10-22.
 
 ### D-08 „Člen souboru“ = člen dospělé složky
@@ -184,25 +184,41 @@ Ve výchozím nastavení **povoleno** u všech řad. U konkrétní řady ho lze 
 | Instalace | Krojařky (stav 2026-10) |
 |---|---|
 | Vonica | Lucka Š (dospělá složka; pomocnice Anička Z, Terka P), Danča (Malá Vonica), Broňa (Děvčice) |
-| Vonička | Gabča (Vonička I), Anuška (Vonička II a III) – viz Q-01 |
+| Vonička | Gabča (Vonička I), Anuška (Vonička II a III) – fondy jsou rozdělené po složkách (D-29) |
 
 **Zdroj:** uživatel 2026-10-22; vonica.md (pomocnice).
 
 ### D-22 Navigace Krojařky (boční menu)
 
-**Přehled · Součástky · Krojové karty · Výpůjčky · Inventury · Hledat · Nastavení · Můj účet**
+**Přehled · Součástky · Krojové karty · Lidé · Výpůjčky · Inventury · Dokumenty · Přehledy · Hledat · Nastavení · Můj účet**
 
 - **Součástky:** katalog podle evidenčních řad, včetně kompletů.
 - **Krojové karty:** lidé s výpůjčkami.
+- **Lidé:** všechny osoby evidence, i bez výpůjček (papírová karta, převod na digitální evidenci).
 - **Výpůjčky:** skladové pohyby od nejnovějších.
+- **Dokumenty:** archiv skenů a podkladů (osobní karty, karty a lístky kompletů, kniha zápůjček).
+- **Přehledy:** tisk a export.
 
-Zda komplety vyčlenit do samostatné položky, je Q-04.
+Zda komplety vyčlenit do samostatné položky, je Q-04. Podoba mobilní lišty je Q-17.
+**Rozšíření 2026-10-23:** položky Lidé, Dokumenty a Přehledy doplněny podle Q-17 (uživatel).
 **Zdroj:** uživatel 2026-10-22. **Nahrazuje:** menu v `current/krojarka/frontend-demo-specifikace.md` kap. 3.1 (Přehled / Lidé / Sklad / Inventury…).
 
 ### D-23 Základní finanční evidence je součástí Krojařky
 
 Minimálně základní evidence financí patří do základu aplikace Krojařka. Rozsah zatím není určen (Q-03).
 **Zdroj:** uživatel 2026-10-22; vonica.md (TODO pokladna, výdaje za kroje).
+
+### D-29 Krojové fondy Voničky jsou rozdělené po složkách
+
+Stejně jako u Vonice má každá složka Voničky (I, II, III) vlastní krojový fond. Krojařka spravuje fondy složek, ke kterým má pověření (Anuška II i III).
+**Zdroj:** uživatel 2026-10-23 (Q-01). Údaj „jeden společný krojový fond“ ve vonicka.md je zastaralý a vonicka.md je k aktualizaci.
+
+## Identita (doplnění)
+
+### D-30 „Přijatý člen“ nemá v aplikaci žádná práva navíc
+
+Je to jen evidovaná historická skutečnost (rok, kmotr nebo kmotra). Není podmínkou funkce ani pověření. Funkce ve výboru vzniká volbou na schůzi, ne v aplikaci.
+**Zdroj:** uživatel 2026-10-23 (Q-07); vonica.md. **Nahrazuje:** „potvrzené pravidlo“ v `current/identity-model-v2.md` kap. 2.1.
 
 ## Odložené, ale schválené cíle pro `moje.vonica.cz`
 

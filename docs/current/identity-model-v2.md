@@ -15,7 +15,7 @@ Cílem je odstranit před backendem předpoklad, že **osoba = uživatelský ú�
 
 Uvnitř instalace Vonice ovšem existují autonomní **souborové složky** (dospělá Vonica, Malá Vonica, Děvčice z Vonice a přidružená muzika). Ty sdílejí některé osoby a společné souborové agendy, ale jiné údaje a krojové fondy mají oddělené. Vonička má naproti tomu tři taneční **skupiny** I–III a jeden společný krojový fond.
 
-> *Upřesnění 22. 10. 2026 (D-06):* u Voničky jsou **Vonička I, II a III složkami úrovně 2**. Krojařky jsou přiřazené po složkách (Gabča I, Anuška II a III). Zda zůstává jeden společný fond, je Q-01.
+> *Upřesnění 22. 10. 2026 (D-06):* u Voničky jsou **Vonička I, II a III složkami úrovně 2**. Krojařky jsou přiřazené po složkách (Gabča I, Anuška II a III) a **krojové fondy jsou rozdělené po složkách** (D-29).
 
 **Teď řešíme:** identitu, vztahy osob, členství, složky, skupiny, zastupování, pověření a pravidla viditelnosti. **Zatím neimplementujeme:** finance, ankety, nominace, úkoly, nové obrazovky ani backend; pouze dbáme, aby jim základní model nepřekážel.
 
@@ -25,7 +25,7 @@ Uvnitř instalace Vonice ovšem existují autonomní **souborové složky** (dos
 
 - Jedna osoba může působit zároveň v několika souborových složkách, každá může mít vlastní vedení, docházku a krojový fond.
 - Ve složce Vonica lze rozlišovat zájemce, aktivní a bývalé členy; externista může pomáhat na akcích nebo dostat konkrétní pověření.
-- *(Sporné, Q-07: vonica.md uvádí, že přijatý člen nemá práva navíc.)* Funkce ve výboru vyžaduje **aktivního a „přijatého“ člena**. „Přijetí“ je slavnostní institut s historií, případně kmotrem/kmotrou; samo o sobě nepřináší obecné přístupy do aplikace. Konkrétní organizační úkol však může dostat i externista.
+- *(Neplatí – D-30: přijatý člen nemá v aplikaci žádná práva navíc, výbor se volí na schůzi.)* ~~Funkce ve výboru vyžaduje **aktivního a „přijatého“ člena**. „Přijetí“ je slavnostní institut s historií, případně kmotrem/kmotrou; samo o sobě nepřináší obecné přístupy do aplikace. Konkrétní organizační úkol však může dostat i externista.~~
 - Organizační funkce a oprávnění nejsou totéž. Jedna osoba může současně zastávat více funkcí; pomocníci nedostávají automaticky hlas ve výboru.
 - Jména osob mohou být potřebná napříč složkami, ale údaje o členských příspěvcích, docházce či skladové agendě nikoliv.
 - Postavení muzikantů z přidružené muziky ve vztahu k aktivnímu členství a hlasování se ještě ověřuje.
