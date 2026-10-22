@@ -231,6 +231,21 @@ $ornament-crosses-col: '/identity/ornaments/ornament-cross-col.svg'; // totéž 
   &--yes { background: var(--status-ok-bg); color: var(--status-ok-fg); border-color: var(--status-ok-border); }
   &--maybe { background: var(--status-warn-bg); color: var(--status-warn-fg); border-color: var(--status-warn-border); }
   &--no { background: var(--status-danger-bg); color: var(--status-danger-fg); border-color: var(--status-danger-border); }
+
+  // Součet jako tlačítko rychlé odpovědi (detail akce)
+  &--action {
+    font-family: inherit;
+    line-height: inherit;
+    cursor: pointer;
+
+    &:hover { filter: brightness(0.96); }
+  }
+
+  // Můj stav: inverzní barvy (pozadí = barva textu), stejný rozměr – nic neposkočí
+  &--mine { background: var(--status-neutral-fg); color: var(--status-neutral-bg); border-color: var(--status-neutral-fg); }
+  &--yes#{&}--mine { background: var(--status-ok-fg); color: var(--status-ok-bg); border-color: var(--status-ok-fg); }
+  &--maybe#{&}--mine { background: var(--status-warn-fg); color: var(--status-warn-bg); border-color: var(--status-warn-fg); }
+  &--no#{&}--mine { background: var(--status-danger-fg); color: var(--status-danger-bg); border-color: var(--status-danger-fg); }
 }
 
 // Řádkový stav účasti (tabulky) – bez ornamentu, ale stejné zaoblení jako chipy

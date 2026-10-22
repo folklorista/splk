@@ -93,19 +93,24 @@
                 <h2 class="detail__section-title">Účast</h2>
                 <p class="detail__summary">
                   @for (c of summaryCounts(); track c.status) {
-                    <span class="status-count status-count--{{ c.status }}" [title]="c.label + ': ' + c.count">
-                      <app-icon [name]="c.icon" [size]="18" />
-                      <span class="status-count__sep" aria-hidden="true"></span>
-                      <span class="sr-only">{{ c.label }}: </span>{{ c.count }}
-                    </span>
+                    @if (c.quick) {
+                      <button type="button" class="status-count status-count--action status-count--{{ c.status }}" [class.status-count--mine]="c.mine" [attr.aria-pressed]="c.mine" [title]="(c.mine ? 'Moje odpověď: ' + c.label : c.status === 'pending' ? 'Zrušit odpověď' : 'Odpovědět: ' + statusLabels[c.status]) + ' (' + c.label + ': ' + c.count + ')'" (click)="quickRespond(c.status)">
+                        <app-icon [name]="c.icon" [size]="18" />
+                        <span class="status-count__sep" aria-hidden="true"></span>
+                        <span class="sr-only">{{ c.label }}: </span>{{ c.count }}
+                      </button>
+                    } @else {
+                      <span class="status-count status-count--{{ c.status }}" [class.status-count--mine]="c.mine" [title]="c.label + ': ' + c.count + (c.mine ? ' (moje odpověď)' : '')">
+                        <app-icon [name]="c.icon" [size]="18" />
+                        <span class="status-count__sep" aria-hidden="true"></span>
+                        <span class="sr-only">{{ c.label }}: </span>{{ c.count }}
+                        @if (c.mine) {
+                          <span class="sr-only"> (moje odpověď)</span>
+                        }
+                      </span>
+                    }
                   }
                 </p>
-                @if (isAudience()) {
-                  <p class="detail__deadline" [class.detail__deadline--due]="needsMyResponse()">
-                    Moje odpověď: <strong>{{ statusLabel(record()?.status) }}</strong> ·
-                    <a [routerLink]="[]" [queryParams]="{ tab: 'attendance' }">{{ responseClosed() ? 'zobrazit účast' : 'změnit / zobrazit účast' }}</a>
-                  </p>
-                }
               </section>
             }
           }

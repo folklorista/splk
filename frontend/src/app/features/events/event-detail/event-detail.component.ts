@@ -56,6 +56,7 @@ import { buildIcs, downloadIcs } from '../utils/ics';
 import { EnsembleSettingsService } from '../../ensemble/ensemble-settings.service';
 import { AvailabilityService } from '../../availability/availability.service';
 import { formatRange } from '../../availability/unavailability.utils';
+import { ConfirmService } from '../../../shared/dialog/confirm.service';
 @Component({
   selector: 'app-event-detail',
   standalone: true,
@@ -145,15 +146,19 @@ export class EventDetailComponent implements OnInit {
     };
   });
 
-  // Součty účasti jako [ikona | ornament | počet] – plný popisek v title a pro čtečky
+  // Součty účasti jako [ikona | ornament | počet] – plný popisek v title a pro čtečky;
+  // `mine` označí součet, do kterého je započítaný přihlášený člen, `quick` = klik nastaví mou odpověď
   readonly summaryCounts = computed(() => {
     const s = this.attendanceSummary();
-    return [
-      { status: 'yes', label: 'Přijde', icon: 'check' as IconName, count: s.yes },
-      { status: 'maybe', label: 'Možná', icon: 'question' as IconName, count: s.maybe },
-      { status: 'no', label: 'Nepřijde', icon: 'close' as IconName, count: s.no },
-      { status: 'pending', label: 'Bez odpovědi', icon: 'clock' as IconName, count: s.pending },
+    const mine = this.isAudience() ? (this.record()?.status ?? 'pending') : null;
+    const canRespond = mine !== null && !this.responseClosed();
+    const counts: { status: AttendanceStatus; label: string; icon: IconName; count: number }[] = [
+      { status: 'yes', label: 'Přijde', icon: 'check', count: s.yes },
+      { status: 'maybe', label: 'Možná', icon: 'question', count: s.maybe },
+      { status: 'no', label: 'Nepřijde', icon: 'close', count: s.no },
+      { status: 'pending', label: 'Bez odpovědi', icon: 'clock', count: s.pending },
     ];
+    return counts.map((c) => ({ ...c, mine: c.status === mine, quick: canRespond }));
   });
 
   // Kdo otevřel detail (po poslední důležité změně, je-li nějaká) a kdo ji potvrdil – pro organizátory
@@ -200,6 +205,7 @@ export class EventDetailComponent implements OnInit {
   // Skutečná docházka – zapisuje výbor/admin od začátku akce, nahlášenou účast nemění
   private actualAttendanceService = inject(ActualAttendanceService);
   private destroyRef = inject(DestroyRef);
+  private confirmDialog = inject(ConfirmService);
   actualRecords = signal<ActualAttendance[]>([]);
 
   private access = inject(AccessService);
@@ -398,6 +404,23 @@ export class EventDetailComponent implements OnInit {
 
   statusLabel(status: AttendanceStatus | undefined): string {
     return status ? STATUS_LABELS[status] : STATUS_LABELS['pending'];
+  }
+
+  // Rychlá odpověď klikem na součet v Detailu – poznámka se mění jen na záložce Účast;
+  // „Bez odpovědi“ odpověď po potvrzení zruší stejně jako tlačítko Zrušit odpověď
+  async quickRespond(status: AttendanceStatus): Promise<void> {
+    if (this.responseClosed() || (this.record()?.status ?? 'pending') === status) return;
+    if (status !== 'pending') {
+      this.setStatus(status);
+      return;
+    }
+    const ok = await this.confirmDialog.confirm({
+      title: 'Opravdu zrušit odpověď?',
+      message: this.record()?.note ? 'Smaže se i poznámka k účasti.' : undefined,
+      confirmLabel: 'Zrušit odpověď',
+      cancelLabel: 'Ponechat',
+    });
+    if (ok) this.clearStatus();
   }
 
   setStatus(status: AttendanceStatus): void {

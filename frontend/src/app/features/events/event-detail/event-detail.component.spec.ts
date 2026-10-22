@@ -1,3 +1,4 @@
+import { ConfirmService } from '../../../shared/dialog/confirm.service';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
@@ -104,6 +105,67 @@ describe('EventDetailComponent', () => {
     const summary = fixture.componentInstance.attendanceSummary();
     expect(summary.yes).toBe(1);
     expect(summary.pending).toBe(2);
+  });
+
+  describe('rychlá odpověď v součtech', () => {
+    const future: AppEvent = { ...event, startsAt: '2099-01-01T18:00:00', endsAt: '2099-01-01T20:00:00' };
+
+    function create(records: AttendanceRecord[], ev: AppEvent = future) {
+      configure(records);
+      eventsSpy.getEvent.and.returnValue(of(ev));
+      attendanceSpy.updateAttendance.and.callFake((r: AttendanceRecord) => of(r));
+      const fixture = TestBed.createComponent(EventDetailComponent);
+      fixture.detectChanges();
+      return fixture.componentInstance;
+    }
+
+    it('zvýrazní součet s mou odpovědí, bez odpovědi součet „Bez odpovědi“', () => {
+      expect(create([{ eventId: 10, memberId: 1, status: 'maybe' }]).summaryCounts().filter((c) => c.mine).map((c) => c.status)).toEqual(['maybe']);
+      TestBed.resetTestingModule();
+      expect(create([]).summaryCounts().filter((c) => c.mine).map((c) => c.status)).toEqual(['pending']);
+    });
+
+    it('klik na ✓ / ? / ✗ nastaví odpověď a zachová poznámku', async () => {
+      const c = create([{ eventId: 10, memberId: 1, status: 'no', note: 'pozdě' }]);
+      expect(c.summaryCounts().map((x) => x.quick)).toEqual([true, true, true, true]);
+      await c.quickRespond('yes');
+      expect(attendanceSpy.updateAttendance).toHaveBeenCalledWith(jasmine.objectContaining({ status: 'yes', note: 'pozdě' }));
+      expect(c.summaryCounts().find((x) => x.mine)?.status).toBe('yes');
+    });
+
+    it('klik na „Bez odpovědi“ odpověď po potvrzení zruší (i s poznámkou, jako Zrušit odpověď)', async () => {
+      const c = create([{ eventId: 10, memberId: 1, status: 'yes', note: 'pozdě' }]);
+      const confirm = spyOn(TestBed.inject(ConfirmService), 'confirm').and.resolveTo(true);
+      await c.quickRespond('pending');
+      expect(confirm).toHaveBeenCalledWith(jasmine.objectContaining({ message: 'Smaže se i poznámka k účasti.' }));
+      expect(attendanceSpy.updateAttendance).toHaveBeenCalledWith(jasmine.objectContaining({ status: 'pending', note: undefined }));
+      expect(c.summaryCounts().find((x) => x.mine)?.status).toBe('pending');
+      expect(c.noteValue()).toBe('');
+    });
+
+    it('bez potvrzení odpověď zůstane', async () => {
+      const c = create([{ eventId: 10, memberId: 1, status: 'yes' }]);
+      spyOn(TestBed.inject(ConfirmService), 'confirm').and.resolveTo(false);
+      await c.quickRespond('pending');
+      expect(attendanceSpy.updateAttendance).not.toHaveBeenCalled();
+      expect(c.summaryCounts().find((x) => x.mine)?.status).toBe('yes');
+    });
+
+    it('klik na už zvolenou odpověď nic neodešle', () => {
+      const c = create([{ eventId: 10, memberId: 1, status: 'yes' }]);
+      c.quickRespond('yes');
+      expect(attendanceSpy.updateAttendance).not.toHaveBeenCalled();
+      TestBed.resetTestingModule();
+      create([]).quickRespond('pending');
+      expect(attendanceSpy.updateAttendance).not.toHaveBeenCalled();
+    });
+
+    it('po skončení akce součty klikací nejsou', () => {
+      const c = create([], event);
+      expect(c.summaryCounts().some((x) => x.quick)).toBeFalse();
+      c.quickRespond('yes');
+      expect(attendanceSpy.updateAttendance).not.toHaveBeenCalled();
+    });
   });
 
   it('nezahrne do souhrnu člena mimo cílovou skupinu akce', () => {
