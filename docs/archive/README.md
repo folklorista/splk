@@ -8,6 +8,7 @@
 | [`02-core-a-moduly.md`](02-core-a-moduly.md) | Logické entity jádra (`ensembles`, `ensemble_memberships`, `parent_child_links`…) a první moduly, překonané modelem identity v2 (D-07) a specifikací `06`. Pravidlo `costume_category_allowed_groups` (zákaz výdeje podle skupiny) se nepoužívá (Q-02) | princip „skupiny jako základ viditelnosti“ → `current/moje/08` |
 | [`03-postup-vyvoje.md`](03-postup-vyvoje.md) | Deník vývoje dema do 19. 10. 2026: fáze 1–6, MVP, vlny 1–5, ověření hostingu 14. a 17. 10., otevřené body. Pořadí vývoje nahradilo D-02 | aktuální stav → `current/03-stav-vyvoje.md`; otevřené body → Q-16; ověření hostingu → `current/01` |
 | [`06-specifikace-krojoveho-skladu-v0.3.md`](06-specifikace-krojoveho-skladu-v0.3.md) | Verze 0.3 (15. 10., s doplňkem 6A/6B z 18. 10., ještě s pojmem „krojárka“). Ve verzi 0.4 ji nahradil model šablon, ve verzi 0.5 se fyzické komplety vrátily (D-19) | popis fyzických kompletů, částečného vrácení a neočíslovaných doplňků – zdroj pro `current/06` v0.5 |
+| [`plan-architektonickeho-experimentu.md`](plan-architektonickeho-experimentu.md) | Plán identitního experimentu (22. 10.), nepoužívá se (D-32) | model identity → `current/identity-model-v2.md` (D-06, D-07) |
 | [`implementace-2026-10-21/`](implementace-2026-10-21/00-index.md) | Popis **skutečného stavu kódu dema** k 21. 10. 2026 (větev `design/identity-03`), připravený pro externí oponenturu. Datovaný snímek, nebude se aktualizovat | `08-souhrn-zjisteni.md` = technický dluh P1 před backendem (Q-10) |
 
 ## Soubory, které už jsou jen v historii Gitu

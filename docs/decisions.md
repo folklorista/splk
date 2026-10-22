@@ -103,7 +103,7 @@ V terminologii Vonice „člen souboru“ znamená člena dospělé taneční sl
 
 Hosting Websupport, `api.vonica.cz`. Databáze **PostgreSQL 18** (UTF-8, `cs_CZ` collation), přístup přes PDO s nativními prepared statements.
 **Zdroj:** uživatel 2026-10-22; ověřeno v `current/hosting-postgresql-api-auth.md`.
-**Nahrazuje:** „PHP + MySQL“ v `current/01`, README a `archive/03`. Lokální `docker-compose.yml` dosud používá MariaDB (Q-11).
+**Nahrazuje:** „PHP + MySQL“ v `current/01`, README a `archive/03`. Lokální `docker-compose.yml` používá od 2026-10-22 také PostgreSQL 18 (port 5433).
 
 ### D-12 Autentizace: serverové sessions v PostgreSQL
 
@@ -219,6 +219,23 @@ Stejně jako u Vonice má každá složka Voničky (I, II, III) vlastní krojov�
 
 Je to jen evidovaná historická skutečnost (rok, kmotr nebo kmotra). Není podmínkou funkce ani pověření. Funkce ve výboru vzniká volbou na schůzi, ne v aplikaci.
 **Zdroj:** uživatel 2026-10-23 (Q-07); vonica.md. **Nahrazuje:** „potvrzené pravidlo“ v `current/identity-model-v2.md` kap. 2.1.
+
+## Postup vývoje (doplnění 2026-10-22)
+
+### D-31 Krojařka nepřebírá kód z dema
+
+Krojařka vzniká jako nová aplikace s vlastním UI. Z dema (`frontend/`, `/app/wardrobe`) se **nepřebírají** komponenty, services, modely ani testy. Doménová pravidla se berou ze specifikací (`current/06` v0.5, zadání Krojařky), ne z kódu dema.
+**Zdroj:** uživatel 2026-10-22. **Nahrazuje:** „Demo využije jako východisko existující implementaci Správy krojů“ v `current/krojarka/frontend-demo-specifikace.md` kap. 1.1 a požadavek na znovupoužití krojového modulu ve starším zadání migrace.
+
+### D-32 Plán architektonického experimentu se nepoužívá
+
+Pořadí „identita na mock datech → frontend → DB/API“ neplatí. Model identity (D-06, D-07) se implementuje rovnou v API a v Krojařce. Plán je archivovaný v `archive/plan-architektonickeho-experimentu.md`.
+**Zdroj:** uživatel 2026-10-22 (Q-12).
+
+### D-33 Demo se nekonzervuje
+
+Pro demo se nezakládá archivní větev ani tag. Demo zůstává na `demo.vonica.cz` a jeho kód v repozitáři, ale dál se nerozvíjí.
+**Zdroj:** uživatel 2026-10-22.
 
 ## Odložené, ale schválené cíle pro `moje.vonica.cz`
 

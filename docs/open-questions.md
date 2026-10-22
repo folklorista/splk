@@ -82,11 +82,11 @@ Návrh k posouzení: osoby bez výpůjček jako filtr v Krojových kartách, dok
 Je potřeba určit:
 
 - rozvržení monorepa (Angular workspace s projekty `krojarka`, později `moje` a `demo`; sdílená knihovna; adresář s PHP API);
-- co z dnešního `/wardrobe` převzít;
+- ~~co z dnešního `/wardrobe` převzít~~ – nic (D-31);
 - rozsah API v1 pro Krojařku (osoby, katalog, kusy, komplety, výpůjčky, inventury, přílohy, finance);
 - migrace schématu.
 
-Kód dema `/wardrobe` stojí na modelu `06` v0.4 (šablony místo fyzických kompletů). Přehled technického dluhu před backendem je v `archive/implementace-2026-10-21/08-souhrn-zjisteni.md` (P1).
+Přehled problémů dema, kterým se má API vyhnout (oprávnění jen ve frontendu, čtecí API vrací vše, chybějící integrita), je v `archive/implementace-2026-10-21/08-souhrn-zjisteni.md` (P1).
 
 ### Q-11 Hosting a provoz (z `current/hosting-postgresql-api-auth.md` kap. 9–10)
 
@@ -95,7 +95,6 @@ Kód dema `/wardrobe` stojí na modelu `06` v0.4 (šablony místo fyzických kom
 - Jeden databázový účet pro migrace i aplikaci.
 - Test zápisu do databáze, zapnutí `opcache`, HSTS, práva souborů 0666 → 644/755, SPA fallback pro chybějící assety.
 - Ověření v Safari/iOS a Firefoxu.
-- `docker-compose.yml` sjednotit na PostgreSQL 18.
 - **Zálohy PostgreSQL** u poskytovatele (D-16 vznikl pro MySQL).
 
 ### Q-14 Přihlašování do Krojařky a citlivé skeny
@@ -123,9 +122,11 @@ Který zdroj platí?
 
 Rozsah práv rodiče, ověření a ukončení zastupování, přístup k platbám (identity-model-v2 kap. 10.3). Týká se hlavně Voničky.
 
-### Q-12 Plán architektonického experimentu
+### Q-12 Plán architektonického experimentu – *rozhodnuto → D-32*
 
-`proposals/plan-architektonickeho-experimentu.md` předpokládá pořadí „identita → mock testy → frontend → DB/API“ a uvádí se jako „schválený postup prací“. Schválení není doloženo. Model identity je teď rozhodnut (D-06, D-07) a prioritou je Krojařka (D-02).
+Původní znění:
+
+`archive/plan-architektonickeho-experimentu.md` předpokládá pořadí „identita → mock testy → frontend → DB/API“ a uvádí se jako „schválený postup prací“. Schválení není doloženo. Model identity je teď rozhodnut (D-06, D-07) a prioritou je Krojařka (D-02).
 
 Zůstává plán v platnosti, nebo se identita bude dělat rovnou v rámci API Krojařky?
 

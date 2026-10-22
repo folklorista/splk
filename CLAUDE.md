@@ -24,7 +24,7 @@
 
 - Vstupní bod dokumentace je [`docs/README.md`](docs/README.md). Co platí, je v [`docs/decisions.md`](docs/decisions.md); při rozporu s jiným dokumentem platí registr. Co je nerozhodnuté, je v [`docs/open-questions.md`](docs/open-questions.md); nerozhodnuté věci nedomýšlet, zeptat se.
 - Závazné jsou jen dokumenty v `docs/current/`, a to podle statusu v jejich hlavičce. Nic z `docs/proposals/` ani `docs/archive/` není závazné. Stav implementace se eviduje v `docs/current/03-stav-vyvoje.md`.
-- **Jediná současná priorita je aplikace Krojařka** (`krojarka.vonica.cz`) a společné API (`api.vonica.cz`, PHP 8.5 + PostgreSQL 18). `moje.vonica.cz` je odložená; `demo.vonica.cz` je prototyp, ne cílová architektura (D-02, D-11).
+- **Jediná současná priorita je aplikace Krojařka** (`krojarka.vonica.cz`) a společné API (`api.vonica.cz`, PHP 8.5 + PostgreSQL 18). `moje.vonica.cz` je odložená; `demo.vonica.cz` je prototyp, ne cílová architektura; Krojařka z něj nepřebírá kód (D-02, D-11, D-31).
 - Neimplementovat cílovou ani budoucí funkcionalitu bez výslovného zadání (WebSocket, push notifikace, platby, multi-tenant a přepínač kontextu, rodiče/zastupování dětí, registrace, DM, úkoly, offline režim apod.).
 - Konkrétní aplikace pro folklorní organizace, ne univerzální framework. Jedna instalace = jedna organizace se **složkami** (Vonica: dospělá složka, Malá Vonica, Děvčice, muzika; Vonička samostatně), viz D-06. Oprávnění = pověření s rozsahem soubor / složka / skupina / akce / modul, bez superadministrátora (D-09, D-10).
 - Nejdřív využít stávající model; nový modul nebo položku menu navrhnout až tehdy, když stávající model přestane stačit.

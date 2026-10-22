@@ -23,7 +23,7 @@ První úspěšné nasazení Souborového systému je **první skutečná digit�
 
 ### 1.1 Vztah k existující aplikaci
 
-- Demo využije jako východisko existující Angular implementaci Správy krojů (`/wardrobe`): sklad, karty, zápůjčky, inventury, nastavení. Je vhodné zachovat její zaběhnuté scénáře a formuláře, nikoli stavět druhou definici pravidel.
+- *Neplatí (D-31, 22. 10. 2026): z dema se nepřebírá žádný kód.* ~~Demo využije jako východisko existující Angular implementaci Správy krojů (`/wardrobe`): sklad, karty, zápůjčky, inventury, nastavení. Je vhodné zachovat její zaběhnuté scénáře a formuláře, nikoli stavět druhou definici pravidel.~~
 - Novými prioritami jsou samostatné rozhraní, adresář všech osob se skeny, archiv dokladů, převod papírové evidence a foto přílohy.
 - Společný budoucí PHP REST backend (`api.vonica.cz`, PostgreSQL 18, D-11 a D-12) bude sloužit také portálu `moje.vonica.cz`. Aplikace žije v monorepu spolu s API (D-03). Frontend Krojařky se má dát nasadit samostatně. **Nezavádět nyní `admin.vonica.cz` jako předpoklad.**
 - Uživatelé bez účtu (včetně osob vedených pro historické zápůjčky) zůstávají plnohodnotnými osobami evidence; členství a účet se přidávají až tehdy, kdy budou potřebné. Identitní vazby popisuje `../identity-model-v2.md` (směr schválen v D-06 a D-07). Krojařka pracuje s fondem své složky. Krojařky jiných složek vidí jen seznamy lidí, pomocnice mají stejná práva (D-21).

@@ -1,6 +1,6 @@
 # Souborový systém – plán architektonického experimentu
 
-> **Status:** návrh (B). Dokument se označuje jako „schválený postup prací“, schválení ale není doloženo (Q-12). Organizační model a identita jsou mezitím rozhodnuté (D-06, D-07) a prioritou je Krojařka (D-02). Pořadí etap je proto otevřené. Podklady, na které odkazuje, jsou dnes v `docs/current/identity-model-v2.md`, `docs/context/` a `docs/archive/implementace-2026-10-21/`.
+> **ARCHIV – nezávazné.** Plán se nepoužívá (D-32, 2026-10-22). Dokument se označoval jako „schválený postup prací“, schválení ale nebylo doloženo. Organizační model a identita jsou mezitím rozhodnuté (D-06, D-07) a prioritou je Krojařka (D-02). Pořadí etap je proto otevřené. Podklady, na které odkazuje, jsou dnes v `docs/current/identity-model-v2.md`, `docs/context/` a `docs/archive/implementace-2026-10-21/`.
 
 **Oblast:** Identita, členství, organizační struktura a oprávnění  
 **Stav:** Schválený postup prací; konkrétní datový model podléhá samostatné revizi  
