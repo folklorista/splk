@@ -1,11 +1,31 @@
 # Krojový sklad – funkční specifikace pro krojařky
 
-**Souborový systém · Verze 0.4 · 18. 10. 2026**
-**Stav:** Verze 0.3 (zpětná vazba krojařky, 15. 10. 2026) sjednocená s opraveným doménovým modelem, podle kterého je od 17. 10. 2026 postaveno demo (fyzický kus + evidenční řada, komplet jako šablona, inventura ve dvou režimech), a s rozhodnutími o zápůjčkách mezi soubory z 18. 10. 2026. Podklad ke schválení krojařkami.
+**Souborový systém · Verze 0.5 · 22. 10. 2026**
+**Stav:** Platná doménová specifikace pro aplikaci **Krojařka** a pro budoucí Správu krojů v `moje`. Je to podklad ke schválení krojařkami (kap. 14 je nevyplněná).
 
-Navigace a obrazovky: `10-navigace-a-struktura-menu.md` kap. 4.5 (Moje kroje) a 4.6 (Správa krojů). Stav implementace: `03-postup-vyvoje.md`.
+**Vývoj verzí:**
 
-**Názvosloví:** *krojařka* = osoba s pověřením Správa krojů; *sklad* = místnost, kde leží nezapůjčené kroje; *Správa krojů* = agenda v aplikaci; *Moje kroje* = osobní krojová karta člena. Pojmy „krojárna“ a „krojárka“ nepoužíváme.
+- v0.3 (15. 10.) – fyzické komplety a neočíslované doplňky;
+- v0.4 (18. 10.) – fyzický kus + evidenční řada, komplet jako šablona, inventura ve dvou režimech; podle ní je postaveno demo;
+- **v0.5 (22. 10.)** zapracovává rozhodnutí z `docs/decisions.md`:
+  - **fyzické komplety** s proměnlivým složením a nečíslovanými doplňky (D-19);
+  - **opakované použití čísel povolené ve výchozím stavu** (D-20);
+  - krojový fond a pověření **podle složky**, pomocnice rovnocenné (D-21);
+  - model se složkami místo samostatných souborů (D-06).
+
+Verze 0.3 je v `docs/archive/06-specifikace-krojoveho-skladu-v0.3.md`, v0.4 v historii Gitu.
+
+Obrazovky aplikace Krojařka: `krojarka/frontend-demo-specifikace.md`. Navigace budoucí `moje`: `moje/10-navigace-a-struktura-menu.md` kap. 4.5 a 4.6. Stav implementace: `03-stav-vyvoje.md`. Otevřené podrobnosti: `docs/open-questions.md` Q-01 až Q-05.
+
+**Názvosloví:**
+
+- *krojařka* = osoba s pověřením ke krojům složky; pomocnice jsou také krojařky;
+- *Krojařka* = aplikace;
+- *sklad* = místnost, kde leží nezapůjčené kroje;
+- *Správa krojů* = agenda v `moje`;
+- *Moje kroje* = osobní krojová karta člena.
+
+Pojmy „krojárna“ a „krojárka“ nepoužíváme.
 
 ## 1. Proč krojový sklad digitalizujeme
 
@@ -19,17 +39,18 @@ Aplikace má být použitelná na mobilu přímo u krojů a současně umožňov
 
 1. **Základní entitou je fyzický kus** (součástka). Každý má stabilní interní identitu, evidenční řadu, evidenční číslo v rámci řady, klasifikaci, stav, umístění, držitele a historii.
 2. **Evidenční řady jsou samostatné.** Číslo `1` může současně označovat „mužská horňácká košile 1“ i „ženská kopaničká spodnica 1“. Identifikaci pro lidi tvoří vždy **řada + číslo**; samotné číslo není jedinečné.
-3. **Čísla mohou mít mezery a nepřečíslovávají se.** Vyřazený kus zůstává v historii i se svým číslem. **Opakované použití čísla vyřazeného kusu** je možné jen tam, kde to řada výslovně povoluje (nastavení řady); historie starého a nového kusu se nikdy nespojí.
-4. **Klasifikace je konfigurovatelná pro soubor** (pohlaví kroje, region, druh součástky, doplňkové varianty). Jiný soubor může rozlišovat jiné dimenze.
-5. **Komplet je šablona druhů součástek**, ne pevná sada kusů. Říká, co kroj daného pohlaví a regionu potřebuje, a slouží k upozornění, co držiteli chybí. Výpůjčka nikdy nevyžaduje komplet.
-6. **Krojová karta držitele = soubor individuálních zápůjček konkrétních kusů.** Jeden člověk může mít kusy více regionů i více kusů stejného druhu.
-7. **Existují dlouhodobá přidělení i krátkodobé zápůjčky.** Termín vrácení nemusí být u dlouhodobých přidělení vyplněn.
-8. **Výdej, vrácení, výměny, opravy, inventury a vyřazení zapisují pouze krojařky** (pověření Správa krojů). Běžní členové evidenci sami nemění.
+3. **Čísla mohou mít mezery a nepřečíslovávají se.** Vyřazený kus zůstává v historii i se svým číslem. **Opakované použití čísla vyřazeného kusu je ve výchozím stavu povolené.** U konkrétní řady ho lze v nastavení zakázat (D-20). Historie starého a nového kusu se nikdy nespojí.
+4. **Klasifikace je konfigurovatelná pro krojový fond** (pohlaví kroje, region, druh součástky, doplňkové varianty). Jiný fond nebo organizace může rozlišovat jiné dimenze.
+5. **Komplet je fyzická jednotka**: taška nebo ramínka v jednom obalu s lístkem, na kterém je výčet součástek. Má vlastní označení, **proměnlivé složení** (komplety téže řady se mohou lišit) a může obsahovat číslované kusy i **nečíslované doplňky evidované počtem**. Lze ho vydat celý a inventarizovat (kap. 4, D-19). Výpůjčka jednotlivého kusu komplet nevyžaduje.
+6. **Krojová karta držitele = soubor jeho výpůjček**, tedy jednotlivých kusů a celých kompletů. Jeden člověk může mít kusy více regionů i více kusů stejného druhu.
+7. **Existují dlouhodobá přidělení i krátkodobé zápůjčky.** Termín vrácení nemusí být u dlouhodobých přidělení vyplněn. Na vystoupení se typicky vydávají celé komplety a po vystoupení vracejí.
+8. **Výdej, vrácení, výměny, opravy, inventury a vyřazení zapisují pouze krojařky** (pověření ke krojům dané složky). Pomocnice mají stejná práva jako hlavní krojařka. Běžní členové evidenci sami nemění.
 9. **Odpovědnost se řídí oficiální evidencí.** Neohlášené předání mezi členy odpovědnost nepřenáší.
 10. **Zápůjčky mohou mít i externisté a bývalí členové.** Jejich identita a historie musí zůstat dohledatelná.
 11. **Stav, umístění, vydatelnost a držitel jsou různé informace** a nemíchají se do jednoho stavu (kap. 3.2).
 12. **Poznámky lze zapisovat ke kusu, k zápůjčce, k jejímu ukončení i k inventurní kontrole.** Historická poznámka se nepřepíše pozdějším vypráním či opravou.
 13. **Součástí první provozní verze je inventura a tisk či export seznamů**, nejen přehled v mobilu.
+14. **Krojový fond patří složce** (dospělá Vonica, Malá Vonica, Děvčice; u Voničky viz Q-01). Krojařka pracuje jen s fondem složky, ke které má pověření. Krojařky jiných složek vidí jen seznamy lidí, ne cizí evidenci (D-21).
 
 ## 3. Jednotlivé krojové součásti
 
@@ -74,27 +95,57 @@ Příklady dimenzí u Vonice:
 
 Konfiguraci klasifikace, druhů, řad a šablon kompletů spravuje krojařka v **Správa krojů → Nastavení**. Nejde o obecný formulářový framework – jen o typované možnosti a filtry pro tento obor.
 
-### 3.4 Zaměnitelné drobnosti bez čísla – otevřená otázka
+### 3.4 Zaměnitelné drobnosti bez čísla
 
-Verze 0.3 počítala s neočíslovanými doplňky evidovanými podle druhu a počtu (např. dvě úzké mašle do vlasů, stav „1 ze 2“). **Současný model eviduje každý kus jednotlivě** (kus může být dočasně bez čísla, ale je to samostatný záznam). Zda je pro drobnosti potřeba evidence podle počtu, nebo stačí jednotlivé kusy bez fyzického čísla, je potřeba ověřit s krojařkami (kap. 13). Do rozhodnutí **nezavádět** hromadné množstevní položky.
+Některé drobné doplňky není účelné jednotlivě označovat. Například v kompletu jsou předepsané dvě úzké mašle do vlasů, ale nezáleží na tom, zda se po vrácení jedná o tytéž fyzické kusy (D-19).
 
-## 4. Komplety jako šablony
+U takové položky stačí evidovat **druh, požadovaný počet, aktuálně přítomný počet a případnou poznámku**. Při jednom kusu může rozhraní ukazovat prosté **přítomno / chybí**, při více kusech stav **1 ze 2**. Při předání a vrácení se sleduje počet kusů, ne jejich identita. Krojařka je nemusí číslovat ani označovat štítkem.
 
-Šablona kompletu = název, pohlaví, region a **seznam druhů součástek**, které kroj potřebuje (např. „Horňácký mužský“: košile, gatě, pruclek, klobouk, čižmy).
+Je důležité rozlišit doplněk **záměrně bez čísla** od jedinečného kusu, kterému fyzické číslo **zatím chybí** a má ho teprve dostat.
 
-- Na krojové kartě držitele aplikace podle šablony upozorní, **které druhy mu chybějí**.
-- Šablona nepředepisuje konkrétní čísla kusů; žádné „sady se shodným číslem“.
-- Změna šablony nemění historii zápůjček.
+*Otevřené (Q-04):* zda se nečíslované doplňky vyskytují i mimo komplety (volně ve skladu nebo u osoby).
 
-**Výjimka – cizí komplety:** při dočasném příjmu cizího kroje (kap. 6B) lze celý komplet evidovat jako **jednu jednotku**, aby krojařka nemusela rozepisovat desítky dílů kvůli krátké výpůjčce.
+## 4. Komplety
+
+*Text vychází z verze 0.3 (kap. 4–5), upraveno podle rozhodnutí D-19.*
+
+Komplet je **fyzická jednotka**: součásti uložené společně v tašce nebo na ramínkách v jednom obalu, na kterém je **lístek s výčtem součástek**. Má vlastní označení (např. „Záleský komplet Z12“) a může obsahovat **číslované kusy i nečíslované doplňky evidované počtem**.
+
+**Komplet nemá pevnou strukturu.** Komplety téže řady nebo typu mohou obsahovat různé druhy součástek. Krojová evidence proto u každého kompletu vede jeho vlastní určené složení.
+
+U každého kompletu musí být vidět:
+
+- **určené složení** – co do něj patří (odpovídá lístku);
+- **aktuálně přítomné součásti** – co je evidováno v kompletu a není samostatně vypůjčeno jinde;
+- **chybějící součásti** – co do něj patří, ale je samostatně zapůjčeno, nebo zatím nebylo ověřeno či nalezeno;
+- stav: **úplný / neúplný / čeká na kontrolu / složení neověřeno** (opsáno z lístku, ale fyzicky nezkontrolováno);
+- komu je případně celý komplet svěřen;
+- seznam **výpůjček kompletu** (historie);
+- přiložené fotografie lístku a karty kompletu (`krojarka/frontend-demo-specifikace.md` kap. 5).
+
+Komplet se při práci chová jako **evidenční držitel součástí**. Krojařka do něj součásti zařazuje a může je z něj přesouvat nebo půjčovat. Komplet ale není osoba a nenese osobní odpovědnost.
+
+### 4.1 Trvalá změna složení
+
+Krojařka může součást do kompletu přidat, trvale ji odebrat nebo ji přesunout do jiného kompletu. Systém zachová, **kdy a kdo složení změnil**. Dřívější výpůjčky a inventury se tím zpětně nemění. Ke změně lze připsat poznámku.
+
+### 4.2 Dočasná zápůjčka součásti z kompletu
+
+Když krojařka samostatně půjčí šátek z kompletu, **šátek dál patří do určeného složení kompletu**, ale označí se jako dočasně nepřítomný. Komplet tak ukazuje chybějící díl i osobu, které byl šátek oficiálně svěřen. Po řádném vrácení do kompletu se jeho dostupnost obnoví.
+
+### 4.3 Šablona kompletu – pomůcka, otevřené
+
+Demo (model v0.4) zná **šablonu kompletu**: seznam druhů součástek pro kroj daného pohlaví a regionu, podle kterého aplikace upozorní, co držiteli chybí. Zda ji ponechat jako volitelnou pomůcku, je Q-04. Šablona nikdy nepředepisuje složení konkrétního fyzického kompletu.
+
+### 4.4 Cizí komplety
+
+Při dočasném příjmu cizího kroje (kap. 6B) lze celý komplet evidovat jako **jednu jednotku**, aby krojařka nemusela rozepisovat desítky dílů kvůli krátké výpůjčce.
 
 ## 5. Zápůjčky, vrácení a výměny
 
 ### 5.1 Výdej
 
 Krojařka vybere **konkrétní dostupný kus** (vydatelný, nikomu nesvěřený), držitele a datum. Může doplnit termín vrácení a **poznámku k zápůjčce** („na vystoupení“, „předáno bez knoflíku“). Jeden kus nesmí být současně zapůjčen dvěma lidem.
-
-Při vydávání více kusů jedné osobě může jako pomůcka posloužit šablona kompletu (co ještě chybí), ale vydávají se vždy jednotlivé kusy.
 
 ### 5.1a Nabídka kusů podle výchozího kroje osoby
 
@@ -107,11 +158,26 @@ U každé osoby (člena i externisty) lze evidovat **výchozí kroj**: mužský 
 - **Choreografie s obráceným krojem** (např. fašanková obchůzka, holky v mužských krojích): vydání proběhne běžně přes „zobrazit všechny kusy“, s volitelnou poznámkou k zápůjčce („fašank“) a termínem vrácení. Výchozí kroj osoby se tím nemění.
 - Výchozí kroj neovlivňuje inventuru ani oprávnění.
 
+### 5.1b Výdej celého kompletu jedním krokem
+
+Krojařka vybere komplet a aplikace zobrazí jeho **aktuálně přítomné součásti** a nabídne předání **všech najednou**. Před potvrzením lze zkontrolovat výjimky a konkrétní položku z předání vynechat.
+
+- **Součást, která do kompletu patří, ale je právě samostatně půjčená jinému, se do výdeje nezahrne.** Aplikace na neúplnost upozorní, ale nesmí zaznamenat předání věci, kterou nový držitel nepřevzal.
+- Při výdeji se uloží **přesný seznam předaných číslovaných kusů a druhy a počty nečíslovaných doplňků v okamžiku předání**. Pozdější změna složení kompletu tento seznam nemění.
+
+(Převzato z v0.3 kap. 5.2.)
+
 ### 5.2 Vrácení
 
 Krojařka zaznamená skutečné převzetí a může doplnit **poznámku k vrácení** („vrácena nevypraná“). Současně může upravit stav, vydatelnost a umístění kusu. Zápůjčka se ukončí, historie i poznámka zůstanou.
 
-Při vrácení více kusů najednou se výjimky označují **po jednotlivých kusech**; co se nevrátilo, zůstává u držitele.
+Při vrácení více kusů najednou nebo celého kompletu se jedním krokem potvrdí převzetí většiny a výjimky se označí **po jednotlivých řádcích**. Co se nevrátilo, zůstává u držitele. Zápůjčku nelze označit jako vyřízenou, dokud není každá její část vrácena nebo jinak oficiálně vypořádána. **Ke každému vracenému řádku lze zapsat vlastní poznámku**, například:
+
+- košile č. 1 – vrácena, ale nevypraná;
+- šátek č. 21 – nevrácen, zůstává v zápůjčce;
+- úzké mašle – vrácen 1 kus ze 2, jeden chybí.
+
+U nečíslovaných doplňků se poznámka vztahuje k druhu a počtu kusů v dané zápůjčce. *(Převzato z v0.3 kap. 5.3.)*
 
 ### 5.3 Výměna
 
@@ -137,30 +203,35 @@ Výhledově se pracovní úkoly mohou stát úkoly obecného modulu Úkoly s vaz
 
 Zachování historie **neznamená automaticky zachování přístupu**.
 
-## 6A. Osobní zápůjčka napříč folklorními soubory
+## 6A. Osobní zápůjčka napříč složkami
 
-**Sklad je autoritativní evidencí pohybů.** Jednotlivé folklorní soubory mají vlastní, navzájem oddělené sklady. Zápůjčka se může týkat osoby, která **není členem vydávajícího souboru**.
+*Upraveno ve v0.5 podle modelu se složkami (D-06). Původní text počítal s Malou Vonicí jako samostatným souborem se společnou globální identitou.*
 
-- Příklad: krojařka Malé Vonice vydá Ádě z dospělé Vonice záleský kroj. Ve skladu Malé Vonice je Áďa externí vypůjčitelka. **Členství ani přepnutí kontextu Malé Vonice jí nevzniká.**
-- Pokud je externí vypůjčitel spolehlivě propojen s existující **globální osobou**, zápůjčka se mu zobrazí v **Moje kroje** s původem „Zapůjčeno z Malé Vonice“. Vidí jen své svěřené kusy, termíny a pokyny, nikoliv další položky ani členy cizího skladu.
-- Externistu je možné vést **bez účtu**; dodatečné propojení s globální identitou musí proběhnout bezpečně, bez obecného seznamu všech účtů pro krojařku cizího souboru a bez náhodného propojení stejnojmenných osob.
-- Přímá osobní zápůjčka **nezakládá duplicitní skladovou položku** v dospělé Vonici.
-- Po odchodu člena z domovského souboru zůstává osobní přehled nevrácených krojů přístupný v omezeném rozsahu, aniž by se vracela oprávnění k souboru.
+**Sklad je autoritativní evidencí pohybů.** Složky (dospělá Vonica, Malá Vonica, Děvčice) mají vlastní, navzájem oddělené krojové fondy. Zápůjčka se může týkat osoby, která **nepatří k vydávající složce**.
+
+- Příklad: krojařka Malé Vonice vydá Ádě z dospělé Vonice záleský kroj. Ve fondu Malé Vonice je Áďa vypůjčitelka mimo složku. Jde o **tutéž osobu v téže instalaci**; žádná kopie osoby ani „externista“ navíc nevzniká. **Příslušnost k Malé Vonici jí tím nevzniká.**
+- Áďa vidí zápůjčku ve svém přehledu krojů s původem „Zapůjčeno z Malé Vonice“. Vidí jen své svěřené kusy, termíny a pokyny, nikoliv další položky ani lidi cizího fondu.
+- Krojařka Malé Vonice smí Áďu vyhledat v seznamu osob, ale nezíská tím přístup k jejím ostatním údajům (docházka, příspěvky, evidence jiné složky).
+- Přímá osobní zápůjčka **nezakládá duplicitní položku** ve fondu dospělé Vonice.
+- **Muzika** nemá vlastní krojařku ani fond; muzikanti si půjčují přímo z fondu dospělé složky (D-21).
+- Po ukončení příslušnosti ke složce zůstává osobní přehled nevrácených krojů přístupný v omezeném rozsahu, aniž by se vracela další oprávnění.
+
+Mezi **různými instalacemi** (Vonica × Vonička) se osoby ani účty nesdílejí. Zápůjčka do jiné organizace je výdej externí osobě nebo organizaci podle kap. 6B.
 
 ## 6B. Dočasný příjem cizích krojů a hromadné předání
 
-Systém musí umět **převzít cizí kroje do dočasné správy** od jiného souboru, který může, ale nemusí aplikaci používat.
+Systém musí umět **převzít cizí kroje do dočasné správy** od jiné složky nebo organizace, která může, ale nemusí aplikaci používat.
 
 - Příjem obsahuje vlastníka/zapůjčitele (organizace nebo externí osoba), datum převzetí, případný termín vrácení, stav, **původní evidenční čísla** a aktuálního držitele. Původní čísla se nepřečíslují do vlastních řad; interní identita se vytváří zvlášť, i kdyby cizí číslo kolidovalo s místním.
 - Dvě úrovně podrobnosti: **celý komplet jako jedna jednotka**, nebo evidence jednotlivých součástí.
 - Převzaté kroje lze dále **přidělit členům**. Rozlišuje se **vlastník**, **evidující sklad** a **aktuální držitel**. Dočasný příjem nekončí, dokud nebylo vrácení či chybějící části vypořádáno; lze částečně vracet a dokumentovat nesrovnalosti.
 - Po vrácení vlastníkovi položka přestává být **aktivním inventářem**, historie zůstává.
-- Příklad **10 kompletů z Malé Vonice dospělé Vonici bez určení tanečníků**: sklad Malé Vonice zaznamená výdej externímu vypůjčiteli „Vonica“; sklad dospělé Vonice **samostatně** zaznamená dočasný příjem a následná přidělení tanečníkům. Jde o dvě evidence **různých etap odpovědnosti**, ne o synchronizaci skladů.
+- Příklad **10 záleských kompletů z Malé Vonice dospělé Vonici bez určení tanečníků**: fond Malé Vonice zaznamená výdej složce „dospělá Vonica“; fond dospělé Vonice **samostatně** zaznamená dočasný příjem a následná přidělení tanečníkům. Jde o dvě evidence **různých etap odpovědnosti**, ne o synchronizaci fondů (odpovídá praxi ve vonica.md: „složka zapůjčuje složce“). *Zda ve stejné instalaci nabídnout předání mezi fondy jedním krokem, se zatím nerozhodlo.*
 - Později lze nabídnout **import/export předávacího seznamu**, bez povinného propojení databází.
 
 **Provozní pravidlo:** skutečný přesun odpovědnosti či věcí musí zaznamenat příslušná krojařka. Dohoda mimo aplikaci záznam nenahrazuje.
 
-## 7. Inventura: jedna akce, dva pracovní režimy
+## 7. Inventura: jedna akce, tři pracovní režimy
 
 Inventura je akce nad **celým fondem nebo výslovně vymezenou podmnožinou fyzických kusů** – nikoli inventura jedné evidenční řady. Má název, datum, stav, rozsah a **zmrazený seznam cílových kusů** vytvořený při zahájení. Postup se počítá podle **unikátních fyzických kusů**, ne podle počtu kliknutí, návštěv či zápůjček.
 
@@ -197,13 +268,22 @@ Před zahájením náhled: počet kusů, dotčených držitelů, nezapůjčenýc
 
 Typicky: jedna krojařka vybírá ze skladu mužské horňácké košile a diktuje čísla, druhá je zadává.
 
-- Přepínač „Podle lidí“ / „Ve skladu“ v téže inventuře.
+- Přepínač „Podle lidí“ / „Ve skladu“ / „Komplety“ v téže inventuře.
 - Seskupení podle evidenční řady; **číselná mřížka** se stavy kusů.
 - **Rychlé zadání čísel s potvrzením Enter**, i dávky a rozsahy (`1, 3, 7, 12-15`); okamžité potvrzení a prázdný vstup pro další číslo; zrušení posledního zápisu.
 - Neexistující číslo, opakovaná kontrola a kus mezitím zapůjčený nebo vedený mimo sklad se **zřetelně vrátí**, nepotvrdí se potichu.
 - Detail kusu: poškození, úprava, poznámka, pracovní úkol.
 - Čísla vyřazených kusů nejsou „chybějící“ položky; nepředpokládá se souvislá řada.
-- Výsledky jsou vidět v obou režimech; každý kus má v dané inventuře právě jeden výsledný stav ověření.
+- Výsledky jsou vidět ve všech režimech; každý kus má v dané inventuře právě jeden výsledný stav ověření.
+
+### 7.3a Kontrola kompletu
+
+*Doplněno ve v0.5 (D-19), podle `krojarka/frontend-demo-specifikace.md` K21.*
+
+- Zobrazí lístek a kartu kompletu (sken), určené složení a rozdíl mezi aktuálně přítomnými a dočasně vypůjčenými součástmi.
+- Každý řádek se fyzicky zkontroluje jako **přítomno / nepřítomno / neověřeno**. U nečíslovaných doplňků se zapíše **ověřený počet**.
+- Lze zapsat dosud neznámou součást nalezenou v kompletu. Vypůjčený kus se ale nesmí vrátit ani převést skrytým vedlejším efektem.
+- Kontrola kompletu je třetí pracovní režim téže inventury vedle „Podle lidí“ a „Ve skladu“.
 
 ### 7.4 Průběh a uzavření
 
@@ -232,16 +312,17 @@ Výsledek se uloží a pozdější pohyby ho zpětně nepřepisují. Historie ko
 - **Poznámka k inventurní kontrole:** zjištění při fyzické kontrole.
 - **Pracovní úkol:** co je potřeba udělat (kap. 5.5).
 
-O **vyřazení** rozhoduje krojařka. Zaznamená se datum, kdo a důvod; kus i jeho číslo zůstávají v historii. Číslo lze znovu použít jen u řady, která to výslovně povoluje. Pokud je kus stále zapůjčený, aplikace na to upozorní a vyžaduje vypořádání.
+O **vyřazení** rozhoduje krojařka. Zaznamená se datum, kdo a důvod; kus i jeho číslo zůstávají v historii. Číslo lze znovu použít, pokud to řada nezakazuje (D-20). Pokud je kus stále zapůjčený, aplikace na to upozorní a vyžaduje vypořádání.
 
 ## 9. Viditelnost a oprávnění
 
-Oprávnění vznikají **pověřením** (viz `08`), ne rolí:
+Oprávnění vznikají **pověřením** (viz `moje/08`, D-09), ne rolí. Rozsahem krojových pověření je **složka** (D-10, D-21):
 
-- **Správa krojů (krojařka):** zápis a úpravy kusů, řad, šablon, zápůjček, výměn, úkolů, inventur a vyřazení; přehledy, tisk, export.
-- **Náhled do správy krojů:** prohlížení evidence bez zápisu (např. vedení).
+- **Správa krojů (krojařka):** zápis a úpravy kusů, kompletů, řad, zápůjček, výměn, úkolů, inventur a vyřazení ve fondu své složky; přehledy, tisk, export. **Pomocnice mají stejné pověření** jako hlavní krojařka.
+- **Krojařka jiné složky:** vidí jen **seznamy lidí**, ne cizí fond ani jeho zápůjčky.
+- **Náhled do správy krojů:** prohlížení evidence bez zápisu (např. vedení). Zda ho Krojařka v první verzi potřebuje, je Q-14.
 - **Běžný člen:** jen vlastní **Moje kroje**; nemůže měnit evidenci.
-- **Správa souboru** sama o sobě **nedává** přístup ke krojové evidenci.
+- **Správa souboru** sama o sobě **nedává** přístup ke krojové evidenci. Role superadministrátora neexistuje (D-09).
 - **Externista** pro zápůjčku nepotřebuje účet. S cíleným přístupem vidí jen povolený obsah a evidenci nemění.
 
 ## 10. Přehledy, tisk a export – součást první provozní verze
@@ -259,11 +340,17 @@ Konkrétní tiskové sestavy a formáty doladíme s krojařkami. Exporty s osobn
 
 **A. Evidenční řady:** „Mužská horňácká košile 1“ a „ženská kopaničká spodnica 1“ jsou dva různé kusy. Mezery v číslování jsou v pořádku.
 
-**B. Vyřazení:** Vyřazený kus zůstane v historii se svým číslem; číslo dostane nový kus jen v řadě s povoleným opakovaným použitím.
+**B. Vyřazení:** Vyřazený kus zůstane v historii se svým číslem. Číslo může dostat nový kus, pokud řada opakované použití nezakazuje; historie se nespojí.
 
 **C. Varianta:** Modré a bílé gatě mají podle nastavení buď vlastní řady, nebo jsou variantou kusu v jedné řadě.
 
-**D. Krojová karta:** Člen má několik různě očíslovaných kusů dvou regionů; šablona kompletu ukáže, který druh mu chybí.
+**D. Krojová karta:** Člen má několik různě očíslovaných kusů dvou regionů a jeden celý komplet.
+
+**D2. Výdej kompletu na vystoupení:** Krojařka vydá komplet Z12; šátek z něj je právě půjčený jinému, proto se do výdeje nezahrne a komplet je veden jako neúplný.
+
+**D3. Nečíslované doplňky:** Komplet obsahuje dvě mašle; vrátí se jedna, zapíše se „1 ze 2“ bez identifikace konkrétní mašle.
+
+**D4. Kontrola kompletu při inventuře:** Krojařka otevře komplet, porovná lístek se skutečností, označí chybějící součást a dopíše nalezenou neevidovanou.
 
 **E. Částečné vrácení:** Člen vrátí všechno kromě jednoho kusu; ten zůstává u něj a je dohledatelný.
 
@@ -287,11 +374,11 @@ Konkrétní tiskové sestavy a formáty doladíme s krojařkami. Exporty s osobn
 
 **O. Výpis do tisku:** Krojařka připraví seznam kusů nebo zápůjček pro kontrolu mimo aplikaci.
 
-**P. Přímá osobní výpůjčka z jiného skladu:** Malá Vonica půjčí kroj Ádě; Áďa ho vidí v Moje kroje, ale nezískává členství ani čtení skladu Malé Vonice.
+**P. Přímá osobní výpůjčka z fondu jiné složky:** Malá Vonica půjčí kroj Ádě; Áďa ho vidí v Moje kroje, ale nezískává příslušnost k Malé Vonici ani čtení jejího fondu.
 
 **Q. Dočasný příjem od cizí organizace:** Vonica převezme deset kompletů s původními čísly, rozdělí je členům, částečně vrátí a dohledá historii.
 
-**R. Hromadné předání Malá Vonica → Vonica:** Výdej a příjem jsou samostatné operace dvou skladů.
+**R. Hromadné předání Malá Vonica → dospělá Vonica:** Výdej a příjem jsou samostatné operace dvou fondů.
 
 **S. Odchod člena:** Ukončení členství neuzavře zápůjčky ani nevymaže historickou odpovědnost.
 
@@ -311,9 +398,11 @@ Konkrétní tiskové sestavy a formáty doladíme s krojařkami. Exporty s osobn
 
 ## 13. Zbývající upřesnění s krojařkami
 
-1. **Seznam řad:** přesné názvy a klíče řad pro Vonici; které varianty (např. modré/bílé gatě) mají vlastní řadu. Demo ukazuje obojí (horňácké gatě = atribut, slovenské gatě = vlastní řady).
-2. **Opakované použití čísel:** u kterých řad ho povolit (výchozí: nepovolovat).
-3. **Zaměnitelné drobnosti bez čísla** (kap. 3.4): stačí jednotlivé kusy bez fyzického čísla, nebo je nutná evidence podle počtu?
+1. **Seznam řad:** přesné názvy a klíče řad pro Vonici; které varianty (např. modré/bílé gatě) mají vlastní řadu. Demo ukazuje obojí (horňácké gatě = atribut, slovenské gatě = vlastní řady). Návrh číselníku druhů: `krojarka/krojovy-katalog-vonica.md`.
+2. ~~Opakované použití čísel~~ – rozhodnuto (D-20): výchozí povoleno, zakázat lze u řady. Zbývá: u kterých řad ho zakázat.
+3. ~~Zaměnitelné drobnosti bez čísla~~ – rozhodnuto (D-19): evidence podle počtu v kompletech. Zbývá: vyskytují se i mimo komplety? (Q-04)
+3a. **Komplety:** označování a řady kompletů, pravidla výdeje neúplného kompletu, potřeba šablony (Q-04).
+3b. **Vlastní kroj nebo součástka člena** (např. „má vlastní krpce“): stačí poznámka na krojové kartě? (Q-05)
 4. **Uzavření inventury s nesrovnalostmi:** zatím smí každá krojařka, vždy s důvodem – potvrdit.
 5. **Výchozí kroj osoby:** stačí mužský / ženský / neurčeno, nebo je potřeba jemnější rozlišení (např. dětský kroj u Malé Vonice)?
 6. **Pracovní úkoly:** stačí stavy otevřený / rozpracovaný / hotovo / zrušeno bez schvalování?
@@ -325,7 +414,7 @@ Tento dokument není technickým návrhem databáze; orientační doménové ent
 ## 14. Schválení
 
 - [ ] Fyzický kus, evidenční řady, číslování a vyřazení jsou popsány správně.
-- [ ] Komplet jako šablona druhů a krojová karta z individuálních zápůjček odpovídají praxi.
+- [ ] Fyzické komplety (proměnlivé složení, nečíslované doplňky, výdej celého kompletu, kontrola kompletu) a krojová karta odpovídají praxi.
 - [ ] Stav, vydatelnost, umístění a pracovní úkoly odpovídají praxi.
 - [ ] Evidence aktivních, bývalých a externích vypůjčitelů odpovídá praxi.
 - [ ] Inventura ve dvou režimech umožní provést první skutečnou kontrolu skladu.
@@ -347,20 +436,24 @@ Entity zůstávají oddělené; žádná obří generická entita ani jeden spol
 | --- | --- |
 | `CostumeClassification` | pohlaví, regiony, varianty souboru |
 | `CostumePartType` | druh součástky |
-| `CostumeSeries` | evidenční řada = kombinace klasifikace (+ volitelně varianta), pravidlo opakovaného použití čísel |
-| `CostumeItem` | stabilní ID, `ensembleId`, řada, číslo, varianta, velikost, poznámka, stav, vydatelnost, umístění, vyřazení |
-| `CostumeKitTemplate` | šablona kompletu: pohlaví, region, seznam druhů |
-| `ExternalPerson` | externí vypůjčitel bez účtu |
+| `CostumeSeries` | evidenční řada = kombinace klasifikace (+ volitelně varianta), pravidlo opakovaného použití čísel (výchozí povoleno) |
+| `CostumeItem` | stabilní ID, fond (složka), řada, číslo, varianta, velikost, poznámka, stav, vydatelnost, umístění, vyřazení |
+| `CostumeKit` | fyzický komplet: označení, fond, popis, určené složení, stav ověření složení, přílohy (lístek, karta) |
+| řádek složení kompletu | číslovaný kus, nebo nečíslovaný druh s požadovaným a přítomným počtem; historie změn složení |
+| `CostumeKitTemplate` | volitelná šablona druhů (pohlaví, region) – otevřené (Q-04) |
+| osoba (`Person`) | vypůjčitel včetně externistů a osob bez účtu – jedna evidence osob (`identity-model-v2.md`); dřívější samostatné `ExternalPerson` se nepoužívá |
 | výchozí kroj osoby | atribut osoby / externisty: mužský / ženský / neurčeno; jen pro řazení nabídky při vydávání (kap. 5.1a) |
-| `CostumeLoan` | kus × držitel, výdej, termín, ukončení (vráceno / vyměněno / vypořádáno), vazba na nahrazovanou zápůjčku a inventuru |
+| `CostumeLoan` | kus, komplet nebo počet nečíslovaných doplňků × držitel; výdej, termín, ukončení po řádcích (vráceno / vyměněno / vypořádáno), zachycený obsah předání, vazba na nahrazovanou zápůjčku a inventuru |
 | `CostumeWorkOrder` | pracovní úkol na kusu |
 | `Inventory` | rozsah (filtry), zmrazený seznam kusů a držitelů, výslovná doplnění, uzavření s důvodem |
 | `InventorySlot`, `InventoryVisit` | termín s kapacitou, rezervace a návštěva držitele |
 | `InventoryCheck` | kontrola kusu (režim, výsledek předložení a stavu, poznámka, kdo, kdy); opakované kontroly v historii, do pokrytí se kus počítá jednou |
 | historie / události | pohyby, výměny, změny stavu a umístění pro dohledání „kdy a kde byl kus naposledy viděn“ |
 
-Neslučovat `isPhysicallyVerified`, `condition`, `loanStatus`, `location`, `workOrderStatus` a `visitStatus` do jednoho stavu. Všechny entity nesou `ensembleId`.
+Neslučovat `isPhysicallyVerified`, `condition`, `loanStatus`, `location`, `workOrderStatus` a `visitStatus` do jednoho stavu. Všechny entity krojové evidence patří ke krojovému fondu složky. `ensembleId` zůstává jen jako rezerva (D-06).
 
 ---
+
+*Verze 0.5 (22. 10. 2026) vrací fyzické komplety s proměnlivým složením a nečíslovanými doplňky (D-19), mění výchozí opakované použití čísel na povolené (D-20), váže fondy a pověření na složky (D-21) a přepisuje kap. 6A/6B na model se složkami (D-06).*
 
 *Verze 0.4 nahrazuje model fyzických kompletů a množstevních doplňků z verze 0.3 modelem fyzických kusů, evidenčních řad a šablon kompletů, doplňuje stav/umístění/vydatelnost, pracovní úkoly a inventuru ve dvou režimech a zapracovává dříve samostatné implementační zadání (Krojárna, Moje kroje a inventury).*

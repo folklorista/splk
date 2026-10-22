@@ -1,5 +1,7 @@
 # Styl práce a rozhodovací pravidla
 
+> **Status:** platné (D-01, D-04). Odkazy na `07` vedou do `current/moje/07`. Pasáž „Dlouhodobý směr“ je historická: backend je PHP + PostgreSQL 18 (D-11).
+
 ## Iterativní vývoj
 
 Vývoj má probíhat po malých, ověřitelných krocích.
@@ -66,7 +68,7 @@ Pevné by měly být základní principy aplikace:
 - soubor,
 - členství,
 - skupina,
-- role,
+- pověření (původně „role“; viz D-09),
 - modul,
 - akce,
 - příspěvek,
@@ -91,6 +93,26 @@ Konfigurovatelné mohou být věci, které se pravděpodobně budou lišit mezi 
 ## Neopakovat chybu příliš dynamické architektury
 
 Předchozí krojová databáze narazila na problém, že se architektura snažila být obecná příliš brzy.
+
+*Původní popis (převzato z `archive/00-prehled.md`, kap. „Poučení z krojové databáze“):*
+
+Předchozí pokus o krojovou databázi směřoval k velmi dynamickému řešení, kde se REST API a frontend měly automaticky přizpůsobovat změnám ve struktuře databáze.
+
+To se ukázalo jako problematické, protože reálná doménová pravidla nejsou jen tabulky a sloupce. Typický problém:
+
+- člen z určité skupiny může dostat k zapůjčení jen krojové díly z určitých kategorií,
+- některé skupiny členů mají přístup k jiným částem evidence,
+- vazební tabulky a pravidla nebyly od začátku zohledněné,
+- malá doménová změna vyžadovala úpravy napříč mnoha vrstvami.
+
+Z toho plyne závěr:
+
+- nedělat vše univerzálně a horizontálně,
+- nerozšiřovat aplikaci přes generické tabulky bez doménového významu,
+- držet pevné moduly podle oblasti použití,
+- připravit skupiny a vazby jako základní prvek systému.
+
+*Poznámka 2026-10-22: první odrážka popisuje tehdejší pravidlo; zda je zákaz výdeje podle skupiny vůbec potřeba, je Q-02.*
 
 Rizika příliš dynamického přístupu:
 

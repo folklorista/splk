@@ -1,5 +1,8 @@
 # Postup vývoje
 
+> **ARCHIV – nezávazné.** Deník vývoje dema do 19. 10. 2026. Pořadí fází a MVP nahradilo rozhodnutí D-02 (Krojařka jako priorita); „MySQL“ nahradil PostgreSQL 18 (D-11). Aktuální stav: `docs/current/03-stav-vyvoje.md`; otevřené body: `docs/open-questions.md` Q-16.
+
+
 ## Produktová konsolidace 18. 10. 2026 – poznámka k plánu
 
 Tento dokument obsahuje **historický stav kódu a dřívější harmonogramy**. Níže uvedená data a tvrzení „hotovo“ se tímto zpětně nemění. Nově odsouhlasené cílové chování **není automaticky implementováno** ani dodatečně podmínkou již vydané V1.0 (viz `08`).

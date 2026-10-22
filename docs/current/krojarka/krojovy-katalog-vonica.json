@@ -1,0 +1,836 @@
+{
+  "schema": "krojovy-katalog-navrh-1",
+  "source": "Dvě skladové karty .xls; druhy součástek dle názvů řádků, bez ověření fyzického inventáře",
+  "items": [
+    {
+      "id": "m-05",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "košile",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 5
+    },
+    {
+      "id": "m-06",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "pruclek",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 6
+    },
+    {
+      "id": "m-07",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "nohavice Velické",
+      "varianta_z_nazvu": "Velická / Velické (výslovně v názvu)",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 7
+    },
+    {
+      "id": "m-08",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "řemen",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 8
+    },
+    {
+      "id": "m-09",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "šáteček",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 9
+    },
+    {
+      "id": "m-10",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "klobouk Velický",
+      "varianta_z_nazvu": "Velická / Velické (výslovně v názvu)",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 10
+    },
+    {
+      "id": "m-11",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "kabát bílý",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 11
+    },
+    {
+      "id": "m-12",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "kabát modrý",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 12
+    },
+    {
+      "id": "m-13",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "halena",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 13
+    },
+    {
+      "id": "m-14",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "traslavice",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 14
+    },
+    {
+      "id": "m-15",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "zástěra",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 15
+    },
+    {
+      "id": "m-16",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "pruclek Nová Lhota",
+      "varianta_z_nazvu": "Nová Lhota (výslovně v názvu)",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 16
+    },
+    {
+      "id": "m-17",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "nohavice Nová Lhota",
+      "varianta_z_nazvu": "Nová Lhota (výslovně v názvu)",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 17
+    },
+    {
+      "id": "m-18",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "klobouk Nová Lhota",
+      "varianta_z_nazvu": "Nová Lhota (výslovně v názvu)",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 18
+    },
+    {
+      "id": "m-19",
+      "pohlavi": "muži",
+      "skupina": "Horňácko",
+      "nazev": "kosáry",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 19
+    },
+    {
+      "id": "m-24",
+      "pohlavi": "muži",
+      "skupina": "Kopanice",
+      "nazev": "košile",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 24
+    },
+    {
+      "id": "m-25",
+      "pohlavi": "muži",
+      "skupina": "Kopanice",
+      "nazev": "vesta",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 25
+    },
+    {
+      "id": "m-26",
+      "pohlavi": "muži",
+      "skupina": "Kopanice",
+      "nazev": "nohavice",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 26
+    },
+    {
+      "id": "m-27",
+      "pohlavi": "muži",
+      "skupina": "Kopanice",
+      "nazev": "řemen",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 27
+    },
+    {
+      "id": "m-28",
+      "pohlavi": "muži",
+      "skupina": "Kopanice",
+      "nazev": "návleky",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 28
+    },
+    {
+      "id": "m-29",
+      "pohlavi": "muži",
+      "skupina": "Kopanice",
+      "nazev": "klobouk+bambulky",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 29
+    },
+    {
+      "id": "m-32",
+      "pohlavi": "muži",
+      "skupina": "Slovensko",
+      "nazev": "košile",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 32
+    },
+    {
+      "id": "m-33",
+      "pohlavi": "muži",
+      "skupina": "Slovensko",
+      "nazev": "košile stuhová",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 33
+    },
+    {
+      "id": "m-34",
+      "pohlavi": "muži",
+      "skupina": "Slovensko",
+      "nazev": "kordula",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 34
+    },
+    {
+      "id": "m-35",
+      "pohlavi": "muži",
+      "skupina": "Slovensko",
+      "nazev": "nohavice",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 35
+    },
+    {
+      "id": "m-36",
+      "pohlavi": "muži",
+      "skupina": "Slovensko",
+      "nazev": "řemen",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 36
+    },
+    {
+      "id": "m-37",
+      "pohlavi": "muži",
+      "skupina": "Slovensko",
+      "nazev": "klobouk",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 37
+    },
+    {
+      "id": "m-38",
+      "pohlavi": "muži",
+      "skupina": "Slovensko",
+      "nazev": "ostruhy",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 38
+    },
+    {
+      "id": "m-39",
+      "pohlavi": "muži",
+      "skupina": "Slovensko",
+      "nazev": "košile Moravské Lieskove",
+      "varianta_z_nazvu": "Moravské Lieskové (výslovně v názvu)",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 39
+    },
+    {
+      "id": "m-42",
+      "pohlavi": "muži",
+      "skupina": "Zálesí",
+      "nazev": "opasek Zálesí",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 42
+    },
+    {
+      "id": "m-45",
+      "pohlavi": "muži",
+      "skupina": "Obuv",
+      "nazev": "čižmy",
+      "varianta_z_nazvu": "",
+      "typ": "obuv",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 45
+    },
+    {
+      "id": "m-46",
+      "pohlavi": "muži",
+      "skupina": "Obuv",
+      "nazev": "krpce",
+      "varianta_z_nazvu": "",
+      "typ": "obuv",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 46
+    },
+    {
+      "id": "m-49",
+      "pohlavi": "muži",
+      "skupina": "Ostatní",
+      "nazev": "kufr - Vonica",
+      "varianta_z_nazvu": "",
+      "typ": "zavazadlo",
+      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
+      "radek": 49
+    },
+    {
+      "id": "ž-05",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "rubáč",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 5
+    },
+    {
+      "id": "ž-06",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "strakaté rukávce",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 6
+    },
+    {
+      "id": "ž-07",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "bílé rukávce",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 7
+    },
+    {
+      "id": "ž-08",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "žluté rukávce",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 8
+    },
+    {
+      "id": "ž-09",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "čepeček",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 9
+    },
+    {
+      "id": "ž-10",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "šatka",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 10
+    },
+    {
+      "id": "ž-11",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "šatka pracovní",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 11
+    },
+    {
+      "id": "ž-12",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "fěrtoch žlutý",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 12
+    },
+    {
+      "id": "ž-13",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "fěrtoch bílý",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 13
+    },
+    {
+      "id": "ž-14",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "sukňa",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 14
+    },
+    {
+      "id": "ž-15",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "fěrtuška kartůnová",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 15
+    },
+    {
+      "id": "ž-16",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "fěrtuška modrá",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 16
+    },
+    {
+      "id": "ž-17",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "fěrtuška červená",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 17
+    },
+    {
+      "id": "ž-18",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "fěrtuška svát. Vyšívaná",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 18
+    },
+    {
+      "id": "ž-19",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "fěrtuška červ. Originál",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 19
+    },
+    {
+      "id": "ž-20",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "kabátek červený",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 20
+    },
+    {
+      "id": "ž-21",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "kordula bílá velická",
+      "varianta_z_nazvu": "Velická / Velické (výslovně v názvu)",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 21
+    },
+    {
+      "id": "ž-22",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "lajbl",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 22
+    },
+    {
+      "id": "ž-23",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "kordula novolhotská",
+      "varianta_z_nazvu": "Nová Lhota (výslovně v názvu)",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 23
+    },
+    {
+      "id": "ž-24",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "plachetka",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 24
+    },
+    {
+      "id": "ž-25",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "vlňák",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 25
+    },
+    {
+      "id": "ž-26",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "věneček",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 26
+    },
+    {
+      "id": "ž-27",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "šátek rožkový",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 27
+    },
+    {
+      "id": "ž-28",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "šátek bílý, jatelinka, červený",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 28
+    },
+    {
+      "id": "ž-29",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "kytička",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 29
+    },
+    {
+      "id": "ž-31",
+      "pohlavi": "ženy",
+      "skupina": "Kopanice",
+      "nazev": "rukávce",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 31
+    },
+    {
+      "id": "ž-32",
+      "pohlavi": "ženy",
+      "skupina": "Kopanice",
+      "nazev": "leknica",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 32
+    },
+    {
+      "id": "ž-33",
+      "pohlavi": "ženy",
+      "skupina": "Kopanice",
+      "nazev": "zástěra tmavá",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 33
+    },
+    {
+      "id": "ž-34",
+      "pohlavi": "ženy",
+      "skupina": "Kopanice",
+      "nazev": "zástěra barevná",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 34
+    },
+    {
+      "id": "ž-35",
+      "pohlavi": "ženy",
+      "skupina": "Kopanice",
+      "nazev": "návleky",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 35
+    },
+    {
+      "id": "ž-36",
+      "pohlavi": "ženy",
+      "skupina": "Kopanice",
+      "nazev": "sak",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 36
+    },
+    {
+      "id": "ž-37",
+      "pohlavi": "ženy",
+      "skupina": "Kopanice",
+      "nazev": "čelenka",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 37
+    },
+    {
+      "id": "ž-38",
+      "pohlavi": "ženy",
+      "skupina": "Kopanice",
+      "nazev": "šátek turecký",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 38
+    },
+    {
+      "id": "ž-39",
+      "pohlavi": "ženy",
+      "skupina": "Kopanice",
+      "nazev": "spodnica",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 39
+    },
+    {
+      "id": "ž-40",
+      "pohlavi": "ženy",
+      "skupina": "Slovensko",
+      "nazev": "halenka",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 40
+    },
+    {
+      "id": "ž-41",
+      "pohlavi": "ženy",
+      "skupina": "Slovensko",
+      "nazev": "halenka Zemplín",
+      "varianta_z_nazvu": "Zemplín (výslovně v názvu)",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 41
+    },
+    {
+      "id": "ž-42",
+      "pohlavi": "ženy",
+      "skupina": "Slovensko",
+      "nazev": "spodnička cudnička",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 42
+    },
+    {
+      "id": "ž-43",
+      "pohlavi": "ženy",
+      "skupina": "Slovensko",
+      "nazev": "spodnica",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 43
+    },
+    {
+      "id": "ž-44",
+      "pohlavi": "ženy",
+      "skupina": "Slovensko",
+      "nazev": "kabátek barevný",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 44
+    },
+    {
+      "id": "ž-45",
+      "pohlavi": "ženy",
+      "skupina": "Slovensko",
+      "nazev": "sukňa barevná",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 45
+    },
+    {
+      "id": "ž-46",
+      "pohlavi": "ženy",
+      "skupina": "Slovensko",
+      "nazev": "korále",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 46
+    },
+    {
+      "id": "ž-47",
+      "pohlavi": "ženy",
+      "skupina": "Slovensko",
+      "nazev": "mašle barevné",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 47
+    },
+    {
+      "id": "ž-48",
+      "pohlavi": "ženy",
+      "skupina": "Slovensko",
+      "nazev": "mašle bílá",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 48
+    },
+    {
+      "id": "ž-49",
+      "pohlavi": "ženy",
+      "skupina": "Slovensko",
+      "nazev": "čelenka",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 49
+    },
+    {
+      "id": "ž-50",
+      "pohlavi": "ženy",
+      "skupina": "Slovensko",
+      "nazev": "kapesník",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 50
+    },
+    {
+      "id": "ž-53",
+      "pohlavi": "ženy",
+      "skupina": "Obuv",
+      "nazev": "horňácké tvrdé",
+      "varianta_z_nazvu": "",
+      "typ": "obuv",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 53
+    },
+    {
+      "id": "ž-54",
+      "pohlavi": "ženy",
+      "skupina": "Obuv",
+      "nazev": "slovenské měkké",
+      "varianta_z_nazvu": "",
+      "typ": "obuv",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 54
+    },
+    {
+      "id": "ž-55",
+      "pohlavi": "ženy",
+      "skupina": "Obuv",
+      "nazev": "krpce",
+      "varianta_z_nazvu": "",
+      "typ": "obuv",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 55
+    },
+    {
+      "id": "ž-56",
+      "pohlavi": "ženy",
+      "skupina": "Obuv",
+      "nazev": "botičky",
+      "varianta_z_nazvu": "",
+      "typ": "obuv",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 56
+    },
+    {
+      "id": "ž-57",
+      "pohlavi": "ženy",
+      "skupina": "Ostatní",
+      "nazev": "kufr - Vonica",
+      "varianta_z_nazvu": "",
+      "typ": "zavazadlo",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 57
+    }
+  ]
+}

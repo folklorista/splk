@@ -1,7 +1,9 @@
 # 10 – Navigace, struktura menu a přehled aplikace
 
+> **Status:** odloženo – navigace `moje.vonica.cz` (D-28). Značky ✅ odpovídají stavu dema k 18. 10. 2026. Přepínač souborů a globální osobní přehled (kap. 4.1a, 6.2 bod 8, 9) je překonán modelem se složkami (D-06). Aplikace Krojařka má vlastní menu (D-22); kap. 4.6 popisuje Správu krojů uvnitř `moje`. Terminologie kap. 11.1 je potvrzená v D-17.
+
 > Stav: pracovní návrh k připomínkování, nikoliv finální specifikace implementace.
-> Navazuje na `00-prehled.md`, `02-core-a-moduly.md`, `03-postup-vyvoje.md`, `04-styl-prace.md`, `07-souborovy-system-vize-funkce-roadmapa.md`, `08-skupiny-opravneni-a-komunikace.md` a `09-soukrome-zpravy-dm-a-sifrovani.md`.
+> Navazuje na `00-prehled.md`, `02-core-a-moduly.md`, `03-postup-vyvoje.md`, `04-styl-prace.md`, `07-souborovy-system-vize-funkce-roadmapa.md`, `08-skupiny-opravneni-a-komunikace.md` a `09-soukrome-zpravy-dm-a-sifrovani.md`. *(Od 22. 10. 2026: `00`, `02`, `03` v `docs/archive/`, `04` v `docs/current/`, `07`–`09` v `docs/current/moje/`.)*
 > Cíl: popsat informační architekturu aplikace, všechny uvažované navigační cesty a pravidla jejich sjednocení pro mobil, tablet i desktop.
 > Revize 2026-10-18: strom porovnán s aktuálním kódem (větev `feature/wardrobe-inventories`), doplněna sekce Správa, výhledové oblasti, osobní spodní lišta a sjednocené názvosloví krojů.
 

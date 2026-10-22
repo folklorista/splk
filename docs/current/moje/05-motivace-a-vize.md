@@ -1,5 +1,7 @@
 # Proč vzniká Souborový systém
 
+> **Status:** odloženo – motivační text pro budoucí `moje.vonica.cz` (D-02). Slogan „každého folklorního souboru“ pochází z modelu více souborů; platí model se složkami (D-06).
+
 Organizace našeho folklorního souboru dnes probíhá na mnoha různých místech. Něco se řeší ve facebookových skupinách a událostech, něco přes Messenger, WhatsApp nebo Instagram. Docházku vedeme v tabulkách Google Sheets či v online Excelu. Každý nástroj řeší kousek naší práce, ale jako celek to přestává být přehledné.
 
 Když pak člověk potřebuje dohledat důležitou informaci, často ani neví, kde má hledat. Byla ve zprávě, v události, v komentáři, nebo v tabulce? Informace se ztrácejí mezi různými kanály, opakují se a s odstupem času se těžko dohledávají.

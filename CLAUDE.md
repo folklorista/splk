@@ -22,11 +22,14 @@
 
 ## Rozsah implementace
 
-- Držet se dokumentace v [`docs/`](docs/). Dokumentace popisuje **schválené cílové chování**, ne stav implementace – co je hotové, eviduje `docs/03-postup-vyvoje.md` a značky ✅ v `docs/10`.
-- Neimplementovat cílovou ani budoucí funkcionalitu bez výslovného zadání (WebSocket, push notifikace, platby, více souborů a přepínač kontextu, rodiče/zastupování dětí, registrace, DM, úkoly, offline režim apod.).
-- Konkrétní aplikace pro folklorní soubory (Vonica, cílově i samostatná Malá Vonica se společným přihlášením), ne univerzální dynamický framework. Oprávnění = pověření (`docs/08`), ne hierarchie rolí.
-- Nejdřív využít stávající model (skupina, příspěvek, přílohy, akce, úkol); nový modul nebo položku menu navrhnout až tehdy, když stávající model přestane stačit.
-- Názvosloví krojů: **krojařka** = osoba s pověřením Správa krojů, **sklad** = místnost s nezapůjčenými kroji, agenda = **Správa krojů**. Nepoužívat „krojárna“ ani „krojárka“ (viz `docs/10` kap. 11.1).
+- Vstupní bod dokumentace je [`docs/README.md`](docs/README.md). Co platí, je v [`docs/decisions.md`](docs/decisions.md); při rozporu s jiným dokumentem platí registr. Co je nerozhodnuté, je v [`docs/open-questions.md`](docs/open-questions.md); nerozhodnuté věci nedomýšlet, zeptat se.
+- Závazné jsou jen dokumenty v `docs/current/`, a to podle statusu v jejich hlavičce. Nic z `docs/proposals/` ani `docs/archive/` není závazné. Stav implementace se eviduje v `docs/current/03-stav-vyvoje.md`.
+- **Jediná současná priorita je aplikace Krojařka** (`krojarka.vonica.cz`) a společné API (`api.vonica.cz`, PHP 8.5 + PostgreSQL 18). `moje.vonica.cz` je odložená; `demo.vonica.cz` je prototyp, ne cílová architektura (D-02, D-11).
+- Neimplementovat cílovou ani budoucí funkcionalitu bez výslovného zadání (WebSocket, push notifikace, platby, multi-tenant a přepínač kontextu, rodiče/zastupování dětí, registrace, DM, úkoly, offline režim apod.).
+- Konkrétní aplikace pro folklorní organizace, ne univerzální framework. Jedna instalace = jedna organizace se **složkami** (Vonica: dospělá složka, Malá Vonica, Děvčice, muzika; Vonička samostatně), viz D-06. Oprávnění = pověření s rozsahem soubor / složka / skupina / akce / modul, bez superadministrátora (D-09, D-10).
+- Nejdřív využít stávající model; nový modul nebo položku menu navrhnout až tehdy, když stávající model přestane stačit.
+- Názvosloví krojů: **Krojařka** = aplikace, **krojařka** = osoba s pověřením ke krojům (pomocnice jsou rovnocenné), **sklad** = místnost s nezapůjčenými kroji, seznam kusů = **Součástky**, agenda v `moje` = **Správa krojů**. Nepoužívat „krojárna“ ani „krojárka“ (viz `docs/context/glossary.md`).
+- Komentáře v kódu odkazují na `docs/06`, `docs/07`, `docs/08` a `docs/10` podle čísla (soubory jsou v `docs/current/` a `docs/current/moje/`). Čísla souborů ani kapitol neměnit.
 
 ## Git commit messages
 

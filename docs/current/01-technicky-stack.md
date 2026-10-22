@@ -1,5 +1,11 @@
 # Technický stack a architektonický směr
 
+> **Status:** platný, s výhradami (2026-10-22):
+> - **Databáze je PostgreSQL 18, ne MySQL** (D-11). Autentizaci a ověření hostingu pro `api`/`krojarka`/`demo` popisuje `hosting-postgresql-api-auth.md` (D-12).
+> - Sekce **„Autentizace a více souborů“** je překonaná modelem se složkami (D-06). Platí jen principy osoba ≠ účet, odvolatelné relace a zastupování rodičem.
+> - Offline režim je odložený cíl pro `moje` (D-24).
+> - „Budoucí cílový stack“ (Node.js, WebSocket) je jen historická úvaha.
+
 ## Aktuální plánovaný stack
 
 První verze bude postavená na dostupné infrastruktuře:

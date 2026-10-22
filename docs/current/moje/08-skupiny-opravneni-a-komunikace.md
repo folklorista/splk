@@ -1,5 +1,7 @@
 # 08 – Skupiny, pověření, správa a sjednocená komunikace
 
+> **Status:** odloženo pro `moje.vonica.cz`. Model pověření (kap. 1.1, 3) **platí** (D-09) a rozsahy rozšiřuje D-10 (+ složka). Věta „V1.0 už byla vydána“ v kap. 1 znamená vydané demo (v2026.10.4); pojem V1.0 se už nepoužívá (D-02). Osoby a funkce v kap. 6 jsou **ilustrační testovací scénář**; skutečné obsazení výboru je v `docs/context/README.md`. Doplnění o rodičích a „samostatných souborech“ v kap. 2 nahradil model se složkami (D-06).
+
 **Projekt:** Souborový systém (SPLK) – Vonica  
 **Typ:** Funkční specifikace / zadání pro další implementaci  
 **Verze dokumentu:** 0.1  

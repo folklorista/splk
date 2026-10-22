@@ -1,5 +1,13 @@
 # Souborový systém
 
+> **Status:** odloženo – produktová vize `moje.vonica.cz` (D-02). Při rozporu platí `docs/decisions.md`, zejména:
+> - **verze „V1.0“, roadmapa (kap. XII) a priority jsou historické** (D-02);
+> - role v kap. 9–10 nahradila pověření bez superadministrátora (D-09);
+> - krojový sklad v kap. 20 podrobně řeší `../06` v0.5 (fyzické komplety a opakované číslování potvrzeny v D-19 a D-20);
+> - Malá Vonica jako samostatný soubor (kap. 15, 52, 55) je nahrazena modelem se složkami (D-06);
+> - „Superadministrátor“ neexistuje;
+> - finance mají nově základ v Krojařce (D-23).
+
 ## Produktová vize, funkční rozsah a plán rozvoje
 
 **Pracovní dokument k diskusi a postupnému schvalování**  
@@ -1076,13 +1084,15 @@ Vedoucím systém pomůže s plánováním a skutečnou docházkou, krojařkám 
 
 Tento dokument sjednocuje a rozvíjí dřívější podklady; nenahrazuje detailní provozní konzultace jednotlivých agend:
 
-- `00-prehled.md` – původní směr produktu, cílové skupiny a zásady;
-- `01-technicky-stack.md` – dosavadní technické varianty a oddělení frontendu od backendu;
-- `02-core-a-moduly.md` – vymezení jádra, modulů a skupin;
-- `03-postup-vyvoje.md` – iterativní vývoj a původní MVP;
-- `04-styl-prace.md` – zásady rozhodování a přístup k vývoji;
-- `05-motivace-a-vize.md` – stručný motivační text;
-- `06-specifikace-krojoveho-skladu.md` – detailní uživatelská specifikace ke schválení krojařkami.
+*(Cesty aktualizovány 22. 10. 2026.)*
+
+- `docs/archive/00-prehled.md` – původní směr produktu, cílové skupiny a zásady;
+- `docs/current/01-technicky-stack.md` – dosavadní technické varianty a oddělení frontendu od backendu;
+- `docs/archive/02-core-a-moduly.md` – vymezení jádra, modulů a skupin;
+- `docs/archive/03-postup-vyvoje.md` – iterativní vývoj a původní MVP;
+- `docs/current/04-styl-prace.md` – zásady rozhodování a přístup k vývoji;
+- `docs/current/moje/05-motivace-a-vize.md` – stručný motivační text;
+- `docs/current/06-specifikace-krojoveho-skladu.md` – detailní uživatelská specifikace ke schválení krojařkami.
 
 **Poznámka k návaznosti:** Dřívější dokumenty 02 a 03 počítaly s menším rozsahem první verze. Tento souhrnný dokument odráží novější rozhodnutí: **skutečná docházka a použitelná inventura krojů patří do V1.0**, včetně evidence externistů, neočíslovaných doplňků, poznámek při vracení a základních exportů; úkoly a specializované funkce akcí až do následného rozvoje. Původní úvahy o technologiích zůstávají možnostmi, nikoli automaticky potvrzeným konečným výběrem.
 

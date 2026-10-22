@@ -1,5 +1,7 @@
 # 09 – Soukromé zprávy (DM), konverzace a serverové šifrování
 
+> **Status:** odloženo – schválený cíl pro `moje.vonica.cz` (D-25). Zmínky o „samostatných souborech“ a `ensemble_id` čti podle modelu se složkami (D-06); databáze je PostgreSQL (D-11).
+
 **Projekt:** Souborový systém (SPLK) – Vonica  
 **Typ:** Funkční a bezpečnostní specifikace / podklad pro implementaci  
 **Verze dokumentu:** 0.1  

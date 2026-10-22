@@ -1,5 +1,8 @@
 # Core aplikace a moduly
 
+> **ARCHIV – nezávazné.** Logické entity jádra z 2026-06/10. Nahrazeno modelem identity (D-06, D-07, `docs/current/identity-model-v2.md`) a specifikací krojů `docs/current/06`. Pravidlo `costume_category_allowed_groups` se nepoužívá (Q-02).
+
+
 ## Základní myšlenka
 
 Aplikace má být postavená jako pevné jádro a sada modulů.

@@ -1,10 +1,10 @@
 # Folklorní soubor – aplikace
 
-Webová aplikace pro interní organizaci folklorního souboru. Mobilní-first přístup, Angular frontend, PHP REST API backend (připraveno, zatím mock data).
+Webové aplikace pro folklorní soubor Vonica. Jediná současná priorita je aplikace **Krojařka** (`krojarka.vonica.cz`) nad společným PHP REST API (`api.vonica.cz`, PostgreSQL 18). Tento repozitář zatím obsahuje hlavně prototyp členské aplikace (Angular, mock data v prohlížeči), který běží jako demo. Přehled dokumentace a rozhodnutí: [`docs/README.md`](docs/README.md).
 
 ## Aktuální stav
 
-Podrobný stav a další kroky viz [`docs/03-postup-vyvoje.md`](docs/03-postup-vyvoje.md).
+Aktuální stav: [`docs/current/03-stav-vyvoje.md`](docs/current/03-stav-vyvoje.md). Historie vývoje prototypu (fáze a vlny níže): [`docs/archive/03-postup-vyvoje.md`](docs/archive/03-postup-vyvoje.md).
 
 **Fáze 1–3** (dokončeno)
 
@@ -22,7 +22,7 @@ Nasazeno jako **demo pro výbor** (data se ukládají jen v prohlížeči). Dal�
 | Vrstva | Technologie |
 |---|---|
 | Frontend | Angular 19, standalone components, SCSS |
-| Backend (plánováno) | PHP REST API, MySQL |
+| Backend (plánováno) | PHP 8.5 REST API, PostgreSQL 18 (`api.vonica.cz`) |
 | Hosting | Websupport (PHP hosting), statický build přes SFTP |
 
 ## Struktura repozitáře
@@ -65,7 +65,7 @@ Kontejner s aplikací obsahuje produkční build – po změně kódu je potřeb
 
 ## Vydání a nasazení
 
-Aplikace běží na `https://moje.vonica.cz` (Websupport, SFTP), celá za HTTP Basic Auth.
+Demo běží na `https://demo.vonica.cz` (Websupport, SFTP), celé za HTTP Basic Auth. `moje.vonica.cz` je vyhrazená budoucí členské aplikaci a nic se tam nenasazuje bez výslovného požadavku. Deploy skript nemá výchozí cíl: vždy `--target demo` (případně `moje`).
 
 ```bash
 cp .env.example .env               # jednou: přístupy k SFTP a heslo Basic Auth (.env není v gitu)
@@ -73,14 +73,16 @@ npm install                        # jednou: závislosti skriptů (ssh2-sftp-cli
 
 git checkout master                # vydává se z masteru
 npm run release -- "Změna 1" "Změna 2"      # verze vRRRR.M.N + tanec, changelog, commit a tag
-npm run deploy -- --source tag --demo       # build posledního tagu a nahrání na web
+npm run deploy -- --target demo --source tag --demo   # build posledního tagu a nahrání na demo
 ```
 
-V Claude Code stačí `/deploy [tag|commit|větev|working]` (skill [`.claude/skills/deploy`](.claude/skills/deploy/SKILL.md)): zjistí verzi na produkci, připraví migrace (až bude backend), ukáže shrnutí, po potvrzení nasadí a ověří web.
+V Claude Code stačí `/deploy [tag|commit|větev|working]` (skill [`.claude/skills/deploy`](.claude/skills/deploy/SKILL.md)): zjistí verzi na demu, připraví migrace (až bude backend), ukáže shrnutí, po potvrzení nasadí a ověří web.
 
 - `--source working|commit|tag` – pracovní kopie (i s necommitnutými změnami, s varováním), poslední commit aktuální větve, nebo poslední tag `v*` z `master`. `commit` a `tag` se sestaví v čistém dočasném `git worktree`.
 - `--ref <tag|commit|větev>` – konkrétní tag (stačí jednoznačný začátek názvu), commit nebo větev, také v dočasném worktree.
-- `--status` – jen vypíše, jakou verzi produkce právě servíruje.
+- `--target demo|moje` – povinný cíl nasazení; proměnné se čtou s prefixem cíle (`DEMO_*`, `MOJE_*`, viz `.env.example`).
+- `--allow-foreign-content` – dovolí přepsat webroot s cizím obsahem (např. placeholder poskytovatele).
+- `--status` – jen vypíše, jakou verzi cíl právě servíruje.
 - `--demo` – reální členové z `dev/local/clenove.tsv` (příjmení zamaskovaná). Bez Basic Auth skript demo build odmítne nasadit.
 - `--dry-run` jen sestaví a vypíše shrnutí, `--yes` přeskočí potvrzení.
 - Skript nejdřív nahraje `.htpasswd` a `.htaccess` s Basic Auth, pak změněné soubory aplikace (chunky s hashem v názvu, které už na serveru jsou, přeskočí; `index.html` a `ngsw.json` nakonec), smaže soubory ze starších verzí a ověří, že web bez hesla vrací 401 a s heslem novou revizi.
@@ -95,10 +97,9 @@ npx @angular/cli@19 test --watch=false --browsers=ChromeHeadless
 
 ## Dokumentace
 
-Viz složka [`docs/`](docs/):
+Vstupní bod: [`docs/README.md`](docs/README.md).
 
-- [`00-prehled.md`](docs/00-prehled.md) – cíl projektu a kontext
-- [`01-technicky-stack.md`](docs/01-technicky-stack.md) – stack a architektonický směr
-- [`02-core-a-moduly.md`](docs/02-core-a-moduly.md) – core entity a moduly
-- [`03-postup-vyvoje.md`](docs/03-postup-vyvoje.md) – fáze vývoje
-- [`04-styl-prace.md`](docs/04-styl-prace.md) – rozhodovací pravidla
+- [`docs/decisions.md`](docs/decisions.md) – co jsme rozhodli
+- [`docs/open-questions.md`](docs/open-questions.md) – co musíme rozhodnout
+- [`docs/current/`](docs/current/) – platné specifikace (Krojařka, API, odložená `moje`)
+- [`docs/archive/`](docs/archive/) – historické a překonané dokumenty

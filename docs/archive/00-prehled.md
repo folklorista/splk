@@ -1,5 +1,8 @@
 # Souborový systém – produktový a technický kontext
 
+> **ARCHIV – nezávazné.** Původní přehled produktu (2026-06-23, doplněno 2026-10-18). Model samostatných souborů se společnou identitou nahradilo rozhodnutí D-06 (model se složkami). Platí `docs/decisions.md`; viz `docs/archive/README.md`.
+
+
 ## Cíl projektu
 
 Cílem je vytvořit webovou aplikaci pro interní komunikaci a organizaci folklorního/tanečního souboru.
