@@ -1,6 +1,6 @@
 # Návrh: API v1 a databázové schéma Krojařky
 
-**Stav:** návrh ke schválení, 2026-10-23 (zbytek Q-10). Body 1–7 z kap. 7 jsou rozhodnuté (D-48 až D-53) a zapracované; bod 8 se ověřuje. Nic zatím není implementováno.
+**Stav:** návrh ke schválení, 2026-10-23 (zbytek Q-10). Body 1–8 z kap. 7 jsou rozhodnuté a ověřené (D-48 až D-54) a zapracované. Nic zatím není implementováno.
 **Vychází z:** `current/06` v0.5, `current/krojarka/frontend-demo-specifikace.md`, `current/identity-model-v2.md`, `current/hosting-postgresql-api-auth.md`, `current/monorepo-struktura.md` a rozhodnutí D-06 až D-47.
 
 Značení:
@@ -271,9 +271,9 @@ Každý krok má testy API (včetně zamítnutých operací) a je nasaditelný s
 5. **Skupiny už ve v1** kvůli rozsahu inventury (D-51).
 6. **Výdej jiné složce už ve v1** (D-52).
 7. **Přihlášení e-mailem** (D-53).
-8. **Úložiště příloh a konfigurace** – ověřuje se: vlastní kořenový adresář `api` = `/vonica.cz/sub/api/public`. SFTP účet `api` pak vidí nadřazený adresář, kam patří `config/`, `storage/`, `src/` a `vendor/` mimo webroot (kap. 8).
+8. **Úložiště příloh a konfigurace** – vlastní kořenový adresář `api` = `/vonica.cz/sub/api/public`, nastaveno a ověřeno 2026-10-23 (D-54, kap. 8).
 
-## 8. Návrh rozložení `api` na hostingu [N, ověřuje se]
+## 8. Rozložení `api` na hostingu [ověřeno 2026-10-23, D-54]
 
 ```text
 /vonica.cz/sub/api/          ← kořen SFTP účtu API (dnes zároveň webroot)
@@ -285,8 +285,17 @@ Každý krok má testy API (včetně zamítnutých operací) a je nasaditelný s
 └── storage/attachments/     ← soubory příloh, stahují se jen přes API
 ```
 
-Ověřit:
+Ověřeno testem (dočasné soubory, po testu odstraněny):
 
-- z webu nejsou dostupné `config/` ani `storage/`;
-- PHP z `public/` čte `../config` a zapisuje do `../storage`;
-- deploy nahrává jen `public/`, `src/` a `vendor/`.
+- webroot je `public/`; prázdný vrací 403;
+- soubory v nadřazeném adresáři, `config/`, `storage/` i pokus `/../` vracejí 404;
+- PHP z `public/` čte `../config` a zapisuje, čte i maže v `../storage` (soubory 0644);
+- `display_errors` je vypnuté.
+
+Pravidla pro deploy (D-45):
+
+- nahrává jen `public/`, `src/` a `vendor/`;
+- `config/` se nahrává jednou ručně a nepřepisuje se;
+- `storage/` se nikdy nemaže;
+- API si `display_errors=0` nastavuje samo. Soubory `.user.ini` a `.htaccess`, které generuje administrace, leží v nadřazeném adresáři a pro `public/` neplatí.
+- Výchozí `index.php` poskytovatele v nadřazeném adresáři už není z webu dostupná; při prvním nasazení ji lze smazat.

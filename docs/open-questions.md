@@ -87,7 +87,7 @@ Návrh k posouzení: osoby bez výpůjček jako filtr v Krojových kartách, dok
 
 ### Q-10 API v1 a monorepo – *nástroje a rozvržení rozhodnuty → D-41 až D-45*
 
-Struktura schválena (`current/monorepo-struktura.md`, D-41 až D-47). **Návrh API v1 a schématu: `proposals/api-v1-a-schema.md`.** Body 1–7 rozhodnuty (D-48 až D-53). Zbývá: odesílací schránka e-mailu, ověření vlastního kořenového adresáře `api` (kap. 8) a celkové schválení návrhu. Původní znění:
+Struktura schválena (`current/monorepo-struktura.md`, D-41 až D-47). **Návrh API v1 a schématu: `proposals/api-v1-a-schema.md`.** Body 1–7 rozhodnuty (D-48 až D-53). Zbývá: odesílací schránka e-mailu, volba e-mailové knihovny a celkové schválení návrhu. Původní znění:
 
 Je potřeba určit:
 
@@ -112,7 +112,8 @@ Přehled problémů dema, kterým se má API vyhnout (oprávnění jen ve fronte
 - ~~IP filtr~~ – zapnut s domácí IP, ověřeno (D-13).
 - **Šifrování** – `host=localhost` nepomůže (D-46). Zbývá dotaz na Websupport, zda je privátní síť k DB oddělená. Jinak vědomě přijmout.
 - ~~opcache~~ – souborová cache, nelze měnit (D-46). ~~HTTP cache~~ – vypnuta na `demo` a `krojarka`. ~~display_errors~~ – vypnuto na `api`.
-- Zbývá: místo pro přístupové údaje k DB na `api`, test zápisu do DB, HSTS, práva souborů, SPA fallback, Safari/iOS, jeden DB účet pro migrace i aplikaci.
+- ~~místo pro přístupové údaje k DB na `api`~~ – `config/` mimo webroot (D-54).
+- Zbývá: test zápisu do DB, HSTS, práva souborů, SPA fallback, Safari/iOS, jeden DB účet pro migrace i aplikaci.
 
 ### Q-14 Přihlašování do Krojařky a citlivé skeny – *účty jen pro čtení rozhodnuty → D-36*
 

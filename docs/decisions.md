@@ -371,6 +371,17 @@ Například 10 kompletů z Malé Vonice dospělé Vonici (06 kap. 6B). Dočasný
 
 **Zdroj:** test na `api.vonica.cz` 2026-10-23 (dočasný skript, po testu odstraněn); uživatel 2026-10-23.
 
+### D-54 Webroot `api` je `public/`; konfigurace a přílohy mimo web
+
+V administraci hostingu je u `api.vonica.cz` nastaven vlastní kořenový adresář `/vonica.cz/sub/api/public`. SFTP účet API vidí i nadřazený adresář:
+
+- `config/` – přístupové údaje k DB, SMTP;
+- `storage/` – soubory příloh;
+- `src/`, `vendor/`.
+
+Nic z toho není z webu dostupné. Ověřeno testem 2026-10-23.
+**Zdroj:** uživatel 2026-10-23 (nastavení); `proposals/api-v1-a-schema.md` kap. 8.
+
 ## Odložené, ale schválené cíle pro `moje.vonica.cz`
 
 Platí jako cílové chování pro dobu, kdy se vývoj `moje` obnoví. Teď se nevyvíjejí. Pokud odporují D-06 (model se složkami), platí D-06.
