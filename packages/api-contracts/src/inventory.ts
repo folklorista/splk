@@ -139,6 +139,7 @@ export interface WorkOrderInput {
 }
 export interface WorkOrder extends Required<WorkOrderInput> {
   id: number;
+  unitId: number;
   itemId: number;
   status: WorkOrderStatus;
 }

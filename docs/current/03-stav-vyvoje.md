@@ -57,6 +57,12 @@ Ruční ověření po lokálním spuštění API s migrací etapy 1 (zatím bez 
 - Změna složení ponechá `unverified`; jiný předchozí stav přepne na `pending_check`. Ručně evidovaný stav nenahrazuje inventurní kontrolu. Fyzická přítomnost číslovaného kusu se z jeho příslušnosti ke kompletu neodvozuje.
 - PHPUnit: **122 testů / 891 assertions**, 10 nových testů kompletů; TS kontrakty a diff v pořádku. Produkce beze změny.
 
+### Etapa 5 – pracovní úkoly kusu (2026-10-24)
+
+- Seznam a založení úkolu u kusu, úprava úkolu a souhrn fondu s filtrem stavu. Typy a stavy podle D-38; změna úkolu automaticky nemění stav, umístění ani vydatelnost kusu.
+- Nový úkol nelze založit u vyřazeného kusu; existující lze dokončit či zrušit. Všechny zápisy, události kusu a audit jsou atomické a podléhají pověření fondu.
+- PHPUnit: **127 testů / 954 assertions**, 5 nových testů pracovních úkolů včetně oprávnění, validace a rollbacku. Diff v pořádku. Pokračuje etapa 6 – Angular a adaptéry; krok 4 ještě není celý dokončen.
+
 ## Známé rozdíly mezi demem a platnými rozhodnutími
 
 Demo vzniklo před rozhodnutími z 22. 10. 2026 a dál se nerozvíjí ani nekonzervuje (D-33). Krojařka z něj nepřebírá kód (D-31). Rozdíly jsou uvedené jen pro orientaci:
