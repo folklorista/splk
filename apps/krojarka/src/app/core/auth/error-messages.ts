@@ -16,6 +16,12 @@ const MESSAGES: Record<string, string> = {
   account_not_disabled: 'Účet není zablokovaný.',
   cannot_disable_self: 'Vlastní účet zablokovat nelze.',
   mandate_exists: 'Osoba už toto pověření má.',
+  version_conflict: 'Záznam mezitím změnila jiná krojařka. Vaše rozepsané údaje zůstaly zachované. Obnovte záznam a změny porovnejte.',
+  number_already_used: 'Číslo už v této řadě existuje, nebo jej podle pravidel řady nelze použít znovu.',
+  duplicate_stock: 'Zásoba stejného druhu a varianty už existuje.',
+  insufficient_stock: 'Počet nestačí na evidované množství v kompletech.',
+  item_retired: 'Součástka je vyřazená a nelze ji takto měnit.',
+  composition_conflict: 'Složení se změnilo nebo součástka patří do jiného kompletu. Obnovte záznam.',
   last_admin: 'Poslední správu organizace nelze odebrat.',
 };
 

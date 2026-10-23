@@ -3,6 +3,9 @@ import { API_BASE_URL, MOCK_DATA } from './api-config';
 import { AuthApi } from './auth/auth-api';
 import { HttpAuthApi } from './auth/http-auth-api';
 import { MockAuthApi } from './auth/mock-auth-api';
+import { InventoryApi } from './inventory/inventory-api';
+import { HttpInventoryApi } from './inventory/http-inventory-api';
+import { MockInventoryApi } from './inventory/mock-inventory-api';
 import { CatalogApi } from './catalog/catalog-api';
 import { HttpCatalogApi } from './catalog/http-catalog-api';
 import { MockCatalogApi } from './catalog/mock-catalog-api';
@@ -17,6 +20,7 @@ export function provideData(options: { dataSource: 'http' | 'mock'; apiBaseUrl: 
     { provide: API_BASE_URL, useValue: options.apiBaseUrl },
     { provide: MOCK_DATA, useValue: mock },
     { provide: AuthApi, useClass: mock ? MockAuthApi : HttpAuthApi },
+    { provide: InventoryApi, useClass: mock ? MockInventoryApi : HttpInventoryApi },
     { provide: CatalogApi, useClass: mock ? MockCatalogApi : HttpCatalogApi },
     { provide: OrganizationApi, useClass: mock ? MockOrganizationApi : HttpOrganizationApi },
   ]);
