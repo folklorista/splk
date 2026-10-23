@@ -331,6 +331,33 @@ Migrace nesmí běžet při běžném HTTP požadavku. Před produkční migrac�
 Pro celý repozitář (Krojařka s Angularem 22 i demo s Angularem 19). Node běží jen při vývoji a buildu.
 **Zdroj:** uživatel 2026-10-23.
 
+## API v1 (2026-10-23, `proposals/api-v1-a-schema.md` kap. 7)
+
+### D-48 Správa organizace v Krojařce
+
+Účty, osoby, skupiny a pověření spravuje osoba s pověřením `organization.admin` (bez přístupu do krojových fondů) na obrazovce Nastavení → Uživatelé a pověření. První účet vytvoří seed.
+
+### D-49 Obnova hesla e-mailem; pokladník a náklady
+
+- Zapomenuté heslo se obnovuje **odkazem e-mailem** už ve v1. Odesílá se přes SMTP Websupportu (ověřeno na jiném projektu).
+- Pokladník (`costs.view`) čte náklady na kroje všech fondů **včetně kusů, ke kterým se náklad váže**.
+
+### D-50 Výchozí kroj je jeden u osoby
+
+Platí pro všechny fondy.
+
+### D-51 Skupiny už ve v1
+
+Kvůli rozsahu inventury podle skupiny („kroje muzikantů“, 06 kap. 7.1).
+
+### D-52 Výdej jiné složce už ve v1
+
+Například 10 kompletů z Malé Vonice dospělé Vonici (06 kap. 6B). Dočasný příjem od cizích organizací zůstává mimo v1.
+
+### D-53 Přihlášení e-mailem
+
+**Zdroj D-48 až D-53:** uživatel 2026-10-23.
+
 ## Hosting (ověřeno 2026-10-23)
 
 ### D-46 Spojení API → PostgreSQL a PHP prostředí

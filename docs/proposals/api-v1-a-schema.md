@@ -1,6 +1,6 @@
 # Návrh: API v1 a databázové schéma Krojařky
 
-**Stav:** návrh ke schválení, 2026-10-23 (zbytek Q-10). Nic zatím není implementováno.
+**Stav:** návrh ke schválení, 2026-10-23 (zbytek Q-10). Body 1–7 z kap. 7 jsou rozhodnuté (D-48 až D-53) a zapracované; bod 8 se ověřuje. Nic zatím není implementováno.
 **Vychází z:** `current/06` v0.5, `current/krojarka/frontend-demo-specifikace.md`, `current/identity-model-v2.md`, `current/hosting-postgresql-api-auth.md`, `current/monorepo-struktura.md` a rozhodnutí D-06 až D-47.
 
 Značení:
@@ -27,12 +27,11 @@ Krojařka v1 potřebuje:
 
 **Mimo v1** (tabulky nevznikají, model jim nebrání):
 
-- skupiny a členství ve skupinách;
 - zastupování dítěte (`Representation`), funkce (`PositionAssignment`), formální členství a „přijatý člen“;
-- dočasný příjem krojů od cizích organizací (06 kap. 6B, zadání Krojařky P2);
+- dočasný příjem krojů od cizích organizací (06 kap. 6B, zadání Krojařky P2). **Výdej jiné složce ve v1 je** (D-52).
 - akce, docházka a komunikace.
 
-Model identity (D-07) se zavede postupně: v1 vytvoří `persons`, `user_accounts`, `units`, `unit_affiliations` a `mandates`, zbytek přibude migracemi, až ho bude potřeba **[N]**.
+Model identity (D-07) se zavede postupně: v1 vytvoří `persons`, `user_accounts`, `units`, `unit_affiliations`, `groups`, `group_memberships` a `mandates`, zbytek přibude migracemi, až ho bude potřeba **[N]**. Skupiny jsou ve v1 kvůli rozsahu inventury (D-51).
 
 ## 2. Obecné konvence
 
@@ -62,8 +61,8 @@ Model identity (D-07) se zavede postupně: v1 vytvoří `persons`, `user_account
 |---|---|---|
 | `costumes.manage` | složka | zápis i čtení ve fondu složky; pomocnice mají totéž |
 | `costumes.view` | složka (nebo celá organizace) | jen čtení fondu – audit |
-| `costs.view` [?] | organizace | čtení nákladů na kroje všech fondů (pokladník, D-23) |
-| `organization.admin` [?] | organizace | správa osob, účtů a pověření; **nedává** přístup do fondů |
+| `costs.view` | organizace | čtení nákladů na kroje všech fondů **včetně kusů, ke kterým se náklad váže** (pokladník, D-23, D-49) |
+| `organization.admin` | organizace | správa osob, skupin, účtů a pověření; **nedává** přístup do fondů (D-48) |
 
 Pravidla:
 
@@ -76,10 +75,13 @@ Pravidla:
 
 | Tabulka | Klíčové sloupce | Poznámka |
 |---|---|---|
-| `persons` | `first_name`, `last_name`, `nickname`, `contact`, `note`, `default_costume` (`male` / `female` / `unspecified`), `deceased_at` | fyzická osoba, i bez účtu a příslušnosti [R D-07]; výchozí kroj [R D-34, D-38] – [?] u osoby, nebo zvlášť po fondech |
-| `user_accounts` | `person_id` **unique**, `login_email` citext unique, `password_hash` (Argon2id), `status` (`invited` / `active` / `disabled`), `last_login_at` | 0..1 účet na osobu [R D-07] |
+| `persons` | `first_name`, `last_name`, `nickname`, `contact`, `note`, `default_costume` (`male` / `female` / `unspecified`), `deceased_at` | fyzická osoba, i bez účtu a příslušnosti [R D-07]; výchozí kroj **jeden u osoby** [R D-34, D-38, D-50] |
+| `user_accounts` | `person_id` **unique**, `login_email` citext unique (přihlášení e-mailem, D-53), `password_hash` (Argon2id), `status` (`invited` / `active` / `disabled`), `last_login_at` | 0..1 účet na osobu [R D-07] |
 | `sessions` | `token_hash` unique, `account_id`, `csrf_token`, `created_at`, `last_seen_at`, `expires_at`, `user_agent` | [R D-12] |
 | `login_attempts` | `login_email`, `ip`, `at`, `success` | rate limiting [R hosting kap. 6] |
+| `password_reset_tokens` | `account_id`, `token_hash`, `created_at`, `expires_at`, `used_at` | obnova hesla odkazem e-mailem (D-49); token jednorázový, krátká platnost [N] |
+| `groups` | `unit_id` (null = celá organizace), `name`, `archived_at` | skupiny osob (muzikanti, kluci, holky…) [R D-51] |
+| `group_memberships` | `group_id`, `person_id`, `valid_from`, `valid_to` | jeden autoritativní vztah s historií [R identity-model-v2 kap. 4.1] |
 | `units` | `name`, `short_name`, `has_costume_fund` bool, `archived_at` | složky úrovně 2 [R D-06]; muzika `has_costume_fund = false` [R D-21] |
 | `unit_affiliations` | `person_id`, `unit_id`, `status` (`interested` / `active`), `valid_from`, `valid_to`, `end_reason` | historie příslušnosti [R D-07] |
 | `mandates` | `person_id`, `kind`, `scope_type` (`organization` / `unit` / …), `scope_id`, `valid_from`, `valid_to`, `granted_by` | rozsahy podle D-10; v1 jen typy z kap. 2.3 |
@@ -142,7 +144,7 @@ Pohled **Výpůjčky = skladové pohyby od nejnovějších** [R D-22] se sklád�
 | `inventory_visits` | `inventory_id`, `person_id`, `slot_id`, `status` (`booked` / `in_progress` / `completed` / `cancelled`), `completed_at` | |
 | `inventory_checks` | `inventory_id`, `target_id`, `mode` (`people` / `store` / `kit`), `result` (`presented` / `not_presented` / `found` / `not_found`), `condition`, `checked_qty` (nečíslované), `note`, `by`, `at`, `cancelled_at` | opakované kontroly zůstávají v historii, do pokrytí se cíl počítá jednou [R 06 kap. 7.4] |
 
-Rozsah inventury v v1 [?]: klasifikace (region, pohlaví, druh, varianta, řada) a volitelně **příslušnost držitelů ke složce**. Filtr podle skupiny (06 kap. 7.1, „kroje muzikantů“) vyžaduje skupiny, které v1 nemá.
+Rozsah inventury ve v1: klasifikace (region, pohlaví, druh, varianta, řada) a volitelně **skupina držitelů** (06 kap. 7.1, „kroje muzikantů“) nebo příslušnost ke složce; kombinace = průnik [R D-51].
 
 ### 3.7 Přílohy, náklady, audit
 
@@ -163,11 +165,17 @@ Rozsah inventury v v1 [?]: klasifikace (region, pohlaví, druh, varianta, řada)
 | `POST /v1/auth/logout` | zrušení session |
 | `GET /v1/auth/me` | účet, osoba, pověření a jejich rozsahy, `csrfToken` |
 | `POST /v1/auth/password` | změna vlastního hesla |
+| `POST /v1/auth/password-reset` | žádost o obnovu – odešle odkaz e-mailem; odpověď vždy stejná (neprozradí, zda účet existuje) [D-49] |
+| `POST /v1/auth/password-reset/confirm` | nastavení nového hesla podle tokenu z odkazu |
 | `GET /v1/auth/sessions`, `DELETE /v1/auth/sessions/{id}` | moje přihlášená zařízení [N, Můj účet] |
 
-### 4.2 Organizace (`organization.admin`) [?]
+### 4.2 Organizace (`organization.admin`, D-48)
 
-`GET/POST /v1/persons`, `PATCH /v1/persons/{id}`, `GET/POST/PATCH /v1/units`, `POST /v1/persons/{id}/affiliations`, `POST /v1/accounts` (založit účet a dočasné heslo), `POST /v1/accounts/{id}/reset-password`, `GET/POST/DELETE /v1/mandates`.
+V Krojařce obrazovka **Nastavení → Uživatelé a pověření**.
+
+`GET/POST /v1/persons`, `PATCH /v1/persons/{id}`, `GET/POST/PATCH /v1/units`, `POST /v1/persons/{id}/affiliations`, `GET/POST/PATCH /v1/groups`, `POST/DELETE /v1/groups/{id}/members`, `POST /v1/accounts` (založit účet a poslat pozvánku e-mailem), `POST /v1/accounts/{id}/disable`, `GET/POST/DELETE /v1/mandates`.
+
+První účet se správou organizace vytvoří seed z `.env` při první migraci.
 
 ### 4.3 Osoby pro krojařky
 
@@ -239,8 +247,8 @@ Rozsah inventury v v1 [?]: klasifikace (region, pohlaví, druh, varianta, řada)
    - Phinx s první migrací (identita a přístup);
    - Docker služba `api`.
 2. **Přihlášení:**
-   - `auth/*`;
-   - první administrátorský účet (Q v kap. 7);
+   - `auth/*` včetně obnovy hesla e-mailem (SMTP `smtp.websupport.cz`);
+   - první účet se správou organizace (seed);
    - kostra Krojařky (Angular 22, layout a menu podle D-22, přihlášení);
    - nasazení `api` a `krojarka` (rozšířit deploy skript o cíle `api` a `krojarka`).
 3. **Katalog a řady:** seed z JSON, Nastavení.
@@ -254,13 +262,31 @@ Rozsah inventury v v1 [?]: klasifikace (region, pohlaví, druh, varianta, řada)
 
 Každý krok má testy API (včetně zamítnutých operací) a je nasaditelný samostatně.
 
-## 7. Otevřené k rozhodnutí
+## 7. Rozhodnuto 2026-10-23
 
-1. **Správa účtů a pověření v Krojařce v1.** Kdo zakládá účty krojařek a přiděluje pověření, když Správa (`moje`) neexistuje? Návrh: pověření `organization.admin` a jednoduchá obrazovka **Nastavení → Uživatelé a pověření** v Krojařce; první účet vytvoří migrace nebo seed z `.env`.
-2. **Zapomenuté heslo.** V1 jen reset správcem (dočasné heslo), nebo hned e-mailový odkaz? E-mail z hostingu zatím neověřen.
-3. **Přístup pokladníka k nákladům** (`costs.view` v rozsahu organizace) – potvrdit; má pokladník vidět i kusy, ke kterým se náklad váže?
-4. **Výchozí kroj** u osoby (jeden pro celou organizaci), nebo po fondech?
-5. **Rozsah inventury podle skupin** – v1 bez skupin (jen klasifikace a příslušnost ke složce), nebo zavést skupiny už teď?
-6. **Výdej jiné složce** (`holder_unit_id`, 06 kap. 6B, příklad 10 kompletů z Malé Vonice) – už ve v1, nebo později? Dočasný příjem cizích krojů je mimo v1.
-7. **Přihlašovací identifikátor** – e-mail (návrh), nebo uživatelské jméno?
-8. **Kam ukládat soubory příloh** na hostingu (adresář mimo webroot dostupný z PHP na `api`) – souvisí s Q-11 „přístupové údaje k DB na `api`“; ověřit jedním testem.
+1. **Účty a pověření** spravuje pověření `organization.admin` v Krojařce (Nastavení → Uživatelé a pověření); první účet vytvoří seed (D-48).
+2. **Zapomenuté heslo:** hned odkaz e-mailem (D-49). Odesílání přes SMTP Websupportu je ověřené v projektu Katerinských hodů (`smtp.websupport.cz`, s náhradou přes PHP `mail()`). [?] Z jaké schránky se bude posílat (např. `krojarka@vonica.cz`)? Návrh: místo vlastního SMTP klienta malá knihovna (PHPMailer nebo symfony/mailer, D-43).
+3. **Pokladník** čte náklady všech fondů i kusy, ke kterým se váží (D-49).
+4. **Výchozí kroj** je jeden u osoby (D-50).
+5. **Skupiny už ve v1** kvůli rozsahu inventury (D-51).
+6. **Výdej jiné složce už ve v1** (D-52).
+7. **Přihlášení e-mailem** (D-53).
+8. **Úložiště příloh a konfigurace** – ověřuje se: vlastní kořenový adresář `api` = `/vonica.cz/sub/api/public`. SFTP účet `api` pak vidí nadřazený adresář, kam patří `config/`, `storage/`, `src/` a `vendor/` mimo webroot (kap. 8).
+
+## 8. Návrh rozložení `api` na hostingu [N, ověřuje se]
+
+```text
+/vonica.cz/sub/api/          ← kořen SFTP účtu API (dnes zároveň webroot)
+├── public/                  ← nový webroot (Vlastní kořenový adresář v administraci)
+│   ├── index.php
+│   └── .htaccess
+├── src/, vendor/            ← kód, mimo web
+├── config/config.php        ← DB, SMTP, klíče; nahrává se jednou, deploy ho nepřepisuje
+└── storage/attachments/     ← soubory příloh, stahují se jen přes API
+```
+
+Ověřit:
+
+- z webu nejsou dostupné `config/` ani `storage/`;
+- PHP z `public/` čte `../config` a zapisuje do `../storage`;
+- deploy nahrává jen `public/`, `src/` a `vendor/`.
