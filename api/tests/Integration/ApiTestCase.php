@@ -41,6 +41,11 @@ abstract class ApiTestCase extends DatabaseTestCase
         $this->signedIn = ['token' => $token, 'csrf' => $session->csrfToken];
     }
 
+    protected function signOut(): void
+    {
+        $this->signedIn = null;
+    }
+
     protected function get(string $path): Response
     {
         return $this->send('GET', $path);

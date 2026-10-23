@@ -13,6 +13,7 @@ use Splk\Api\Domain\Identity\AccountRepository;
 use Splk\Api\Http\Controller\AuthController;
 use Splk\Api\Http\Controller\CatalogController;
 use Splk\Api\Http\Controller\HealthController;
+use Splk\Api\Http\Controller\OrganizationController;
 use Splk\Api\Http\HttpException;
 use Splk\Api\Http\Request;
 use Splk\Api\Http\RequestContext;
@@ -119,21 +120,23 @@ final class App
         $this->router->add('GET', '/v1/health', new HealthController($this->db, $version), ['auth' => false]);
 
         $accounts = fn (): AccountRepository => new AccountRepository($this->db->pdo());
+        $passwordLinks = fn (): PasswordResets => new PasswordResets(
+            $this->db->pdo(),
+            $accounts(),
+            $this->mailer(),
+            (string) $this->config->get('app.krojarkaUrl', 'https://krojarka.vonica.cz'),
+        );
         (new AuthController(
             $accounts,
             $this->sessions(...),
             fn (): LoginThrottle => new LoginThrottle($this->db->pdo()),
-            fn (): PasswordResets => new PasswordResets(
-                $this->db->pdo(),
-                $accounts(),
-                $this->mailer(),
-                (string) $this->config->get('app.krojarkaUrl', 'https://krojarka.vonica.cz'),
-            ),
+            $passwordLinks,
             $this->sessionCookie,
             $this->sessionLifetime,
         ))->register($this->router);
 
         (new CatalogController($this->db->pdo(...)))->register($this->router);
+        (new OrganizationController($this->db->pdo(...), $passwordLinks, $this->sessions(...)))->register($this->router);
     }
 
     /** Version written to build-info.json by deploy; "dev" in a working copy. */

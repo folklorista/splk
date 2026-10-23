@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Splk\Api\Http\Controller;
 
-use PDO;
 use Splk\Api\Authorization\FundAccess;
-use Splk\Api\Authorization\Mandates;
 use Splk\Api\Domain\Costumes\CatalogRepository;
 use Splk\Api\Http\HttpException;
 use Splk\Api\Http\Input;
@@ -14,22 +12,15 @@ use Splk\Api\Http\Request;
 use Splk\Api\Http\RequestContext;
 use Splk\Api\Http\Response;
 use Splk\Api\Http\Router;
-use Splk\Api\Infrastructure\Audit\AuditLog;
-use Splk\Api\Infrastructure\Db\Transaction;
 
 /**
  * Nastavení – catalog and series of a fund: /v1/funds/{unitId}/regions|part-types|series (api-v1 chap. 4.4).
  * Read: costumes.manage or costumes.view; write: costumes.manage of that unit (D-21, D-36).
  * Rows are archived instead of deleted. Kind and part type of a series never change, they define its identity (K24).
  */
-final class CatalogController
+final class CatalogController extends Controller
 {
     private const GENDERS = ['male', 'female'];
-
-    /** @param \Closure(): PDO $db */
-    public function __construct(private readonly \Closure $db)
-    {
-    }
 
     public function register(Router $router): void
     {
@@ -66,7 +57,7 @@ final class CatalogController
     private function updateRegion(Request $request, RequestContext $context): Response
     {
         $unitId = $this->fund($context, true);
-        $current = $this->catalog()->findRegion($unitId, self::id($context)) ?? throw self::notFound();
+        $current = $this->catalog()->findRegion($unitId, self::routeId($context)) ?? throw self::notFound();
         $input = Input::fromRequest($request);
         $region = [
             'name' => $input->has('name') ? $input->text('name') : $current['name'],
@@ -111,7 +102,7 @@ final class CatalogController
     private function updatePartType(Request $request, RequestContext $context): Response
     {
         $unitId = $this->fund($context, true);
-        $current = $this->catalog()->findPartType($unitId, self::id($context)) ?? throw self::notFound();
+        $current = $this->catalog()->findPartType($unitId, self::routeId($context)) ?? throw self::notFound();
         $input = Input::fromRequest($request);
         $type = [
             'name' => $input->has('name') ? $input->text('name') : $current['name'],
@@ -177,7 +168,7 @@ final class CatalogController
     private function updateSeries(Request $request, RequestContext $context): Response
     {
         $unitId = $this->fund($context, true);
-        $current = $this->catalog()->findSeries($unitId, self::id($context)) ?? throw self::notFound();
+        $current = $this->catalog()->findSeries($unitId, self::routeId($context)) ?? throw self::notFound();
         $input = Input::fromRequest($request);
         if ($input->has('kind') && $input->enum('kind', ['part', 'kit']) !== $current['kind']) {
             throw Input::invalid('kind', 'immutable');
@@ -204,28 +195,10 @@ final class CatalogController
         });
     }
 
-    /**
-     * Runs the write and its audit row in one transaction; a duplicate active name is a 422.
-     *
-     * @param callable(): array<string, mixed> $work returns the stored entity
-     */
+    /** @param callable(): array<string, mixed> $work returns the stored entity */
     private function write(RequestContext $context, int $unitId, string $entity, string $action, callable $work, int $status = 200): Response
     {
-        try {
-            $result = Transaction::run(($this->db)(), function () use ($work, $context, $unitId, $entity, $action): array {
-                $result = $work();
-                (new AuditLog(($this->db)()))->record(self::actor($context), "$entity.$action", $entity, $result['id'], $unitId, $result);
-
-                return $result;
-            });
-        } catch (\PDOException $e) {
-            if (Transaction::isUniqueViolation($e)) {
-                throw new HttpException(422, 'duplicate_name', 'An active entry with this name already exists.');
-            }
-            throw $e;
-        }
-
-        return Response::json($result, $status);
+        return Response::json($this->audited($context, "$entity.$action", $unitId, $work), $status);
     }
 
     /** Parent must be an active top-level region of the same fund: regions have two levels, region → area (D-37). */
@@ -256,30 +229,11 @@ final class CatalogController
 
     private function fund(RequestContext $context, bool $write): int
     {
-        $mandates = Mandates::forAccount(($this->db)(), self::actor($context));
-
-        return (new FundAccess(($this->db)()))->require($mandates, $context->params['unitId'], $write);
+        return (new FundAccess($this->db()))->require($this->mandates($context), $context->params['unitId'], $write);
     }
 
     private function catalog(): CatalogRepository
     {
-        return new CatalogRepository(($this->db)());
-    }
-
-    private static function actor(RequestContext $context): int
-    {
-        return $context->session?->accountId ?? throw new \LogicException('Route requires a session');
-    }
-
-    private static function id(RequestContext $context): int
-    {
-        $id = filter_var($context->params['id'], FILTER_VALIDATE_INT);
-
-        return $id === false ? throw self::notFound() : $id;
-    }
-
-    private static function notFound(): HttpException
-    {
-        return new HttpException(404, 'not_found', 'Not found.');
+        return new CatalogRepository($this->db());
     }
 }
