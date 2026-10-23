@@ -1,6 +1,6 @@
 # Výchozí katalog krojových součástí – Vonica
 
-> **Status:** návrh číselníku druhů, upravený podle odpovědí z 2026-10-23 (D-37). Zbývá přiřadit slovenské součástky k oblastem (Q-05). Zmíněné `krojovy-katalog-vonica.csv` a zdrojová `.xls` v repozitáři nejsou (Q-15). JSON (`krojovy-katalog-navrh-2`) má 83 položek a počty odpovídají tabulce níže. Navíc má pole `cislovano` (false = nečíslovaná součást) a `oblast` (u Slovenska).
+> **Status:** návrh číselníku druhů, upravený podle odpovědí z 2026-10-23 (D-37). Zmíněné `krojovy-katalog-vonica.csv` a zdrojová `.xls` v repozitáři nejsou (Q-15). JSON (`krojovy-katalog-navrh-2`) má 83 položek a počty odpovídají tabulce níže. Navíc má pole `cislovano` (false = nečíslovaná součást) a `oblast` (u Slovenska).
 
 > **Pracovní návrh pro frontendové demo Krojařky.** Zdroj: `skladova-karta-chlapci (2).xls`, `skladova-karta-holky (2).xls`. Nejde o inventuru skutečných kusů ani o ověřený soupis evidenčních čísel.
 
@@ -69,13 +69,13 @@
 
 | Řádek XLS | Druh / označení v kartě | Výslovně uvedená varianta |
 |---:|---|---|
-| 32 | košile | — |
-| 33 | košile stuhová | — |
-| 34 | kordula | — |
-| 35 | nohavice | — |
-| 36 | řemen | — |
-| 37 | klobouk | — |
-| 38 | ostruhy | — |
+| 32 | košile | — oblast Zemplín |
+| 33 | košile stuhová | — oblast Zemplín |
+| 34 | kordula | — oblast Zemplín |
+| 35 | nohavice | — oblast Zemplín |
+| 36 | řemen | — oblast Zemplín |
+| 37 | klobouk | — oblast Zemplín |
+| 38 | ostruhy | — oblast Zemplín |
 | 39 | košile Moravské Lieskove | Moravské Lieskové (výslovně v názvu; oblast Moravské Lieskové) |
 
 #### Zálesí
@@ -143,17 +143,17 @@
 
 | Řádek XLS | Druh / označení v kartě | Výslovně uvedená varianta |
 |---:|---|---|
-| 40 | halenka | — |
+| 40 | halenka | — oblast Zemplín |
 | 41 | halenka Zemplín | Zemplín (výslovně v názvu; oblast Zemplín) |
-| 42 | spodnička cudnička | — |
+| 42 | spodnička cudnička | — oblast Zemplín |
 | 43 | spodnica | oblast Zemplín (slovenská/zemplínská spodnica) |
-| 44 | kabátek barevný | — |
-| 45 | sukňa barevná | — |
-| 46 | korále | — *(nečíslovaná)* |
-| 47 | mašle barevné | — *(nečíslovaná)* |
-| 48 | mašle bílá | — *(nečíslovaná)* |
+| 44 | kabátek barevný | — oblast Zemplín |
+| 45 | sukňa barevná | — oblast Zemplín |
+| 46 | korále | — *(nečíslovaná)*; oblast Zemplín |
+| 47 | mašle barevné | — *(nečíslovaná)*; oblast Zemplín |
+| 48 | mašle bílá | — *(nečíslovaná)*; oblast Zemplín |
 | 49 | čelenka | oblast Zemplín (slovenská/zemplínská čelenka) |
-| 50 | kapesník | — |
+| 50 | kapesník | — oblast Zemplín |
 
 #### Obuv
 
@@ -167,7 +167,7 @@
 ## Rozhodnutí k číselníku (2026-10-23, D-37)
 
 1. **Horňácko – varianty:** varianta **může** mít vlastní číslování (košile Velická / Novolhotská), ale **nemusí** (červené / žluté rukávce = jedna řada, varianta je atribut). Rozhoduje se u každé řady zvlášť.
-2. **Slovensko** se dělí na oblasti **Zemplín** a **Moravské Lieskové**; časem mohou přibýt další. Na skladové kartě byly sloučené jen proto, že košile z Moravského Lieskového přibyly později. Přiřazení zbývajících slovenských součástek k oblastem je **otevřené** (pole `oblast` je zatím `null`).
+2. **Slovensko** se dělí na oblasti **Zemplín** a **Moravské Lieskové**; časem mohou přibýt další. Na skladové kartě byly sloučené jen proto, že košile z Moravského Lieskového přibyly později. Všechny slovenské součástky kromě košile Moravské Lieskové patří k oblasti **Zemplín** (2026-10-23).
 3. **Obuv:** některé součástky patří jen k jednomu regionu (horňácké tvrdé čižmy). Když pro člověka nemáme vhodnou obuv, může nosit „univerzální“ měkké boty, které se běžně používají k Zemplínu a Moravskému Lieskovému.
 4. **Souhrnné řádky:** „šátek bílý, jatelinka, červený“ rozdělit (provedeno). „Klobouk+bambulky“ zůstává jedna součástka; chybějící bambulky se uvedou v poznámce ke kusu.
 5. **Zdánlivé duplicity jsou různé řady:** slovenská košile (obyčejná) × slovenská košile stuhová; kopanická × slovenská (zemplínská) spodnica; kopanická × slovenská (zemplínská) čelenka.

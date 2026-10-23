@@ -63,7 +63,7 @@ Zbývá bod 4 (potvrdit s krojařkou) a bod 5 (samostatná položka menu). Půvo
 
 ### Q-05 Otevřené body pro krojařky – *zodpovězeno → D-37 až D-40*
 
-Zbývá jen přiřadit slovenské součástky k oblastem Zemplín / Moravské Lieskové (pole `oblast` v katalogu). Původní znění:
+Vše zodpovězeno; slovenské součástky jsou přiřazené k oblastem (2026-10-23). Původní znění:
 
 - `current/06` kap. 13: seznam řad, varianty (modré a bílé gatě), uzavření inventury s nesrovnalostmi, výchozí kroj, stavy pracovních úkolů, termíny inventury, tiskové sestavy.
 - `current/krojarka/frontend-demo-specifikace.md` kap. 10: převod papírových karet, počet a čitelnost skenů, retence skenů.

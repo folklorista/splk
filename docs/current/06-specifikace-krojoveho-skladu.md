@@ -411,7 +411,7 @@ Formáty (tisk A4, CSV) se doladí při implementaci. Exporty s osobními údaji
 
 *Odpovědi krojařky z 2026-10-23 jsou zapsané v D-37 až D-40 (`docs/decisions.md`).*
 
-1. ~~Seznam řad~~ – řady vycházejí z číselníku `krojarka/krojovy-katalog-vonica.md`. Varianta má, nebo nemá vlastní číslování podle řady (D-37). **Zbývá:** přiřadit slovenské součástky k oblastem Zemplín / Moravské Lieskové.
+1. ~~Seznam řad~~ – řady vycházejí z číselníku `krojarka/krojovy-katalog-vonica.md`. Varianta má, nebo nemá vlastní číslování podle řady (D-37). Slovenské součástky patří k oblasti Zemplín, kromě košile Moravské Lieskové.
 2. ~~Opakované použití čísel~~ – rozhodnuto (D-20): výchozí povoleno, u Vonice se zatím nezakazuje u žádné řady.
 3. ~~Zaměnitelné drobnosti bez čísla~~ – rozhodnuto (D-19, D-35): podle počtu, v kompletech i mimo ně.
 3a. **Komplety:** řady a čísla a zrušení šablon rozhodnuty (D-35). Výdej neúplného kompletu s poznámkou potvrzen (D-38).

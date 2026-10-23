@@ -266,7 +266,7 @@ Krojařka umožní účty s přístupem **jen pro čtení** (pověření Náhled
 - Řady vycházejí z číselníku `current/krojarka/krojovy-katalog-vonica.md` / `.json` (verze `navrh-2`).
 - **Nečíslované** součásti: kytička, korále, mašle barevné, mašle bílá. Kufry a tašky se **neevidují**.
 - Varianta **může** mít vlastní číslování (košile Velická / Novolhotská), ale **nemusí** (červené / žluté rukávce).
-- **Slovensko** se dělí na oblasti Zemplín a Moravské Lieskové; mohou přibýt další.
+- **Slovensko** se dělí na oblasti Zemplín a Moravské Lieskové; mohou přibýt další. K Moravskému Lieskovému patří zatím jen košile Moravské Lieskové, všechny ostatní slovenské součástky k Zemplínu.
 - **Obuv:** některá patří jen k jednomu regionu (horňácké tvrdé čižmy). „Univerzální“ měkké boty (Zemplín, Moravské Lieskové) lze vydat jako náhradu.
 - „Šátek bílý, jatelinka, červený“ jsou tři druhy. „Klobouk+bambulky“ je jedna součástka; chybějící bambulky jdou do poznámky.
 - Slovenská košile × slovenská košile stuhová, kopanická × zemplínská spodnica, kopanická × zemplínská čelenka jsou **různé řady**.
