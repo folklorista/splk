@@ -6,6 +6,17 @@ const MESSAGES: Record<string, string> = {
   reset_token_invalid: 'Odkaz je neplatný nebo vypršel. Požádejte o nový.',
   unauthenticated: 'Přihlášení vypršelo. Přihlaste se znovu.',
   network_error: 'Nepodařilo se spojit se serverem. Zkontrolujte připojení.',
+  forbidden: 'K této akci nemáte pověření.',
+  not_found: 'Záznam nebyl nalezen, nebo k němu nemáte přístup.',
+  duplicate_name: 'Položka se stejným názvem už existuje.',
+  part_type_not_numbered: 'Nečíslovaný druh nemá evidenční řadu – eviduje se počtem.',
+  account_exists: 'Osoba už účet má.',
+  email_taken: 'Tento e-mail už používá jiný účet.',
+  account_not_invited: 'Pozvánku lze poslat jen účtu, který ještě nemá heslo.',
+  account_not_disabled: 'Účet není zablokovaný.',
+  cannot_disable_self: 'Vlastní účet zablokovat nelze.',
+  mandate_exists: 'Osoba už toto pověření má.',
+  last_admin: 'Poslední správu organizace nelze odebrat.',
 };
 
 const REASONS: Record<string, string> = {
@@ -14,6 +25,11 @@ const REASONS: Record<string, string> = {
   password_too_short: 'Heslo musí mít alespoň 10 znaků.',
   password_incorrect: 'Současné heslo není správné.',
   too_long: 'Zadaný text je příliš dlouhý.',
+  invalid: 'Některý údaj není platný.',
+  immutable: 'Druh a typ řady nelze měnit.',
+  region_has_children: 'Region s oblastmi nemůže být oblastí jiného regionu.',
+  organization_scope_only: 'Toto pověření platí jen pro celou organizaci.',
+  not_a_costume_fund: 'Vybraná složka nemá krojový fond.',
 };
 
 /** Czech message for an API error; the stable code decides, not the English message. */

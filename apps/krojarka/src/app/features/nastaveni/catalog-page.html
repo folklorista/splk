@@ -1,0 +1,145 @@
+<app-fund-header />
+
+@if (store.error()) {
+  <p class="notice notice-danger">{{ store.error() }}</p>
+}
+@if (message(); as m) {
+  <p class="notice" [class.notice-ok]="m.ok" [class.notice-danger]="!m.ok" role="status">{{ m.text }}</p>
+}
+
+<section class="card">
+  <h2>Regiony a oblasti</h2>
+  <p class="muted">Region může mít oblasti (Slovensko → Zemplín). Součástka bez regionu je univerzální.</p>
+
+  <ul class="plain-list tree">
+    @for (row of store.regionTree(); track row.region.id) {
+      <li [class.child]="row.depth === 1" [class.archived]="row.region.archived">
+        <span>
+          {{ row.region.name }}
+          @if (row.region.archived) {
+            <span class="tag tag-muted">archivováno</span>
+          }
+        </span>
+        @if (store.canManage()) {
+          <span class="row-actions">
+            <button type="button" class="link-button" (click)="editRegion(row.region)">Upravit</button>
+            <button type="button" class="link-button" (click)="toggleRegionArchive(row.region)">
+              {{ row.region.archived ? 'Obnovit' : 'Archivovat' }}
+            </button>
+          </span>
+        }
+      </li>
+    } @empty {
+      <li class="muted">{{ store.loading() ? 'Načítám…' : 'Zatím žádné regiony.' }}</li>
+    }
+  </ul>
+
+  @if (store.canManage()) {
+    <form [formGroup]="regionForm" (ngSubmit)="saveRegion()" class="form-row" novalidate>
+      <label class="field">
+        <span>{{ editingRegion() ? 'Upravit region' : 'Nový region nebo oblast' }}</span>
+        <input formControlName="name" placeholder="např. Zálesí" />
+      </label>
+      <label class="field">
+        <span>Patří pod region</span>
+        <select formControlName="parentId">
+          <option [ngValue]="0">— samostatný region —</option>
+          @for (region of topRegions(); track region.id) {
+            @if (region.id !== editingRegion()?.id) {
+              <option [ngValue]="region.id">{{ region.name }}</option>
+            }
+          }
+        </select>
+      </label>
+      <div class="form-actions">
+        <button type="submit" class="button button-primary">{{ editingRegion() ? 'Uložit' : 'Přidat' }}</button>
+        @if (editingRegion()) {
+          <button type="button" class="button" (click)="editRegion(null)">Zrušit</button>
+        }
+      </div>
+    </form>
+  }
+</section>
+
+<section class="card">
+  <h2>Druhy součástek</h2>
+
+  <div class="toolbar">
+    <input type="search" placeholder="Hledat druh" aria-label="Hledat druh" (input)="setFilter({ text: $any($event.target).value })" />
+    <select aria-label="Kroj" (change)="setFilter({ gender: $any($event.target).value })">
+      <option value="all">mužský i ženský</option>
+      <option value="male">mužský</option>
+      <option value="female">ženský</option>
+      <option value="none">pro oba</option>
+    </select>
+    <select aria-label="Region" (change)="setFilter({ regionId: +$any($event.target).value })">
+      <option value="0">všechny regiony</option>
+      @for (row of store.regionTree(); track row.region.id) {
+        <option [value]="row.region.id">{{ row.depth ? '– ' : '' }}{{ row.region.name }}</option>
+      }
+    </select>
+    <label class="check"><input type="checkbox" (change)="setFilter({ archived: $any($event.target).checked })" /> i archivované</label>
+  </div>
+
+  @if (store.canManage()) {
+    <form [formGroup]="typeForm" (ngSubmit)="saveType()" class="form-row" novalidate>
+      <label class="field">
+        <span>{{ editingType() ? 'Upravit druh' : 'Nový druh' }}</span>
+        <input formControlName="name" placeholder="např. košile" />
+      </label>
+      <label class="field">
+        <span>Kroj</span>
+        <select formControlName="gender">
+          <option value="">pro oba</option>
+          <option value="male">mužský</option>
+          <option value="female">ženský</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Region</span>
+        <select formControlName="regionId">
+          <option [ngValue]="0">univerzální</option>
+          @for (row of store.regionTree(); track row.region.id) {
+            @if (!row.region.archived) {
+              <option [ngValue]="row.region.id">{{ row.depth ? '– ' : '' }}{{ row.region.name }}</option>
+            }
+          }
+        </select>
+      </label>
+      <label class="check"><input type="checkbox" formControlName="numbered" /> číslovaný</label>
+      <div class="form-actions">
+        <button type="submit" class="button button-primary">{{ editingType() ? 'Uložit' : 'Přidat' }}</button>
+        @if (editingType()) {
+          <button type="button" class="button" (click)="editType(null)">Zrušit</button>
+        }
+      </div>
+    </form>
+  }
+
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Druh</th><th>Kroj</th><th>Region</th><th>Evidence</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (type of visibleTypes(); track type.id) {
+          <tr [class.archived]="type.archived">
+            <td>{{ type.name }}</td>
+            <td>{{ genderLabel(type.gender) }}</td>
+            <td>{{ store.regionName(type.regionId) }}</td>
+            <td>{{ type.numbered ? 'číslovaný' : 'počtem' }}</td>
+            <td class="row-actions">
+              @if (store.canManage()) {
+                <button type="button" class="link-button" (click)="editType(type)">Upravit</button>
+                <button type="button" class="link-button" (click)="toggleTypeArchive(type)">{{ type.archived ? 'Obnovit' : 'Archivovat' }}</button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5" class="muted">{{ store.loading() ? 'Načítám…' : 'Žádný druh neodpovídá filtru.' }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">Zobrazeno {{ visibleTypes().length }} z {{ store.partTypes().length }}.</p>
+</section>

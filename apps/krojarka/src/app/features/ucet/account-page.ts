@@ -6,7 +6,7 @@ import { PASSWORD_MIN_LENGTH, SessionInfo } from '@splk/api-contracts';
 import { AuthService } from '../../core/auth/auth.service';
 import { LOGIN_PATH } from '../../core/auth/auth.guards';
 import { errorMessage } from '../../core/auth/error-messages';
-import { mandateLabel } from './mandate-labels';
+import { mandateLabel } from '../../core/labels';
 
 /** Můj účet – identity, mandates, password change, signed-in devices, logout (D-22). */
 @Component({

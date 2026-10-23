@@ -1,0 +1,114 @@
+<app-fund-header />
+
+@if (store.error()) {
+  <p class="notice notice-danger">{{ store.error() }}</p>
+}
+@if (message(); as m) {
+  <p class="notice" [class.notice-ok]="m.ok" [class.notice-danger]="!m.ok" role="status">{{ m.text }}</p>
+}
+
+<div class="segmented" role="tablist" aria-label="Druh řad">
+  <button type="button" role="tab" [attr.aria-selected]="kind() === 'part'" [class.active]="kind() === 'part'" (click)="setKind('part')">Řady součástek</button>
+  <button type="button" role="tab" [attr.aria-selected]="kind() === 'kit'" [class.active]="kind() === 'kit'" (click)="setKind('kit')">Řady kompletů</button>
+</div>
+
+@if (store.canManage()) {
+  <section class="card">
+    <h2>{{ editing() ? 'Upravit řadu' : kind() === 'part' ? 'Nová řada součástek' : 'Nová řada kompletů' }}</h2>
+    <form [formGroup]="form" (ngSubmit)="save()" class="form-row" novalidate>
+      @if (kind() === 'part' && !editing()) {
+        <label class="field field-wide">
+          <span>Druh součástky</span>
+          <select formControlName="partTypeId">
+            <option [ngValue]="0">— vyberte —</option>
+            @for (type of numberedTypes(); track type.id) {
+              <option [ngValue]="type.id">{{ typeLabel(type.id) }}</option>
+            }
+          </select>
+        </label>
+      }
+      @if (editing()?.partTypeId) {
+        <p class="field field-wide">Druh: <strong>{{ typeLabel(editing()!.partTypeId) }}</strong> <span class="muted">(nelze změnit)</span></p>
+      }
+      <label class="field">
+        <span>Název{{ kind() === 'part' && !editing() ? ' (jinak podle druhu)' : '' }}</span>
+        <input formControlName="name" [placeholder]="kind() === 'kit' ? 'např. Záleský komplet' : ''" />
+      </label>
+      <label class="field">
+        <span>Varianta s vlastním číslováním</span>
+        <input formControlName="variant" placeholder="např. Velická" />
+      </label>
+      @if (kind() === 'kit' || editing()) {
+        <label class="field">
+          <span>Kroj</span>
+          <select formControlName="gender">
+            <option value="">pro oba</option>
+            <option value="male">mužský</option>
+            <option value="female">ženský</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Region</span>
+          <select formControlName="regionId">
+            <option [ngValue]="0">bez regionu</option>
+            @for (row of store.regionTree(); track row.region.id) {
+              @if (!row.region.archived) {
+                <option [ngValue]="row.region.id">{{ row.depth ? '– ' : '' }}{{ row.region.name }}</option>
+              }
+            }
+          </select>
+        </label>
+      }
+      <label class="check"><input type="checkbox" formControlName="allowNumberReuse" /> číslo vyřazeného kusu lze použít znovu</label>
+      @if (renamed()) {
+        <p class="notice notice-warn field-wide">Nový název se zobrazí u všech kusů této řady. Historie kusů zůstane beze změny.</p>
+      }
+      <div class="form-actions">
+        <button type="submit" class="button button-primary">{{ editing() ? 'Uložit' : 'Založit řadu' }}</button>
+        @if (editing()) {
+          <button type="button" class="button" (click)="edit(null)">Zrušit</button>
+        }
+      </div>
+    </form>
+  </section>
+}
+
+<section class="card">
+  <div class="toolbar">
+    <input type="search" placeholder="Hledat řadu" aria-label="Hledat řadu" (input)="text.set($any($event.target).value)" />
+    <label class="check"><input type="checkbox" (change)="showArchived.set($any($event.target).checked)" /> i archivované</label>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Řada</th><th>Kroj</th><th>Region</th><th>Čísla vyřazených</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (series of visible(); track series.id) {
+          <tr [class.archived]="series.archived">
+            <td>
+              {{ series.name }}
+              @if (series.variant) {
+                <span class="tag">{{ series.variant }}</span>
+              }
+            </td>
+            <td>{{ genderLabel(series.gender) }}</td>
+            <td>{{ store.regionName(series.regionId) }}</td>
+            <td>{{ series.allowNumberReuse ? 'znovu použitelná' : 'nepoužívat znovu' }}</td>
+            <td class="row-actions">
+              @if (store.canManage()) {
+                <button type="button" class="link-button" (click)="edit(series)">Upravit</button>
+                <button type="button" class="link-button" (click)="toggleArchive(series)">{{ series.archived ? 'Obnovit' : 'Archivovat' }}</button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5" class="muted">{{ store.loading() ? 'Načítám…' : 'Žádná řada.' }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (kind() === 'part' && unnumberedCount()) {
+    <p class="muted">Nečíslované druhy ({{ unnumberedCount() }}) nemají řadu – evidují se počtem.</p>
+  }
+</section>

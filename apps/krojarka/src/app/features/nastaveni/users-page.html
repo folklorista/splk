@@ -1,0 +1,100 @@
+@if (store.error()) {
+  <p class="notice notice-danger">{{ store.error() }}</p>
+}
+@if (message(); as m) {
+  <p class="notice" [class.notice-ok]="m.ok" [class.notice-danger]="!m.ok" role="status">{{ m.text }}</p>
+}
+
+<section class="card">
+  <h2>Nová osoba</h2>
+  <p class="muted">Osoba může být v evidenci i bez účtu. Účet a pověření potřebuje jen ten, kdo bude Krojařku používat.</p>
+  <form [formGroup]="personForm" (ngSubmit)="addPerson()" class="form-row" novalidate>
+    <label class="field"><span>Jméno</span><input formControlName="firstName" autocomplete="off" /></label>
+    <label class="field"><span>Příjmení</span><input formControlName="lastName" autocomplete="off" /></label>
+    <label class="field"><span>Přezdívka</span><input formControlName="nickname" autocomplete="off" /></label>
+    <div class="form-actions"><button type="submit" class="button button-primary">Přidat</button></div>
+  </form>
+</section>
+
+<div class="toolbar">
+  <input type="search" placeholder="Hledat osobu nebo e-mail" aria-label="Hledat osobu" (input)="text.set($any($event.target).value)" />
+</div>
+
+@for (person of visible(); track person.id) {
+  <section class="card person-card">
+    <div class="person-head">
+      <div>
+        <h3>
+          {{ person.firstName }} {{ person.lastName }}
+          @if (person.nickname) {
+            <span class="muted">({{ person.nickname }})</span>
+          }
+        </h3>
+        @if (person.account; as account) {
+          <p class="muted">
+            {{ account.loginEmail }} · <span class="tag" [class.tag-muted]="account.status !== 'active'">{{ accountStatus[account.status] }}</span>
+          </p>
+        } @else {
+          <p class="muted">bez účtu</p>
+        }
+      </div>
+      <div class="row-actions">
+        @if (!person.account) {
+          <button type="button" class="button" (click)="toggle(person, 'invite')">Pozvat k účtu</button>
+        } @else {
+          @if (person.account.status === 'invited') {
+            <button type="button" class="button" (click)="resend(person)">Poslat pozvánku znovu</button>
+          }
+          @if (person.account.status === 'disabled') {
+            <button type="button" class="button" (click)="setDisabled(person, false)">Odblokovat</button>
+          } @else if (person.account.id !== store.currentAccountId()) {
+            <button type="button" class="button" (click)="setDisabled(person, true)">Zablokovat</button>
+          }
+        }
+        <button type="button" class="button" (click)="toggle(person, 'mandate')">Přidat pověření</button>
+      </div>
+    </div>
+
+    @if (open()?.personId === person.id && open()?.panel === 'invite') {
+      <form [formGroup]="inviteForm" (ngSubmit)="invite(person)" class="form-row panel" novalidate>
+        <label class="field"><span>E-mail pro přihlášení</span><input type="email" formControlName="email" autocomplete="off" /></label>
+        <div class="form-actions"><button type="submit" class="button button-primary">Poslat pozvánku</button></div>
+      </form>
+    }
+
+    @if (open()?.personId === person.id && open()?.panel === 'mandate') {
+      <form [formGroup]="mandateForm" (ngSubmit)="grant(person)" class="form-row panel" novalidate>
+        <label class="field">
+          <span>Pověření</span>
+          <select formControlName="kind" (change)="onKindChange()">
+            @for (kind of kinds; track kind[0]) {
+              <option [value]="kind[0]">{{ kind[1] }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          <span>Rozsah</span>
+          <select formControlName="unitId">
+            @for (scope of scopeOptions(mandateForm.controls.kind.value); track scope.id) {
+              <option [ngValue]="scope.id">{{ scope.label }}</option>
+            }
+          </select>
+        </label>
+        <div class="form-actions"><button type="submit" class="button button-primary">Přidělit</button></div>
+      </form>
+    }
+
+    @if (person.mandates.length) {
+      <ul class="plain-list mandates">
+        @for (mandate of person.mandates; track mandate.id) {
+          <li>
+            <span>{{ mandateLabel(mandate) }}</span>
+            <button type="button" class="link-button" (click)="revoke(person, mandate)">Odebrat</button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+} @empty {
+  <p class="muted">{{ store.loading() ? 'Načítám…' : 'Nikdo neodpovídá hledání.' }}</p>
+}

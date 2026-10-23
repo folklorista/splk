@@ -19,6 +19,18 @@
   @if (mock) {
     <p class="mock-badge">Vývojová data bez serveru</p>
   }
+  @if (funds.funds().length > 1) {
+    <label class="fund-select">
+      <span>Krojový fond</span>
+      <select [value]="funds.current()?.unitId" (change)="funds.select(+$any($event.target).value)">
+        @for (fund of funds.funds(); track fund.unitId) {
+          <option [value]="fund.unitId" [selected]="fund.unitId === funds.current()?.unitId">{{ fund.name }}</option>
+        }
+      </select>
+    </label>
+  } @else if (funds.current(); as fund) {
+    <p class="fund-select">Krojový fond: <strong>{{ fund.name }}</strong></p>
+  }
   <ul>
     @for (item of menu; track item.path) {
       <li>

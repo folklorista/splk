@@ -22,6 +22,16 @@ export type ApiErrorCode =
   | 'invalid_credentials'
   | 'too_many_attempts'
   | 'reset_token_invalid'
+  | 'forbidden'
+  | 'duplicate_name'
+  | 'part_type_not_numbered'
+  | 'account_exists'
+  | 'email_taken'
+  | 'account_not_invited'
+  | 'account_not_disabled'
+  | 'cannot_disable_self'
+  | 'mandate_exists'
+  | 'last_admin'
   | 'internal_error';
 
 /** `details.reason` of `validation_failed`. */
@@ -30,4 +40,10 @@ export type ValidationReason =
   | 'too_long'
   | 'invalid_email'
   | 'password_too_short'
-  | 'password_incorrect';
+  | 'password_incorrect'
+  | 'invalid'
+  | 'immutable'
+  | 'not_allowed'
+  | 'region_has_children'
+  | 'organization_scope_only'
+  | 'not_a_costume_fund';

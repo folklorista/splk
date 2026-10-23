@@ -21,6 +21,7 @@ export class MockAuthApi extends AuthApi {
     mandates: [
       { id: 1, kind: 'costumes.manage', scopeType: 'unit', scopeId: 1, scopeName: 'Vonica' },
       { id: 2, kind: 'costumes.view', scopeType: 'unit', scopeId: 2, scopeName: 'Malá Vonica' },
+      { id: 3, kind: 'organization.admin', scopeType: 'organization', scopeId: null, scopeName: null },
     ],
   };
 

@@ -76,6 +76,25 @@
   font-size: 0.8rem;
 }
 
+.fund-select {
+  display: block;
+  margin: 0 var(--space-md) var(--space-sm);
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+
+  select {
+    display: block;
+    width: 100%;
+    margin-top: var(--space-xs);
+    min-height: 40px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius);
+    background: #fff;
+    font: inherit;
+    color: var(--color-text);
+  }
+}
+
 .user {
   border-top: 1px solid var(--color-border);
   padding: var(--space-md);

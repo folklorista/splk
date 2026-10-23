@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 import { MOCK_DATA } from '../../data/api-config';
 import { AuthService } from '../auth/auth.service';
 import { LOGIN_PATH } from '../auth/auth.guards';
+import { FundContext } from '../fund/fund-context';
 import { MENU } from './menu';
 
 /** Signed-in layout: side menu (D-22), on narrow screens a drawer opened from the top bar. */
@@ -15,6 +16,7 @@ import { MENU } from './menu';
 export class Shell {
   protected readonly auth = inject(AuthService);
   protected readonly mock = inject(MOCK_DATA);
+  protected readonly funds = inject(FundContext);
   protected readonly menu = MENU;
   protected readonly menuOpen = signal(false);
   private readonly router = inject(Router);
