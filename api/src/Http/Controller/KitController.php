@@ -91,7 +91,7 @@ final class KitController extends Controller
         if ($itemId !== null) {
             $allowed[] = 'itemVersion';
             $input->id('itemVersion');
-        } elseif ($action !== 'remove') {
+        } elseif ($action !== 'remove' || $input->has('requiredQty') || $input->has('presentQty')) {
             $allowed = [...$allowed, 'requiredQty', 'presentQty'];
             $required = InventoryInput::quantity($request->json(), 'requiredQty', 1);
             $present = InventoryInput::quantity($request->json(), 'presentQty');
@@ -173,12 +173,15 @@ final class KitController extends Controller
         if ($action !== 'add' && $line === null) {
             throw new HttpException(422, 'composition_conflict', 'The stock is not in this kit.');
         }
+        $required = $data['requiredQty'] ?? $line['requiredQty'] ?? 0;
+        $present = $data['presentQty'] ?? $line['presentQty'] ?? 0;
         if ($action === 'remove') {
-            $this->setBulkLine($kit['unitId'], $kit['id'], $stockId, 0, 0);
-            return $line['requiredQty'];
+            if ($required > $line['requiredQty'] || $present > $line['presentQty'] || $line['presentQty'] - $present > $line['requiredQty'] - $required) {
+                throw Input::invalid('requiredQty', 'invalid');
+            }
+            $this->setBulkLine($kit['unitId'], $kit['id'], $stockId, $line['requiredQty'] - $required, $line['presentQty'] - $present);
+            return $required;
         }
-        $required = $data['requiredQty'];
-        $present = $data['presentQty'];
         if ($action === 'add') {
             if ($stock['quantityInKits'] + $present > $stock['quantityTotal']) {
                 throw new HttpException(422, 'insufficient_stock', 'Not enough unallocated stock.');

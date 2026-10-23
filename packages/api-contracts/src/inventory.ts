@@ -108,7 +108,7 @@ export type CompositionInput = {
   | { action: 'add' | 'remove'; itemId: number; itemVersion: number }
   | { action: 'move'; itemId: number; itemVersion: number; targetKitId: number; targetVersion: number }
   | { action: 'add'; bulkStockId: number; requiredQty: number; presentQty: number }
-  | { action: 'remove'; bulkStockId: number }
+  | { action: 'remove'; bulkStockId: number; requiredQty?: number; presentQty?: number }
   | { action: 'move'; bulkStockId: number; requiredQty: number; presentQty: number; targetKitId: number; targetVersion: number }
 );
 

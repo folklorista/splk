@@ -216,6 +216,15 @@ První účet se správou organizace vytvoří seed z `.env` při první migraci
 - Archivované katalogové údaje nebrání čtení a opravě ostatních údajů existujícího kusu; založení či změna řady nebo čísla vyžadují aktivní řadu, číslovaný druh a aktivní regiony. Druh s existujícími kusy nelze přepnout na nečíslovaný, včetně kusů vyřazených nebo zatím bez čísla.
 - `/items/{id}/history` vrací stránkované `{items, total}` (stejné `limit`, `offset`) s událostmi kusu od nejnovější. Založení ukládá počáteční údaje, změny ukládají původní i novou hodnotu a vyřazení důvod. Výpůjčky, pohyby a kontroly se doplní v příslušných krocích; zatím se nevytvářejí. Audit je transakčně spojený se zápisem i událostmi.
 
+#### Dokončení kroku 4 – zásoby, komplety a pracovní úkoly (2026-10-24)
+
+- Nečíslované zásoby mají seznam s `limit/offset`, založení a PATCH; typ je neměnný. Odpověď obsahuje `quantityTotal` a `quantityInKits`. `duplicate_stock` značí duplicitu druhu/varianty, `insufficient_stock` porušení množství. Používaný druh nelze změnit na číslovaný.
+- Komplety mají stránkovaný seznam s `series/q`, založení, PATCH s `version` a detail `KitDetail` včetně určených kusů, početních řádků a `changes`.
+- Složení používá diskriminované `CompositionInput`: `add/remove/move`, `version`, právě jeden z `itemId + itemVersion` nebo `bulkStockId`; přesun navíc `targetKitId + targetVersion`. U doplňků `add` přičítá `requiredQty/presentQty`. `remove` bez počtů odebírá celý řádek, s oběma počty odebírá část. `move` přesouvá oba zadané počty; zbylý řádek musí zůstat konzistentní. Přesun zaznamená historii i audit u obou kompletů. Při chybě se vrací zpět celý zápis.
+- Po změně složení zůstává `unverified`; ostatní stavy se mění na `pending_check`. Stav lze výslovně upravit přes PATCH, ale nevzniká tím inventurní kontrola ani ověření jednotlivých kusů. U číslovaných součástí se přítomnost z příslušnosti ke kompletu neodvozuje.
+- Pracovní úkoly mají endpointy z kap. 4.4 včetně souhrnu fondu s filtrem `status` a stránkováním. Nový úkol je `open`, existující úkol vyřazeného kusu lze dokončit či zrušit. Úkol nemění automaticky stav, vydatelnost ani fyzické umístění kusu; jeho změny jsou v auditu i historii kusu.
+- Kontrakty jsou v `packages/api-contracts/src/inventory.ts`; fyzické kontroly, výpůjčky a jejich vazby přibudou v příslušných krocích.
+
 ### 4.5 Výpůjčky
 
 | Metoda a cesta | Účel |

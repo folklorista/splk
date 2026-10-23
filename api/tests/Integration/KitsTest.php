@@ -110,6 +110,20 @@ final class KitsTest extends ApiTestCase
         self::assertSame(1, $this->auditCount('kit.composition'));
     }
 
+    public function testBulkQuantitiesCanBeRemovedPartiallyWithoutASecondKit(): void
+    {
+        $kit = $this->kit('K');
+        $stock = $this->stock(5);
+        $this->compose($kit['id'], ['version' => 1, 'action' => 'add', 'bulkStockId' => $stock, 'requiredQty' => 5, 'presentQty' => 3]);
+        self::assertError(422, 'validation_failed', $this->compose($kit['id'], ['version' => 2, 'action' => 'remove', 'bulkStockId' => $stock, 'requiredQty' => 2]));
+        self::assertError(422, 'validation_failed', $this->compose($kit['id'], ['version' => 2, 'action' => 'remove', 'bulkStockId' => $stock, 'requiredQty' => 4, 'presentQty' => 0]));
+        $removed = $this->compose($kit['id'], ['version' => 2, 'action' => 'remove', 'bulkStockId' => $stock, 'requiredQty' => 2, 'presentQty' => 1]);
+        self::assertStatus(200, $removed);
+        self::assertSame([3, 2], [$removed->decodedBody()['bulkLines'][0]['requiredQty'], $removed->decodedBody()['bulkLines'][0]['presentQty']]);
+        self::assertSame(2, $removed->decodedBody()['changes'][0]['qty']);
+        self::assertSame(2, $this->get('/v1/funds/' . $this->fund . '/bulk-stocks')->decodedBody()['items'][0]['quantityInKits']);
+    }
+
     public function testChangingConfirmedCompositionRequiresNewCheck(): void
     {
         $kit = $this->kit('K');
