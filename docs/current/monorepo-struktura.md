@@ -1,6 +1,6 @@
-# Návrh: struktura monorepa (Q-10)
+# Struktura monorepa
 
-**Stav:** návrh ke schválení, 2026-10-23. Nic z toho zatím není implementováno.
+**Stav:** schváleno 2026-10-23 (D-41, D-43, D-45, D-47). Zatím neimplementováno.
 **Vychází z:** D-03 (monorepo), D-11 a D-12 (PHP + PostgreSQL, sessions), D-31 (Krojařka nepřebírá kód dema), D-33 (demo se nekonzervuje), D-41 až D-45 (rozhodnutí uživatele k Q-10).
 
 ## 1. Cílový strom
@@ -58,7 +58,7 @@ Poznámky:
 | TypeScript | **≥ 6.0 < 6.1** (požadavek `@angular/compiler-cli` 22) | 5.x | dtto |
 | Node.js | **^22.22.3 \|\| ^24.15.0 \|\| ≥ 26** | Angular 19: ≥ 22.0.0 vyhovuje | dtto |
 
-**Doporučení: Node.js 24 LTS pro celý repozitář.** Vyhoví Krojařce i demu.
+**Rozhodnuto: Node.js 24 LTS pro celý repozitář (D-47).** Vyhoví Krojařce i demu.
 
 - **Lokálně je dnes Node 20.19.3**, Angularu 22 nestačí – nutné aktualizovat.
 - `Dockerfile` dema používá `node:20` – sjednotit při stejném kroku.
@@ -72,7 +72,7 @@ Přesun **neodporuje** D-31 ani D-33. D-31 se týká přebírání kódu do Kroj
 - `scripts/import-members.mjs` (zapisuje do `frontend/src/…`), `.gitignore`;
 - `README.md`, `CLAUDE.md`, skillu `/deploy`.
 
-**Doporučení:** demo zatím nechat ve `frontend/`. Přesun případně provést později jako samostatný krok s ověřením buildu, testů a `deploy --target demo --dry-run`. Pro Krojařku nic nepřináší.
+**Rozhodnuto:** demo se nepřesouvá (D-41).
 
 ## 5. Migrace databáze (Phinx) na hostingu
 
@@ -85,7 +85,7 @@ Ověřená omezení hostingu:
 
 | Varianta | Popis | Hodnocení |
 |---|---|---|
-| **A – z vývojového stroje** | `phinx migrate` běží lokálně (PHP v Dockeru) proti produkční DB přes TLS. Vyžaduje povolit domácí IP ve filtru | **doporučeno**: žádný migrační kód na webu, šifrované spojení, plná kontrola |
+| **A – z vývojového stroje** | `phinx migrate` běží lokálně (PHP v Dockeru) proti produkční DB přes TLS. Vyžaduje povolit domácí IP ve filtru | **zvoleno (D-45)**: žádný migrační kód na webu, šifrované spojení, plná kontrola |
 | B – chráněný HTTP endpoint | API by mělo skrytou URL, která spustí migrace | ne: migrace by šly spustit HTTP požadavkem, i když chráněným |
 | C – jednorázový CRON | nahrát skript, nastavit CRON, po běhu smazat | ne: neprůhledné, ruční, těžko se ověřuje výsledek |
 
@@ -103,9 +103,9 @@ Pravidla:
 - schéma se mění **zpětně kompatibilně** (nejdřív přidat, kód přepnout, staré odebrat až další migrací), aby krátký nesoulad kódu a schématu nic nerozbil;
 - produkční migraci předchází záloha.
 
-## 6. Otevřené k rozhodnutí
+## 6. Rozhodnuto 2026-10-23
 
-1. Přesun dema do `apps/demo` (kap. 4) – doporučeno zatím ne.
-2. Node.js 24 LTS pro celý repozitář (kap. 3) – doporučeno ano.
-3. Migrace variantou A (kap. 5) – doporučeno ano; vyžaduje IP filtr s domácí IP (Q-11).
-4. Jmenný prostor PHP `Splk\Api\` a modulové členění `Domain\…` – k potvrzení.
+1. Demo se **nepřesouvá**, zůstává ve `frontend/` (D-41).
+2. **Node.js 24 LTS** pro celý repozitář (D-47).
+3. Migrace **variantou A** z vývojového stroje (D-45). IP filtr databáze je zapnutý s domácí IP a spojení z ní běží přes TLS 1.2 (ověřeno, D-46).
+4. Jmenný prostor PHP **`Splk\Api\`** s moduly `Domain\{Identity, Units, Costumes, Costs, Attachments}` (D-43).

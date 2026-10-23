@@ -33,7 +33,7 @@ docs/
 ├── current/     platné specifikace; každá má v hlavičce svůj status
 │   ├── krojarka/   aplikace Krojařka (priorita)
 │   └── moje/       odložený členský systém (schválené cíle, nevyvíjí se)
-├── proposals/   návrhy čekající na rozhodnutí (monorepo-struktura.md)
+├── proposals/   návrhy čekající na rozhodnutí (zatím prázdné)
 └── archive/     historické a překonané dokumenty, snímky stavu kódu
 ```
 
@@ -47,6 +47,7 @@ docs/
 | [`krojarka/frontend-demo-specifikace.md`](current/krojarka/frontend-demo-specifikace.md) | Obrazovky, UX, skeny papírových karet, demo scénáře | pracovní návrh; menu podle D-22 |
 | [`krojarka/krojovy-katalog-vonica.md`](current/krojarka/krojovy-katalog-vonica.md) + `.json` | Návrh číselníku 83 druhů součástí ze skladových karet | data k ověření |
 | [`identity-model-v2.md`](current/identity-model-v2.md) | Osoba, účet, složky, zastupování, funkce, pověření | směr schválen (D-06, D-07); rozhraní konceptuální |
+| [`monorepo-struktura.md`](current/monorepo-struktura.md) | Struktura repozitáře: `apps/`, `packages/`, `api/`, verze nástrojů, migrace | schváleno (D-41 až D-47) |
 | [`hosting-postgresql-api-auth.md`](current/hosting-postgresql-api-auth.md) | Ověření hostingu, PostgreSQL 18, CORS, cookies, CSRF, přesun dema | ověřená fakta + doporučení přijatá v D-11 až D-13 |
 | [`01-technicky-stack.md`](current/01-technicky-stack.md) | Hosting, šifrování, offline, zálohy, přílohy, zásady frontendu | platný; část pro více souborů a MySQL je překonaná |
 | [`04-styl-prace.md`](current/04-styl-prace.md) | Rozhodovací pravidla a styl práce | platný |

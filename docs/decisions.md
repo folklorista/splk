@@ -117,7 +117,7 @@ Hosting Websupport, `api.vonica.cz`. Databáze **PostgreSQL 18** (UTF-8, `cs_CZ`
 
 ### D-13 Veřejný přístup k databázi omezit na IP
 
-**Zdroj:** `current/hosting-postgresql-api-auth.md` kap. 10 (rozhodnuto 2026-10-22, zatím neprovedeno).
+**Zdroj:** `current/hosting-postgresql-api-auth.md` kap. 10 (rozhodnuto 2026-10-22). **Provedeno 2026-10-23:** povolena domácí IP vývojáře (dynamická – při změně aktualizovat v administraci). Ověřeno, že API na hostingu se připojuje dál a spojení z povolené IP běží přes TLS 1.2.
 
 ### D-14 Polling, ne WebSocket
 
@@ -301,9 +301,9 @@ Soupis podle řady, podle člověka, současný a historický soupis konkrétní
 - `apps/` – frontendové aplikace (`krojarka`, později `moje`, případně `pokladna`, `kronika`, `admin`…), každá samostatně sestavitelná a nasaditelná.
 - `packages/` – sdílené TS knihovny: `api-contracts` (DTO a typy API), `domain` (čisté TS modely a pravidla), `ui` (identita, ikony, styly, případně komponenty). Sdílí se jen to, co má jasné použití.
 - `api/` v kořeni – jedna společná serverová aplikace.
-- Demo zůstává ve `frontend/`, případný přesun se řeší samostatně.
+- Demo zůstává ve `frontend/` a **nepřesouvá se** (2026-10-23).
 
-Podrobný strom a hranice: `proposals/monorepo-struktura.md` (ke schválení).
+Podrobný strom a hranice: `current/monorepo-struktura.md` (schváleno).
 **Zdroj:** uživatel 2026-10-23. **Upřesňuje:** D-03.
 
 ### D-42 Angular pro Krojařku: aktuální stabilní verze
@@ -313,7 +313,7 @@ Krojařka používá aktuální podporovaný stabilní Angular (2026-10-23: **22
 
 ### D-43 PHP bez velkého frameworku
 
-Čisté PHP 8.5, Composer, PSR-4 autoloading, malé osvědčené knihovny podle potřeby.
+Čisté PHP 8.5, Composer, PSR-4 autoloading (jmenný prostor `Splk\Api\`, moduly `Domain\{Identity, Units, Costumes, Costs, Attachments}`), malé osvědčené knihovny podle potřeby.
 **Zdroj:** uživatel 2026-10-23.
 
 ### D-44 Testy API: PHPUnit
@@ -323,7 +323,12 @@ Hlavně testy autorizace, datové integrity a doménových operací.
 
 ### D-45 Migrace: Phinx
 
-Migrace nesmí běžet při běžném HTTP požadavku. Před produkční migrací musí jít vytvořit zálohu. Způsob spouštění na hostingu bez SSH: `proposals/monorepo-struktura.md` kap. 5.
+Migrace nesmí běžet při běžném HTTP požadavku. Před produkční migrací musí jít vytvořit zálohu. **Spouštějí se z vývojového stroje** proti produkční DB přes TLS: stav → záloha `pg_dump` → migrace → nahrání kódu → ověření (`current/monorepo-struktura.md` kap. 5).
+**Zdroj:** uživatel 2026-10-23.
+
+### D-47 Node.js 24 LTS
+
+Pro celý repozitář (Krojařka s Angularem 22 i demo s Angularem 19). Node běží jen při vývoji a buildu.
 **Zdroj:** uživatel 2026-10-23.
 
 ## Hosting (ověřeno 2026-10-23)

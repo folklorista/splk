@@ -87,7 +87,7 @@ Návrh k posouzení: osoby bez výpůjček jako filtr v Krojových kartách, dok
 
 ### Q-10 API v1 a monorepo – *nástroje a rozvržení rozhodnuty → D-41 až D-45*
 
-Zbývá schválit návrh `proposals/monorepo-struktura.md` (přesun dema, Node 24, způsob migrací, jmenný prostor PHP) a navrhnout rozsah API v1. Původní znění:
+Struktura schválena (`current/monorepo-struktura.md`, D-41 až D-47). **Zbývá navrhnout rozsah API v1 a databázové schéma Krojařky.** Původní znění:
 
 Je potřeba určit:
 
@@ -109,7 +109,7 @@ Přehled problémů dema, kterým se má API vyhnout (oprávnění jen ve fronte
 
 **Stav k 2026-10-23 – po testu na `api` (D-46):**
 
-- **IP filtr** – databáze vidí API z privátní adresy hostingu (ne z veřejné `37.9.175.212`), takže veřejnou IP webu povolovat netřeba. Povolit stačí IP, ze kterých se k DB přistupuje z internetu: domácí připojení (dnes `77.92.193.22`, dynamická – při změně aktualizovat). Po zapnutí filtru znovu ověřit, že API se k DB dál připojí.
+- ~~IP filtr~~ – zapnut s domácí IP, ověřeno (D-13).
 - **Šifrování** – `host=localhost` nepomůže (D-46). Zbývá dotaz na Websupport, zda je privátní síť k DB oddělená. Jinak vědomě přijmout.
 - ~~opcache~~ – souborová cache, nelze měnit (D-46). ~~HTTP cache~~ – vypnuta na `demo` a `krojarka`. ~~display_errors~~ – vypnuto na `api`.
 - Zbývá: místo pro přístupové údaje k DB na `api`, test zápisu do DB, HSTS, práva souborů, SPA fallback, Safari/iOS, jeden DB účet pro migrace i aplikaci.
