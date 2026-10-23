@@ -1,6 +1,6 @@
 ---
 name: deploy
-description: Deploy a version of the SPLK app to the demo (https://demo.vonica.cz over SFTP) – check what the demo runs now, prepare and run database migrations (once a backend exists), upload changed files, verify the result on the demo URL and report. Use when the user runs /deploy [version|commit|branch|working] or asks to "nasadit", "nasaď", "deploy" the app (the demo; moje.vonica.cz only on explicit request).
+description: Deploy a version of the SPLK apps over SFTP – the demo (https://demo.vonica.cz, default), or on explicit request the API (https://api.vonica.cz, incl. Phinx migrations with a backup) or Krojařka (https://krojarka.vonica.cz). Check what the target runs now, show the plan, upload, verify and report. Use when the user runs /deploy [api|krojarka] [version|commit|branch|working] or asks to "nasadit", "nasaď", "deploy" (moje.vonica.cz only on explicit request).
 argument-hint: "[tag | commit | branch | working]"
 ---
 
@@ -11,6 +11,9 @@ this skill orchestrates it. The script has no default target: every command belo
 (https://demo.vonica.cz, the archived demo of the ensemble system). `moje.vonica.cz` is reserved for the future
 production app – since 2026-10-22 it is empty; never deploy there (`--target moje`) unless the user explicitly asks. Below, "production" means the deployed demo site. Configuration and credentials are in the git-ignored `.env` (template `.env.example`) –
 never print passwords from it.
+
+**API and Krojařka** (`--target api|krojarka`, script `scripts/deploy-app.mjs`) follow section 9 instead of
+sections 2–8. Deploy them only when the user names them.
 
 ## 1. Preconditions
 
@@ -97,3 +100,29 @@ matching the deployed revision.
 Short report in Czech: previous → new version (tag/revision), number of uploaded/deleted files, migrations,
 verification results (URL, 401/200 checks), anything that failed or was skipped. Mention that users get the new
 version after the service worker update (reload of the app).
+
+## 9. API and Krojařka
+
+Both need Node.js 24 (`nvm use` in the repo root, D-47); the API also needs Docker (`docker compose`, the `api`
+service with `api/vendor` installed via `npm run api:install`). Sources: `--source working` (default), `--source commit`
+or `--ref <tag|branch|commit>` (clean temporary worktree). There is no release tag requirement yet.
+
+1. **Status:** `npm run deploy -- --target api --status` (reads `GET /v1/health`: revision and latest migration),
+   `npm run deploy -- --target krojarka --status` (`<meta name="app-revision">` of `index.html`).
+2. **Dry run:** the same command with `--dry-run`. For the API it builds a staging copy with
+   `composer install --no-dev`, runs `phinx status` against production over TLS and lists pending migrations,
+   whether `config/config.php` is on the server and the files to upload. Show the summary and wait for an explicit „ano“.
+   - API without `config/config.php` on the server: add `--init-config` (generated from `PG_*` and `KROJARKA_EMAIL_*`
+     in `.env`; never overwrites an existing file, D-54).
+   - First deploy of Krojařka replaces the hosting placeholder `index.php`: needs `--allow-foreign-content`.
+   - First account with `organization.admin`: `--seed-admin` with `API_ADMIN_EMAIL`, `API_ADMIN_FIRST_NAME`,
+     `API_ADMIN_LAST_NAME` in `.env`. The account is invited without a password; the user sets it via
+     „Zapomenuté heslo“ in Krojařka. The seed does nothing when an admin exists.
+3. **Deploy:** the same command with `--yes`. API order (D-45): config (if missing) → `pg_dump` backup to
+   `dev/local/backups/` (only when migrations are pending) → `phinx migrate` → seed (if asked) → `vendor/`, `src/`,
+   `build-info.json`, `public/` last; `config/` and `storage/` are never touched. Krojařka: changed files, `index.html` last,
+   stale files removed. Files get 0644, directories 0755.
+4. **Verification** is part of the script: API `GET /v1/health` must report the new revision and the latest
+   migration; Krojařka must serve the new revision, an app route (`/prihlaseni`) 200 and a missing chunk 404.
+5. **Report** in Czech: previous → new revision, migrations and backup file, uploaded/removed files, verification.
+   Order when both change: API first (the frontend depends on it).

@@ -1,4 +1,5 @@
 // Builds the frontend and uploads it over SFTP to an explicitly chosen target domain.
+// --target api|krojarka is handled by scripts/deploy-app.mjs (see its header for the options).
 // Usage: node scripts/deploy.mjs --target <demo|moje> [--source working|commit|tag | --ref <tag|branch|commit>] [--demo] [--yes]
 //   --target – required, there is no default target: demo (demo.vonica.cz) or moje (moje.vonica.cz)
 //   working – current working copy incl. uncommitted changes (default)
@@ -35,6 +36,11 @@ const dryRun = args.includes('--dry-run');
 const statusOnly = args.includes('--status');
 const allowForeignContent = args.includes('--allow-foreign-content');
 const targetName = option('--target');
+
+if (targetName === 'api' || targetName === 'krojarka') {
+  await import('./deploy-app.mjs');
+  process.exit();
+}
 
 // Deploy targets of this app. The domain is fixed here, so a wrong *_SITE_URL in .env cannot redirect a deploy.
 const TARGETS = {
@@ -79,9 +85,9 @@ function resolveRef(ref) {
 function loadConfig() {
   const envPath = path.join(rootDir, '.env');
   if (!fs.existsSync(envPath)) fail('Missing .env – copy .env.example and fill it in.');
-  if (!targetName) fail(`Missing --target (${Object.keys(TARGETS).join('|')}) – there is no default target.`);
+  if (!targetName) fail(`Missing --target (${Object.keys(TARGETS).join('|')}|api|krojarka) – there is no default target.`);
   const target = TARGETS[targetName];
-  if (!target) fail(`Unknown --target ${targetName} (${Object.keys(TARGETS).join('|')}); api and krojarka have no deployable app in this repo.`);
+  if (!target) fail(`Unknown --target ${targetName} (${Object.keys(TARGETS).join('|')}|api|krojarka)`);
   process.loadEnvFile(envPath);
   const env = process.env;
   const name = (key) => `${target.prefix}_${key}`;
