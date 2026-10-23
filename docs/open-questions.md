@@ -24,7 +24,9 @@ Varianty:
 
 U Vonice je fond po složkách jasný (D-21). Krojařku pro Vonicu to neblokuje, model fondu ano.
 
-### Q-02 Omezení půjčování krojů podle skupiny nebo kategorie
+### Q-02 Omezení půjčování krojů podle skupiny nebo kategorie – *rozhodnuto → D-34*
+
+Původní znění:
 
 **Vysvětlení rozporu R8 z auditu:**
 
@@ -33,7 +35,9 @@ U Vonice je fond po složkách jasný (D-21). Krojařku pro Vonicu to neblokuje,
 
 **Doporučení:** žádný zákaz, jen řazení nabídky (stav v `06` v0.5). Pravidlo z `02` je archivované. Potvrď prosím, nebo uveď situaci, kdy zákaz potřebuješ.
 
-### Q-03 Rozsah základní finanční evidence v Krojařce (k D-23)
+### Q-03 Rozsah základní finanční evidence v Krojařce (k D-23) – *rozhodnuto → D-23 (rozsah 2026-10-23)*
+
+Původní znění:
 
 Z podkladů:
 
@@ -47,7 +51,9 @@ Je potřeba určit:
 
 **Žádná funkční specifikace zatím neexistuje.**
 
-### Q-04 Komplety – podrobnosti k D-19
+### Q-04 Komplety – podrobnosti k D-19 – *body 1–3 rozhodnuty → D-35*
+
+Zbývá bod 4 (potvrdit s krojařkou) a bod 5 (samostatná položka menu). Původní znění:
 
 1. Mají komplety **vlastní evidenční řady a čísla** oddělené od řad součástek (např. „Záleský komplet Z12“), nebo sdílejí řady součástek?
 2. Jsou **nečíslované zaměnitelné doplňky** jen v kompletech, nebo i volně ve skladu nebo u osoby?
@@ -95,9 +101,19 @@ Přehled problémů dema, kterým se má API vyhnout (oprávnění jen ve fronte
 - Jeden databázový účet pro migrace i aplikaci.
 - Test zápisu do databáze, zapnutí `opcache`, HSTS, práva souborů 0666 → 644/755, SPA fallback pro chybějící assety.
 - Ověření v Safari/iOS a Firefoxu.
-- **Zálohy PostgreSQL** u poskytovatele (D-16 vznikl pro MySQL).
+- ~~Zálohy PostgreSQL u poskytovatele~~ – ověřeno, D-16 platí (denně, 14 dní, nad 2 GB týdně).
 
-### Q-14 Přihlašování do Krojařky a citlivé skeny
+**Stav k 2026-10-23 (podklady od uživatele):**
+
+- **IP filtr k databázi** – domácí připojení nemá statickou IP. Návrh: vyvíjet proti lokálnímu PostgreSQL v Dockeru. API na hostingu jde privátní sítí, takže na filtr nenarazí. Filtr tedy lze zapnout hned. Vzdálený přístup z domova (migrace, ruční dotazy) by vyžadoval přidat aktuální IP, nebo spouštět migrace z hostingu.
+- **Šifrování spojení** – připojení přes `host=localhost` (socket) hosting nabízí. Je potřeba ověřit, že z PHP na `api` opravdu vede na tutéž databázi. Pokud ano, data neopouštějí server a otázka TLS odpadá.
+- **opcache** – v administraci je u PHP zapnutý (výchozí), experiment 22. 10. ho ale v PHP 8.5.12 nenašel. Ověřit přímo (`opcache_get_status()`).
+- **HTTP cache poskytovatele** – statické soubory (`.css`, `.js`, obrázky…) může server držet asi 10 minut v RAM. Hashované soubory Angularu to neohrozí. `ngsw-worker.js` ale ano, takže nová verze se může projevit se zpožděním. Ověřit, zda cache respektuje `Cache-Control` z `.htaccess`; případně ji vypnout na `krojarka`/`demo`.
+- **`display_errors`** je v administraci zapnuté (výchozí) – pro `api` vypnout.
+
+### Q-14 Přihlašování do Krojařky a citlivé skeny – *účty jen pro čtení rozhodnuty → D-36*
+
+Zbývá retence skenů, GDPR a odstraňování polohových EXIF dat. Původní znění:
 
 - Kdo dostane účet: jen krojařky, nebo i další role pro čtení (např. Náhled do evidence pro výbor)?
 - Retence a přístup k naskenovaným osobním kartám (GDPR).

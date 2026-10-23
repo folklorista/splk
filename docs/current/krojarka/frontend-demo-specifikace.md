@@ -113,7 +113,6 @@ Primární akce `+` je kontextová; nemá působit jako globální univerzální
 /documents/:id                    Náhled dokumentu / přiřazení
 /settings/catalog                 Regiony, pohlaví, varianty, druhy
 /settings/series                  Evidenční řady
-/settings/kit-templates           Šablony kompletů
 /settings                         Drobné nastavení Krojařky
 /reports                          Přehledy, tisk a exporty
 ```
@@ -193,7 +192,7 @@ Primární akce `+` je kontextová; nemá působit jako globální univerzální
 
 ### K12 · Založení / detail / úprava kompletu (P0/P1)
 
-**Založení:** číslo / označení kompletu, region/pohlaví/varianta, stručný popis, volitelně šablona očekávaných druhů, **připojit fotografii lístku na tašce a historickou kartu kompletu**.
+**Založení:** řada a číslo kompletu (vlastní řady kompletů, D-35), region/pohlaví/varianta, stručný popis, **připojit fotografii lístku na tašce a historickou kartu kompletu**.
 
 **Detail:** odděleně **předepsané (určené) složení**, **aktuálně přítomné položky**, **samostatně půjčené**, **neověřené / chybějící**. U číslovaných součástí řada + číslo, u zaměnitelných množství `1 ze 2`. Zobrazit původ soupisu: opsáno z lístku vs. fyzicky zkontrolováno. Historie zápůjček kompletu včetně toho, *co bylo při konkrétním výdeji skutečně předáno*.
 
@@ -259,7 +258,7 @@ Primární akce `+` je kontextová; nemá působit jako globální univerzální
 
 ### K24 · Katalog a nastavení (P0/P1)
 
-**Samostatné podstránky:** regiony, pohlaví, varianty, druhy součástí; evidenční řady (včetně číselných pravidel a znovupoužití čísel), šablony kompletů; jednoduché výchozí nastavení inventury. Nejprve naplnit tyto číselníky, až poté rychle zadávat kusy. Rizikové úpravy existujících názvů/řad nesmějí bez upozornění změnit identitu starých předmětů.
+**Samostatné podstránky:** regiony, pohlaví, varianty, druhy součástí; evidenční řady součástek i kompletů (včetně číselných pravidel a znovupoužití čísel; šablony kompletů se nepoužívají, D-35); jednoduché výchozí nastavení inventury. Nejprve naplnit tyto číselníky, až poté rychle zadávat kusy. Rizikové úpravy existujících názvů/řad nesmějí bez upozornění změnit identitu starých předmětů.
 
 ### K25 · Přehledy, tisk a export (P1)
 

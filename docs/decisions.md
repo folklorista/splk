@@ -131,7 +131,7 @@ Hosting Websupport, `api.vonica.cz`. Databáze **PostgreSQL 18** (UTF-8, `cs_CZ`
 ### D-16 Zálohy: provozní kompromis
 
 Denní záloha u poskytovatele (14 dní) a vlastní týdenní šifrovaný export mimo hosting s testem obnovy.
-**Zdroj:** `current/01` (2026-10-18). *Formulace pochází z doby MySQL; zálohování PostgreSQL u poskytovatele viz Q-11.*
+**Zdroj:** `current/01` (2026-10-18). **Platí i pro PostgreSQL (2026-10-23):** hosting zálohuje každou databázi jednou za 24 h, zálohy drží nejvýše 14 dní, umožňuje ruční zálohu, databáze nad 2 GB zálohuje jen týdně. Pro delší uchování doporučuje stáhnout zálohu jako `.sql`. Vlastní týdenní export a test obnovy zůstávají úkolem.
 
 ## Kroje a aplikace Krojařka
 
@@ -205,8 +205,10 @@ Zda komplety vyčlenit do samostatné položky, je Q-04. Podoba mobilní lišty 
 
 ### D-23 Základní finanční evidence je součástí Krojařky
 
-Minimálně základní evidence financí patří do základu aplikace Krojařka. Rozsah zatím není určen (Q-03).
-**Zdroj:** uživatel 2026-10-22; vonica.md (TODO pokladna, výdaje za kroje).
+Minimálně základní evidence financí patří do základu aplikace Krojařka.
+
+**Rozsah (2026-10-23, Q-03):** evidovat **náklady na kroje**, hlavně pořízení nových součástek, aby je pokladník mohl souhrnně předložit v účetnictví a vyúčtovat proti dotaci na provoz. Nejde o pokladnu ani o účetnictví. Konkrétní údaje (doklad, datum, částka, dodavatel, vazba na kusy, účel nebo dotace) a přístup pokladníka se navrhnou spolu s obrazovkami.
+**Zdroj:** uživatel 2026-10-22 a 2026-10-23; vonica.md (TODO pokladna, výdaje za kroje).
 
 ### D-29 Krojové fondy Voničky jsou rozdělené po složkách
 
@@ -236,6 +238,26 @@ Pořadí „identita na mock datech → frontend → DB/API“ neplatí. Model i
 
 Pro demo se nezakládá archivní větev ani tag. Demo zůstává na `demo.vonica.cz` a jeho kód v repozitáři, ale dál se nerozvíjí.
 **Zdroj:** uživatel 2026-10-22.
+
+## Krojařka (doplnění 2026-10-23)
+
+### D-34 Výchozí filtr nabídky podle výchozího kroje osoby
+
+Výdej není nikdy omezen skupinou ani pohlavím. Při výdeji se ve výchozím stavu nabízejí součástky odpovídající výchozímu kroji osoby (kluk → klučičí kroje). Volitelný přepínač **„nabízet krojové součástky pro opačné pohlaví“** zpřístupní ostatní kusy (masopustní maska, půjčení v rodině).
+**Zdroj:** uživatel 2026-10-23 (Q-02). **Nahrazuje:** „řazení nabídky“ v `06` kap. 5.1a a pravidlo `costume_category_allowed_groups` v `archive/02`.
+
+### D-35 Komplety mají vlastní řady; nečíslované doplňky i mimo komplet; žádné šablony
+
+- Komplety mají **vlastní evidenční řady a čísla**.
+- Nečíslované součástky lze **evidovat a půjčovat i mimo komplet**.
+- **Šablony kompletů se nepoužívají.**
+
+**Zdroj:** uživatel 2026-10-23 (Q-04). **Doplňuje:** D-19.
+
+### D-36 Účty jen pro čtení
+
+Krojařka umožní účty s přístupem **jen pro čtení** (pověření Náhled do správy krojů), např. pro audit práce krojařek.
+**Zdroj:** uživatel 2026-10-23 (Q-14).
 
 ## Odložené, ale schválené cíle pro `moje.vonica.cz`
 

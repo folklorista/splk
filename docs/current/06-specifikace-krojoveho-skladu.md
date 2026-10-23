@@ -93,7 +93,7 @@ Příklady dimenzí u Vonice:
 
 **Evidenční řada** je konkrétní kombinace klasifikace (např. mužské / Horňácko / košile). Varianta (bílé vs. modré gatě) může podle nastavení řady patřit **do klíče řady** (vlastní číslování), nebo být **atributem kusu** v jedné řadě. Nepředpokládá se, že každá varianta vždy zakládá novou řadu. Ne všechny dimenze platí pro všechny druhy.
 
-Konfiguraci klasifikace, druhů, řad a šablon kompletů spravuje krojařka v **Správa krojů → Nastavení**. Nejde o obecný formulářový framework – jen o typované možnosti a filtry pro tento obor.
+Konfiguraci klasifikace, druhů a řad (součástek i kompletů) spravuje krojařka v **Nastavení** (v `moje` Správa krojů → Nastavení). Nejde o obecný formulářový framework – jen o typované možnosti a filtry pro tento obor.
 
 ### 3.4 Zaměnitelné drobnosti bez čísla
 
@@ -103,7 +103,7 @@ U takové položky stačí evidovat **druh, požadovaný počet, aktuálně př�
 
 Je důležité rozlišit doplněk **záměrně bez čísla** od jedinečného kusu, kterému fyzické číslo **zatím chybí** a má ho teprve dostat.
 
-*Otevřené (Q-04):* zda se nečíslované doplňky vyskytují i mimo komplety (volně ve skladu nebo u osoby).
+**Nečíslované doplňky lze evidovat a půjčovat i mimo komplet** (ve skladu, u osoby), vždy podle druhu a počtu (D-35).
 
 ## 4. Komplety
 
@@ -133,9 +133,11 @@ Krojařka může součást do kompletu přidat, trvale ji odebrat nebo ji přesu
 
 Když krojařka samostatně půjčí šátek z kompletu, **šátek dál patří do určeného složení kompletu**, ale označí se jako dočasně nepřítomný. Komplet tak ukazuje chybějící díl i osobu, které byl šátek oficiálně svěřen. Po řádném vrácení do kompletu se jeho dostupnost obnoví.
 
-### 4.3 Šablona kompletu – pomůcka, otevřené
+### 4.3 Řady a čísla kompletů; bez šablon
 
-Demo (model v0.4) zná **šablonu kompletu**: seznam druhů součástek pro kroj daného pohlaví a regionu, podle kterého aplikace upozorní, co držiteli chybí. Zda ji ponechat jako volitelnou pomůcku, je Q-04. Šablona nikdy nepředepisuje složení konkrétního fyzického kompletu.
+Komplety mají **vlastní evidenční řady a čísla**, oddělené od řad součástek (např. „Záleský komplet Z12“). Platí pro ně stejná pravidla řad (identita ≠ číslo, opakované použití čísla podle D-20).
+
+**Šablony kompletů se nepoužívají** (D-35). Model v0.4 je měl jako seznam druhů pro upozornění „co držiteli chybí“; tuto funkci aplikace nemá.
 
 ### 4.4 Cizí komplety
 
@@ -151,11 +153,11 @@ Krojařka vybere **konkrétní dostupný kus** (vydatelný, nikomu nesvěřený)
 
 U každé osoby (člena i externisty) lze evidovat **výchozí kroj**: mužský / ženský / neurčeno. Nejde o obecný údaj o pohlaví, ale o krojovou preferenci pro nabídku při vydávání. Údaj je nepovinný a nastavuje ho krojařka na krojové kartě osoby, případně Správa souboru v detailu osoby.
 
-- Když pro kroj přijde Martina s výchozím krojem ženským, výběr kusu **primárně nabízí ženské součástky** a druhy použitelné v obou krojích (druh bez pohlaví). Stejně se řídí i šablona kompletu, podle které aplikace ukazuje, co osobě chybí.
-- Jde jen o **řazení a výchozí filtr, nikdy o zákaz**. Jedním klepnutím („zobrazit všechny kusy“) lze vybrat kus libovolného pohlaví a vydat ho bez dalšího potvrzování. U takového kusu se na krojové kartě jen nenápadně zobrazí, že nejde o výchozí kroj osoby.
+- Když pro kroj přijde Martina s výchozím krojem ženským, výběr kusu **ve výchozím stavu nabízí jen ženské součástky** a druhy použitelné v obou krojích (druh bez pohlaví).
+- Jde o **výchozí filtr, nikdy o zákaz** (D-34). Volitelný přepínač **„nabízet krojové součástky pro opačné pohlaví“** zobrazí i ostatní kusy a vybraný kus lze vydat bez dalšího potvrzování. U takového kusu se na krojové kartě jen nenápadně zobrazí, že nejde o výchozí kroj osoby.
 - U osoby s výchozím krojem „neurčeno“ se nabízí vše.
 - **Kus pro jinou osobu:** Verča si může vypůjčit na sebe součástku pro manžela, odpovědnost pak nese ona. Pokud ji ale bude manžel nosit dlouhodobě, doporučuje se vést ho jako externistu s vlastní krojovou kartou, aby evidence odpovídala skutečnému držiteli.
-- **Choreografie s obráceným krojem** (např. fašanková obchůzka, holky v mužských krojích): vydání proběhne běžně přes „zobrazit všechny kusy“, s volitelnou poznámkou k zápůjčce („fašank“) a termínem vrácení. Výchozí kroj osoby se tím nemění.
+- **Choreografie s obráceným krojem** (např. fašanková obchůzka, holky v mužských krojích): vydání proběhne běžně po zapnutí přepínače „nabízet krojové součástky pro opačné pohlaví“, s volitelnou poznámkou k zápůjčce („fašank“) a termínem vrácení. Výchozí kroj osoby se tím nemění.
 - Výchozí kroj neovlivňuje inventuru ani oprávnění.
 
 ### 5.1b Výdej celého kompletu jedním krokem
@@ -320,7 +322,7 @@ Oprávnění vznikají **pověřením** (viz `moje/08`, D-09), ne rolí. Rozsahe
 
 - **Správa krojů (krojařka):** zápis a úpravy kusů, kompletů, řad, zápůjček, výměn, úkolů, inventur a vyřazení ve fondu své složky; přehledy, tisk, export. **Pomocnice mají stejné pověření** jako hlavní krojařka.
 - **Krojařka jiné složky:** vidí jen **seznamy lidí**, ne cizí fond ani jeho zápůjčky.
-- **Náhled do správy krojů:** prohlížení evidence bez zápisu (např. vedení). Zda ho Krojařka v první verzi potřebuje, je Q-14.
+- **Náhled do správy krojů:** účet jen pro čtení, prohlížení evidence bez zápisu – např. pro **audit práce krojařek** (D-36).
 - **Běžný člen:** jen vlastní **Moje kroje**; nemůže měnit evidenci.
 - **Správa souboru** sama o sobě **nedává** přístup ke krojové evidenci. Role superadministrátora neexistuje (D-09).
 - **Externista** pro zápůjčku nepotřebuje účet. S cíleným přístupem vidí jen povolený obsah a evidenci nemění.
@@ -400,8 +402,8 @@ Konkrétní tiskové sestavy a formáty doladíme s krojařkami. Exporty s osobn
 
 1. **Seznam řad:** přesné názvy a klíče řad pro Vonici; které varianty (např. modré/bílé gatě) mají vlastní řadu. Demo ukazuje obojí (horňácké gatě = atribut, slovenské gatě = vlastní řady). Návrh číselníku druhů: `krojarka/krojovy-katalog-vonica.md`.
 2. ~~Opakované použití čísel~~ – rozhodnuto (D-20): výchozí povoleno, zakázat lze u řady. Zbývá: u kterých řad ho zakázat.
-3. ~~Zaměnitelné drobnosti bez čísla~~ – rozhodnuto (D-19): evidence podle počtu v kompletech. Zbývá: vyskytují se i mimo komplety? (Q-04)
-3a. **Komplety:** označování a řady kompletů, pravidla výdeje neúplného kompletu, potřeba šablony (Q-04).
+3. ~~Zaměnitelné drobnosti bez čísla~~ – rozhodnuto (D-19, D-35): podle počtu, v kompletech i mimo ně.
+3a. **Komplety:** řady a čísla a zrušení šablon rozhodnuty (D-35). Zbývá potvrdit pravidla výdeje neúplného kompletu (kap. 5.1b).
 3b. **Vlastní kroj nebo součástka člena** (např. „má vlastní krpce“): stačí poznámka na krojové kartě? (Q-05)
 4. **Uzavření inventury s nesrovnalostmi:** zatím smí každá krojařka, vždy s důvodem – potvrdit.
 5. **Výchozí kroj osoby:** stačí mužský / ženský / neurčeno, nebo je potřeba jemnější rozlišení (např. dětský kroj u Malé Vonice)?
@@ -438,11 +440,10 @@ Entity zůstávají oddělené; žádná obří generická entita ani jeden spol
 | `CostumePartType` | druh součástky |
 | `CostumeSeries` | evidenční řada = kombinace klasifikace (+ volitelně varianta), pravidlo opakovaného použití čísel (výchozí povoleno) |
 | `CostumeItem` | stabilní ID, fond (složka), řada, číslo, varianta, velikost, poznámka, stav, vydatelnost, umístění, vyřazení |
-| `CostumeKit` | fyzický komplet: označení, fond, popis, určené složení, stav ověření složení, přílohy (lístek, karta) |
+| `CostumeKit` | fyzický komplet: vlastní řada a číslo, fond, popis, určené složení, stav ověření složení, přílohy (lístek, karta) |
 | řádek složení kompletu | číslovaný kus, nebo nečíslovaný druh s požadovaným a přítomným počtem; historie změn složení |
-| `CostumeKitTemplate` | volitelná šablona druhů (pohlaví, region) – otevřené (Q-04) |
 | osoba (`Person`) | vypůjčitel včetně externistů a osob bez účtu – jedna evidence osob (`identity-model-v2.md`); dřívější samostatné `ExternalPerson` se nepoužívá |
-| výchozí kroj osoby | atribut osoby / externisty: mužský / ženský / neurčeno; jen pro řazení nabídky při vydávání (kap. 5.1a) |
+| výchozí kroj osoby | atribut osoby: mužský / ženský / neurčeno; jen pro výchozí filtr nabídky při vydávání (kap. 5.1a) |
 | `CostumeLoan` | kus, komplet nebo počet nečíslovaných doplňků × držitel; výdej, termín, ukončení po řádcích (vráceno / vyměněno / vypořádáno), zachycený obsah předání, vazba na nahrazovanou zápůjčku a inventuru |
 | `CostumeWorkOrder` | pracovní úkol na kusu |
 | `Inventory` | rozsah (filtry), zmrazený seznam kusů a držitelů, výslovná doplnění, uzavření s důvodem |
