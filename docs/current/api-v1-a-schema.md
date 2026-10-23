@@ -1,6 +1,6 @@
 # API v1 a databázové schéma Krojařky
 
-**Stav:** schváleno 2026-10-23 (D-57). Body kap. 7 rozhodnuty (D-48 až D-56). Zatím neimplementováno. Při implementaci se upřesňuje v malých krocích; změny rozsahu jdou do `decisions.md`.
+**Stav:** schváleno 2026-10-23 (D-57). Body kap. 7 rozhodnuty (D-48 až D-56). Implementace probíhá postupně; stav viz `03-stav-vyvoje.md`. Při implementaci se upřesňuje v malých krocích; změny rozsahu jdou do `decisions.md`.
 **Vychází z:** `current/06` v0.5, `current/krojarka/frontend-demo-specifikace.md`, `current/identity-model-v2.md`, `current/hosting-postgresql-api-auth.md`, `current/monorepo-struktura.md` a rozhodnutí D-06 až D-47.
 
 Značení:
@@ -112,6 +112,14 @@ Odvozené údaje (nikde se neukládají):
 - **„chybí v kompletu“** = kus s `kit_id`, který je samostatně půjčený;
 - **volné nečíslované kusy** = `quantity_total` − počty v kompletech − otevřené výpůjčky.
 
+#### Implementační upřesnění kroku 4 (2026-10-24, etapa 1)
+
+- Určené složení (`costume_items.kit_id`) samo neprokazuje přítomnost ani fyzickou kontrolu kusu. U početních řádků je `required_qty` požadované množství a `present_qty` evidované přidělené množství, ve výchozím stavu **0**. Opsaný lístek zůstává `unverified`; přidání řádků nemění automaticky stav složení.
+- Početní řádky mají technické `id` a `unit_id`; historie složení také `unit_id`. Složené cizí klíče brání vazbám mezi fondy. Zásoba je jedinečná pro druh a variantu ve fondu (varianta bez ohledu na velikost písmen).
+- Platí `0 <= present_qty <= required_qty`, `required_qty > 0`, `quantity_total >= 0`. Součet `present_qty` napříč komplety nepřesáhne celkovou zásobu; hlídá jej databáze i při změně celkové zásoby. Samotný požadavek zásobu nerezervuje.
+- Číslo se ukládá jako text, může chybět (`null`), nesmí být prázdné. Nový kus má výchozí umístění `unknown`. Typ řady, číslovanost druhu, archivaci katalogu a zákaz opakovaného čísla bude ověřovat API v dalších etapách kroku 4.
+- Etapa 1 nezavádí výpůjčky ani inventury a neodvozuje dostupnost či držitele. Uvedené vzorce dostupnosti a volných zásob jsou cílové pro krok 6; tehdy se doplní otevřené výpůjčky. `inventory_id` pracovního úkolu přibude spolu s inventurami.
+
 ### 3.4 Výpůjčky a pohyby
 
 | Tabulka | Klíčové sloupce | Poznámka |
@@ -198,6 +206,15 @@ První účet se správou organizace vytvoří seed z `.env` při první migraci
 | `GET/POST …/kits`, `GET/PATCH /v1/kits/{id}` | komplety |
 | `POST /v1/kits/{id}/composition` | přidat, odebrat nebo přesunout kus či počet nečíslovaných |
 | `GET/POST /v1/items/{id}/work-orders`, `PATCH /v1/work-orders/{id}` | pracovní úkoly; `GET …/work-orders?status=open` souhrn |
+
+#### Implementované API kusů – krok 4, etapa 2 (2026-10-24)
+
+- Vstup a odpověď odpovídají `ItemInput`, `CostumeItem`, `ItemPatch` a `ItemRetireInput` v `packages/api-contracts/src/inventory.ts`. Číslo i textová pole se ořezávají; prázdná volitelná pole se normalizují na `null`. Datum je `YYYY-MM-DD` a musí existovat v kalendáři. Výchozí umístění je `unknown`; držitel ani dostupnost se zatím nevrací.
+- Seznam standardně vrací aktivní kusy; `retired=true` vybere vyřazené. `limit` je 1–200 (výchozí 50), `offset` nezáporný (výchozí 0). `sort` podporuje `series`, `number`, `acquiredOn`, `id` a stejné hodnoty s předponou `-`; výchozí je řada a číslo. Číslo se řadí jako text; shodu rozhoduje interní ID. Hledání zahrnuje název řady, číslo, variantu, popis a poznámku, bez diakritiky; znaky `%` a `_` ve vstupu jsou doslovné.
+- `available` a `holder` v etapě 2 vracejí 422 `validation_failed` (`reason=not_allowed`), protože výpůjčky ještě nejsou implementované. Neznámé query parametry a nepovolená pole těla jsou také odmítnuty. Filtry stavu a umístění se nemíchají s odpovědností držitele.
+- PATCH a vyřazení vyžadují aktuální `version`; neplatná verze vrací 409 `version_conflict`. Vyřazení vyžaduje neprázdný `reason`. Vyřazený kus nelze měnit (422 `item_retired`). Duplicita čísla v řadě vrací 422 `number_already_used`; při zákazu znovupoužití se kontroluje celá historie kusů.
+- Archivované katalogové údaje nebrání čtení a opravě ostatních údajů existujícího kusu; založení či změna řady nebo čísla vyžadují aktivní řadu, číslovaný druh a aktivní regiony. Druh s existujícími kusy nelze přepnout na nečíslovaný, včetně kusů vyřazených nebo zatím bez čísla.
+- `/items/{id}/history` vrací stránkované `{items, total}` (stejné `limit`, `offset`) s událostmi kusu od nejnovější. Založení ukládá počáteční údaje, změny ukládají původní i novou hodnotu a vyřazení důvod. Výpůjčky, pohyby a kontroly se doplní v příslušných krocích; zatím se nevytvářejí. Audit je transakčně spojený se zápisem i událostmi.
 
 ### 4.5 Výpůjčky
 

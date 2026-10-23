@@ -79,10 +79,14 @@ abstract class ApiTestCase extends DatabaseTestCase
             $headers['X-CSRF-Token'] = $this->signedIn['csrf'];
         }
 
+        $query = [];
+        parse_str(parse_url($path, PHP_URL_QUERY) ?? '', $query);
+
         return $this->app->handle(new Request(
             $method,
-            $path,
+            parse_url($path, PHP_URL_PATH),
             $headers,
+            query: $query,
             cookies: $this->signedIn === null ? [] : [self::COOKIE => $this->signedIn['token']],
             body: $body === null ? '' : json_encode($body, JSON_THROW_ON_ERROR),
             clientIp: '192.0.2.1',

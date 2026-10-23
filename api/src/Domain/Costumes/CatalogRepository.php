@@ -29,6 +29,20 @@ final class CatalogRepository
         return $row === null ? null : self::region($row);
     }
 
+    /** Serialize classification changes with item creation, which holds a shared lock on the same row. */
+    public function lockPartType(int $unitId, int $id): ?array
+    {
+        $row = $this->one('SELECT id, name, gender, region_id, numbered, archived_at FROM costume_part_types WHERE unit_id = :unit AND id = :id FOR UPDATE', $unitId, $id);
+        return $row === null ? null : self::partType($row);
+    }
+
+    public function hasItemsForPartType(int $id): bool
+    {
+        $statement = $this->db->prepare('SELECT 1 FROM costume_items i JOIN costume_series s ON s.id = i.series_id WHERE s.part_type_id = :id LIMIT 1');
+        $statement->execute(['id' => $id]);
+        return $statement->fetchColumn() !== false;
+    }
+
     public function hasChildRegions(int $id): bool
     {
         $statement = $this->db->prepare('SELECT 1 FROM costume_regions WHERE parent_id = :id AND archived_at IS NULL');

@@ -2,7 +2,7 @@
 
 Co je hotové a co se právě dělá. Pořadí vývoje určuje [`../decisions.md`](../decisions.md) D-02. Historický deník do 19. 10. 2026 je v [`../archive/03-postup-vyvoje.md`](../archive/03-postup-vyvoje.md).
 
-## Stav k 2026-10-23
+## Stav k 2026-10-24
 
 | Část | Stav |
 |---|---|
@@ -11,6 +11,36 @@ Co je hotové a co se právě dělá. Pořadí vývoje určuje [`../decisions.md
 | **Demo** (`demo.vonica.cz`) | Prototyp nasazený jako `design/identity-03@ce20f01`. Přesun z `moje` dokončen 22. 10. 2026. Nasazení: `/deploy` (`--target demo`). Popis kódu: `../archive/implementace-2026-10-21/`. |
 | **moje.vonica.cz** | Vývoj odložen. Po přesunu dema prázdná, vyhrazená budoucí členské aplikaci. |
 | Monorepo | npm workspaces `apps/*`, `packages/*`, Node ≥ 24 (`.nvmrc`). `packages/api-contracts` (DTO a chybové kódy auth) – první sdílený balíček. Deploy: `npm run deploy -- --target api\|krojarka` (`scripts/deploy-app.mjs`). Dál krok 4 (součástky). |
+
+## Krok 4 – Součástky (rozpracováno)
+
+**2026-10-24: dokončena etapa 1 – databáze a kontrakty.** Etapa 2 API kusů je také dokončena (níže). Obrazovky a ostatní endpointy kroku 4 zatím implementované nejsou; etapa 3 čeká na navazující zadání.
+
+- Migrace `20261024120000_create_costume_inventory`: kusy, nečíslované zásoby, fyzické komplety, početní řádky, historie složení, události kusů a pracovní úkoly. Vazby mezi fondy chrání složené cizí klíče. Aktivní čísla jsou jedinečná v řadě; zákaz opakovaného použití historického čísla podle nastavení řady bude kontrolovat API v etapě 2.
+- `kit_id` vyjadřuje určené složení, nikoli potvrzenou přítomnost kusu. `required_qty` je požadavek, `present_qty` evidované množství přidělené kompletu (výchozí 0), nikoli fyzické ověření. Nový komplet má stav `unverified`; vložení složení jej automaticky nemění.
+- Součet evidovaných množství v kompletech nesmí překročit celkovou zásobu. Databázové triggery kontrolují přidělení i snížení celkového množství se zamčením zásoby. Požadované množství může být vyšší než zásoba, aby šlo opsat neúplný lístek.
+- Sdílené kontrakty jsou v `packages/api-contracts/src/inventory.ts`. Neobsahují odvozenou dostupnost ani držitele. Výpůjčky, kontroly inventury a jejich historie nevznikají; vazby na ně přibudou v příslušných krocích. Výchozí fyzické umístění nového kusu je `unknown`.
+- Ověření: PHPUnit **85 testů / 342 assertions** (9 nových testů databázových pravidel včetně rollbacku a opětovného použití migrace), Vitest **40 testů**, striktní kontrola TS kontraktů a produkční build Krojařky. Build v sandboxu padal v esbuild, mimo sandbox prošel.
+- Migrace byla spuštěna pouze v lokální testovací DB. Produkce ani nasazení se neměnily. Ruční ověření obrazovek přibude po implementaci UI.
+
+### Etapa 2 – API jednotlivých kusů (2026-10-24)
+
+- `GET/POST /v1/funds/{u}/items`, `GET/PATCH /v1/items/{id}`, `POST /v1/items/{id}/retire`, `GET /v1/items/{id}/history`.
+- Rozsah fondu přes stávající `FundAccess`, zápisy pouze s `costumes.manage`; čtenáři nesmějí zapisovat (403), cizí objekty a fondy jsou skryté (404). Všechny trasy používají stávající sessions, CSRF a Origin kontroly.
+- Seznam: stránkování a `total`, řazení z povoleného seznamu, filtry řady, hledání bez diakritiky, stavu, fyzického umístění, data pořízení a vyřazení. Filtry `available` a `holder` jsou do kroku 6 výslovně odmítnuty, aby nevznikaly zavádějící výsledky.
+- API kontroluje druh řady, číslovanost, příslušnost ke fondu a archivaci řady, druhu i regionu včetně nadřazeného regionu. Kontrola čísel zamyká řadu; při zákazu opakovaného použití kontroluje i vyřazené kusy. Číslo může chybět, identita zůstává stabilní.
+- Úpravy a vyřazení kontrolují `version` pod zámkem kusu (409 při konfliktu). Vyřazení vyžaduje důvod a zachovává historii. Vyřazený kus už nelze upravovat. U existujícího kusu v archivované řadě lze opravit ostatní údaje, ale nikoli změnit číslo v archivované řadě.
+- Každý zápis kusu, jeho událostí a auditu běží ve stejné transakci. Historie obsahuje založení a skutečné změny údajů, nikoli výpůjčky či fyzická ověření. Změny složení nelze obejít přes PATCH kusu (`kitId` není povolený vstup).
+- Související oprava katalogu: druh s existujícími kusy (včetně vyřazených a zatím bez čísla) nelze přepnout na nečíslovaný. Kontrola se zamyká proti souběžnému založení kusu.
+- Ověření: PHPUnit **105 testů / 690 assertions**, z toho **20 nových testů API kusů**. Pokryty i odmítnuté endpointy, zaniklá pověření, CSRF, verze, filtry, čísla a rollback kusu i událostí při selhání auditu. Striktní kontrola TS kontraktů a `git diff --check` prošly. Frontendová logika ani databázová migrace se v etapě 2 neměnily.
+- Produkční migrace ani deploy neproběhly.
+
+Ruční ověření po lokálním spuštění API s migrací etapy 1 (zatím bez UI):
+
+1. Jako krojařka založit kus bez čísla, načíst detail a historii; číslo zůstává `null`, fyzické umístění `unknown`, držitel ani dostupnost se nevrací.
+2. Doplnit číslo, stav a poznámku s aktuální verzí; opakovat požadavek se starou verzí → 409. Ověřit původní a novou poznámku v historii.
+3. Vyřadit kus s důvodem; ověřit detail, filtr `retired=true` a historii. Založit nový kus se stejným číslem podle nastavení řady; stará a nová identita se liší.
+4. S pověřením jen pro čtení zkusit úpravu → 403; s pověřením jiného fondu detail i historii → 404. Zkusit filtr `holder` nebo `available` → 422. Tyto ruční scénáře zatím nebyly samostatně provedeny; jejich chování pokrývají integrační testy.
 
 ## Známé rozdíly mezi demem a platnými rozhodnutími
 

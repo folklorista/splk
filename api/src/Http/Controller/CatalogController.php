@@ -116,6 +116,10 @@ final class CatalogController extends Controller
         }
 
         return $this->write($context, $unitId, 'part_type', 'update', function () use ($unitId, $current, $type): array {
+            $locked = $this->catalog()->lockPartType($unitId, $current['id']) ?? throw self::notFound();
+            if ($locked['numbered'] !== $type['numbered'] && $this->catalog()->hasItemsForPartType($current['id'])) {
+                throw Input::invalid('numbered', 'not_allowed');
+            }
             $this->catalog()->updatePartType($current['id'], $type);
 
             return $this->catalog()->findPartType($unitId, $current['id']);
