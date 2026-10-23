@@ -388,7 +388,7 @@ Nic z toho není z webu dostupné. Ověřeno testem 2026-10-23.
 - Přístupové údaje: `.env` `KROJARKA_EMAIL_*`, na serveru `config/` (D-54).
 - Nastavení schránky: POP3 vypnout, IMAP ponechat, GEO ochrana Česko + Slovensko, **bez filtru podle IP** (odchozí adresa hostingu je privátní a veřejná se nedá zjistit).
 - Přihlášení ze serveru `api` ověřeno 2026-10-23, zatím bez odeslání zprávy.
-- Doména má SPF s `include:_spf.websupport.cz`. DMARC nastaven 2026-10-23: `_dmarc.vonica.cz TXT "v=DMARC1; p=none; rua=mailto:krojarka@vonica.cz"` (jen sledování, platí pro celou doménu včetně `vonica@vonica.cz`). Zkušební e-mail 2026-10-23 dorazil, DKIM zatím neověřen.
+- Doména má SPF s `include:_spf.websupport.cz`. DMARC nastaven 2026-10-23: `_dmarc.vonica.cz TXT "v=DMARC1; p=none; rua=mailto:krojarka@vonica.cz"` (jen sledování, platí pro celou doménu včetně `vonica@vonica.cz`). Zkušební e-mail 2026-10-23 dorazil. **DKIM ověřen 2026-10-23:** Websupport podepisuje selektorem `mail` (`d=vonica.cz`, rsa-sha256, relaxed/relaxed); veřejný klíč přidán u web4u jako `mail._domainkey.vonica.cz TXT`; podpis druhého zkušebního e-mailu ověřen proti klíči v DNS (shoda otisku těla i podpisu).
 
 Pozor: hodnoty v `.env` obsahující `#` musí být v uvozovkách, jinak se useknou.
 **Zdroj:** uživatel 2026-10-23; test na `api.vonica.cz`.

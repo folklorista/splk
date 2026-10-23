@@ -87,7 +87,7 @@ Návrh k posouzení: osoby bez výpůjček jako filtr v Krojových kartách, dok
 
 ### Q-10 API v1 a monorepo – *nástroje a rozvržení rozhodnuty → D-41 až D-45*
 
-Struktura schválena (`current/monorepo-struktura.md`, D-41 až D-47). **Návrh API v1 a schématu: `current/api-v1-a-schema.md`.** Body 1–7 rozhodnuty (D-48 až D-53). Návrh schválen (D-57), PHPMailer (D-56), schránka `krojarka@vonica.cz` (D-55). Zbývá jen ověřit DKIM podle zkušebního e-mailu (odeslán 2026-10-23). Původní znění:
+Struktura schválena (`current/monorepo-struktura.md`, D-41 až D-47). **Návrh API v1 a schématu: `current/api-v1-a-schema.md`.** Body 1–7 rozhodnuty (D-48 až D-53). Návrh schválen (D-57), PHPMailer (D-56), schránka `krojarka@vonica.cz` (D-55). DKIM ověřen (D-55). Původní znění:
 
 Je potřeba určit:
 
