@@ -47,10 +47,12 @@ final class AccountRepository
         }
 
         $mandates = $this->db->prepare(
-            'SELECT id, kind, scope_type, scope_id FROM mandates
-              WHERE person_id = :person
-                AND valid_from <= current_date AND (valid_to IS NULL OR valid_to >= current_date)
-              ORDER BY id'
+            "SELECT m.id, m.kind, m.scope_type, m.scope_id, u.name AS scope_name
+               FROM mandates m
+               LEFT JOIN units u ON m.scope_type = 'unit' AND u.id = m.scope_id
+              WHERE m.person_id = :person
+                AND m.valid_from <= current_date AND (m.valid_to IS NULL OR m.valid_to >= current_date)
+              ORDER BY m.id"
         );
         $mandates->execute(['person' => $row['person_id']]);
 
@@ -67,6 +69,7 @@ final class AccountRepository
                 'kind' => $m['kind'],
                 'scopeType' => $m['scope_type'],
                 'scopeId' => $m['scope_id'] === null ? null : (int) $m['scope_id'],
+                'scopeName' => $m['scope_name'],
             ], $mandates->fetchAll()),
         ];
     }

@@ -20,7 +20,7 @@ final class RecordingMailer implements Mailer
     public function lastResetToken(): string
     {
         $body = end($this->sent)['body'] ?? '';
-        if (!preg_match('#/reset-password\?token=([A-Za-z0-9_-]+)#', $body, $matches)) {
+        if (!preg_match('#/obnova-hesla\?token=([A-Za-z0-9_-]+)#', $body, $matches)) {
             throw new \RuntimeException('No reset link in the last e-mail');
         }
 

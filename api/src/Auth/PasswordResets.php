@@ -38,7 +38,7 @@ final class PasswordResets
              VALUES (:account, :hash, now() + make_interval(mins => :lifetime))'
         )->execute(['account' => $account['id'], 'hash' => hash('sha256', $token), 'lifetime' => self::LIFETIME_MINUTES]);
 
-        $link = rtrim($this->appUrl, '/') . '/reset-password?token=' . $token;
+        $link = rtrim($this->appUrl, '/') . '/obnova-hesla?token=' . $token;
         try {
             $this->mailer->send($email, 'Krojařka – nastavení hesla', self::body($email, $link));
         } catch (\Throwable $e) {

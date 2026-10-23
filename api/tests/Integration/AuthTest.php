@@ -39,6 +39,8 @@ final class AuthTest extends DatabaseTestCase
         $accountId = $this->createAccount();
         $personId = (int) $this->db->query("SELECT person_id FROM user_accounts WHERE id = $accountId")->fetchColumn();
         $this->db->exec("INSERT INTO mandates (person_id, kind, scope_type) VALUES ($personId, 'organization.admin', 'organization')");
+        $unitId = $this->db->query("INSERT INTO units (name, has_costume_fund) VALUES ('Děvčice', true) RETURNING id")->fetchColumn();
+        $this->db->exec("INSERT INTO mandates (person_id, kind, scope_type, scope_id) VALUES ($personId, 'costumes.manage', 'unit', $unitId)");
         $this->db->exec("INSERT INTO mandates (person_id, kind, scope_type, valid_from, valid_to) VALUES ($personId, 'costs.view', 'organization', current_date - 10, current_date - 1)");
 
         $response = $this->login(self::EMAIL, self::PASSWORD);
@@ -48,7 +50,8 @@ final class AuthTest extends DatabaseTestCase
         self::assertMatchesRegularExpression('#^__Host-vonica_sid=[A-Za-z0-9_-]{43}; Path=/; Max-Age=2592000; HttpOnly; SameSite=Lax; Secure$#', $response->cookies[0]);
         self::assertSame(['id' => $accountId, 'loginEmail' => self::EMAIL, 'status' => 'active'], $body['account']);
         self::assertSame('Anna', $body['person']['firstName']);
-        self::assertSame(['organization.admin'], array_column($body['mandates'], 'kind'), 'expired mandates are left out');
+        self::assertSame(['organization.admin', 'costumes.manage'], array_column($body['mandates'], 'kind'), 'expired mandates are left out');
+        self::assertSame([null, 'Děvčice'], array_column($body['mandates'], 'scopeName'));
         self::assertSame(43, strlen($body['csrfToken']));
         self::assertNotNull($this->db->query("SELECT last_login_at FROM user_accounts WHERE id = $accountId")->fetchColumn());
     }
@@ -151,7 +154,7 @@ final class AuthTest extends DatabaseTestCase
         self::assertSame(204, $this->post('/v1/auth/password-reset', ['email' => self::EMAIL])->status);
         self::assertCount(1, $this->mailer->sent);
         self::assertSame(self::EMAIL, $this->mailer->sent[0]['to']);
-        self::assertStringContainsString('https://krojarka.test/reset-password?token=', $this->mailer->sent[0]['body']);
+        self::assertStringContainsString('https://krojarka.test/obnova-hesla?token=', $this->mailer->sent[0]['body']);
         $token = $this->mailer->lastResetToken();
 
         $short = $this->post('/v1/auth/password-reset/confirm', ['token' => $token, 'password' => 'short']);
