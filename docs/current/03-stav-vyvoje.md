@@ -6,11 +6,11 @@ Co je hotové a co se právě dělá. Pořadí vývoje určuje [`../decisions.md
 
 | Část | Stav |
 |---|---|
-| **Krojařka** (`krojarka.vonica.cz`) | Krok 2: kostra v `apps/krojarka` (Angular 22.2, zoneless, Vitest): boční menu podle D-22 (sekce zatím jako zástupné stránky), přihlášení, zapomenuté heslo, nastavení hesla z odkazu, Můj účet (pověření, změna hesla, přihlášená zařízení, odhlášení). Datová vrstva `data/` s HTTP a mock adaptérem (`npm run krojarka:start:mock`), interceptory podle hosting doc kap. 8. Trasy česky (`/prihlaseni`, `/lide`, `/soucastky`…). Zatím nenasazeno. |
-| **API** (`api.vonica.cz`) | Kroky 1–2 ve větvi `feature/api-skeleton`: kostra (router, `GET /v1/health`, CORS/origin/JSON, sessions v PostgreSQL, CSRF), migrace identity a přístupu, `auth/*` podle kap. 4.1 (přihlášení s omezením pokusů, odhlášení, `me`, změna hesla, obnova hesla e-mailem přes PHPMailer, přihlášená zařízení), seed prvního účtu `organization.admin` (pozvaný, heslo si nastaví odkazem). Testy PHPUnit (Unit + Integration). Zatím nenasazeno, produkční DB je prázdná. |
+| **Krojařka** (`krojarka.vonica.cz`) | Krok 2: kostra v `apps/krojarka` (Angular 22.2, zoneless, Vitest): boční menu podle D-22 (sekce zatím jako zástupné stránky), přihlášení, zapomenuté heslo, nastavení hesla z odkazu, Můj účet (pověření, změna hesla, přihlášená zařízení, odhlášení). Datová vrstva `data/` s HTTP a mock adaptérem (`npm run krojarka:start:mock`), interceptory podle hosting doc kap. 8. Trasy česky (`/prihlaseni`, `/lide`, `/soucastky`…). Nasazeno 2026-10-24 jako `feature/api-skeleton@62b8310`. |
+| **API** (`api.vonica.cz`) | Kroky 1–2 ve větvi `feature/api-skeleton`: kostra (router, `GET /v1/health`, CORS/origin/JSON, sessions v PostgreSQL, CSRF), migrace identity a přístupu, `auth/*` podle kap. 4.1 (přihlášení s omezením pokusů, odhlášení, `me`, změna hesla, obnova hesla e-mailem přes PHPMailer, přihlášená zařízení), seed prvního účtu `organization.admin` (pozvaný, heslo si nastaví odkazem). Testy PHPUnit (Unit + Integration). Nasazeno 2026-10-24 jako `feature/api-skeleton@62b8310`: `config/config.php` z `.env`, migrace `CreateIdentityAndAccess` (záloha před migrací v `dev/local/backups/`), pozvaný účet `organization.admin`. |
 | **Demo** (`demo.vonica.cz`) | Prototyp nasazený jako `design/identity-03@ce20f01`. Přesun z `moje` dokončen 22. 10. 2026. Nasazení: `/deploy` (`--target demo`). Popis kódu: `../archive/implementace-2026-10-21/`. |
 | **moje.vonica.cz** | Vývoj odložen. Po přesunu dema prázdná, vyhrazená budoucí členské aplikaci. |
-| Monorepo | npm workspaces `apps/*`, `packages/*`, Node ≥ 24 (`.nvmrc`). `packages/api-contracts` (DTO a chybové kódy auth) – první sdílený balíček. Deploy: `npm run deploy -- --target api\|krojarka` (`scripts/deploy-app.mjs`), ověřeno jen `--dry-run`. Dál krok 3 (katalog a řady). |
+| Monorepo | npm workspaces `apps/*`, `packages/*`, Node ≥ 24 (`.nvmrc`). `packages/api-contracts` (DTO a chybové kódy auth) – první sdílený balíček. Deploy: `npm run deploy -- --target api\|krojarka` (`scripts/deploy-app.mjs`). Dál krok 3 (katalog a řady). |
 
 ## Známé rozdíly mezi demem a platnými rozhodnutími
 
@@ -24,4 +24,5 @@ Demo vzniklo před rozhodnutími z 22. 10. 2026 a dál se nerozvíjí ani nekonz
 ## Deník
 
 - **2026-10-23** – krok 1 implementace (kostra monorepa a API, `api-v1-a-schema.md` kap. 6). Krok 2: přihlášení v API, kostra Krojařky, deploy cíle `api` a `krojarka`; Vitest pro Krojařku (D-58).
+- **2026-10-24** – první nasazení `api` a `krojarka` (`62b8310`); ověřeno: health, CORS z Krojařky, 403 pro cizí origin a zápis bez Origin, 404 pro `config/` a `src/`, HSTS.
 - **2026-10-22** – uspořádání dokumentace (registr rozhodnutí, otevřené otázky, archiv); ověření hostingu a PostgreSQL 18; přesun dema z `moje` na `demo.vonica.cz` dokončen; deploy skript má povinný `--target`; lokální Docker převeden na PostgreSQL 18; rozhodnuto D-31 až D-33.
