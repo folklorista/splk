@@ -15,6 +15,7 @@ use Splk\Api\Http\Controller\CatalogController;
 use Splk\Api\Http\Controller\HealthController;
 use Splk\Api\Http\Controller\ItemController;
 use Splk\Api\Http\Controller\BulkStockController;
+use Splk\Api\Http\Controller\KitController;
 use Splk\Api\Http\Controller\OrganizationController;
 use Splk\Api\Http\HttpException;
 use Splk\Api\Http\Request;
@@ -140,6 +141,7 @@ final class App
         (new CatalogController($this->db->pdo(...)))->register($this->router);
         (new ItemController($this->db->pdo(...)))->register($this->router);
         (new BulkStockController($this->db->pdo(...)))->register($this->router);
+        (new KitController($this->db->pdo(...)))->register($this->router);
         (new OrganizationController($this->db->pdo(...), $passwordLinks, $this->sessions(...)))->register($this->router);
     }
 

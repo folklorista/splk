@@ -49,6 +49,14 @@ Ruční ověření po lokálním spuštění API s migrací etapy 1 (zatím bez 
 - Vrací se `quantityTotal` a `quantityInKits`, nikoli dostupnost či držitelé. Výpůjčky zůstávají krokem 6.
 - PHPUnit: **112 testů / 770 assertions**; 7 nových testů zásob, včetně oprávnění, množství, duplicity a rollbacku auditu. `git diff --check` prošel. Produkce beze změny.
 
+### Etapa 4 – API kompletů a složení (2026-10-24)
+
+- Komplety mají vlastní řady, detail s určenými kusy, požadovanými a evidovanými počty doplňků a historií změn. Seznam podporuje řadu, hledání a stránkování.
+- Přidání, odebrání a přesun složení jsou atomické; přesun kontroluje verze obou kompletů a kusu, zamyká komplety v pořadí ID, zapisuje historii na obou stranách a audit. Kus nemůže být určen do dvou kompletů, vazby zůstávají ve stejném fondu.
+- `add` u doplňků přičítá požadovaný i evidovaný počet k případnému řádku; `remove` odstraní celý řádek; `move` přesune zadané počty. Požadavek nemusí být krytý zásobou, evidované počty ano. Zápis lístku uvádí evidovaný počet 0, pokud přítomnost neznáme.
+- Změna složení ponechá `unverified`; jiný předchozí stav přepne na `pending_check`. Ručně evidovaný stav nenahrazuje inventurní kontrolu. Fyzická přítomnost číslovaného kusu se z jeho příslušnosti ke kompletu neodvozuje.
+- PHPUnit: **122 testů / 891 assertions**, 10 nových testů kompletů; TS kontrakty a diff v pořádku. Produkce beze změny.
+
 ## Známé rozdíly mezi demem a platnými rozhodnutími
 
 Demo vzniklo před rozhodnutími z 22. 10. 2026 a dál se nerozvíjí ani nekonzervuje (D-33). Krojařka z něj nepřebírá kód (D-31). Rozdíly jsou uvedené jen pro orientaci:

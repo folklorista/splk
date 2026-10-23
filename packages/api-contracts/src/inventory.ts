@@ -97,6 +97,7 @@ export interface KitBulkLine {
 export interface KitDetail extends CostumeKit {
   items: CostumeItem[];
   bulkLines: KitBulkLine[];
+  changes: KitChange[];
 }
 
 /** A move must carry the versions of both kits; an item operation also carries its version. */
