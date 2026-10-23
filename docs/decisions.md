@@ -336,6 +336,16 @@ Pro celý repozitář (Krojařka s Angularem 22 i demo s Angularem 19). Node bě
 Krojařka používá výchozí test runner Angularu 22 – **Vitest** (jsdom). Demo zůstává na Karma + Jasmine. Testy jsou zaměřené na logiku (přihlášení, guardy, interceptory, datové adaptéry), ne na vzhled.
 **Zdroj:** uživatel 2026-10-23. **Upřesňuje:** CLAUDE.md (Testování).
 
+### D-59 Krok 3: složky Vonice, výchozí katalog a správa pověření
+
+- Seed založí složky Vonica, Malá Vonica, Děvčice z Vonice (s krojovým fondem) a Muziku (bez fondu, D-21).
+- Výchozí katalog ze skladových karet (D-37) dostane **jen fond dospělé Vonice**. Ostatní fondy si regiony, druhy a řady založí v Nastavení.
+- Obrazovka **Nastavení → Uživatelé a pověření** (D-48) vzniká už v kroku 3: osoby, pozvánka k účtu e-mailem (odkaz platí 7 dní), zablokování účtu, přidělení a odebrání pověření.
+- Pověření se neodebírá smazáním, ale příznakem `revoked_at` (historie zůstává). Poslední použitelnou správu organizace nelze odebrat.
+- Regiony, druhy a řady se nemažou, archivují se (`archived_at`). Druh a typ součástky řady se po založení nemění.
+
+**Zdroj:** uživatel 2026-10-24 (dvě volby před krokem 3); technické body [N] podle `current/api-v1-a-schema.md` kap. 2.1.
+
 ## API v1 (2026-10-23, `current/api-v1-a-schema.md` kap. 7)
 
 ### D-48 Správa organizace v Krojařce
