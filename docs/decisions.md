@@ -382,6 +382,17 @@ V administraci hostingu je u `api.vonica.cz` nastaven vlastní kořenový adres�
 Nic z toho není z webu dostupné. Ověřeno testem 2026-10-23.
 **Zdroj:** uživatel 2026-10-23 (nastavení); `proposals/api-v1-a-schema.md` kap. 8.
 
+### D-55 Odesílání e-mailů ze schránky `krojarka@vonica.cz`
+
+- API posílá e-maily (obnova hesla, pozvánky) přes SMTP `smtp.websupport.cz:465` (SSL) ze schránky `krojarka@vonica.cz`.
+- Přístupové údaje: `.env` `KROJARKA_EMAIL_*`, na serveru `config/` (D-54).
+- Nastavení schránky: POP3 vypnout, IMAP ponechat, GEO ochrana Česko + Slovensko, **bez filtru podle IP** (odchozí adresa hostingu je privátní a veřejná se nedá zjistit).
+- Přihlášení ze serveru `api` ověřeno 2026-10-23, zatím bez odeslání zprávy.
+- Doména má SPF s `include:_spf.websupport.cz`. DMARC zatím chybí (odloženo uživatelem), DKIM se ověří prvním zkušebním e-mailem.
+
+Pozor: hodnoty v `.env` obsahující `#` musí být v uvozovkách, jinak se useknou.
+**Zdroj:** uživatel 2026-10-23; test na `api.vonica.cz`.
+
 ## Odložené, ale schválené cíle pro `moje.vonica.cz`
 
 Platí jako cílové chování pro dobu, kdy se vývoj `moje` obnoví. Teď se nevyvíjejí. Pokud odporují D-06 (model se složkami), platí D-06.
