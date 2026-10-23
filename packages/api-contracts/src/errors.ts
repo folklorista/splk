@@ -32,6 +32,12 @@ export type ApiErrorCode =
   | 'cannot_disable_self'
   | 'mandate_exists'
   | 'last_admin'
+  | 'version_conflict'
+  | 'number_already_used'
+  | 'duplicate_stock'
+  | 'insufficient_stock'
+  | 'item_retired'
+  | 'composition_conflict'
   | 'internal_error';
 
 /** `details.reason` of `validation_failed`. */
