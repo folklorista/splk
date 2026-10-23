@@ -41,6 +41,6 @@
 
 ## Testování
 
-- Testovací stack: Karma + Jasmine (výchozí Angular stack).
+- Testovací stack: Krojařka (`apps/krojarka`) Vitest (D-58), demo (`frontend/`) Karma + Jasmine, API PHPUnit (D-44).
 - Testy zaměřit na logiku (auth, routing, services), ne na vzhled.
 - Nový produkční kód pro hlavní logiku má mít odpovídající testy.

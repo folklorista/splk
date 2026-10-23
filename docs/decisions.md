@@ -331,6 +331,11 @@ Migrace nesmí běžet při běžném HTTP požadavku. Před produkční migrac�
 Pro celý repozitář (Krojařka s Angularem 22 i demo s Angularem 19). Node běží jen při vývoji a buildu.
 **Zdroj:** uživatel 2026-10-23.
 
+### D-58 Testy Krojařky: Vitest
+
+Krojařka používá výchozí test runner Angularu 22 – **Vitest** (jsdom). Demo zůstává na Karma + Jasmine. Testy jsou zaměřené na logiku (přihlášení, guardy, interceptory, datové adaptéry), ne na vzhled.
+**Zdroj:** uživatel 2026-10-23. **Upřesňuje:** CLAUDE.md (Testování).
+
 ## API v1 (2026-10-23, `current/api-v1-a-schema.md` kap. 7)
 
 ### D-48 Správa organizace v Krojařce

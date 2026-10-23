@@ -47,6 +47,27 @@ npx @angular/cli@19 serve
 Otevřít: `http://localhost:4200`
 Přihlášení: libovolný e-mail + heslo (mock, nekontroluje).
 
+## Krojařka a API (vývoj)
+
+Vyžaduje Node.js 24 (`nvm use`) a Docker.
+
+```bash
+npm install                        # závislosti workspaces (apps/krojarka, packages/*)
+npm run api:install                # composer install v kontejneru api
+docker compose up -d db api        # PostgreSQL 18 + API na http://localhost:8082 (GET /v1/health)
+npm run api:migrate                # Phinx migrace lokální DB
+npm run api:test                   # PHPUnit (Unit + Integration proti PostgreSQL v Dockeru)
+
+npm run krojarka:start             # http://localhost:4200 proti lokálnímu API
+npm run krojarka:start:mock        # bez serveru, mock data (přihlášení vypíše přihlašovací stránka)
+npm run krojarka:test              # Vitest
+```
+
+První účet se správou organizace: `API_ADMIN_*` v `.env`, pak `docker compose run --rm api vendor/bin/phinx seed:run -s FirstAdministrator`.
+Heslo se nastaví přes „Zapomenuté heslo“; lokálně jde e-mail do logu (`docker compose logs api`).
+
+Nasazení: `npm run deploy -- --target api|krojarka [--dry-run]` (`scripts/deploy-app.mjs`, popis v hlavičce skriptu a ve skillu `/deploy`).
+
 ## Lokální Docker
 
 Napodobuje produkci (Apache 2.4 + PHP 8.5 s `pdo_pgsql`, PostgreSQL 18). Na produkci Docker není.
