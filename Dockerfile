@@ -1,7 +1,7 @@
 # Lokální vývojové prostředí – na produkci Docker není (Apache 2.4 + PHP 8.5 + PostgreSQL 18),
 # proto image napodobuje produkci: Angular build obsluhovaný Apachem s PHP.
 
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /src
 COPY frontend/package.json frontend/package-lock.json frontend/
 RUN npm --prefix frontend ci

@@ -3,6 +3,13 @@
   "description": "A web application for folk ensembles",
   "private": true,
   "version": "2026.10.5",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "sync-public": "node scripts/sync-public.mjs",
     "release": "node scripts/release.mjs",
@@ -15,7 +22,10 @@
     "build": "npm run frontend:build",
     "build-info": "node scripts/build-info.mjs",
     "icons:generate": "node scripts/generate-stitch-icons.mjs",
-    "deploy": "node scripts/deploy.mjs"
+    "deploy": "node scripts/deploy.mjs",
+    "api:install": "docker compose run --rm api composer install",
+    "api:test": "docker compose run --rm api composer test",
+    "api:migrate": "docker compose run --rm api composer migrate"
   },
   "devDependencies": {
     "ssh2-sftp-client": "^11.0.0"
