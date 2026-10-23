@@ -1,0 +1,39 @@
+{
+    "name": "splk/api",
+    "description": "Shared REST API of Vonica applications (api.vonica.cz)",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.5",
+        "ext-json": "*",
+        "ext-pdo": "*",
+        "ext-pdo_pgsql": "*",
+        "ext-sodium": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Splk\\Api\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Splk\\Api\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "platform": {
+            "php": "8.5.12"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "test:unit": "phpunit --testsuite Unit",
+        "migrate": "phinx migrate",
+        "migrate:status": "phinx status"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^13.4",
+        "robmorgan/phinx": "^0.16.12"
+    }
+}

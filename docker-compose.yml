@@ -18,6 +18,25 @@ services:
       db:
         condition: service_healthy
 
+  # API (api/) – Apache + PHP 8.5 serving api/public, code mounted for development.
+  # Composer, Phinx and PHPUnit run in the same container: docker compose run --rm api composer …
+  api:
+    build: ./api
+    ports:
+      - "8082:80"
+    environment:
+      SPLK_API_CONFIG: /app/config/config.docker.php
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${DB_NAME:-splk}
+      DB_USER: ${DB_USER:-splk}
+      DB_PASSWORD: ${DB_PASSWORD:-splk}
+    volumes:
+      - ./api:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     image: postgres:18
     environment:

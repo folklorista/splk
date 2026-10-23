@@ -2,15 +2,15 @@
 
 Co je hotové a co se právě dělá. Pořadí vývoje určuje [`../decisions.md`](../decisions.md) D-02. Historický deník do 19. 10. 2026 je v [`../archive/03-postup-vyvoje.md`](../archive/03-postup-vyvoje.md).
 
-## Stav k 2026-10-22
+## Stav k 2026-10-23
 
 | Část | Stav |
 |---|---|
 | **Krojařka** (`krojarka.vonica.cz`) | Nezahájena. Zadání: `krojarka/frontend-demo-specifikace.md`, doménová pravidla `06` v0.5. Subdoména a SFTP ověřeny, web obsahuje jen placeholder poskytovatele. |
-| **API** (`api.vonica.cz`) | Nezahájeno. Hosting, PostgreSQL 18, CORS, cookie sessions a CSRF ověřeny prototypem (`hosting-postgresql-api-auth.md`). DB je prázdná. |
+| **API** (`api.vonica.cz`) | Krok 1 (kostra) hotový ve větvi `feature/api-skeleton`: `api/` (PHP 8.5, Composer, vlastní router, `GET /v1/health`, CORS/origin/JSON politika, sessions v PostgreSQL, CSRF), Phinx s migrací identity a přístupu, PHPUnit (Unit + Integration proti PostgreSQL v Dockeru), Docker služba `api` na `localhost:8082`. Zatím nenasazeno, produkční DB je prázdná. |
 | **Demo** (`demo.vonica.cz`) | Prototyp nasazený jako `design/identity-03@ce20f01`. Přesun z `moje` dokončen 22. 10. 2026. Nasazení: `/deploy` (`--target demo`). Popis kódu: `../archive/implementace-2026-10-21/`. |
 | **moje.vonica.cz** | Vývoj odložen. Po přesunu dema prázdná, vyhrazená budoucí členské aplikaci. |
-| Monorepo | Struktura schválena (`monorepo-struktura.md`), API a schéma schváleny (`api-v1-a-schema.md`). Implementace začíná krokem 1 (kostra). Kód zatím obsahuje jen demo (`frontend/`). |
+| Monorepo | Kořenový `package.json` má npm workspaces `apps/*`, `packages/*` (zatím prázdné, `packages/*` vzniknou až s prvním použitím) a `engines` Node ≥ 24; `.nvmrc` 24, image dema na `node:24`. Dál podle `api-v1-a-schema.md` kap. 6, krok 2 (přihlášení). |
 
 ## Známé rozdíly mezi demem a platnými rozhodnutími
 
@@ -23,4 +23,5 @@ Demo vzniklo před rozhodnutími z 22. 10. 2026 a dál se nerozvíjí ani nekonz
 
 ## Deník
 
+- **2026-10-23** – krok 1 implementace (kostra monorepa a API, `api-v1-a-schema.md` kap. 6).
 - **2026-10-22** – uspořádání dokumentace (registr rozhodnutí, otevřené otázky, archiv); ověření hostingu a PostgreSQL 18; přesun dema z `moje` na `demo.vonica.cz` dokončen; deploy skript má povinný `--target`; lokální Docker převeden na PostgreSQL 18; rozhodnuto D-31 až D-33.

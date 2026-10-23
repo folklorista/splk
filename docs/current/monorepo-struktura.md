@@ -1,6 +1,6 @@
 # Struktura monorepa
 
-**Stav:** schváleno 2026-10-23 (D-41, D-43, D-45, D-47). Zatím neimplementováno.
+**Stav:** schváleno 2026-10-23 (D-41, D-43, D-45, D-47). Implementace: kostra `api/` a workspaces (krok 1); `apps/` a `packages/` zatím nevznikly.
 **Vychází z:** D-03 (monorepo), D-11 a D-12 (PHP + PostgreSQL, sessions), D-31 (Krojařka nepřebírá kód dema), D-33 (demo se nekonzervuje), D-41 až D-45 (rozhodnutí uživatele k Q-10).
 
 ## 1. Cílový strom

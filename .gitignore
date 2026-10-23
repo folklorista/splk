@@ -75,3 +75,10 @@ file-structure.txt
 
 # Local secrets (deploy credentials) – only .env.example is versioned
 .env
+
+# API: dependencies, real hosting configuration, uploaded files, deploy build info, test cache
+/api/vendor/
+/api/config/config.php
+/api/storage/
+/api/build-info.json
+/api/.phpunit.cache/
