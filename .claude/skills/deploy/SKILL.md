@@ -118,6 +118,8 @@ or `--ref <tag|branch|commit>` (clean temporary worktree). There is no release t
    - First account with `organization.admin`: `--seed-admin` with `API_ADMIN_EMAIL`, `API_ADMIN_FIRST_NAME`,
      `API_ADMIN_LAST_NAME` in `.env`. The account is invited without a password; the user sets it via
      „Zapomenuté heslo“ in Krojařka. The seed does nothing when an admin exists.
+   - Data seeds: `--seed VonicaUnits,VonicaCatalog` (units of Vonica and the default catalog of the adult fund, D-59);
+     each does nothing when its data already exist.
 3. **Deploy:** the same command with `--yes`. API order (D-45): config (if missing) → `pg_dump` backup to
    `dev/local/backups/` (only when migrations are pending) → `phinx migrate` → seed (if asked) → `vendor/`, `src/`,
    `build-info.json`, `public/` last; `config/` and `storage/` are never touched. Krojařka: changed files, `index.html` last,

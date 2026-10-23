@@ -8,6 +8,7 @@
 //   API only:
 //   --init-config – the server has no config/config.php: generate it from .env and upload it (never overwrites, D-54)
 //   --seed-admin  – after migrations run the FirstAdministrator seed (API_ADMIN_* from .env; does nothing when an admin exists)
+//   --seed <A,B>  – after migrations run these data seeds, e.g. VonicaUnits,VonicaCatalog (each does nothing when its data exist)
 // API steps (D-45, monorepo-struktura chap. 5): phinx status → pg_dump backup → phinx migrate → upload code → GET /v1/health.
 // Migrations run from this machine in the Docker api container against production over TLS; never over HTTP.
 import fs from 'node:fs';
@@ -381,6 +382,9 @@ function buildApi(src) {
 }
 
 async function deployApi(config) {
+  const dataSeeds = (option('--seed') ?? '').split(',').map((name) => name.trim()).filter(Boolean);
+  const unknownSeeds = dataSeeds.filter((name) => !/^[A-Z][A-Za-z]+$/.test(name) || !fs.existsSync(path.join(rootDir, 'api', 'db', 'seeds', `${name}.php`)));
+  if (unknownSeeds.length) fail(`Unknown seed(s): ${unknownSeeds.join(', ')}`);
   const missingPg = PG_KEYS.filter((key) => !process.env[key]);
   if (missingPg.length) fail(`Missing in .env: ${missingPg.join(', ')}`);
   const src = prepareSource();
@@ -412,6 +416,7 @@ async function deployApi(config) {
         ['Revision', src.revision],
         ['Migrations', pending.length ? pending.map((m) => `${m.migration_id} ${m.migration_name}`).join(', ') : 'none pending'],
         ['Seed admin', flag('--seed-admin') ? `yes (${process.env.API_ADMIN_EMAIL || 'API_ADMIN_EMAIL missing!'})` : 'no'],
+        ['Seeds', dataSeeds.length ? dataSeeds.join(', ') : 'none'],
         ['Config', hasConfig ? 'config/config.php present (kept)' : 'MISSING – will be generated from .env (--init-config)'],
         ['SFTP', `${config.sftp.username}@${config.sftp.host}:${remoteRoot}`],
         ['Files', API_CODE_DIRS.map((dir) => `${dir}/ ${codeFiles[dir].length}`).join(', ') + ' + build-info.json'],
@@ -446,6 +451,11 @@ async function deployApi(config) {
         if (Object.values(adminEnv).some((value) => !value)) fail('--seed-admin needs API_ADMIN_EMAIL, API_ADMIN_FIRST_NAME and API_ADMIN_LAST_NAME in .env');
         await confirm(`Create the first organization.admin account ${adminEnv.ADMIN_EMAIL} (only if none exists)?`);
         process.stdout.write(phinx(staging, ['seed:run', '-s', 'FirstAdministrator'], adminEnv));
+      }
+
+      if (dataSeeds.length) {
+        await confirm(`Run seeds ${dataSeeds.join(', ')} on production (each skips existing data)?`);
+        process.stdout.write(phinx(staging, ['seed:run', ...dataSeeds.flatMap((name) => ['-s', name])]));
       }
 
       // 3) Code: vendor and src first, build info, public/ (the entry point) last; config/ and storage/ untouched
