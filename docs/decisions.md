@@ -294,6 +294,51 @@ Soupis podle řady, podle člověka, současný a historický soupis konkrétní
 
 **Zdroj D-37 až D-40:** uživatel za krojařku 2026-10-23 (Q-05).
 
+## Repozitář a nástroje (2026-10-23, Q-10)
+
+### D-41 Rozvržení monorepa
+
+- `apps/` – frontendové aplikace (`krojarka`, později `moje`, případně `pokladna`, `kronika`, `admin`…), každá samostatně sestavitelná a nasaditelná.
+- `packages/` – sdílené TS knihovny: `api-contracts` (DTO a typy API), `domain` (čisté TS modely a pravidla), `ui` (identita, ikony, styly, případně komponenty). Sdílí se jen to, co má jasné použití.
+- `api/` v kořeni – jedna společná serverová aplikace.
+- Demo zůstává ve `frontend/`, případný přesun se řeší samostatně.
+
+Podrobný strom a hranice: `proposals/monorepo-struktura.md` (ke schválení).
+**Zdroj:** uživatel 2026-10-23. **Upřesňuje:** D-03.
+
+### D-42 Angular pro Krojařku: aktuální stabilní verze
+
+Krojařka používá aktuální podporovaný stabilní Angular (2026-10-23: **22.2.x**, TypeScript 6.0, Node ^22.22.3 / ^24.15). Demo zůstává na Angularu 19.
+**Zdroj:** uživatel 2026-10-23; ověřeno `npm view`.
+
+### D-43 PHP bez velkého frameworku
+
+Čisté PHP 8.5, Composer, PSR-4 autoloading, malé osvědčené knihovny podle potřeby.
+**Zdroj:** uživatel 2026-10-23.
+
+### D-44 Testy API: PHPUnit
+
+Hlavně testy autorizace, datové integrity a doménových operací.
+**Zdroj:** uživatel 2026-10-23.
+
+### D-45 Migrace: Phinx
+
+Migrace nesmí běžet při běžném HTTP požadavku. Před produkční migrací musí jít vytvořit zálohu. Způsob spouštění na hostingu bez SSH: `proposals/monorepo-struktura.md` kap. 5.
+**Zdroj:** uživatel 2026-10-23.
+
+## Hosting (ověřeno 2026-10-23)
+
+### D-46 Spojení API → PostgreSQL a PHP prostředí
+
+- Z PHP na hostingu vede spojení na `localhost` / `127.0.0.1` (sem se překládá i `PG_HOST`) přes lokální proxy do databázového serveru v privátní síti, **bez TLS**.
+- Unixový socket neexistuje.
+- `host=localhost` tedy **nic nezmění**. Šifrování na privátní síti závisí jen na poskytovateli.
+- opcache je zapnutý v režimu **jen souborové cache** (`file_cache_only=1`) a nastavit ho nelze.
+- `display_errors` je na `api` vypnuté.
+- HTTP cache poskytovatele je na `demo` a `krojarka` během vývoje vypnutá.
+
+**Zdroj:** test na `api.vonica.cz` 2026-10-23 (dočasný skript, po testu odstraněn); uživatel 2026-10-23.
+
 ## Odložené, ale schválené cíle pro `moje.vonica.cz`
 
 Platí jako cílové chování pro dobu, kdy se vývoj `moje` obnoví. Teď se nevyvíjejí. Pokud odporují D-06 (model se složkami), platí D-06.

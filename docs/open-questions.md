@@ -85,7 +85,9 @@ Zadání Krojařky má obrazovky, které schválené menu výslovně nezmiňuje:
 
 Návrh k posouzení: osoby bez výpůjček jako filtr v Krojových kartách, dokumenty u osoby nebo kompletu a souhrnný archiv v Nastavení, exporty v kontextu jednotlivých seznamů.
 
-### Q-10 API v1 a monorepo
+### Q-10 API v1 a monorepo – *nástroje a rozvržení rozhodnuty → D-41 až D-45*
+
+Zbývá schválit návrh `proposals/monorepo-struktura.md` (přesun dema, Node 24, způsob migrací, jmenný prostor PHP) a navrhnout rozsah API v1. Původní znění:
 
 Je potřeba určit:
 
@@ -105,13 +107,12 @@ Přehled problémů dema, kterým se má API vyhnout (oprávnění jen ve fronte
 - Ověření v Safari/iOS a Firefoxu.
 - ~~Zálohy PostgreSQL u poskytovatele~~ – ověřeno, D-16 platí (denně, 14 dní, nad 2 GB týdně).
 
-**Stav k 2026-10-23 (podklady od uživatele):**
+**Stav k 2026-10-23 – po testu na `api` (D-46):**
 
-- **IP filtr k databázi** – domácí připojení nemá statickou IP. Návrh: vyvíjet proti lokálnímu PostgreSQL v Dockeru. API na hostingu jde privátní sítí, takže na filtr nenarazí. Filtr tedy lze zapnout hned. Vzdálený přístup z domova (migrace, ruční dotazy) by vyžadoval přidat aktuální IP, nebo spouštět migrace z hostingu.
-- **Šifrování spojení** – připojení přes `host=localhost` (socket) hosting nabízí. Je potřeba ověřit, že z PHP na `api` opravdu vede na tutéž databázi. Pokud ano, data neopouštějí server a otázka TLS odpadá.
-- **opcache** – v administraci je u PHP zapnutý (výchozí), experiment 22. 10. ho ale v PHP 8.5.12 nenašel. Ověřit přímo (`opcache_get_status()`).
-- **HTTP cache poskytovatele** – statické soubory (`.css`, `.js`, obrázky…) může server držet asi 10 minut v RAM. Hashované soubory Angularu to neohrozí. `ngsw-worker.js` ale ano, takže nová verze se může projevit se zpožděním. Ověřit, zda cache respektuje `Cache-Control` z `.htaccess`; případně ji vypnout na `krojarka`/`demo`.
-- **`display_errors`** je v administraci zapnuté (výchozí) – pro `api` vypnout.
+- **IP filtr** – databáze vidí API z privátní adresy hostingu (ne z veřejné `37.9.175.212`), takže veřejnou IP webu povolovat netřeba. Povolit stačí IP, ze kterých se k DB přistupuje z internetu: domácí připojení (dnes `77.92.193.22`, dynamická – při změně aktualizovat). Po zapnutí filtru znovu ověřit, že API se k DB dál připojí.
+- **Šifrování** – `host=localhost` nepomůže (D-46). Zbývá dotaz na Websupport, zda je privátní síť k DB oddělená. Jinak vědomě přijmout.
+- ~~opcache~~ – souborová cache, nelze měnit (D-46). ~~HTTP cache~~ – vypnuta na `demo` a `krojarka`. ~~display_errors~~ – vypnuto na `api`.
+- Zbývá: místo pro přístupové údaje k DB na `api`, test zápisu do DB, HSTS, práva souborů, SPA fallback, Safari/iOS, jeden DB účet pro migrace i aplikaci.
 
 ### Q-14 Přihlašování do Krojařky a citlivé skeny – *účty jen pro čtení rozhodnuty → D-36*
 

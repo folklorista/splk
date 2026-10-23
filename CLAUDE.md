@@ -18,7 +18,7 @@
 - Komponenty **nesmí volat HTTP API přímo**.
 - Data mají vždy jít přes services: `komponenta → feature service → API service / mock service`.
 - Mock implementace a HTTP implementace services musí být vzájemně zaměnitelné beze změny komponent.
-- Nepoužívat NgModules – projekt je postaven na standalone components (Angular 19).
+- Nepoužívat NgModules – standalone components. Demo (`frontend/`) je na Angularu 19, Krojařka na aktuální stabilní verzi (D-42).
 
 ## Rozsah implementace
 
