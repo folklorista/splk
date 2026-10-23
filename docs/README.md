@@ -33,7 +33,7 @@ docs/
 ├── current/     platné specifikace; každá má v hlavičce svůj status
 │   ├── krojarka/   aplikace Krojařka (priorita)
 │   └── moje/       odložený členský systém (schválené cíle, nevyvíjí se)
-├── proposals/   návrhy čekající na rozhodnutí (zatím prázdné)
+├── proposals/   návrhy čekající na rozhodnutí (api-v1-a-schema.md)
 └── archive/     historické a překonané dokumenty, snímky stavu kódu
 ```
 

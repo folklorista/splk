@@ -87,7 +87,7 @@ Návrh k posouzení: osoby bez výpůjček jako filtr v Krojových kartách, dok
 
 ### Q-10 API v1 a monorepo – *nástroje a rozvržení rozhodnuty → D-41 až D-45*
 
-Struktura schválena (`current/monorepo-struktura.md`, D-41 až D-47). **Zbývá navrhnout rozsah API v1 a databázové schéma Krojařky.** Původní znění:
+Struktura schválena (`current/monorepo-struktura.md`, D-41 až D-47). **Návrh API v1 a schématu: `proposals/api-v1-a-schema.md` (ke schválení, 8 otevřených bodů v kap. 7).** Původní znění:
 
 Je potřeba určit:
 
