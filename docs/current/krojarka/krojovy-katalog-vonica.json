@@ -1,6 +1,6 @@
 {
-  "schema": "krojovy-katalog-navrh-1",
-  "source": "Dvě skladové karty .xls; druhy součástek dle názvů řádků, bez ověření fyzického inventáře",
+  "schema": "krojovy-katalog-navrh-2",
+  "source": "Dvě skladové karty .xls; druhy součástek dle názvů řádků, bez ověření fyzického inventáře; upraveno podle odpovědí krojařky/uživatele 2026-10-23 (bez kufrů, šátky rozděleny, příznak cislovano, oblast u Slovenska)",
   "items": [
     {
       "id": "m-05",
@@ -10,7 +10,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 5
+      "radek": 5,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-06",
@@ -20,7 +22,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 6
+      "radek": 6,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-07",
@@ -30,7 +34,9 @@
       "varianta_z_nazvu": "Velická / Velické (výslovně v názvu)",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 7
+      "radek": 7,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-08",
@@ -40,7 +46,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 8
+      "radek": 8,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-09",
@@ -50,7 +58,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 9
+      "radek": 9,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-10",
@@ -60,7 +70,9 @@
       "varianta_z_nazvu": "Velická / Velické (výslovně v názvu)",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 10
+      "radek": 10,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-11",
@@ -70,7 +82,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 11
+      "radek": 11,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-12",
@@ -80,7 +94,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 12
+      "radek": 12,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-13",
@@ -90,7 +106,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 13
+      "radek": 13,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-14",
@@ -100,7 +118,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 14
+      "radek": 14,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-15",
@@ -110,7 +130,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 15
+      "radek": 15,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-16",
@@ -120,7 +142,9 @@
       "varianta_z_nazvu": "Nová Lhota (výslovně v názvu)",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 16
+      "radek": 16,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-17",
@@ -130,7 +154,9 @@
       "varianta_z_nazvu": "Nová Lhota (výslovně v názvu)",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 17
+      "radek": 17,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-18",
@@ -140,7 +166,9 @@
       "varianta_z_nazvu": "Nová Lhota (výslovně v názvu)",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 18
+      "radek": 18,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-19",
@@ -150,7 +178,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 19
+      "radek": 19,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-24",
@@ -160,7 +190,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 24
+      "radek": 24,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-25",
@@ -170,7 +202,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 25
+      "radek": 25,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-26",
@@ -180,7 +214,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 26
+      "radek": 26,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-27",
@@ -190,7 +226,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 27
+      "radek": 27,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-28",
@@ -200,7 +238,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 28
+      "radek": 28,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-29",
@@ -210,7 +250,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 29
+      "radek": 29,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-32",
@@ -220,7 +262,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 32
+      "radek": 32,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-33",
@@ -230,7 +274,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 33
+      "radek": 33,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-34",
@@ -240,7 +286,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 34
+      "radek": 34,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-35",
@@ -250,7 +298,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 35
+      "radek": 35,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-36",
@@ -260,7 +310,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 36
+      "radek": 36,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-37",
@@ -270,7 +322,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 37
+      "radek": 37,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-38",
@@ -280,7 +334,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 38
+      "radek": 38,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-39",
@@ -290,7 +346,9 @@
       "varianta_z_nazvu": "Moravské Lieskové (výslovně v názvu)",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 39
+      "radek": 39,
+      "cislovano": true,
+      "oblast": "Moravské Lieskové"
     },
     {
       "id": "m-42",
@@ -300,7 +358,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 42
+      "radek": 42,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-45",
@@ -310,7 +370,9 @@
       "varianta_z_nazvu": "",
       "typ": "obuv",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 45
+      "radek": 45,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "m-46",
@@ -320,17 +382,9 @@
       "varianta_z_nazvu": "",
       "typ": "obuv",
       "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 46
-    },
-    {
-      "id": "m-49",
-      "pohlavi": "muži",
-      "skupina": "Ostatní",
-      "nazev": "kufr - Vonica",
-      "varianta_z_nazvu": "",
-      "typ": "zavazadlo",
-      "zdrojovy_soubor": "skladova-karta-chlapci (2).xls",
-      "radek": 49
+      "radek": 46,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-05",
@@ -340,7 +394,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 5
+      "radek": 5,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-06",
@@ -350,7 +406,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 6
+      "radek": 6,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-07",
@@ -360,7 +418,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 7
+      "radek": 7,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-08",
@@ -370,7 +430,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 8
+      "radek": 8,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-09",
@@ -380,7 +442,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 9
+      "radek": 9,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-10",
@@ -390,7 +454,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 10
+      "radek": 10,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-11",
@@ -400,7 +466,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 11
+      "radek": 11,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-12",
@@ -410,7 +478,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 12
+      "radek": 12,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-13",
@@ -420,7 +490,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 13
+      "radek": 13,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-14",
@@ -430,7 +502,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 14
+      "radek": 14,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-15",
@@ -440,7 +514,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 15
+      "radek": 15,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-16",
@@ -450,7 +526,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 16
+      "radek": 16,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-17",
@@ -460,7 +538,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 17
+      "radek": 17,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-18",
@@ -470,7 +550,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 18
+      "radek": 18,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-19",
@@ -480,7 +562,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 19
+      "radek": 19,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-20",
@@ -490,7 +574,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 20
+      "radek": 20,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-21",
@@ -500,7 +586,9 @@
       "varianta_z_nazvu": "Velická / Velické (výslovně v názvu)",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 21
+      "radek": 21,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-22",
@@ -510,7 +598,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 22
+      "radek": 22,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-23",
@@ -520,7 +610,9 @@
       "varianta_z_nazvu": "Nová Lhota (výslovně v názvu)",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 23
+      "radek": 23,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-24",
@@ -530,7 +622,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 24
+      "radek": 24,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-25",
@@ -540,7 +634,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 25
+      "radek": 25,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-26",
@@ -550,7 +646,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 26
+      "radek": 26,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-27",
@@ -560,17 +658,48 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 27
+      "radek": 27,
+      "cislovano": true,
+      "oblast": null
     },
     {
-      "id": "ž-28",
+      "id": "ž-28a",
       "pohlavi": "ženy",
       "skupina": "Horňácko",
-      "nazev": "šátek bílý, jatelinka, červený",
+      "nazev": "šátek bílý",
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 28
+      "radek": 28,
+      "cislovano": true,
+      "oblast": null,
+      "puvodni_nazev": "šátek bílý, jatelinka, červený"
+    },
+    {
+      "id": "ž-28b",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "šátek jatelinka",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 28,
+      "cislovano": true,
+      "oblast": null,
+      "puvodni_nazev": "šátek bílý, jatelinka, červený"
+    },
+    {
+      "id": "ž-28c",
+      "pohlavi": "ženy",
+      "skupina": "Horňácko",
+      "nazev": "šátek červený",
+      "varianta_z_nazvu": "",
+      "typ": "krojová součást",
+      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
+      "radek": 28,
+      "cislovano": true,
+      "oblast": null,
+      "puvodni_nazev": "šátek bílý, jatelinka, červený"
     },
     {
       "id": "ž-29",
@@ -580,7 +709,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 29
+      "radek": 29,
+      "cislovano": false,
+      "oblast": null
     },
     {
       "id": "ž-31",
@@ -590,7 +721,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 31
+      "radek": 31,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-32",
@@ -600,7 +733,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 32
+      "radek": 32,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-33",
@@ -610,7 +745,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 33
+      "radek": 33,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-34",
@@ -620,7 +757,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 34
+      "radek": 34,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-35",
@@ -630,7 +769,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 35
+      "radek": 35,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-36",
@@ -640,7 +781,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 36
+      "radek": 36,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-37",
@@ -650,7 +793,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 37
+      "radek": 37,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-38",
@@ -660,7 +805,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 38
+      "radek": 38,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-39",
@@ -670,7 +817,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 39
+      "radek": 39,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-40",
@@ -680,7 +829,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 40
+      "radek": 40,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-41",
@@ -690,7 +841,9 @@
       "varianta_z_nazvu": "Zemplín (výslovně v názvu)",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 41
+      "radek": 41,
+      "cislovano": true,
+      "oblast": "Zemplín"
     },
     {
       "id": "ž-42",
@@ -700,7 +853,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 42
+      "radek": 42,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-43",
@@ -710,7 +865,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 43
+      "radek": 43,
+      "cislovano": true,
+      "oblast": "Zemplín"
     },
     {
       "id": "ž-44",
@@ -720,7 +877,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 44
+      "radek": 44,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-45",
@@ -730,7 +889,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 45
+      "radek": 45,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-46",
@@ -740,7 +901,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 46
+      "radek": 46,
+      "cislovano": false,
+      "oblast": null
     },
     {
       "id": "ž-47",
@@ -750,7 +913,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 47
+      "radek": 47,
+      "cislovano": false,
+      "oblast": null
     },
     {
       "id": "ž-48",
@@ -760,7 +925,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 48
+      "radek": 48,
+      "cislovano": false,
+      "oblast": null
     },
     {
       "id": "ž-49",
@@ -770,7 +937,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 49
+      "radek": 49,
+      "cislovano": true,
+      "oblast": "Zemplín"
     },
     {
       "id": "ž-50",
@@ -780,7 +949,9 @@
       "varianta_z_nazvu": "",
       "typ": "krojová součást",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 50
+      "radek": 50,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-53",
@@ -790,7 +961,9 @@
       "varianta_z_nazvu": "",
       "typ": "obuv",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 53
+      "radek": 53,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-54",
@@ -800,7 +973,9 @@
       "varianta_z_nazvu": "",
       "typ": "obuv",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 54
+      "radek": 54,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-55",
@@ -810,7 +985,9 @@
       "varianta_z_nazvu": "",
       "typ": "obuv",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 55
+      "radek": 55,
+      "cislovano": true,
+      "oblast": null
     },
     {
       "id": "ž-56",
@@ -820,17 +997,9 @@
       "varianta_z_nazvu": "",
       "typ": "obuv",
       "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 56
-    },
-    {
-      "id": "ž-57",
-      "pohlavi": "ženy",
-      "skupina": "Ostatní",
-      "nazev": "kufr - Vonica",
-      "varianta_z_nazvu": "",
-      "typ": "zavazadlo",
-      "zdrojovy_soubor": "skladova-karta-holky (2).xls",
-      "radek": 57
+      "radek": 56,
+      "cislovano": true,
+      "oblast": null
     }
   ]
 }

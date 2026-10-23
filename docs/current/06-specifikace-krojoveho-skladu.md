@@ -97,7 +97,7 @@ Konfiguraci klasifikace, druhů a řad (součástek i kompletů) spravuje kroja�
 
 ### 3.4 Zaměnitelné drobnosti bez čísla
 
-Některé drobné doplňky není účelné jednotlivě označovat. Například v kompletu jsou předepsané dvě úzké mašle do vlasů, ale nezáleží na tom, zda se po vrácení jedná o tytéž fyzické kusy (D-19).
+Některé drobné doplňky není účelné jednotlivě označovat. U Vonice jsou nečíslované **kytička, korále, mašle barevné a mašle bílá** (D-37). Například v kompletu jsou předepsané dvě úzké mašle do vlasů, ale nezáleží na tom, zda se po vrácení jedná o tytéž fyzické kusy (D-19).
 
 U takové položky stačí evidovat **druh, požadovaný počet, aktuálně přítomný počet a případnou poznámku**. Při jednom kusu může rozhraní ukazovat prosté **přítomno / chybí**, při více kusech stav **1 ze 2**. Při předání a vrácení se sleduje počet kusů, ne jejich identita. Krojařka je nemusí číslovat ani označovat štítkem.
 
@@ -329,14 +329,23 @@ Oprávnění vznikají **pověřením** (viz `moje/08`, D-09), ne rolí. Rozsahe
 
 ## 10. Přehledy, tisk a export – součást první provozní verze
 
-- seznam kusů podle řady, čísla a klasifikace (Správa krojů → Sklad, cílově „Součástky“);
+*Sestavy upřesněné krojařkou 2026-10-23 (D-39):*
+
+- **soupis podle řady** – „kdo má půjčené všechny kopanické košile?“;
+- **soupis podle člověka** – „co všechno má půjčené Lojza?“;
+- **současný a historický soupis konkrétní součástky** – „kdo teď má a kdo dříve měl kopanickou košili č. 3?“;
+- **filtrované dotazy** – např. potřebuje opravu, zapůjčeno externistům, součástky pořízené mezi dvěma daty.
+
+Dále:
+
+- seznam kusů podle řady, čísla a klasifikace (Součástky);
 - krojová karta konkrétního držitele včetně externistů a bývalých členů;
 - přehled zápůjček (aktivní i historie), nevrácené a po termínu;
 - inventurní seznam a výsledky inventury včetně nesrovnalostí;
 - přehled vyřazených kusů a jejich historie;
 - kusy v opravě a otevřené pracovní úkoly.
 
-Konkrétní tiskové sestavy a formáty doladíme s krojařkami. Exporty s osobními údaji podléhají stejným oprávněním jako aplikace.
+Formáty (tisk A4, CSV) se doladí při implementaci. Exporty s osobními údaji podléhají stejným oprávněním jako aplikace.
 
 ## 11. Situace, které musí evidence zvládnout
 
@@ -400,16 +409,18 @@ Konkrétní tiskové sestavy a formáty doladíme s krojařkami. Exporty s osobn
 
 ## 13. Zbývající upřesnění s krojařkami
 
-1. **Seznam řad:** přesné názvy a klíče řad pro Vonici; které varianty (např. modré/bílé gatě) mají vlastní řadu. Demo ukazuje obojí (horňácké gatě = atribut, slovenské gatě = vlastní řady). Návrh číselníku druhů: `krojarka/krojovy-katalog-vonica.md`.
-2. ~~Opakované použití čísel~~ – rozhodnuto (D-20): výchozí povoleno, zakázat lze u řady. Zbývá: u kterých řad ho zakázat.
+*Odpovědi krojařky z 2026-10-23 jsou zapsané v D-37 až D-40 (`docs/decisions.md`).*
+
+1. ~~Seznam řad~~ – řady vycházejí z číselníku `krojarka/krojovy-katalog-vonica.md`. Varianta má, nebo nemá vlastní číslování podle řady (D-37). **Zbývá:** přiřadit slovenské součástky k oblastem Zemplín / Moravské Lieskové.
+2. ~~Opakované použití čísel~~ – rozhodnuto (D-20): výchozí povoleno, u Vonice se zatím nezakazuje u žádné řady.
 3. ~~Zaměnitelné drobnosti bez čísla~~ – rozhodnuto (D-19, D-35): podle počtu, v kompletech i mimo ně.
-3a. **Komplety:** řady a čísla a zrušení šablon rozhodnuty (D-35). Zbývá potvrdit pravidla výdeje neúplného kompletu (kap. 5.1b).
-3b. **Vlastní kroj nebo součástka člena** (např. „má vlastní krpce“): stačí poznámka na krojové kartě? (Q-05)
-4. **Uzavření inventury s nesrovnalostmi:** zatím smí každá krojařka, vždy s důvodem – potvrdit.
-5. **Výchozí kroj osoby:** stačí mužský / ženský / neurčeno, nebo je potřeba jemnější rozlišení (např. dětský kroj u Malé Vonice)?
-6. **Pracovní úkoly:** stačí stavy otevřený / rozpracovaný / hotovo / zrušeno bez schvalování?
-7. **Termíny inventury:** zůstanou samostatné, nebo je navázat na akce v kalendáři?
-8. **Tisk a export:** jaké sestavy a formáty potřebujete při první inventuře?
+3a. **Komplety:** řady a čísla a zrušení šablon rozhodnuty (D-35). Výdej neúplného kompletu s poznámkou potvrzen (D-38).
+3b. ~~Vlastní součástka člena~~ – stačí poznámka na krojové kartě osoby (D-38).
+4. ~~Uzavření inventury s nesrovnalostmi~~ – smí každá krojařka, vždy s důvodem (D-38).
+5. ~~Výchozí kroj osoby~~ – stačí mužský / ženský / neurčeno (D-38).
+6. ~~Pracovní úkoly~~ – stavy otevřený / rozpracovaný / hotovo / zrušeno bez schvalování; další stav musí jít později doplnit (D-38).
+7. ~~Termíny inventury~~ – samostatné, nenavázané na kalendář (D-38).
+8. ~~Tisk a export~~ – sestavy v kap. 10 (D-39).
 
 Tento dokument není technickým návrhem databáze; orientační doménové entity jsou v příloze.
 

@@ -259,6 +259,41 @@ Výdej není nikdy omezen skupinou ani pohlavím. Při výdeji se ve výchozím 
 Krojařka umožní účty s přístupem **jen pro čtení** (pověření Náhled do správy krojů), např. pro audit práce krojařek.
 **Zdroj:** uživatel 2026-10-23 (Q-14).
 
+## Krojařka – odpovědi krojařky (2026-10-23, Q-05)
+
+### D-37 Číselník a řady
+
+- Řady vycházejí z číselníku `current/krojarka/krojovy-katalog-vonica.md` / `.json` (verze `navrh-2`).
+- **Nečíslované** součásti: kytička, korále, mašle barevné, mašle bílá. Kufry a tašky se **neevidují**.
+- Varianta **může** mít vlastní číslování (košile Velická / Novolhotská), ale **nemusí** (červené / žluté rukávce).
+- **Slovensko** se dělí na oblasti Zemplín a Moravské Lieskové; mohou přibýt další.
+- **Obuv:** některá patří jen k jednomu regionu (horňácké tvrdé čižmy). „Univerzální“ měkké boty (Zemplín, Moravské Lieskové) lze vydat jako náhradu.
+- „Šátek bílý, jatelinka, červený“ jsou tři druhy. „Klobouk+bambulky“ je jedna součástka; chybějící bambulky jdou do poznámky.
+- Slovenská košile × slovenská košile stuhová, kopanická × zemplínská spodnica, kopanická × zemplínská čelenka jsou **různé řady**.
+- U žádné řady Vonice se zatím nezakazuje opakované použití čísla (možnost zůstává pro jiné instalace, D-20).
+
+### D-38 Provozní pravidla
+
+- Neúplný komplet se vydává s poznámkou. (Na papír se dnes zapisuje jen číslo kompletu a nesoulad do poznámky.)
+- Inventuru s nesrovnalostmi smí uzavřít **každá krojařka**, vždy s důvodem.
+- Výchozí kroj osoby: mužský / ženský / neurčeno.
+- Pracovní úkoly: otevřený / rozpracovaný / hotovo / zrušeno, bez schvalování. **Stavy musí jít později doplnit** bez přestavby.
+- Termíny inventurních návštěv jsou samostatné, nenavázané na kalendář.
+- Vlastní součástka člena (např. krpce) = poznámka na krojové kartě osoby.
+
+### D-39 Přehledy a soupisy
+
+Soupis podle řady, podle člověka, současný a historický soupis konkrétní součástky a filtrované dotazy (potřebuje opravu, zapůjčeno externistům, pořízeno mezi daty…). Podrobně `current/06` kap. 10.
+
+### D-40 Papírové karty a skeny
+
+- Při převodu osoby stačí **poslední fotka** karty.
+- Převod smí být dokončen i s nesrovnalostmi.
+- Jeden sken na krojovou kartu, **bez OCR**.
+- Skeny slouží jen k digitalizaci. Potom se **zazipují, uloží do souborového digiarchivu mimo aplikaci a z aplikace se odstraní**.
+
+**Zdroj D-37 až D-40:** uživatel za krojařku 2026-10-23 (Q-05).
+
 ## Odložené, ale schválené cíle pro `moje.vonica.cz`
 
 Platí jako cílové chování pro dobu, kdy se vývoj `moje` obnoví. Teď se nevyvíjejí. Pokud odporují D-06 (model se složkami), platí D-06.

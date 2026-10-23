@@ -61,7 +61,9 @@ Zbývá bod 4 (potvrdit s krojařkou) a bod 5 (samostatná položka menu). Půvo
 4. Pravidla částečně vydaného kompletu: výdej kompletu bez součásti, která je půjčená jinde. `archive/06-…-v0.3` kap. 4.2, 5.2–5.3 to popisuje. Potvrdit s krojařkou.
 5. Navigace: komplety v katalogu **Součástky**, nebo samostatná položka menu? Uživatel to připouští, pokud to pomůže ovládání.
 
-### Q-05 Otevřené body pro krojařky
+### Q-05 Otevřené body pro krojařky – *zodpovězeno → D-37 až D-40*
+
+Zbývá jen přiřadit slovenské součástky k oblastem Zemplín / Moravské Lieskové (pole `oblast` v katalogu). Původní znění:
 
 - `current/06` kap. 13: seznam řad, varianty (modré a bílé gatě), uzavření inventury s nesrovnalostmi, výchozí kroj, stavy pracovních úkolů, termíny inventury, tiskové sestavy.
 - `current/krojarka/frontend-demo-specifikace.md` kap. 10: převod papírových karet, počet a čitelnost skenů, retence skenů.
@@ -113,7 +115,7 @@ Přehled problémů dema, kterým se má API vyhnout (oprávnění jen ve fronte
 
 ### Q-14 Přihlašování do Krojařky a citlivé skeny – *účty jen pro čtení rozhodnuty → D-36*
 
-Zbývá retence skenů, GDPR a odstraňování polohových EXIF dat. Původní znění:
+Retence skenů je rozhodnutá (D-40: po digitalizaci do digiarchivu a z aplikace pryč). Zbývá odstraňování polohových EXIF dat. Původní znění:
 
 - Kdo dostane účet: jen krojařky, nebo i další role pro čtení (např. Náhled do evidence pro výbor)?
 - Retence a přístup k naskenovaným osobním kartám (GDPR).

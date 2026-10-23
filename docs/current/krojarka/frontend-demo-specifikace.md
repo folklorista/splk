@@ -385,12 +385,14 @@ Toto je **návrh API pro budoucí implementaci**, nikoliv schválené endpointy.
 
 ## 10. Otevřené otázky pro pilot s krojařkou
 
-1. Jak se dnes zaznamenává vydání **celého kompletu** na osobní kartu? Jen číslo kompletu, nebo jednotlivé kusy? Jak se řeší dočasně vyjmutá součást?
-2. Má se při převodu osoby vždy kontrolovat originál papírové karty, nebo stačí její nejnovější fotografie? Doporučení: bez kontroly aktuálnosti nepovažovat sken za autoritativní.
-3. Jak se má nakládat s osobou, jejíž digitalizovaná karta má otevřené nevyjasněné záznamy? Převod umožnit s explicitními nesrovnalostmi, nebo některé blokovat?
-4. Kolik skenů typicky připadá na osobu či komplet, a jak čitelné jsou fotografie po kompresi na reálných telefonech?
-5. Jaké konkrétní tiskové sestavy krojařka používá při inventuře?
-6. Jaká pravidla a retenční doba mají platit pro osobní karty a naskenované dokumenty? Rozhodnutí ověřit podle skutečného účelu a právních povinností správce dat.
+*Zodpovězeno 2026-10-23 (D-38 až D-40):*
+
+1. ~~Výdej celého kompletu na papírové kartě~~ – zapisuje se jen číslo kompletu, nesoulad se dopisuje do poznámky.
+2. ~~Kontrola originálu při převodu~~ – **stačí poslední fotka** karty (doporučení kontrolovat originál neplatí).
+3. ~~Převod s nevyjasněnými záznamy~~ – **převod smí být dokončen**, nesrovnalosti zůstávají jako výslovné záznamy („budou tam vždycky“).
+4. ~~Počet a čitelnost skenů~~ – **jeden sken na jednu krojovou kartu**, fotky jsou čitelné. **OCR se nepoužívá** (ručně psané poznámky).
+5. ~~Tiskové sestavy~~ – viz `../06` kap. 10.
+6. ~~Retence skenů~~ – skeny slouží **jen k digitalizaci**. Po ní se **zazipují, uloží do souborového digiarchivu mimo aplikaci a z aplikace se odstraní** (D-40).
 
 ## 11. Zdrojové podklady a vztah k nim
 
