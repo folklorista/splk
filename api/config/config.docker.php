@@ -12,6 +12,20 @@ return [
         'password' => getenv('DB_PASSWORD') ?: 'splk',
         'sslmode' => 'disable',
     ],
+    'app' => [
+        'krojarkaUrl' => 'http://localhost:4200',
+    ],
+    // e-mails are written to the log (docker compose logs api); MAIL_TRANSPORT=smtp sends them for real
+    'mail' => [
+        'transport' => getenv('MAIL_TRANSPORT') ?: 'log',
+        'host' => getenv('MAIL_SMTP_HOST') ?: 'smtp.websupport.cz',
+        'port' => (int) (getenv('MAIL_SMTP_PORT') ?: 465),
+        'secure' => 'ssl',
+        'username' => getenv('MAIL_USERNAME') ?: '',
+        'password' => getenv('MAIL_PASSWORD') ?: '',
+        'from' => getenv('MAIL_USERNAME') ?: 'krojarka@vonica.cz',
+        'fromName' => 'Krojařka',
+    ],
     'cors' => [
         'allowedOrigins' => [
             'http://localhost:4200',

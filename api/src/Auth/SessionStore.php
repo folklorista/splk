@@ -78,6 +78,40 @@ final class SessionStore
         $this->db->prepare('DELETE FROM sessions WHERE account_id = :account')->execute(['account' => $accountId]);
     }
 
+    /** Destroys every session of the account except one (after a password change). */
+    public function destroyOthersForAccount(int $accountId, int $keepSessionId): void
+    {
+        $this->db->prepare('DELETE FROM sessions WHERE account_id = :account AND id <> :keep')
+            ->execute(['account' => $accountId, 'keep' => $keepSessionId]);
+    }
+
+    /** @return list<array{id: int, createdAt: string, lastSeenAt: string, userAgent: ?string}> live sessions, newest first */
+    public function listForAccount(int $accountId): array
+    {
+        $statement = $this->db->prepare(
+            'SELECT id, created_at, last_seen_at, user_agent FROM sessions
+              WHERE account_id = :account AND expires_at > now() AND last_seen_at > now() - make_interval(secs => :idle)
+              ORDER BY last_seen_at DESC'
+        );
+        $statement->execute(['account' => $accountId, 'idle' => $this->idleTimeoutSeconds]);
+
+        return array_map(static fn (array $row): array => [
+            'id' => (int) $row['id'],
+            'createdAt' => (new \DateTimeImmutable((string) $row['created_at']))->format(DATE_ATOM),
+            'lastSeenAt' => (new \DateTimeImmutable((string) $row['last_seen_at']))->format(DATE_ATOM),
+            'userAgent' => $row['user_agent'],
+        ], $statement->fetchAll());
+    }
+
+    /** Destroys a session only when it belongs to the account. */
+    public function destroyForAccount(int $sessionId, int $accountId): bool
+    {
+        $statement = $this->db->prepare('DELETE FROM sessions WHERE id = :id AND account_id = :account');
+        $statement->execute(['id' => $sessionId, 'account' => $accountId]);
+
+        return $statement->rowCount() === 1;
+    }
+
     public function deleteExpired(): int
     {
         $statement = $this->db->prepare(

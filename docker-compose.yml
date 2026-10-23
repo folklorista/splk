@@ -31,6 +31,16 @@ services:
       DB_NAME: ${DB_NAME:-splk}
       DB_USER: ${DB_USER:-splk}
       DB_PASSWORD: ${DB_PASSWORD:-splk}
+      # e-mails go to the log unless API_MAIL_TRANSPORT=smtp (then sent from krojarka@vonica.cz)
+      MAIL_TRANSPORT: ${API_MAIL_TRANSPORT:-log}
+      MAIL_SMTP_HOST: ${KROJARKA_EMAIL_SMTP_HOST:-smtp.websupport.cz}
+      MAIL_SMTP_PORT: ${KROJARKA_EMAIL_SMTP_PORT:-465}
+      MAIL_USERNAME: ${KROJARKA_EMAIL_ADDRESS:-}
+      MAIL_PASSWORD: ${KROJARKA_EMAIL_PASSWORD:-}
+      # first organization.admin account (seed FirstAdministrator)
+      ADMIN_EMAIL: ${API_ADMIN_EMAIL:-}
+      ADMIN_FIRST_NAME: ${API_ADMIN_FIRST_NAME:-}
+      ADMIN_LAST_NAME: ${API_ADMIN_LAST_NAME:-}
     volumes:
       - ./api:/app
     depends_on:

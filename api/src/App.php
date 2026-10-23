@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Splk\Api;
 
+use Splk\Api\Auth\LoginThrottle;
+use Splk\Api\Auth\PasswordResets;
 use Splk\Api\Auth\Session;
 use Splk\Api\Auth\SessionCookie;
 use Splk\Api\Auth\SessionStore;
+use Splk\Api\Domain\Identity\AccountRepository;
+use Splk\Api\Http\Controller\AuthController;
 use Splk\Api\Http\Controller\HealthController;
 use Splk\Api\Http\HttpException;
 use Splk\Api\Http\Request;
@@ -15,6 +19,9 @@ use Splk\Api\Http\RequestPolicy;
 use Splk\Api\Http\Response;
 use Splk\Api\Http\Router;
 use Splk\Api\Infrastructure\Db\Connection;
+use Splk\Api\Infrastructure\Mail\LogMailer;
+use Splk\Api\Infrastructure\Mail\Mailer;
+use Splk\Api\Infrastructure\Mail\SmtpMailer;
 
 /**
  * HTTP kernel: request policy (CORS, origin, JSON) → routing → session and CSRF for authenticated routes → handler.
@@ -32,10 +39,12 @@ final class App
     private readonly RequestPolicy $policy;
     private ?SessionStore $sessions = null;
     private readonly int $idleTimeout;
+    private ?Mailer $mailer;
 
-    public function __construct(Config $config, ?Connection $db = null)
+    public function __construct(private readonly Config $config, ?Connection $db = null, ?Mailer $mailer = null)
     {
         $this->db = $db ?? new Connection((array) $config->get('db', []));
+        $this->mailer = $mailer;
         $this->policy = new RequestPolicy(array_values((array) $config->get('cors.allowedOrigins', [])));
         $this->sessionCookie = new SessionCookie(
             (string) $config->get('session.cookieName', '__Host-vonica_sid'),
@@ -51,6 +60,14 @@ final class App
     public function sessions(): SessionStore
     {
         return $this->sessions ??= new SessionStore($this->db->pdo(), $this->sessionLifetime, $this->idleTimeout);
+    }
+
+    public function mailer(): Mailer
+    {
+        return $this->mailer ??= match ($this->config->get('mail.transport', 'smtp')) {
+            'log' => new LogMailer(),
+            default => new SmtpMailer((array) $this->config->get('mail', [])),
+        };
     }
 
     public function handle(Request $request): Response
@@ -99,6 +116,21 @@ final class App
     private function registerRoutes(string $version): void
     {
         $this->router->add('GET', '/v1/health', new HealthController($this->db, $version), ['auth' => false]);
+
+        $accounts = fn (): AccountRepository => new AccountRepository($this->db->pdo());
+        (new AuthController(
+            $accounts,
+            $this->sessions(...),
+            fn (): LoginThrottle => new LoginThrottle($this->db->pdo()),
+            fn (): PasswordResets => new PasswordResets(
+                $this->db->pdo(),
+                $accounts(),
+                $this->mailer(),
+                (string) $this->config->get('app.krojarkaUrl', 'https://krojarka.vonica.cz'),
+            ),
+            $this->sessionCookie,
+            $this->sessionLifetime,
+        ))->register($this->router);
     }
 
     /** Version written to build-info.json by deploy; "dev" in a working copy. */

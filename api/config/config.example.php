@@ -13,6 +13,21 @@ return [
         // the hosting reaches PostgreSQL over the provider's private network without TLS (hosting doc chap. 3)
         'sslmode' => 'disable',
     ],
+    'app' => [
+        // base URL for links in e-mails (password reset)
+        'krojarkaUrl' => 'https://krojarka.vonica.cz',
+    ],
+    // SMTP of krojarka@vonica.cz (D-55)
+    'mail' => [
+        'transport' => 'smtp',
+        'host' => 'smtp.websupport.cz',
+        'port' => 465,
+        'secure' => 'ssl',
+        'username' => 'krojarka@vonica.cz',
+        'password' => '',
+        'from' => 'krojarka@vonica.cz',
+        'fromName' => 'Krojařka',
+    ],
     'cors' => [
         'allowedOrigins' => [
             'https://krojarka.vonica.cz',
