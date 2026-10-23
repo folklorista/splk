@@ -50,7 +50,7 @@ final class AccountRepository
             "SELECT m.id, m.kind, m.scope_type, m.scope_id, u.name AS scope_name
                FROM mandates m
                LEFT JOIN units u ON m.scope_type = 'unit' AND u.id = m.scope_id
-              WHERE m.person_id = :person
+              WHERE m.person_id = :person AND m.revoked_at IS NULL
                 AND m.valid_from <= current_date AND (m.valid_to IS NULL OR m.valid_to >= current_date)
               ORDER BY m.id"
         );

@@ -65,6 +65,26 @@ abstract class DatabaseTestCase extends TestCase
         return (int) $statement->fetchColumn();
     }
 
+    protected function createUnit(string $name = 'Vonica', bool $costumeFund = true): int
+    {
+        $statement = $this->db->prepare('INSERT INTO units (name, has_costume_fund) VALUES (:name, :fund) RETURNING id');
+        $statement->execute(['name' => $name, 'fund' => $costumeFund ? 'true' : 'false']);
+
+        return (int) $statement->fetchColumn();
+    }
+
+    /** @return int mandate id */
+    protected function grant(int $accountId, string $kind, ?int $unitId = null): int
+    {
+        $statement = $this->db->prepare(
+            'INSERT INTO mandates (person_id, kind, scope_type, scope_id)
+             SELECT person_id, :kind, :scope, :unit FROM user_accounts WHERE id = :account RETURNING id'
+        );
+        $statement->execute(['kind' => $kind, 'scope' => $unitId === null ? 'organization' : 'unit', 'unit' => $unitId, 'account' => $accountId]);
+
+        return (int) $statement->fetchColumn();
+    }
+
     private static function connection(): PDO
     {
         if (self::$pdo !== null) {

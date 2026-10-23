@@ -30,13 +30,15 @@ final class AppTest extends DatabaseTestCase
 
     public function testHealthReportsLatestMigration(): void
     {
+        $files = glob(dirname(__DIR__, 2) . '/db/migrations/*.php');
+        sort($files);
+        [$version] = explode('_', basename(end($files)));
+
         $response = $this->app->handle(new Request('GET', '/v1/health'));
 
         self::assertSame(200, $response->status);
-        self::assertSame(
-            ['status' => 'ok', 'version' => 'dev', 'database' => 'ok', 'migration' => ['version' => '20261023220000', 'name' => 'CreateIdentityAndAccess']],
-            $response->decodedBody(),
-        );
+        self::assertSame(['status' => 'ok', 'version' => 'dev', 'database' => 'ok'], array_diff_key($response->decodedBody(), ['migration' => 0]));
+        self::assertSame($version, $response->decodedBody()['migration']['version']);
     }
 
     public function testValidSessionCookieAuthenticatesRead(): void

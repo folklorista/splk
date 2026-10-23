@@ -11,6 +11,7 @@ use Splk\Api\Auth\SessionCookie;
 use Splk\Api\Auth\SessionStore;
 use Splk\Api\Domain\Identity\AccountRepository;
 use Splk\Api\Http\Controller\AuthController;
+use Splk\Api\Http\Controller\CatalogController;
 use Splk\Api\Http\Controller\HealthController;
 use Splk\Api\Http\HttpException;
 use Splk\Api\Http\Request;
@@ -131,6 +132,8 @@ final class App
             $this->sessionCookie,
             $this->sessionLifetime,
         ))->register($this->router);
+
+        (new CatalogController($this->db->pdo(...)))->register($this->router);
     }
 
     /** Version written to build-info.json by deploy; "dev" in a working copy. */
