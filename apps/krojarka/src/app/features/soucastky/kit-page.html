@@ -1,0 +1,61 @@
+<a routerLink="/soucastky">← Součástky</a>
+@if (notice()) { <p class="notice" role="status">{{ notice() }}</p> }
+@if (store.detailLoading()) { <p role="status">Načítám komplet…</p> }
+@if (store.kit(); as kit) {
+  <section class="card"><h2>{{ store.kitName(kit) }}</h2><p class="tag">{{ stateLabel[kit.compositionState] }}</p>
+    <p class="muted">Stav soupisu a evidované počty nenahrazují fyzické ověření. Opsání lístku nepotvrzuje úplnost.</p>
+    <button type="button" class="link-button" [disabled]="store.busy()" (click)="refresh()">Obnovit údaje a zahodit rozepsané změny</button>
+    <form [formGroup]="form" (ngSubmit)="save()"><fieldset class="form-row inventory-fieldset" [disabled]="!store.canManage() || store.busy()">
+      <label class="field"><span>Řada kompletů</span><select formControlName="seriesId">@for (s of kitSeries(); track s.id) { <option [ngValue]="s.id">{{ store.seriesName(s.id) }}</option> }</select></label>
+      <label class="field"><span>Číslo</span><input formControlName="number" maxlength="100" /></label>
+      <label class="field"><span>Stav složení podle evidence</span><select formControlName="compositionState">@for (state of states; track state[0]) { <option [value]="state[0]">{{ state[1] }}</option> }</select></label>
+      <label class="field"><span>Popis</span><textarea formControlName="description" maxlength="2000"></textarea></label>
+      <label class="field"><span>Poznámka</span><textarea formControlName="note" maxlength="5000"></textarea></label>
+      @if (store.canManage()) { <button class="button button-primary">Uložit údaje kompletu</button> }
+    </fieldset></form>
+  </section>
+  <section class="card"><h2>Určené číslované součástky</h2><p class="muted">Seznam říká, co do kompletu patří. Aktuální fyzická přítomnost zde není potvrzena.</p>
+    <ul class="inventory-list">@for (item of kit.items; track item.id) {
+      <li><a [routerLink]="['/soucastky/kusy', item.id]">{{ store.itemName(item) }}</a><span>Umístění podle evidence: {{ locationLabel[item.location] }}@if (item.retiredAt) { · vyřazeno }</span>
+        @if (store.canManage()) { <div class="row-actions"><button type="button" class="link-button" [disabled]="store.busy()" (click)="proposeItem('remove', item)">Odebrat…</button><button type="button" class="link-button" [disabled]="store.busy() || !itemForm.controls.targetKitId.value" (click)="proposeItem('move', item)">Přesunout do vybraného kompletu…</button></div> }
+      </li>
+    } @empty { <li class="muted">Žádná určená číslovaná součástka.</li> }</ul>
+    @if (store.canManage()) {
+      <form [formGroup]="itemForm" class="form-row" (ngSubmit)="proposeItem('add')">
+        <label class="field"><span>Volná součástka pro určené složení</span><select formControlName="itemId"><option [ngValue]="0">— vyberte —</option>@for (item of unassigned(); track item.id) { <option [ngValue]="item.id">{{ store.itemName(item) }}</option> }</select></label>
+        <label class="field"><span>Cílový komplet při přesunu</span><select formControlName="targetKitId"><option [ngValue]="0">— vyberte —</option>@for (target of targets(); track target.id) { <option [ngValue]="target.id">{{ store.kitName(target) }}</option> }</select></label>
+        <label class="field"><span>Poznámka ke změně</span><input formControlName="note" maxlength="2000" /></label>
+        <button class="button" [disabled]="store.busy() || !itemForm.controls.itemId.value">Připravit přidání součástky…</button>
+      </form>
+    }
+  </section>
+  <section class="card"><h2>Nečíslované doplňky</h2>
+    <ul class="inventory-list">@for (line of kit.bulkLines; track line.id) {
+      <li><strong>{{ stockName(line.bulkStockId) }}</strong><span>Evidováno {{ line.presentQty }} z požadovaných {{ line.requiredQty }} · fyzicky neověřeno tímto soupisem</span>
+        @if (store.canManage()) { <div class="row-actions"><button type="button" class="link-button" [disabled]="store.busy()" (click)="proposeBulk('remove', line.bulkStockId)">Odebrat celý řádek…</button><button type="button" class="link-button" [disabled]="store.busy() || bulkForm.invalid" (click)="proposeBulk('remove', line.bulkStockId, true)">Odebrat zadané počty…</button><button type="button" class="link-button" [disabled]="store.busy() || !bulkForm.controls.targetKitId.value" (click)="proposeBulk('move', line.bulkStockId)">Přesunout zadané počty…</button></div> }
+      </li>
+    } @empty { <li class="muted">Žádné určené nečíslované doplňky.</li> }</ul>
+    @if (store.canManage()) {
+      <p class="muted">Při opsání neověřeného lístku ponechte evidovaný počet 0. Přidání přičte zadané počty k existujícímu řádku. Odebrání zadaných počtů ponechá zbytek soupisu a uvolní odebrané evidované množství mimo komplet.</p>
+      <form [formGroup]="bulkForm" (ngSubmit)="proposeBulk('add')" class="form-row">
+        <label class="field"><span>Zásoba</span><select formControlName="stockId"><option [ngValue]="0">— vyberte —</option>@for (stock of store.stocks(); track stock.id) { <option [ngValue]="stock.id">{{ store.stockName(stock) }}</option> }</select></label>
+        <label class="field"><span>Požadovaný počet pro přidání / přesun</span><input type="number" formControlName="requiredQty" min="1" max="2147483647" step="1" required /></label>
+        <label class="field"><span>Evidovaný počet pro přidání / přesun</span><input type="number" formControlName="presentQty" min="0" max="2147483647" step="1" required /></label>
+        <label class="field"><span>Cílový komplet při přesunu</span><select formControlName="targetKitId"><option [ngValue]="0">— vyberte —</option>@for (target of targets(); track target.id) { <option [ngValue]="target.id">{{ store.kitName(target) }}</option> }</select></label>
+        <label class="field"><span>Poznámka ke změně</span><input formControlName="note" maxlength="2000" /></label>
+        <button class="button" [disabled]="store.busy() || bulkForm.invalid || !bulkForm.controls.stockId.value">Připravit přidání počtů…</button>
+      </form>
+    }
+  </section>
+  @if (pending(); as operation) {
+    <section class="card"><h2>Potvrzení změny složení</h2><p>{{ operationSummary(operation) }}</p><p>Uloží se změna určeného složení a evidence počtů. Fyzická kontrola tím nevznikne.</p>
+      <button type="button" class="button button-primary" [disabled]="store.busy()" (click)="apply()">Potvrdit změnu</button><button type="button" class="button" [disabled]="store.busy()" (click)="pending.set(null)">Zrušit návrh</button>
+    </section>
+  }
+  <section class="card"><h2>Historie složení</h2><ol class="inventory-list">@for (change of kit.changes; track change.id) {
+    <li><strong>{{ change.change === 'added' ? 'Přidáno' : change.change === 'removed' ? 'Odebráno' : 'Přesun' }}</strong><span>{{ change.at | date:'d. M. yyyy H:mm' }} · účet {{ change.by }}</span>
+      @if (change.itemId) { <a [routerLink]="['/soucastky/kusy', change.itemId]">Součástka {{ change.itemId }}</a> } @else if (change.bulkStockId) { <span>{{ stockName(change.bulkStockId) }} · {{ change.qty }} požadovaných kusů</span> }
+      @if (change.note) { <span>{{ change.note }}</span> }
+    </li>
+  } @empty { <li class="muted">Žádná změna složení.</li> }</ol></section>
+}

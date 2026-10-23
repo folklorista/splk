@@ -1,0 +1,61 @@
+<nav class="toolbar" aria-label="Evidence součástek">
+  <a href="#numbered">Číslované kusy</a><a href="#bulk">Nečíslované zásoby</a><a href="#kits">Komplety</a>
+  @if (store.canManage()) { <a routerLink="nova" class="button button-primary">Nová součástka</a> }
+</nav>
+@if (notice()) { <p class="notice" role="status">{{ notice() }}</p> }
+<section class="card" id="numbered">
+  <h2>Součástky podle evidenčních řad</h2>
+  <div class="form-row">
+    <label class="field"><span>Hledat řadu, číslo nebo poznámku</span><input type="search" (input)="search.set($any($event.target).value)" /></label>
+    <label class="field"><span>Řada</span><select (change)="selectedSeries.set(+$any($event.target).value)"><option value="0">všechny</option>@for (s of store.series(); track s.id) { <option [value]="s.id">{{ store.seriesName(s.id) }}</option> }</select></label>
+    <label class="field"><span>Region / oblast</span><select (change)="region.set(+$any($event.target).value)"><option value="0">všechny</option>@for (r of store.regions(); track r.id) { <option [value]="r.id">{{ r.name }}</option> }</select></label>
+    <label class="field"><span>Kroj</span><select (change)="gender.set($any($event.target).value)"><option value="">všechny</option><option value="male">mužský</option><option value="female">ženský</option></select></label>
+    <label class="field"><span>Druh</span><select (change)="partType.set(+$any($event.target).value)"><option value="0">všechny</option>@for (t of store.partTypes(); track t.id) { <option [value]="t.id">{{ t.name }}</option> }</select></label>
+    <label class="field"><span>Varianta</span><input (input)="variant.set($any($event.target).value)" /></label>
+    <label class="field"><span>Stav</span><select (change)="condition.set($any($event.target).value)"><option value="">všechny</option>@for (c of conditions; track c[0]) { <option [value]="c[0]">{{ c[1] }}</option> }</select></label>
+    <label class="field"><span>Umístění</span><select (change)="location.set($any($event.target).value)"><option value="">všechna</option>@for (l of locations; track l[0]) { <option [value]="l[0]">{{ l[1] }}</option> }</select></label>
+    <label class="field"><span>Pořízeno od</span><input type="date" (change)="acquiredFrom.set($any($event.target).value)" /></label>
+    <label class="field"><span>Pořízeno do</span><input type="date" (change)="acquiredTo.set($any($event.target).value)" /></label>
+    <label class="check"><input type="checkbox" (change)="retired.set($any($event.target).checked)" /> pouze vyřazené kusy</label>
+  </div>
+  @for (group of groups(); track group.series.id) {
+    <details class="inventory-group" [open]="group.items.length > 0 || !!selectedSeries()"><summary>{{ store.seriesName(group.series.id) }} <span class="tag">{{ group.items.length }} kusů</span></summary>
+    <ul class="inventory-list">
+      @for (item of group.items; track item.id) {
+        <li><a [routerLink]="['kusy', item.id]">{{ store.itemName(item) }}</a><span>{{ conditionLabel[item.condition] }} · {{ locationLabel[item.location] }} · {{ item.issuable ? 'vydatelný' : 'nevydatelný' }}@if (item.retiredAt) { · vyřazeno }</span></li>
+      } @empty { <li class="muted">Žádný evidovaný kus pro tento výběr. Mezery v číslech neznamenají chybějící předměty.</li> }
+    </ul></details>
+  } @empty { <p>Žádná řada. Číselníky lze doplnit v <a routerLink="/nastaveni/rady">Nastavení</a>.</p> }
+</section>
+<section class="card" id="bulk">
+  <h2>Nečíslované zásoby</h2><p class="muted">Záměrně nečíslované druhy se evidují počtem. Údaj „v kompletech“ vyjadřuje evidované přidělení.</p>
+  <ul class="inventory-list">
+    @for (stock of store.stocks(); track stock.id) {
+      <li><strong>{{ store.stockName(stock) }}</strong><span>celkem {{ stock.quantityTotal }}, v kompletech {{ stock.quantityInKits }}, mimo komplety {{ stock.quantityTotal - stock.quantityInKits }}</span>@if (stock.note) { <span>{{ stock.note }}</span> }@if (store.canManage()) { <button type="button" class="link-button" (click)="editStock(stock)">Upravit</button> }</li>
+    } @empty { <li class="muted">Žádná zásoba.</li> }
+  </ul>
+  @if (store.canManage()) {
+    <h3>{{ editingStock() ? 'Upravit zásobu' : 'Nová zásoba' }}</h3>
+    <form [formGroup]="stockForm" (ngSubmit)="saveStock()" class="form-row">
+      @if (!editingStock()) { <label class="field"><span>Nečíslovaný druh</span><select formControlName="partTypeId"><option [ngValue]="0">— vyberte —</option>@for (t of unnumberedTypes(); track t.id) { <option [ngValue]="t.id">{{ t.name }}</option> }</select></label> }
+      <label class="field"><span>Varianta</span><input formControlName="variant" maxlength="100" /></label>
+      <label class="field"><span>Celkové množství</span><input type="number" formControlName="quantityTotal" min="0" max="2147483647" step="1" required /></label>
+      <label class="field"><span>Poznámka</span><textarea formControlName="note" maxlength="5000"></textarea></label>
+      <div class="form-actions"><button class="button button-primary" [disabled]="store.busy() || stockForm.invalid">Uložit zásobu</button><button type="button" class="button" (click)="cancelStock()">Zrušit úpravu</button></div>
+    </form>
+  }
+</section>
+<section class="card" id="kits">
+  <h2>Fyzické komplety</h2>
+  <ul class="inventory-list">@for (kit of visibleKits(); track kit.id) { <li><a [routerLink]="['komplety', kit.id]">{{ store.kitName(kit) }}</a><span>{{ stateLabel[kit.compositionState] }}</span></li> } @empty { <li class="muted">Žádný komplet pro tento výběr.</li> }</ul>
+  @if (store.canManage()) {
+    <h3>Nový komplet</h3><p class="muted">Opsané složení bude neověřené. Řady kompletů se zakládají v <a routerLink="/nastaveni/rady">Nastavení</a>.</p>
+    <form [formGroup]="kitForm" (ngSubmit)="saveKit()" class="form-row">
+      <label class="field"><span>Řada kompletů</span><select formControlName="seriesId"><option [ngValue]="0">— vyberte —</option>@for (s of kitSeries(); track s.id) { <option [ngValue]="s.id">{{ store.seriesName(s.id) }}</option> }</select></label>
+      <label class="field"><span>Číslo (může zatím chybět)</span><input formControlName="number" maxlength="100" /></label>
+      <label class="field"><span>Popis</span><textarea formControlName="description" maxlength="2000"></textarea></label>
+      <label class="field"><span>Poznámka</span><textarea formControlName="note" maxlength="5000"></textarea></label>
+      <button class="button button-primary" [disabled]="store.busy() || !kitForm.controls.seriesId.value">Založit neověřený komplet</button>
+    </form>
+  }
+</section>

@@ -10,11 +10,11 @@ Co je hotové a co se právě dělá. Pořadí vývoje určuje [`../decisions.md
 | **API** (`api.vonica.cz`) | Kroky 1–2 ve větvi `feature/api-skeleton`: kostra (router, `GET /v1/health`, CORS/origin/JSON, sessions v PostgreSQL, CSRF), migrace identity a přístupu, `auth/*` podle kap. 4.1 (přihlášení s omezením pokusů, odhlášení, `me`, změna hesla, obnova hesla e-mailem přes PHPMailer, přihlášená zařízení), seed prvního účtu `organization.admin` (pozvaný, heslo si nastaví odkazem). Testy PHPUnit (Unit + Integration). Nasazeno 2026-10-24 jako `feature/api-skeleton@62b8310`: `config/config.php` z `.env`, migrace `CreateIdentityAndAccess` (záloha před migrací v `dev/local/backups/`), pozvaný účet `organization.admin`. Krok 3 (nasazeno 2026-10-24 jako `908001d`, se seedy `VonicaUnits` a `VonicaCatalog`): migrace `CreateCatalogAndAudit` (regiony, druhy, řady, `audit_log`, `mandates.revoked_at`), katalog `/v1/funds/{u}/regions\|part-types\|series` s kontrolou pověření (404 mimo rozsah, 403 jen pro čtení), správa organizace (`/v1/persons`, `/v1/accounts`, `/v1/mandates`, `/v1/units`), audit všech zápisů, seedy `VonicaUnits` a `VonicaCatalog`. |
 | **Demo** (`demo.vonica.cz`) | Prototyp nasazený jako `design/identity-03@ce20f01`. Přesun z `moje` dokončen 22. 10. 2026. Nasazení: `/deploy` (`--target demo`). Popis kódu: `../archive/implementace-2026-10-21/`. |
 | **moje.vonica.cz** | Vývoj odložen. Po přesunu dema prázdná, vyhrazená budoucí členské aplikaci. |
-| Monorepo | npm workspaces `apps/*`, `packages/*`, Node ≥ 24 (`.nvmrc`). `packages/api-contracts` (DTO a chybové kódy auth) – první sdílený balíček. Deploy: `npm run deploy -- --target api\|krojarka` (`scripts/deploy-app.mjs`). Dál krok 4 (součástky). |
+| Monorepo | npm workspaces `apps/*`, `packages/*`, Node ≥ 24 (`.nvmrc`). `packages/api-contracts` (DTO a chybové kódy auth) – první sdílený balíček. Deploy: `npm run deploy -- --target api\|krojarka` (`scripts/deploy-app.mjs`). Krok 4 (součástky) dokončen lokálně; dál krok 5 (Lidé a krojové karty). |
 
-## Krok 4 – Součástky (rozpracováno)
+## Krok 4 – Součástky (dokončeno 2026-10-24)
 
-**2026-10-24: dokončena etapa 1 – databáze a kontrakty.** Etapa 2 API kusů je také dokončena (níže). Obrazovky a ostatní endpointy kroku 4 zatím implementované nejsou; etapa 3 je dokončena, pokračuje etapa 4.
+**2026-10-24: dokončena etapa 1 – databáze a kontrakty.** Následující etapy jsou také dokončeny (níže), včetně obrazovek a obou datových adaptérů. Další krok je 5 – Lidé a krojové karty.
 
 - Migrace `20261024120000_create_costume_inventory`: kusy, nečíslované zásoby, fyzické komplety, početní řádky, historie složení, události kusů a pracovní úkoly. Vazby mezi fondy chrání složené cizí klíče. Aktivní čísla jsou jedinečná v řadě; zákaz opakovaného použití historického čísla podle nastavení řady bude kontrolovat API v etapě 2.
 - `kit_id` vyjadřuje určené složení, nikoli potvrzenou přítomnost kusu. `required_qty` je požadavek, `present_qty` evidované množství přidělené kompletu (výchozí 0), nikoli fyzické ověření. Nový komplet má stav `unverified`; vložení složení jej automaticky nemění.
@@ -61,7 +61,24 @@ Ruční ověření po lokálním spuštění API s migrací etapy 1 (zatím bez 
 
 - Seznam a založení úkolu u kusu, úprava úkolu a souhrn fondu s filtrem stavu. Typy a stavy podle D-38; změna úkolu automaticky nemění stav, umístění ani vydatelnost kusu.
 - Nový úkol nelze založit u vyřazeného kusu; existující lze dokončit či zrušit. Všechny zápisy, události kusu a audit jsou atomické a podléhají pověření fondu.
-- PHPUnit: **127 testů / 954 assertions**, 5 nových testů pracovních úkolů včetně oprávnění, validace a rollbacku. Diff v pořádku. Pokračuje etapa 6 – Angular a adaptéry; krok 4 ještě není celý dokončen.
+- PHPUnit: **127 testů / 954 assertions**, 5 nových testů pracovních úkolů včetně oprávnění, validace a rollbacku. Diff v pořádku. Následovala etapa 6 – Angular a adaptéry (dokončena níže).
+
+### Etapa 6 a závěrečné ověření kroku 4 (2026-10-24)
+
+- Jediná hlavní položka Součástky: přehled podle evidenčních řad, filtry klasifikace, stavu, umístění a pořízení, nečíslované zásoby a fyzické komplety. Trasy `/soucastky`, `/soucastky/nova`, `/soucastky/kusy/:id`, `/soucastky/komplety/:id`.
+- Formuláře a detaily kusů, důvod a potvrzení vyřazení, historie, pracovní úkoly včetně úpravy a změn stavu. Detail kompletu odděluje určené kusy od požadovaných/evidovaných počtů; změny složení mají souhrn před potvrzením. Doplněno také částečné odebrání doplňků (s oběma počty) bez jiného kompletu.
+- `InventoryStore` zajišťuje načtení všech stránek a ignorování opožděných odpovědí starého fondu nebo detailu. Při konfliktu zůstává formulář i původní verze zachovaná; obnovení se provádí výslovně. Rozhraní `InventoryApi` má zaměnitelné HTTP a mock adaptéry, komponenty HTTP nevolají. Mock data jsou pouze v paměti relace a operace se při chybě vracejí zpět jako celek.
+- Číslované součástky nemají odvozenou dostupnost ani držitele. Zásoby ukazují celkem / v kompletech / mimo komplety; fyzická kontrola a výpůjčky nevznikají.
+- Kompletní ověření: **PHPUnit 128 testů / 963 assertions**, **Vitest 65 testů v 16 souborech**, TypeScript aplikace, testů i sdílených kontraktů, produkční build **468,66 kB** (v limitu) a `git diff --check`. Bez nových závislostí a bez změny architektury.
+- Samostatně připravený krok 4 lze po revizi a ručním ověření řízeně nasadit s migrací etapy 1; migrace zůstává pouze v lokální testovací DB. Produkce ani vzdálený Git se neměnily.
+
+Ruční ověření UI, které zbývá provést v prohlížeči (zejména mobil 360 px a HTTP režim):
+
+1. V mock režimu založit kus bez čísla, doplnit číslo a poznámku, zkontrolovat historii, založit a upravit pracovní úkol. Pak vyřadit kus s důvodem a znovu použít číslo podle nastavení řady.
+2. Založit nečíslovanou zásobu a neověřený komplet. Opsat požadované množství s evidovaným počtem 0; ověřit, že se komplet neoznačí jako úplný.
+3. Do kompletu přidat kus a doplňky, přesunout je mezi dvěma komplety a část doplňků odebrat. Před potvrzením zkontrolovat souhrn; po uložení historii obou kompletů a množství zásoby.
+4. Se dvěma přihlášeními ověřit konflikt verze, zachování rozepsaného formuláře a výslovné obnovení. Přepnout fond během načítání a při probíhajícím zápisu. Zopakovat jako čtenář a jako správce organizace bez přístupu k fondu.
+5. V HTTP režimu proti lokální migrované DB zopakovat ukládání a obnovení stránky. Automatické testy pokrývají uvedená pravidla, nenahrazují ruční kontrolu ergonomie.
 
 ## Známé rozdíly mezi demem a platnými rozhodnutími
 

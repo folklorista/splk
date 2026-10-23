@@ -13,7 +13,12 @@ import { SettingsLayout, SettingsNoAccess } from './features/nastaveni/settings-
 import { UsersPage } from './features/nastaveni/users-page';
 import { AccountPage } from './features/ucet/account-page';
 
-const IMPLEMENTED = ['ucet', 'nastaveni'];
+import { InventoryLayout } from './features/soucastky/inventory-layout';
+import { InventoryPage } from './features/soucastky/inventory-page';
+import { ItemPage } from './features/soucastky/item-page';
+import { KitPage } from './features/soucastky/kit-page';
+
+const IMPLEMENTED = ['ucet', 'nastaveni', 'soucastky'];
 
 const placeholders: Routes = MENU.filter((item) => !IMPLEMENTED.includes(item.path)).map((item) => ({
   path: item.path,
@@ -34,6 +39,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       ...placeholders,
+      { path: 'soucastky', component: InventoryLayout, canActivate: [fundGuard], children: [
+        { path: '', pathMatch: 'full', component: InventoryPage, title: 'Součástky · Krojařka' },
+        { path: 'nova', component: ItemPage, title: 'Nová součástka · Krojařka' },
+        { path: 'kusy/:id', component: ItemPage, title: 'Součástka · Krojařka' },
+        { path: 'komplety/:id', component: KitPage, title: 'Komplet · Krojařka' },
+      ] },
       { path: 'ucet', component: AccountPage, title: 'Můj účet · Krojařka' },
       {
         path: 'nastaveni',

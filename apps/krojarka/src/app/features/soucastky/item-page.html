@@ -1,0 +1,70 @@
+<a routerLink="/soucastky">← Součástky</a>
+@if (notice()) { <p class="notice" role="status">{{ notice() }}</p> }
+@if (store.detailLoading()) { <p role="status">Načítám součástku…</p> }
+@if (!id() || store.item()) {
+  <section class="card">
+    <h2>{{ id() && store.item() ? store.itemName(store.item()!) : 'Nová součástka' }}</h2>
+    @if (store.item(); as item) {
+      <p>{{ conditionLabel[item.condition] }} · {{ locationLabel[item.location] }} · {{ item.issuable ? 'vydatelný' : 'nevydatelný' }}</p>
+      @if (item.kitId) { <p>Určený komplet: <a [routerLink]="['/soucastky/komplety', item.kitId]">otevřít komplet</a>. Příslušnost neprokazuje fyzickou přítomnost.</p> }
+      @if (item.retiredAt) { <p class="notice notice-warn">Vyřazeno {{ item.retiredAt | date:'d. M. yyyy' }}: {{ item.retireReason }}</p> }
+      <button type="button" class="link-button" [disabled]="store.busy()" (click)="refresh()">Obnovit údaje a zahodit rozepsané změny</button>
+    }
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <fieldset [disabled]="!store.canManage() || store.busy() || !!store.item()?.retiredAt" class="form-row inventory-fieldset">
+        <label class="field"><span>Evidenční řada</span><select formControlName="seriesId"><option [ngValue]="0">— vyberte —</option>@for (s of partSeries(); track s.id) { <option [ngValue]="s.id">{{ store.seriesName(s.id) }}{{ s.archived ? ' (archivovaná)' : '' }}</option> }</select></label>
+        <label class="field"><span>Číslo (zatím může chybět)</span><input formControlName="number" maxlength="100" inputmode="numeric" /></label>
+        <label class="field"><span>Varianta kusu</span><input formControlName="variant" maxlength="100" /></label>
+        <label class="field"><span>Velikost / míry</span><input formControlName="size" maxlength="200" /></label>
+        <label class="field"><span>Stav</span><select formControlName="condition">@for (c of conditions; track c[0]) { <option [value]="c[0]">{{ c[1] }}</option> }</select></label>
+        <label class="field"><span>Fyzické umístění</span><select formControlName="location">@for (l of locations; track l[0]) { <option [value]="l[0]">{{ l[1] }}</option> }</select></label>
+        <label class="check"><input type="checkbox" formControlName="issuable" /> vydatelný</label>
+        <label class="field"><span>Poznámka k umístění</span><input formControlName="locationNote" maxlength="2000" /></label>
+        <label class="field"><span>Pořízeno dne</span><input type="date" formControlName="acquiredOn" /></label>
+        <label class="field field-wide"><span>Popis</span><textarea formControlName="description" maxlength="2000"></textarea></label>
+        <label class="field field-wide"><span>Dlouhodobá poznámka</span><textarea formControlName="note" maxlength="5000"></textarea></label>
+        @if (store.canManage() && !store.item()?.retiredAt) { <button class="button button-primary" [disabled]="form.invalid">Uložit součástku</button> }
+      </fieldset>
+    </form>
+    @if (id() && store.canManage() && !store.item()?.retiredAt) {
+      @if (!confirmRetire()) { <button type="button" class="button" (click)="confirmRetire.set(true)">Vyřadit…</button> }
+      @else {
+        <section class="notice notice-warn"><h3>Potvrzení vyřazení</h3><p>Vyřazený kus zůstane v historii a nebude možné jej upravovat.</p>
+          <label class="field"><span>Důvod vyřazení</span><textarea maxlength="2000" [value]="reason()" (input)="reason.set($any($event.target).value)"></textarea></label>
+          <button type="button" class="button" [disabled]="store.busy() || !reason().trim()" (click)="retire()">Potvrdit vyřazení</button><button type="button" class="button" (click)="confirmRetire.set(false)">Zrušit</button>
+        </section>
+      }
+    }
+  </section>
+}
+@if (store.item(); as item) {
+  <section class="card"><h2>Pracovní úkoly</h2>
+    <ul class="inventory-list">@for (order of store.orders(); track order.id) {
+      <li><strong>{{ orderTypeLabel[order.type] }} · {{ orderStateLabel[order.status] }}</strong><span>{{ order.description }}</span><span>{{ order.assignee }}@if (order.dueOn) { · do {{ order.dueOn | date:'d. M. yyyy' }} }</span>
+        @if (store.canManage()) { <button type="button" class="link-button" [disabled]="store.busy()" (click)="editOrder(order)">Upravit úkol</button><label class="field"><span>Změnit stav úkolu</span><select [value]="order.status" [disabled]="store.busy()" (change)="changeOrder(order, $any($event.target).value)">@for (state of orderStates; track state[0]) { <option [value]="state[0]">{{ state[1] }}</option> }</select></label> }
+      </li>
+    } @empty { <li class="muted">Žádný pracovní úkol.</li> }</ul>
+    @if (store.canManage() && (!item.retiredAt || editingOrder())) {
+      <h3>{{ editingOrder() ? 'Upravit pracovní úkol' : 'Nový pracovní úkol' }}</h3>
+      <form [formGroup]="orderForm" (ngSubmit)="createOrder()" class="form-row">
+        <label class="field"><span>Druh práce</span><select formControlName="type">@for (t of orderTypes; track t[0]) { <option [value]="t[0]">{{ t[1] }}</option> }</select></label>
+        <label class="field"><span>Popis práce</span><textarea formControlName="description" maxlength="2000" required></textarea></label>
+        <label class="field"><span>Kdo vyřizuje</span><input formControlName="assignee" maxlength="200" /></label>
+        <label class="field"><span>Termín</span><input type="date" formControlName="dueOn" /></label>
+        <button class="button button-primary" [disabled]="store.busy() || orderForm.invalid">{{ editingOrder() ? 'Uložit úkol' : 'Přidat pracovní úkol' }}</button>@if (editingOrder()) { <button type="button" class="button" (click)="cancelOrder()">Zrušit úpravu</button> }
+      </form>
+    }
+  </section>
+  <section class="card"><h2>Historie součástky</h2>
+    <ol class="inventory-list">@for (event of store.history(); track event.id) {
+      <li><strong>{{ events[event.event] || 'Změna evidence' }}</strong><span>{{ event.at | date:'d. M. yyyy H:mm' }} · účet {{ event.by }}</span>
+        @if (event.data['field']; as field) { <span>{{ fields[$any(field)] || 'Údaj' }}: {{ eventValue($any(field), event.data['from']) }} → {{ eventValue($any(field), event.data['to']) }}</span> }
+        @if (event.event === 'retired') { <span>{{ event.data['reason'] }}</span> }
+        @if (event.event === 'created') { <span>Počáteční poznámka: {{ event.data['note'] || 'neuvedena' }}</span> }
+        @if (event.event === 'kit_changed') { <span>Určený komplet: {{ event.data['from'] || 'žádný' }} → {{ event.data['to'] || 'žádný' }}</span> }
+        @if (event.event === 'work_order_created') { <span>{{ event.data['description'] }}</span> }
+        @if (event.event === 'work_order_changed') { <span>Úkol: {{ $any(event.data['from']).description }} · {{ orderStatus($any(event.data['from']).status) }} → {{ orderStatus($any(event.data['to']).status) }}</span> }
+      </li>
+    } @empty { <li class="muted">Žádná zaznamenaná událost.</li> }</ol>
+  </section>
+}
