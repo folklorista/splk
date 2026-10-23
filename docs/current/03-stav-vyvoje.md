@@ -14,7 +14,7 @@ Co je hotové a co se právě dělá. Pořadí vývoje určuje [`../decisions.md
 
 ## Krok 4 – Součástky (rozpracováno)
 
-**2026-10-24: dokončena etapa 1 – databáze a kontrakty.** Etapa 2 API kusů je také dokončena (níže). Obrazovky a ostatní endpointy kroku 4 zatím implementované nejsou; etapa 3 čeká na navazující zadání.
+**2026-10-24: dokončena etapa 1 – databáze a kontrakty.** Etapa 2 API kusů je také dokončena (níže). Obrazovky a ostatní endpointy kroku 4 zatím implementované nejsou; etapa 3 je dokončena, pokračuje etapa 4.
 
 - Migrace `20261024120000_create_costume_inventory`: kusy, nečíslované zásoby, fyzické komplety, početní řádky, historie složení, události kusů a pracovní úkoly. Vazby mezi fondy chrání složené cizí klíče. Aktivní čísla jsou jedinečná v řadě; zákaz opakovaného použití historického čísla podle nastavení řady bude kontrolovat API v etapě 2.
 - `kit_id` vyjadřuje určené složení, nikoli potvrzenou přítomnost kusu. `required_qty` je požadavek, `present_qty` evidované množství přidělené kompletu (výchozí 0), nikoli fyzické ověření. Nový komplet má stav `unverified`; vložení složení jej automaticky nemění.
@@ -41,6 +41,13 @@ Ruční ověření po lokálním spuštění API s migrací etapy 1 (zatím bez 
 2. Doplnit číslo, stav a poznámku s aktuální verzí; opakovat požadavek se starou verzí → 409. Ověřit původní a novou poznámku v historii.
 3. Vyřadit kus s důvodem; ověřit detail, filtr `retired=true` a historii. Založit nový kus se stejným číslem podle nastavení řady; stará a nová identita se liší.
 4. S pověřením jen pro čtení zkusit úpravu → 403; s pověřením jiného fondu detail i historii → 404. Zkusit filtr `holder` nebo `available` → 422. Tyto ruční scénáře zatím nebyly samostatně provedeny; jejich chování pokrývají integrační testy.
+
+### Etapa 3 – API nečíslovaných zásob (2026-10-24)
+
+- Seznam a založení ve fondu, úprava na kanonické adrese. Typ zásoby je neměnný; vyžaduje nečíslovaný aktivní druh stejného fondu.
+- Přísná celočíselná množství, zámek zásoby při změně, zamítnutí snížení pod evidované přidělení do kompletů. Změny a audit jsou atomické. Používaný druh nelze přepnout mezi číslovaným a nečíslovaným.
+- Vrací se `quantityTotal` a `quantityInKits`, nikoli dostupnost či držitelé. Výpůjčky zůstávají krokem 6.
+- PHPUnit: **112 testů / 770 assertions**; 7 nových testů zásob, včetně oprávnění, množství, duplicity a rollbacku auditu. `git diff --check` prošel. Produkce beze změny.
 
 ## Známé rozdíly mezi demem a platnými rozhodnutími
 

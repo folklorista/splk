@@ -43,6 +43,13 @@ final class CatalogRepository
         return $statement->fetchColumn() !== false;
     }
 
+    public function hasStocksForPartType(int $id): bool
+    {
+        $statement = $this->db->prepare('SELECT 1 FROM costume_bulk_stocks WHERE part_type_id = :id LIMIT 1');
+        $statement->execute(['id' => $id]);
+        return $statement->fetchColumn() !== false;
+    }
+
     public function hasChildRegions(int $id): bool
     {
         $statement = $this->db->prepare('SELECT 1 FROM costume_regions WHERE parent_id = :id AND archived_at IS NULL');
