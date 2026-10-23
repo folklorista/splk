@@ -23,6 +23,10 @@
     "build-info": "node scripts/build-info.mjs",
     "icons:generate": "node scripts/generate-stitch-icons.mjs",
     "deploy": "node scripts/deploy.mjs",
+    "krojarka:start": "npm --workspace apps/krojarka start",
+    "krojarka:start:mock": "npm --workspace apps/krojarka start -- --configuration mock",
+    "krojarka:test": "npm --workspace apps/krojarka test -- --watch=false",
+    "krojarka:build": "npm --workspace apps/krojarka run build",
     "api:install": "docker compose run --rm api composer install",
     "api:test": "docker compose run --rm api composer test",
     "api:migrate": "docker compose run --rm api composer migrate"

@@ -1,0 +1,9 @@
+{
+  "name": "@splk/api-contracts",
+  "description": "TypeScript mirror of the api.vonica.cz v1 requests, responses and error codes (source of truth is the API)",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

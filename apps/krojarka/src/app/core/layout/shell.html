@@ -1,0 +1,48 @@
+<header class="topbar">
+  <button
+    type="button"
+    class="menu-toggle"
+    [attr.aria-expanded]="menuOpen()"
+    aria-controls="side-menu"
+    (click)="menuOpen.set(!menuOpen())"
+  >
+    Menu
+  </button>
+  <a routerLink="/" class="brand">Krojařka</a>
+</header>
+
+<nav id="side-menu" class="sidebar" [class.open]="menuOpen()" aria-label="Hlavní menu">
+  <a routerLink="/" class="brand brand-large">
+    Krojařka
+    <small>Vonica</small>
+  </a>
+  @if (mock) {
+    <p class="mock-badge">Vývojová data bez serveru</p>
+  }
+  <ul>
+    @for (item of menu; track item.path) {
+      <li>
+        <a
+          [routerLink]="'/' + item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.path === '' }"
+          (click)="menuOpen.set(false)"
+        >
+          {{ item.label }}
+        </a>
+      </li>
+    }
+  </ul>
+  <div class="user">
+    <span>{{ auth.displayName() }}</span>
+    <button type="button" class="link-button" (click)="logout()">Odhlásit</button>
+  </div>
+</nav>
+
+@if (menuOpen()) {
+  <div class="backdrop" (click)="menuOpen.set(false)"></div>
+}
+
+<main class="content">
+  <router-outlet />
+</main>

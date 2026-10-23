@@ -1,0 +1,61 @@
+<h1 class="page-title">Můj účet</h1>
+
+@if (auth.user(); as user) {
+  <section class="card">
+    <h2>{{ auth.displayName() }}</h2>
+    <p class="muted">{{ user.account.loginEmail }}</p>
+    <h3>Pověření</h3>
+    @if (user.mandates.length) {
+      <ul class="plain-list">
+        @for (mandate of user.mandates; track mandate.id) {
+          <li>{{ mandateLabel(mandate) }}</li>
+        }
+      </ul>
+    } @else {
+      <p class="muted">Zatím nemáte žádné pověření.</p>
+    }
+  </section>
+}
+
+<section class="card">
+  <h2>Změna hesla</h2>
+  <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate class="narrow-form">
+    <label class="field">
+      <span>Současné heslo</span>
+      <input type="password" formControlName="currentPassword" autocomplete="current-password" />
+    </label>
+    <label class="field">
+      <span>Nové heslo (alespoň {{ minLength }} znaků)</span>
+      <input type="password" formControlName="newPassword" autocomplete="new-password" />
+    </label>
+    @if (passwordMessage(); as message) {
+      <p class="notice" [class.notice-ok]="message.ok" [class.notice-danger]="!message.ok" role="status">
+        {{ message.text }}
+      </p>
+    }
+    <button type="submit" class="button button-primary" [disabled]="passwordBusy()">Změnit heslo</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Přihlášená zařízení</h2>
+  @if (sessionsError()) {
+    <p class="notice notice-danger">{{ sessionsError() }}</p>
+  }
+  <ul class="plain-list sessions">
+    @for (session of sessions(); track session.id) {
+      <li>
+        <div>
+          <strong>{{ session.userAgent || 'Neznámé zařízení' }}</strong>
+          @if (session.current) {
+            <span class="tag">toto zařízení</span>
+          }
+          <div class="muted">Naposledy {{ session.lastSeenAt | date: 'd. M. y H:mm' }}</div>
+        </div>
+        <button type="button" class="button" (click)="endSession(session)">Odhlásit</button>
+      </li>
+    }
+  </ul>
+</section>
+
+<button type="button" class="button" (click)="logout()">Odhlásit se</button>

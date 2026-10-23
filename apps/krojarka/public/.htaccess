@@ -1,0 +1,30 @@
+# krojarka.vonica.cz – Angular SPA on Apache (deployed by scripts/deploy-app.mjs)
+Options -Indexes
+
+<IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=31536000"
+    Header always set X-Content-Type-Options "nosniff"
+    # the password reset link carries its token in the URL – never send it on in Referer
+    Header always set Referrer-Policy "same-origin"
+
+    <FilesMatch "^(index\.html|build-info\.json)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+    <FilesMatch "-[A-Z0-9]{8}\.(js|css)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # a missing asset stays 404 instead of returning index.html (hosting doc chap. 9, item 4)
+    RewriteCond %{REQUEST_URI} \.(js|css|png|jpe?g|svg|ico|json|webmanifest|woff2?|map|txt)$ [NC]
+    RewriteRule ^ - [R=404,L]
+
+    # every other path is an app route
+    RewriteRule ^ index.html [L]
+</IfModule>
