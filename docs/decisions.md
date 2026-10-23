@@ -303,7 +303,7 @@ Soupis podle řady, podle člověka, současný a historický soupis konkrétní
 - `api/` v kořeni – jedna společná serverová aplikace.
 - Demo zůstává ve `frontend/` a **nepřesouvá se** (2026-10-23).
 
-Podrobný strom a hranice: `current/monorepo-struktura.md` (schváleno).
+Podrobný strom a hranice: `current/monorepo-struktura.md` (schváleno). API a schéma: `current/api-v1-a-schema.md` (D-57).
 **Zdroj:** uživatel 2026-10-23. **Upřesňuje:** D-03.
 
 ### D-42 Angular pro Krojařku: aktuální stabilní verze
@@ -331,7 +331,7 @@ Migrace nesmí běžet při běžném HTTP požadavku. Před produkční migrac�
 Pro celý repozitář (Krojařka s Angularem 22 i demo s Angularem 19). Node běží jen při vývoji a buildu.
 **Zdroj:** uživatel 2026-10-23.
 
-## API v1 (2026-10-23, `proposals/api-v1-a-schema.md` kap. 7)
+## API v1 (2026-10-23, `current/api-v1-a-schema.md` kap. 7)
 
 ### D-48 Správa organizace v Krojařce
 
@@ -380,7 +380,7 @@ V administraci hostingu je u `api.vonica.cz` nastaven vlastní kořenový adres�
 - `src/`, `vendor/`.
 
 Nic z toho není z webu dostupné. Ověřeno testem 2026-10-23.
-**Zdroj:** uživatel 2026-10-23 (nastavení); `proposals/api-v1-a-schema.md` kap. 8.
+**Zdroj:** uživatel 2026-10-23 (nastavení); `current/api-v1-a-schema.md` kap. 8.
 
 ### D-55 Odesílání e-mailů ze schránky `krojarka@vonica.cz`
 
@@ -392,6 +392,15 @@ Nic z toho není z webu dostupné. Ověřeno testem 2026-10-23.
 
 Pozor: hodnoty v `.env` obsahující `#` musí být v uvozovkách, jinak se useknou.
 **Zdroj:** uživatel 2026-10-23; test na `api.vonica.cz`.
+
+### D-56 E-mailová knihovna: PHPMailer
+
+**Zdroj:** uživatel 2026-10-23.
+
+### D-57 Schválení API v1 a schématu
+
+Návrh `current/api-v1-a-schema.md` je schválen jako základ implementace Krojařky a API, včetně pořadí kroků v kap. 6.
+**Zdroj:** uživatel 2026-10-23.
 
 ## Odložené, ale schválené cíle pro `moje.vonica.cz`
 

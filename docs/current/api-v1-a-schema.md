@@ -1,6 +1,6 @@
-# Návrh: API v1 a databázové schéma Krojařky
+# API v1 a databázové schéma Krojařky
 
-**Stav:** návrh ke schválení, 2026-10-23 (zbytek Q-10). Body 1–8 z kap. 7 jsou rozhodnuté a ověřené (D-48 až D-54) a zapracované. Nic zatím není implementováno.
+**Stav:** schváleno 2026-10-23 (D-57). Body kap. 7 rozhodnuty (D-48 až D-56). Zatím neimplementováno. Při implementaci se upřesňuje v malých krocích; změny rozsahu jdou do `decisions.md`.
 **Vychází z:** `current/06` v0.5, `current/krojarka/frontend-demo-specifikace.md`, `current/identity-model-v2.md`, `current/hosting-postgresql-api-auth.md`, `current/monorepo-struktura.md` a rozhodnutí D-06 až D-47.
 
 Značení:
@@ -247,7 +247,7 @@ První účet se správou organizace vytvoří seed z `.env` při první migraci
    - Phinx s první migrací (identita a přístup);
    - Docker služba `api`.
 2. **Přihlášení:**
-   - `auth/*` včetně obnovy hesla e-mailem (SMTP `smtp.websupport.cz`);
+   - `auth/*` včetně obnovy hesla e-mailem (PHPMailer, SMTP `smtp.websupport.cz`, D-55, D-56);
    - první účet se správou organizace (seed);
    - kostra Krojařky (Angular 22, layout a menu podle D-22, přihlášení);
    - nasazení `api` a `krojarka` (rozšířit deploy skript o cíle `api` a `krojarka`).
@@ -265,7 +265,7 @@ Každý krok má testy API (včetně zamítnutých operací) a je nasaditelný s
 ## 7. Rozhodnuto 2026-10-23
 
 1. **Účty a pověření** spravuje pověření `organization.admin` v Krojařce (Nastavení → Uživatelé a pověření); první účet vytvoří seed (D-48).
-2. **Zapomenuté heslo:** hned odkaz e-mailem (D-49). Odesílání přes SMTP Websupportu je ověřené v projektu Katerinských hodů (`smtp.websupport.cz`, s náhradou přes PHP `mail()`). [?] Z jaké schránky se bude posílat (např. `krojarka@vonica.cz`)? Návrh: místo vlastního SMTP klienta malá knihovna (PHPMailer nebo symfony/mailer, D-43).
+2. **Zapomenuté heslo:** hned odkaz e-mailem (D-49). Odesílání přes SMTP Websupportu je ověřené v projektu Katerinských hodů (`smtp.websupport.cz`, s náhradou přes PHP `mail()`). [?] Z jaké schránky se bude posílat (např. `krojarka@vonica.cz`)? Rozhodnuto: schránka `krojarka@vonica.cz` (D-55), knihovna **PHPMailer** (D-56).
 3. **Pokladník** čte náklady všech fondů i kusy, ke kterým se váží (D-49).
 4. **Výchozí kroj** je jeden u osoby (D-50).
 5. **Skupiny už ve v1** kvůli rozsahu inventury (D-51).

@@ -10,7 +10,7 @@ Co je hotové a co se právě dělá. Pořadí vývoje určuje [`../decisions.md
 | **API** (`api.vonica.cz`) | Nezahájeno. Hosting, PostgreSQL 18, CORS, cookie sessions a CSRF ověřeny prototypem (`hosting-postgresql-api-auth.md`). DB je prázdná. |
 | **Demo** (`demo.vonica.cz`) | Prototyp nasazený jako `design/identity-03@ce20f01`. Přesun z `moje` dokončen 22. 10. 2026. Nasazení: `/deploy` (`--target demo`). Popis kódu: `../archive/implementace-2026-10-21/`. |
 | **moje.vonica.cz** | Vývoj odložen. Po přesunu dema prázdná, vyhrazená budoucí členské aplikaci. |
-| Monorepo | Rozhodnuto (D-03), rozvržení otevřené (Q-10). Kód zatím obsahuje jen jednu Angular aplikaci (`frontend/`). |
+| Monorepo | Struktura schválena (`monorepo-struktura.md`), API a schéma schváleny (`api-v1-a-schema.md`). Implementace začíná krokem 1 (kostra). Kód zatím obsahuje jen demo (`frontend/`). |
 
 ## Známé rozdíly mezi demem a platnými rozhodnutími
 
