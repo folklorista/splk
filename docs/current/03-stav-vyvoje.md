@@ -6,11 +6,11 @@ Co je hotové a co se právě dělá. Pořadí vývoje určuje [`../decisions.md
 
 | Část | Stav |
 |---|---|
-| **Krojařka** (`krojarka.vonica.cz`) | Krok 2: kostra v `apps/krojarka` (Angular 22.2, zoneless, Vitest): boční menu podle D-22 (sekce zatím jako zástupné stránky), přihlášení, zapomenuté heslo, nastavení hesla z odkazu, Můj účet (pověření, změna hesla, přihlášená zařízení, odhlášení). Datová vrstva `data/` s HTTP a mock adaptérem (`npm run krojarka:start:mock`), interceptory podle hosting doc kap. 8. Trasy česky (`/prihlaseni`, `/lide`, `/soucastky`…). Nasazeno 2026-10-24 jako `feature/api-skeleton@62b8310`. Krok 3 (nasazeno 2026-10-24 jako `908001d`): výběr krojového fondu v menu, Nastavení → Katalog (regiony a oblasti, druhy součástek), Evidenční řady (součástek i kompletů), Uživatelé a pověření (D-59). Krok 4 dokončen lokálně: Součástky podle řad, kusy, zásoby, komplety, složení, historie a pracovní úkoly s HTTP/mock adaptéry; zatím nenasazeno. Krok 5 dokončen lokálně: Lidé, společné kontakty (D-60), fondové profily. Krok 6 dokončen lokálně: výpůjčky, pohyby, vrácení, výměny a ztráty (D-61, D-62), skutečná dostupnost a fondové karty s HTTP/mock adaptéry; zatím nenasazeno. |
-| **API** (`api.vonica.cz`) | Kroky 1–2 ve větvi `feature/api-skeleton`: kostra (router, `GET /v1/health`, CORS/origin/JSON, sessions v PostgreSQL, CSRF), migrace identity a přístupu, `auth/*` podle kap. 4.1 (přihlášení s omezením pokusů, odhlášení, `me`, změna hesla, obnova hesla e-mailem přes PHPMailer, přihlášená zařízení), seed prvního účtu `organization.admin` (pozvaný, heslo si nastaví odkazem). Testy PHPUnit (Unit + Integration). Nasazeno 2026-10-24 jako `feature/api-skeleton@62b8310`: `config/config.php` z `.env`, migrace `CreateIdentityAndAccess` (záloha před migrací v `dev/local/backups/`), pozvaný účet `organization.admin`. Krok 3 (nasazeno 2026-10-24 jako `908001d`, se seedy `VonicaUnits` a `VonicaCatalog`): migrace `CreateCatalogAndAudit` (regiony, druhy, řady, `audit_log`, `mandates.revoked_at`), katalog `/v1/funds/{u}/regions\|part-types\|series` s kontrolou pověření (404 mimo rozsah, 403 jen pro čtení), správa organizace (`/v1/persons`, `/v1/accounts`, `/v1/mandates`, `/v1/units`), audit všech zápisů, seedy `VonicaUnits` a `VonicaCatalog`. Krok 4 dokončen lokálně: migrace fyzické evidence, API kusů, zásob, kompletů, složení a pracovních úkolů; zatím nenasazeno. Krok 5 dokončen lokálně: Lidé, společné kontakty (D-60), fondové profily. Krok 6 dokončen lokálně: výpůjčky, pohyby, vrácení, výměny a ztráty (D-61, D-62), skutečná dostupnost a fondové karty s HTTP/mock adaptéry; zatím nenasazeno. |
+| **Krojařka** (`krojarka.vonica.cz`) | Krok 2: kostra v `apps/krojarka` (Angular 22.2, zoneless, Vitest): boční menu podle D-22 (sekce zatím jako zástupné stránky), přihlášení, zapomenuté heslo, nastavení hesla z odkazu, Můj účet (pověření, změna hesla, přihlášená zařízení, odhlášení). Datová vrstva `data/` s HTTP a mock adaptérem (`npm run krojarka:start:mock`), interceptory podle hosting doc kap. 8. Trasy česky (`/prihlaseni`, `/lide`, `/soucastky`…). Nasazeno 2026-10-24 jako `feature/api-skeleton@62b8310`. Krok 3 (nasazeno 2026-10-24 jako `908001d`): výběr krojového fondu v menu, Nastavení → Katalog (regiony a oblasti, druhy součástek), Evidenční řady (součástek i kompletů), Uživatelé a pověření (D-59). Krok 4 dokončen lokálně: Součástky podle řad, kusy, zásoby, komplety, složení, historie a pracovní úkoly s HTTP/mock adaptéry; zatím nenasazeno. Krok 5 dokončen lokálně: Lidé, společné kontakty (D-60), fondové profily. Krok 6 dokončen lokálně: výpůjčky, pohyby, vrácení, výměny a ztráty (D-61, D-62), skutečná dostupnost a fondové karty s HTTP/mock adaptéry; zatím nenasazeno. Krok 7 dokončen lokálně: inventury ve třech režimech, zmrazený rozsah, kontroly, návštěvy, uzavření a skupiny (D-48/D-51, D-63/D-64); zatím nenasazeno. |
+| **API** (`api.vonica.cz`) | Kroky 1–2 ve větvi `feature/api-skeleton`: kostra (router, `GET /v1/health`, CORS/origin/JSON, sessions v PostgreSQL, CSRF), migrace identity a přístupu, `auth/*` podle kap. 4.1 (přihlášení s omezením pokusů, odhlášení, `me`, změna hesla, obnova hesla e-mailem přes PHPMailer, přihlášená zařízení), seed prvního účtu `organization.admin` (pozvaný, heslo si nastaví odkazem). Testy PHPUnit (Unit + Integration). Nasazeno 2026-10-24 jako `feature/api-skeleton@62b8310`: `config/config.php` z `.env`, migrace `CreateIdentityAndAccess` (záloha před migrací v `dev/local/backups/`), pozvaný účet `organization.admin`. Krok 3 (nasazeno 2026-10-24 jako `908001d`, se seedy `VonicaUnits` a `VonicaCatalog`): migrace `CreateCatalogAndAudit` (regiony, druhy, řady, `audit_log`, `mandates.revoked_at`), katalog `/v1/funds/{u}/regions\|part-types\|series` s kontrolou pověření (404 mimo rozsah, 403 jen pro čtení), správa organizace (`/v1/persons`, `/v1/accounts`, `/v1/mandates`, `/v1/units`), audit všech zápisů, seedy `VonicaUnits` a `VonicaCatalog`. Krok 4 dokončen lokálně: migrace fyzické evidence, API kusů, zásob, kompletů, složení a pracovních úkolů; zatím nenasazeno. Krok 5 dokončen lokálně: Lidé, společné kontakty (D-60), fondové profily. Krok 6 dokončen lokálně: výpůjčky, pohyby, vrácení, výměny a ztráty (D-61, D-62), skutečná dostupnost a fondové karty s HTTP/mock adaptéry; zatím nenasazeno. Krok 7 dokončen lokálně: inventury ve třech režimech, zmrazený rozsah, kontroly, návštěvy, uzavření a skupiny (D-48/D-51, D-63/D-64); zatím nenasazeno. |
 | **Demo** (`demo.vonica.cz`) | Prototyp nasazený jako `design/identity-03@ce20f01`. Přesun z `moje` dokončen 22. 10. 2026. Nasazení: `/deploy` (`--target demo`). Popis kódu: `../archive/implementace-2026-10-21/`. |
 | **moje.vonica.cz** | Vývoj odložen. Po přesunu dema prázdná, vyhrazená budoucí členské aplikaci. |
-| Monorepo | npm workspaces `apps/*`, `packages/*`, Node ≥ 24 (`.nvmrc`). `packages/api-contracts` (DTO a chybové kódy auth) – první sdílený balíček. Deploy: `npm run deploy -- --target api\|krojarka` (`scripts/deploy-app.mjs`). Kroky 4–6 dokončeny lokálně; Q-19 → D-61 a Q-20 → D-62 rozhodnuty. Krok 7: dokončena databázová etapa, Q-21 rozhodnuta → D-63, pokračuje inventurní API. |
+| Monorepo | npm workspaces `apps/*`, `packages/*`, Node ≥ 24 (`.nvmrc`). `packages/api-contracts` (DTO a chybové kódy auth) – první sdílený balíček. Deploy: `npm run deploy -- --target api\|krojarka` (`scripts/deploy-app.mjs`). Kroky 4–7 dokončeny lokálně. D-61 až D-64 zapracovány. Krok 8 čeká rozhodnutí Q-14 o polohových EXIF datech; kroky 8–10 nejsou implementované. |
 
 ## Krok 4 – Součástky (dokončeno 2026-10-24)
 
@@ -171,7 +171,7 @@ Demo vzniklo před rozhodnutími z 22. 10. 2026 a dál se nerozvíjí ani nekonz
 - Bez produkčních migrací, produkční DB, deploye nebo push. Kód je připraven k lokálnímu ověření a případnému testovacímu nasazení, produkční nasazení vyžaduje výslovný souhlas a uvedené ruční ověření. Kroky 7–10 zatím nejsou dokončené.
 
 
-## Krok 7 – rozpracováno, etapa 1 (databáze a kontrakty)
+## Krok 7 – deník implementace, etapa 1 (databáze a kontrakty)
 
 - Přidána vratná migrace inventur, zmrazených cílů, termínů, návštěv a historie kontrol. Fondové a inventurní vazby, jedinečnost fyzických kusů/početních kontextů, opakované návštěvy bez přepsání dokončených a povinný důvod explicitního rozšíření či uzavření s nesrovnalostmi.
 - Vazby výpůjček, vrácení a pracovních úkolů na inventuru jsou zatím pouze připravené; žádné operace inventurního API nebo obrazovky zatím nejsou implementované. Stávající evidence se automaticky nepovažuje za fyzicky ověřenou.
@@ -254,3 +254,71 @@ Uživatel rozhodl Q-21 → D-63: fyzické ověření plní pokrytí, pozdější
 - Kontrola rozlišuje fyzicky nalezený kus od jeho určení kompletu. Nečekaný nález vyžaduje potvrzení s poznámkou, uchová pozorovaný komplet a nemění určené složení. Známý rozpor v umístění či složení zůstává nesrovnalostí vedle pokrytí.
 - Nečekaný početní doplněk lze výslovně zahrnout do inventurního kontextu kompletu s očekáváním nula. Kontrola tak zaznamená rozdíl bez automatického navýšení celkové zásoby nebo přidělení. Explicitní rozšíření už zahrnuté zásoby dovoluje přidat nové kontexty po skutečném pohybu; původní očekávání zůstanou zmrazená a nesčítají se jako identifikované kusy.
 - PHPUnit: **221 testů / 1772 assertions**, Vitest **135 testů / 31 souborů**, TypeScript testů a `git diff --check` prošly. Ověřeny nečekané kusy i doplňky, samostatné nesrovnalosti a nezměněné fyzické složení/počty. Hlavní obrazovky se dále připravují.
+
+## Dokončení kroku 7 – Inventury, etapa 3d (2026-10-24)
+
+- Dokončené trasy `/inventury` a `/inventury/{id}`: náhled průniku filtrů, zahájení se zmrazeným rozsahem, režimy Ve skladu / Podle lidí / Komplety, jednotlivé i dávkové kontroly, zrušení chybného zápisu, výslovné rozšíření, termíny, návštěvy, rekapitulace a uzavření. Čtenář má stejný přehled bez zápisů. Rozvržení používá zalamované ovládání a mřížky podle šířky obrazovky.
+- Skladová mřížka se seskupuje podle aktuálních řad, při přečíslování zachová i původní označení a pracuje jen se skutečnými cíli. Enter rozbalí dávku přes sdílený parser, vypíše výsledek každého čísla a nabídne zrušení poslední skutečně zapsané kontroly.
+- Oddělené ukazatele D-63/D-64: číslované kusy, obaly kompletů, početní kontroly zásob, návštěvy a nesrovnalosti. Starší fyzické ověření zůstává v pokrytí i po novější nepřítomnosti; pozorování zásob se nesčítají jako identifikované kusy. Zjištěné poškození nevymaže kontrola bez nového zjištění stavu; starší stav „v pořádku“ nezakryje aktuální poškození evidence. Zjištění kontroly a aktuální stav kusu zůstávají samostatné údaje.
+- Návštěvy obsahují zmrazené držitele, termíny s kapacitou a dokončení nezávislé na ověření kusů. Samostatně jsou kontrolovatelné i výdeje jiné složce D-52. Komplety ukazují určené složení, evidované počty a skutečné výpůjčky; nečekaný nález neprovádí skryté vrácení, přiřazení nebo změnu zásoby.
+- Běžné formuláře výpůjček a nových úkolů zachovají výslovný inventurní kontext. Neplatný či uzavřený kontext se potichu nevynechá. Při úpravě termínu zůstává verze z počátku editace, i když se mezitím obnoví jiná data. Historie kusu ukazuje výsledek a zrušení kontroly i poslední nezrušené fyzické ověření napříč inventurami.
+- Doplněny skupiny a členství podle D-48/D-51 ve stávající organizační správě, včetně historie odvolání a stránkování. Inventurní výběr poskytuje jen názvy/ID/složku skupiny, bez seznamu členů. Nebyly přidány závislosti ani změněna architektura; `packages/domain/src` odpovídá schválenému rozdělení a používá TS alias.
+
+### Závěrečné ověření
+
+| Kontrola | Výsledek |
+|---|---|
+| `npm run api:test` | **223 testů / 1788 assertions – prošlo**, pouze lokální `splk_test`; zahrnuje migrační down/up, integritu fondů, zamítnuté operace, audit, rollback i souběžné spojení |
+| `npm run krojarka:test` (Node 24) | **146 testů / 32 souborů – prošlo** |
+| TypeScript aplikace / testů / kontraktů | **Všechny tři kontroly prošly** |
+| `npm run krojarka:build` (Node 24) | **Prošlo, úvodní balíček 480,41 kB**, bez zvýšení původního rozpočtu; inventurní stránky se načítají při vstupu do trasy |
+| `git diff --check` | **Prošlo** |
+
+Průběžné chyby byly odstraněny bez vynechání nebo oslabení testů. Komponentové fixture doplnily novou závislost kontextu, navigační kontrola výslovně požaduje zachování kontextu. Build odhalil nepřesně typované čtení historického výsledku; opraveno typovanou prezentační funkcí. Ruční ověření v prohlížeči dosud neproběhlo.
+
+### Změněné oblasti a soubory
+
+- API: `InventoryScope`, `InventoryCoverage`, `InventoryRepository`, `InventoryChecks`, `InventoryAppointments`, `InventoryLink`, `InventoryController`; návaznosti v `LoanController/Repository`, `WorkOrderController/Repository` a `App.php`. `GroupController` a `GroupRepository` pro schválenou správu skupin. Nové integrace a unit testy v `api/tests/`.
+- Migrace: inventury z etapy 1 `20261024200000`; nové dopředné/vratné migrace `20261024210000_add_inventory_observation_context` a `20261024220000_add_group_membership_revocation`. Původní fyzická evidence a výpůjčky se nepřepisují ani nedoplňují smyšlenou historií.
+- Kontrakty a čistá TS logika: `packages/api-contracts/src/inventories.ts`, `inventory.ts`, `loans.ts`, `organization.ts`, `errors.ts`; `packages/domain/src/inventory-numbers.ts`, `inventory-progress.ts`, `index.ts` a TS alias v `apps/krojarka/tsconfig.json`.
+- Krojařka: `data/inventory/` a organizační adaptéry; nové `features/inventury/`; skupiny v `features/nastaveni/groups*` a `users-page`; kontext v trasách výpůjček/součástek, historie v `soucastky/item-page`, překlady a `app.routes.ts`. Doplněné Vitest testy adaptérů, stores, parseru a chování formulářů.
+- Dokumentace: tento stav, `api-v1-a-schema.md`, `monorepo-struktura.md`, `decisions.md` (D-63/D-64) a `open-questions.md` (Q-21/Q-22 vyřešeny, Q-14 čeká).
+
+### Kódové commity dokončení kroku 7
+
+Databázová etapa 1 už byla v `5b2f80e` (`feat: add inventory schema and contracts`). Následují samostatné lokální kódové celky této části práce; závěrečná rekapitulace má vlastní dokumentační commit.
+
+| Commit | Změna |
+|---|---|
+| `0133dfe` | `feat: freeze inventory scope and coverage` |
+| `6c6e444` | `feat: add audited inventory lifecycle endpoints` |
+| `dbf9c99` | `feat: record physical inventory checks safely` |
+| `74e9923` | `feat: manage inventory slots and visits` |
+| `3796a29` | `feat: link ordinary operations to inventories` |
+| `1f4dfd9` | `feat: manage groups for inventory selection` |
+| `4ef7f62` | `feat: add inventory number parsing and progress` |
+| `9f994d7` | `feat: add interchangeable inventory adapters` |
+| `6f80474` | `feat: add inventory workflow state and context` |
+| `9e5e468` | `fix: verify inventory handovers to other units` |
+| `81c5bfd` | `fix: separate kit findings from composition` |
+| `45c183e` | `fix: paginate inventory group options` |
+| `78d0619` | `fix: retain explicit inventory condition findings` |
+| `d3a5b23` | `feat: add inventory screens and check history` |
+
+### Ruční ověření před případným nasazením
+
+Po místním použití migrací ověřit v HTTP i mock režimu, na počítači i mobilu:
+
+1. Náhled průniku filtrů, skupinu jiné složky (Muzika), prázdný rozsah a zachování cílů po změně členství či výpůjčky. Mock registr nemá příslušnosti osob ke složkám, proto tento filtr v jeho současných syntetických datech správně vrací prázdný rozsah.
+2. Skladovou mřížku po řadách, Enter `1, 03, 12-15`, neexistující a opakované číslo, půjčený kus, rozpor v umístění, přečíslování a zrušení poslední kontroly.
+3. Předložený poškozený kus, pozdější nepředložení, opakované kladné zjištění, zrušení jediné kladné kontroly a historii napříč inventurami. Bez nového zjištění stavu se dřívější poškození nesmí vymazat.
+4. Termín s kapacitou, zrušení rezervace a opakovanou návštěvu po dokončení; dokončení nesmí hromadně ověřit součástky. Zachování rozepsané úpravy termínu při konfliktu verze.
+5. Komplet se samostatně půjčeným kusem a dvěma početními doplňky, skutečný částečný počet, nečekaný kus i doplněk. Ověření nemění určené složení, přidělení ani skutečné předání. Kontrolu kusu půjčeného jiné složce bez smyšlené osoby či vrácení.
+6. Běžný výdej, vrácení, výměnu a nový pracovní úkol s inventurním kontextem; zamítnutí zastaralého/cizího/uzavřeného kontextu. Čisté uzavření i uzavření s důvodem a následnou neměnnost výsledku po pohybu či dokončení opravy.
+7. Čtenáře bez tlačítek zápisu, nepřístupný fond, změnu fondu při načítání a přímý vstup přes URL. Na mobilu také práci s mřížkou, formuláři, termíny a historií.
+
+### Další postup a omezení
+
+- **Poslední kompletně dokončený krok: 7 – Inventury, etapa 3d.** Kroky 4–6 jsou rovněž dokončené lokálně. Pro přílohy a skeny v kontrole kompletů navazuje krok 8 v původním schváleném pořadí; kroky 8–10 nezačaly.
+- **Před krokem 8 čeká produktové rozhodnutí Q-14:** odstraňovat polohová EXIF data z nahraných fotografií, nebo je zachovat. Otázka byla odeslána uživateli; bez odpovědi se nezavádí vlastní politika práce se skeny. D-40 o retenci je již rozhodnuté a zůstává beze změny.
+- Stav je připravený k místnímu a případnému testovacímu ověření. Produkční připravenost vyžaduje výše uvedené ruční ověření a výslovné schválení produkčních migrací a nasazení. V této části práce nebyla použita produkční DB, produkční migrace, deploy ani `git push`.

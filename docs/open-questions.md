@@ -179,6 +179,8 @@ Přehled problémů dema, kterým se má API vyhnout (oprávnění jen ve fronte
 
 Retence skenů je rozhodnutá (D-40: po digitalizaci do digiarchivu a z aplikace pryč). Zbývá odstraňování polohových EXIF dat. Původní znění:
 
+**Stav 2026-10-24:** krok 7 je dokončen lokálně. Před krokem 8 byla otázka znovu předložena uživateli: odstraňovat polohová EXIF data, nebo je zachovat? Obraz a jeho orientace mají zůstat zachované. Do rozhodnutí se krok 8 neimplementuje; volba se nesmí nahradit předpokladem. Retence D-40 ani pověření se tím znovu neotevírají.
+
 - Kdo dostane účet: jen krojařky, nebo i další role pro čtení (např. Náhled do evidence pro výbor)?
 - Retence a přístup k naskenovaným osobním kartám (GDPR).
 - Odstraňování polohových EXIF dat.
