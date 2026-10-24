@@ -10,6 +10,17 @@ Co ještě musíme rozhodnout (úroveň **B**). Každá otázka uvádí, odkud p
 
 ## Blokuje Krojařku
 
+### Q-21 Výsledný stav opakovaných protichůdných kontrol – blokuje vyhodnocení a dokončení kroku 7
+
+Zjištěno při návrhu inventur 2026-10-24. `current/06` kap. 7.3–7.4 požaduje jeden výsledný stav kusu, nezapočítávat nepředložené mezi ověřené a umožňuje uzavření „vše ověřeno“ jen při skutečném ověření. API kap. 3.6 současně uchovává opakované kontroly v historii a do pokrytí počítá cíl jednou.
+
+Příklad v jedné otevřené inventuře: kus byl nejprve předložen, později při opakované kontrole nebyl předložen nebo byl nenalezený. Je potřeba určit výsledné pokrytí a nesrovnalost:
+
+1. Rozhoduje poslední nezrušená kontrola; pozdější nepřítomnost znovu otevře nesrovnalost a kus není v aktuálním pokrytí ověřených. Starší fyzické pozorování zůstává v historii.
+2. Jedno fyzické ověření stačí pro pokrytí; pozdější nepřítomnost se eviduje jako samostatná nesrovnalost. Čisté uzavření musí i tak zohlednit tuto nesrovnalost.
+
+Zrušení omylem zapsané kontroly musí v obou variantách zachovat audit a nesmí samo vytvářet vrácení, výdej ani přepis starších pozorování. Databáze a základní kontrakty kroku 7 mohou vzniknout bez volby varianty; implementace výsledného stavu, průběhu a uzavírání na rozhodnutí čeká.
+
 ### Q-20 Dopad jiného vypořádání nevrácených věcí – *rozhodnuto → D-62*
 
 Rozhodnuto uživatelem 2026-10-24 → D-62: vypořádání znamená ztrátu, vyřadit kus a snížit zásobu. Následuje původní podklad otázky. `current/06` kap. 5.2 umožňuje oficiální vypořádání nevrácených částí a API kap. 3.4 uvádí `close_type=settled`. Není určen dopad na majetek: uzavřením výpůjčky by se podle vzorce dostupnosti nevrácený kus nebo počet zásoby znovu uvolnil.

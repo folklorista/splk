@@ -85,6 +85,26 @@ abstract class DatabaseTestCase extends TestCase
         return (int) $statement->fetchColumn();
     }
 
+    /** Temporarily unwind dependent migrations inside this test's rollback transaction. */
+    protected function rollbackLaterMigrations(int $version): array
+    {
+        $files = glob(dirname(__DIR__, 2) . '/db/migrations/*.php');
+        rsort($files, SORT_STRING);
+        $rolledBack = [];
+        foreach ($files as $file) {
+            $name = basename($file, '.php');
+            $migrationVersion = (int) substr($name, 0, 14);
+            if ($migrationVersion <= $version) continue;
+            require_once $file;
+            $class = str_replace(' ', '', ucwords(str_replace('_', ' ', substr($name, 15))));
+            $migration = new $class('testing', $migrationVersion);
+            $migration->setAdapter(new \Phinx\Db\Adapter\PostgresAdapter(['connection' => $this->db]));
+            $migration->down();
+            array_unshift($rolledBack, $migration);
+        }
+        return $rolledBack;
+    }
+
     private static function connection(): PDO
     {
         if (self::$pdo !== null) {

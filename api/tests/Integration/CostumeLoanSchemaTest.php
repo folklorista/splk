@@ -105,10 +105,12 @@ final class CostumeLoanSchemaTest extends DatabaseTestCase
         $migration = new \CreateCostumeLoans('testing', 20261024180000);
         $migration->setAdapter(new \Phinx\Db\Adapter\PostgresAdapter(['connection' => $this->db]));
         $this->allocate();
+        $later = $this->rollbackLaterMigrations(20261024180000);
         $migration->down();
         self::assertSame(2, $this->db->query('SELECT present_qty FROM costume_kit_bulk_lines')->fetchColumn());
         $this->reject(fn () => $this->db->exec('UPDATE costume_bulk_stocks SET quantity_total = 1'), '23514');
         $migration->up();
+        foreach ($later as $dependent) $dependent->up();
         self::assertSame(2, $this->reserved());
         self::assertSame(0, $this->db->query('SELECT count(*) FROM costume_loans')->fetchColumn());
     }

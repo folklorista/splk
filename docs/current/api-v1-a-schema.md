@@ -161,6 +161,14 @@ Pohled **Výpůjčky = skladové pohyby od nejnovějších** [R D-22] se sklád�
 
 Rozsah inventury ve v1: klasifikace (region, pohlaví, druh, varianta, řada) a volitelně **skupina držitelů** (06 kap. 7.1, „kroje muzikantů“) nebo příslušnost ke složce; kombinace = průnik [R D-51].
 
+#### Implementační upřesnění kroku 7, etapa 1 – schéma a kontrakty
+
+- Všechny fondové vazby mají technické `unit_id` a složené cizí klíče; kontrola i termín návštěvy patří do stejné inventury jako její cíl/návštěva. Opakovaná návštěva může vzniknout po dokončení předchozí, souběžně je aktivní nejvýše jedna návštěva osoby v inventuře.
+- Cíle mají `snapshot` a `expected_qty`, u držitele také `holder_unit_id` pro D-52. Početní cíle mohou rozlišit `context_kit_id` a `loan_line_id`, aby bylo možné zmrazit přidělení a skutečně předané množství bez dvojího odečtu D-61. Jedinečnost cílů brání duplicitě stejného kusu či stejného početního kontextu.
+- Uzavření má vlastní `result_snapshot`; dokončená návštěva má `completed_at`. Zrušení kontroly zachová původní řádek a přidá `cancelled_at/by`. Nové tabulky samy neprovádějí pohyby, neověřují dosavadní evidenci a nevyřazují nepřítomné kusy.
+- Přidány volitelné vazby `inventory_id` u řádků výpůjček, jednotlivých vrácení a pracovních úkolů; databáze brání vazbě na jiný fond. Zapojení do API následuje až s inventurními operacemi.
+- Výsledná přednost opakovaných protichůdných kontrol čeká na Q-21. Tato etapa ji nevolí a nezavádí předčasné tvrzení o pokrytí či úplném ověření.
+
 ### 3.7 Přílohy, náklady, audit
 
 | Tabulka | Klíčové sloupce | Poznámka |

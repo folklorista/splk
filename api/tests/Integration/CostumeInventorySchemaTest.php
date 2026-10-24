@@ -130,15 +130,12 @@ final class CostumeInventorySchemaTest extends DatabaseTestCase
         $adapter = new \Phinx\Db\Adapter\PostgresAdapter(['connection' => $this->db]);
         $migration = new \CreateCostumeInventory('testing', 20261024120000);
         $migration->setAdapter($adapter);
-        require_once dirname(__DIR__, 2) . '/db/migrations/20261024180000_create_costume_loans.php';
-        $loans = new \CreateCostumeLoans('testing', 20261024180000);
-        $loans->setAdapter($adapter);
-        $loans->down();
+        $later = $this->rollbackLaterMigrations(20261024120000);
         $migration->down();
         self::assertNull($this->db->query("SELECT to_regclass('costume_items')")->fetchColumn());
         self::assertSame(2, $this->db->query('SELECT count(*) FROM costume_series')->fetchColumn());
         $migration->up();
-        $loans->up();
+        foreach ($later as $dependent) $dependent->up();
         self::assertSame(0, $this->db->query('SELECT count(*) FROM costume_items')->fetchColumn());
         self::assertSame(2, $this->db->query('SELECT count(*) FROM costume_series')->fetchColumn());
     }
