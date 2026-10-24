@@ -44,6 +44,9 @@ final class InventoryCoverage
                 $add('quantity_mismatch', ['checkId' => $latest['id'], 'expectedQty' => $comparedQuantity, 'checkedQty' => $latest['checkedQty']]);
             }
             $lastPhysical = $positive === [] ? null : $positive[array_key_last($positive)];
+            $physicalContext = (array) ($lastPhysical['context'] ?? []);
+            if ($lastPhysical !== null && ($physicalContext['confirmedCompositionConflict'] ?? false)) $add('composition_mismatch', ['checkId' => $lastPhysical['id']]);
+            if ($lastPhysical !== null && ($physicalContext['confirmedLocationConflict'] ?? false)) $add('location_mismatch', ['checkId' => $lastPhysical['id']]);
             $condition = $lastPhysical['condition'] ?? $target['currentCondition'] ?? $target['snapshot']['condition'] ?? null;
             if ($lastPhysical !== null && in_array($condition, ['damaged', 'needs_adjustment'], true)) {
                 $add($condition, ['checkId' => $lastPhysical['id']]);

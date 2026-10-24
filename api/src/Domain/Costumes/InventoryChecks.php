@@ -84,12 +84,20 @@ final class InventoryChecks
                 if ($row !== false) $loan = ['loanId' => (int) $row['id'], 'kitId' => $row['kit_id'] === null ? null : (int) $row['kit_id'],
                     'holder' => $row['holder_person_id'] === null ? ['unitId' => (int) $row['holder_unit_id']] : ['personId' => (int) $row['holder_person_id']]];
             }
+            $compositionConflict = false;
             if ($batch['mode'] === 'kit') {
                 $belongs = $target['kitId'] === $batch['kitId'] || $target['contextKitId'] === $batch['kitId'] || ($item !== null && $item['kitId'] === $batch['kitId']);
-                if (!$belongs) throw Input::invalid('kitId', 'invalid');
+                if (!$belongs) {
+                    if ($item === null || !$positive) throw Input::invalid('kitId', 'invalid');
+                    if (!$entry['confirmConflict'] || $entry['note'] === null) {
+                        $results[] = ['code' => 'not_in_kit', 'targetId' => $target['id'], 'context' => ['kitId' => $batch['kitId'], 'intendedKitId' => $item['kitId']]]; continue;
+                    }
+                    $compositionConflict = true;
+                }
             }
             $context = ['personId' => $batch['personId'], 'holderUnitId' => $batch['holderUnitId'], 'kitId' => $batch['kitId'], 'holder' => $loan['holder'] ?? null,
                 'loanId' => $loan['loanId'] ?? null, 'location' => $item['location'] ?? null];
+            if ($compositionConflict) $context += ['confirmedCompositionConflict' => true, 'intendedKitId' => $item['kitId']];
             if ($target['bulkStockId'] !== null) {
                 $context['expectedQty'] = 0;
                 foreach ($currentTargets as $current) if ($current['bulkStockId'] === $target['bulkStockId'] && $current['contextKitId'] === $target['contextKitId'] && $current['loanLineId'] === $target['loanLineId']) $context['expectedQty'] = $current['expectedQty'];

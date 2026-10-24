@@ -248,3 +248,9 @@ Uživatel rozhodl Q-21 → D-63: fyzické ověření plní pokrytí, pozdější
 - Při přípravě obrazovek odhalena mezera: samostatně půjčený kus držiteli typu složka nebylo možné fyzicky ověřit bez vrácení. Režim kontroly u držitele nyní přijímá právě osobu nebo složku, v souladu s existující identitou držitelů D-52. Nevzniká smyšlená osoba, návštěva, výpůjčka ani vrácení. Fondové pověření se nemění.
 - PHP i mock zachovávají typ držitele v dobovém kontextu a odmítají kombinaci obou identit. Doplněny české popisky inventurních událostí v historii kusu.
 - PHPUnit: **218 testů / 1748 assertions**; Vitest **133 testů / 31 souborů**; TypeScript testů a `git diff --check` prošly. Technické upřesnění existujícího D-52, nikoli nové produktové rozhodnutí. Hlavní inventurní obrazovky zůstávají rozpracované.
+
+### Krok 7 – nálezy navíc bez změny určeného složení
+
+- Kontrola rozlišuje fyzicky nalezený kus od jeho určení kompletu. Nečekaný nález vyžaduje potvrzení s poznámkou, uchová pozorovaný komplet a nemění určené složení. Známý rozpor v umístění či složení zůstává nesrovnalostí vedle pokrytí.
+- Nečekaný početní doplněk lze výslovně zahrnout do inventurního kontextu kompletu s očekáváním nula. Kontrola tak zaznamená rozdíl bez automatického navýšení celkové zásoby nebo přidělení. Explicitní rozšíření už zahrnuté zásoby dovoluje přidat nové kontexty po skutečném pohybu; původní očekávání zůstanou zmrazená a nesčítají se jako identifikované kusy.
+- PHPUnit: **221 testů / 1772 assertions**, Vitest **135 testů / 31 souborů**, TypeScript testů a `git diff --check` prošly. Ověřeny nečekané kusy i doplňky, samostatné nesrovnalosti a nezměněné fyzické složení/počty. Hlavní obrazovky se dále připravují.

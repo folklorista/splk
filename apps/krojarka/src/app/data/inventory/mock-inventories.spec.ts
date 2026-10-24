@@ -133,4 +133,21 @@ describe('Mock inventory workflows', () => {
     expect(result.results[0].check?.context).toMatchObject({ personId: null, holderUnitId: 2, holder: { unitId: 2 } });
     expect((await firstValueFrom(api.inventoryCollection(inventory.id, 'visits'))).items).toEqual([]);
   });
+  it('records unexpected kit findings without changing intended membership or allocated stock', async () => {
+    const item = await piece(), kit = await firstValueFrom(api.createKit(1, { seriesId: 2, number: '1' }));
+    const stock = await firstValueFrom(api.createStock(1, { partTypeId: 2, quantityTotal: 3 })), inventory = await create();
+    const target = (await firstValueFrom(api.inventoryCollection(inventory.id, 'targets'))).items.find((t) => t.itemId === item.id)!;
+    const batch = { version: 1, mode: 'kit' as const, kitId: kit.id, entries: [{ targetId: target.id, result: 'found' as const }] };
+    expect((await firstValueFrom(api.checkInventory(inventory.id, batch))).results[0].code).toBe('not_in_kit');
+    const confirmed = await firstValueFrom(api.checkInventory(inventory.id, { ...batch, entries: [{ ...batch.entries[0], confirmConflict: true, note: 'Unexpected shirt' }] }));
+    expect(confirmed.results[0].check?.context.confirmedCompositionConflict).toBe(true); expect((await firstValueFrom(api.item(item.id))).kitId).toBeNull();
+    expect(confirmed.inventory.progress.issues.some((i) => i.kind === 'composition_mismatch')).toBe(true);
+    await firstValueFrom(api.addInventoryTarget(inventory.id, { version: 2, bulkStockId: stock.id, contextKitId: kit.id, note: 'Unexpected ribbons' }));
+    const bulk = (await firstValueFrom(api.inventoryCollection(inventory.id, 'targets'))).items.find((t) => t.bulkStockId === stock.id && t.contextKitId === kit.id)!;
+    expect(bulk.expectedQty).toBe(0);
+    const counted = await firstValueFrom(api.checkInventory(inventory.id, { version: 3, mode: 'kit', kitId: kit.id, entries: [{ targetId: bulk.id, result: 'found', checkedQty: 2 }] }));
+    expect(counted.inventory.progress.issues.some((i) => i.kind === 'quantity_mismatch')).toBe(true);
+    expect((await firstValueFrom(api.kit(kit.id))).bulkLines).toEqual([]);
+    expect((await firstValueFrom(api.stocks(1))).items[0].quantityTotal).toBe(3);
+  });
 });

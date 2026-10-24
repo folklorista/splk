@@ -170,6 +170,45 @@ final class InventoryChecksTest extends ApiTestCase
         self::assertSame('unverified', $this->db->query("SELECT composition_state FROM costume_kits WHERE id = $kit")->fetchColumn());
         self::assertSame(0, $this->db->query('SELECT count(*) FROM costume_loan_returns')->fetchColumn());
     }
+
+    public function testUnexpectedKitFindingsDoNotBecomeIntendedCompositionOrStockAdjustments(): void
+    {
+        $series = $this->insert("INSERT INTO costume_series (unit_id, kind, name) VALUES ({$this->fund}, 'kit', 'Bags')");
+        $kit = $this->insert("INSERT INTO costume_kits (unit_id, series_id, number) VALUES ({$this->fund}, $series, '1')");
+        $type = $this->insert("INSERT INTO costume_part_types (unit_id, name, numbered) VALUES ({$this->fund}, 'Ribbons', false)");
+        $stock = $this->insert("INSERT INTO costume_bulk_stocks (unit_id, part_type_id, quantity_total) VALUES ({$this->fund}, $type, 3)");
+        $inventory = $this->create(); $url = '/v1/inventories/' . $inventory['id'];
+        $target = $this->get($url . '/targets')->decodedBody()['items'][0]['id'];
+        $batch = ['version' => 1, 'mode' => 'kit', 'kitId' => $kit, 'entries' => [['targetId' => $target, 'result' => 'found']]];
+        $unconfirmed = $this->post($url . '/checks', $batch); self::assertStatus(200, $unconfirmed);
+        self::assertSame('not_in_kit', $unconfirmed->decodedBody()['results'][0]['code']);
+        $batch['entries'][0] += ['confirmConflict' => true, 'note' => 'Unexpected shirt physically inside'];
+        $confirmed = $this->post($url . '/checks', $batch); self::assertStatus(200, $confirmed);
+        self::assertTrue($confirmed->decodedBody()['results'][0]['check']['context']['confirmedCompositionConflict']);
+        self::assertContains('composition_mismatch', array_column($confirmed->decodedBody()['inventory']['progress']['issues'], 'kind'));
+        self::assertNull($this->db->query("SELECT kit_id FROM costume_items WHERE id = {$this->item}")->fetchColumn());
+        self::assertStatus(201, $this->post($url . '/targets', ['version' => 2, 'bulkStockId' => $stock, 'contextKitId' => $kit, 'note' => 'Unexpected ribbons']));
+        $targets = $this->get($url . '/targets')->decodedBody()['items'];
+        $bulk = array_values(array_filter($targets, static fn (array $t): bool => $t['bulkStockId'] === $stock && $t['contextKitId'] === $kit))[0];
+        self::assertSame(0, $bulk['expectedQty']);
+        $counted = $this->post($url . '/checks', ['version' => 3, 'mode' => 'kit', 'kitId' => $kit, 'entries' => [['targetId' => $bulk['id'], 'result' => 'found', 'checkedQty' => 2]]]);
+        self::assertStatus(200, $counted); self::assertContains('quantity_mismatch', array_column($counted->decodedBody()['inventory']['progress']['issues'], 'kind'));
+        self::assertSame(3, $this->db->query("SELECT quantity_total FROM costume_bulk_stocks WHERE id = $stock")->fetchColumn());
+        self::assertSame(0, $this->db->query("SELECT count(*) FROM costume_kit_bulk_lines WHERE kit_id = $kit")->fetchColumn());
+    }
+
+    public function testExplicitStockExpansionAddsOnlyNewContextsAndPreservesEarlierFrozenQuantities(): void
+    {
+        $type = $this->insert("INSERT INTO costume_part_types (unit_id, name, numbered) VALUES ({$this->fund}, 'Ribbons', false)");
+        $stock = $this->insert("INSERT INTO costume_bulk_stocks (unit_id, part_type_id, quantity_total) VALUES ({$this->fund}, $type, 3)");
+        $inventory = $this->create(); $url = '/v1/inventories/' . $inventory['id'];
+        $loan = $this->insert("INSERT INTO costume_loans (unit_id, holder_person_id, issued_by) VALUES ({$this->fund}, {$this->person}, {$this->actor})");
+        $this->db->exec("INSERT INTO costume_loan_lines (unit_id, loan_id, bulk_stock_id, qty) VALUES ({$this->fund}, $loan, $stock, 1)");
+        self::assertStatus(201, $this->post($url . '/targets', ['version' => 1, 'bulkStockId' => $stock, 'note' => 'Include newly handed quantity']));
+        $targets = array_values(array_filter($this->get($url . '/targets')->decodedBody()['items'], static fn (array $t): bool => $t['bulkStockId'] === $stock));
+        self::assertSame([3, 1], array_column($targets, 'expectedQty'));
+        self::assertError(422, 'inventory_target_exists', $this->post($url . '/targets', ['version' => 2, 'bulkStockId' => $stock, 'note' => 'Again']));
+    }
     private function loan(): int
     {
         $id = $this->insert("INSERT INTO costume_loans (unit_id, holder_person_id, issued_by) VALUES ({$this->fund}, {$this->person}, {$this->actor})");

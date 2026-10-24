@@ -9,6 +9,7 @@ use Splk\Api\Domain\Costumes\InventoryCoverage;
 use Splk\Api\Domain\Costumes\InventoryChecks;
 use Splk\Api\Domain\Costumes\InventoryAppointments;
 use Splk\Api\Domain\Costumes\ItemRepository;
+use Splk\Api\Domain\Costumes\KitRepository;
 use Splk\Api\Domain\Costumes\InventoryRepository;
 use Splk\Api\Domain\Costumes\InventoryScope;
 use Splk\Api\Http\HttpException;
@@ -99,15 +100,34 @@ final class InventoryController extends Controller
     private function addTarget(Request $request, RequestContext $context): Response
     {
         $initial = $this->accessible($context, true);
-        $body = $request->json(); InventoryInput::only($body, ['version', 'note', 'itemId', 'kitId', 'bulkStockId']);
+        $body = $request->json(); InventoryInput::only($body, ['version', 'note', 'itemId', 'kitId', 'bulkStockId', 'contextKitId']);
         $input = new Input($body); $version = $input->id('version'); $note = $input->text('note', 2000);
         $kinds = array_intersect(['itemId', 'kitId', 'bulkStockId'], array_keys($body));
         if (count($kinds) !== 1) throw Input::invalid('target', 'invalid');
         $kind = array_values($kinds)[0]; $id = $input->id($kind);
-        return Response::json($this->audited($context, 'inventory.add_target', $initial['unitId'], function () use ($initial, $version, $note, $kind, $id): array {
+        $contextKit = $input->nullableId('contextKitId');
+        if ($contextKit !== null && $kind !== 'bulkStockId') throw Input::invalid('contextKitId', 'not_allowed');
+        return Response::json($this->audited($context, 'inventory.add_target', $initial['unitId'], function () use ($initial, $version, $note, $kind, $id, $contextKit): array {
             $inventory = $this->open($initial['id'], $version);
-            $targets = array_filter($this->scope()->freeze($inventory['unitId'], []), static fn (array $t): bool => $t[$kind] === $id);
+            $fresh = $this->scope()->freeze($inventory['unitId'], []);
+            if ($contextKit !== null) {
+                $kit = (new KitRepository($this->db()))->find($contextKit);
+                if ($kit === null || $kit['unitId'] !== $inventory['unitId']) throw self::notFound();
+            }
+            $targets = array_values(array_filter($fresh, static fn (array $t): bool => $t[$kind] === $id && ($contextKit === null || $t['contextKitId'] === $contextKit)));
+            if ($targets === [] && $contextKit !== null) {
+                $source = array_values(array_filter($fresh, static fn (array $t): bool => $t['bulkStockId'] === $id))[0] ?? null;
+                if ($source !== null) {
+                    $source = array_replace($source, ['holderPersonId' => null, 'holderUnitId' => null, 'contextKitId' => $contextKit, 'loanLineId' => null, 'expectedQty' => 0]);
+                    $source['snapshot']['source'] = 'kit'; $targets[] = $source;
+                }
+            }
             if ($targets === []) throw self::notFound();
+            if ($kind === 'bulkStockId') {
+                $existing = $this->repository()->targets($inventory['id']);
+                $targets = array_filter($targets, static fn (array $t): bool => !array_any($existing, static fn (array $e): bool => $e['bulkStockId'] === $t['bulkStockId'] && $e['contextKitId'] === $t['contextKitId'] && $e['loanLineId'] === $t['loanLineId']));
+                if ($targets === []) throw new HttpException(422, 'inventory_target_exists', 'The selected contexts are already in scope.');
+            }
             foreach ($targets as $target) $this->repository()->addTarget($inventory['unitId'], $inventory['id'], $target, true, $note);
             $this->repository()->touch($inventory['id']);
             return $this->withProgress($this->repository()->find($inventory['id']));

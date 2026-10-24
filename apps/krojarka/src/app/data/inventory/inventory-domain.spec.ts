@@ -36,4 +36,10 @@ describe('Inventory UI progress mirrors PHP D-63/D-64 cases', () => {
     const progress = inventoryProgress([target], [{ ...check(1, 'found'), condition: 'damaged' }], [], [{ id: 5, itemId: 3, status: 'open' }]);
     expect(progress.verifiedQuantity).toBe(1); expect(progress.issues.map((i) => i.kind)).toEqual(['damaged', 'open_work_order']);
   });
+  it('keeps explicit location and composition discrepancies despite physical coverage', () => {
+    for (const [flag, kind] of [['confirmedLocationConflict', 'location_mismatch'], ['confirmedCompositionConflict', 'composition_mismatch']] as const) {
+      const progress = inventoryProgress([target], [{ ...check(1, 'found'), context: { [flag]: true } }]);
+      expect(progress.verifiedQuantity).toBe(1); expect(progress.issues.map((i) => i.kind)).toEqual([kind]); expect(progress.canCloseCleanly).toBe(false);
+    }
+  });
 });

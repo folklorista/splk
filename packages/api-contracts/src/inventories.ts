@@ -69,6 +69,8 @@ export interface InventoryCheck {
     location?: string | null;
     expectedQty?: number;
     confirmedLocationConflict?: boolean;
+    confirmedCompositionConflict?: boolean;
+    intendedKitId?: number | null;
   };
 }
 export interface InventorySlot {
@@ -93,7 +95,7 @@ export interface InventoryClose { version: number; closedWithIssues: boolean; re
 export type InventoryTargetAdd = { version: number; note: string } & (
   | { itemId: number; kitId?: never; bulkStockId?: never }
   | { kitId: number; itemId?: never; bulkStockId?: never }
-  | { bulkStockId: number; itemId?: never; kitId?: never }
+  | { bulkStockId: number; contextKitId?: number; itemId?: never; kitId?: never }
 );
 export type InventorySlotInput = Pick<InventorySlot, 'startsAt' | 'endsAt' | 'capacity'> & { version: number };
 export type InventorySlotPatch = Partial<Pick<InventorySlot, 'startsAt' | 'endsAt' | 'capacity'>> & { version: number };
@@ -105,7 +107,7 @@ export type InventoryTargetPage = Page<InventoryTarget>;
 
 export interface InventoryIssue {
   targetId: number;
-  kind: 'unverified' | 'not_presented' | 'not_found' | 'quantity_mismatch' | 'bulk_not_counted' | 'damaged' | 'needs_adjustment' | 'open_work_order';
+  kind: 'unverified' | 'not_presented' | 'not_found' | 'quantity_mismatch' | 'bulk_not_counted' | 'damaged' | 'needs_adjustment' | 'open_work_order' | 'composition_mismatch' | 'location_mismatch';
   checkId?: number;
   workOrderId?: number;
   expectedQty?: number;
@@ -152,7 +154,7 @@ export interface InventoryCheckBatch {
   entries: InventoryCheckEntry[];
 }
 export interface InventoryCheckOutcome {
-  code: 'ok' | 'already_checked' | 'unknown_number' | 'loaned_to' | 'not_in_store' | 'item_retired';
+  code: 'ok' | 'already_checked' | 'unknown_number' | 'loaned_to' | 'not_in_store' | 'not_in_kit' | 'item_retired';
   targetId: number | null;
   check?: InventoryCheck;
   context?: InventoryCheck['context'];

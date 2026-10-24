@@ -53,6 +53,14 @@ final class InventoryCoverageTest extends TestCase
         self::assertSame(['damaged', 'open_work_order'], array_column($result['issues'], 'kind')); self::assertFalse($result['canCloseCleanly']);
     }
 
+    public function testExplicitLocationOrCompositionConflictRemainsSeparateFromPhysicalCoverage(): void
+    {
+        foreach (['confirmedLocationConflict' => 'location_mismatch', 'confirmedCompositionConflict' => 'composition_mismatch'] as $flag => $kind) {
+            $result = InventoryCoverage::evaluate([$this->target()], [array_replace($this->check(1, 'found'), ['context' => [$flag => true]])]);
+            self::assertSame(1, $result['verifiedQuantity']); self::assertSame([$kind], array_column($result['issues'], 'kind')); self::assertFalse($result['canCloseCleanly']);
+        }
+    }
+
     public function testVisitsAndKitContainersDoNotDoubleCountPhysicalComponents(): void
     {
         $kit = array_replace($this->target(), ['id' => 4, 'itemId' => null, 'kitId' => 5]);

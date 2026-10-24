@@ -68,8 +68,18 @@ export class MockInventories {
     const header = this.open(id, input.version), note = required(input.note, 2000);
     const keys = (['itemId', 'kitId', 'bulkStockId'] as const).filter((key) => key in input);
     if (keys.length !== 1) throw invalid('target'); const kind = keys[0];
-    const targets = this.freeze(header.unitId, {}).filter((t) => t[kind] === input[kind]);
+    const fresh = this.freeze(header.unitId, {}), contextKit = 'contextKitId' in input ? input.contextKitId ?? null : null;
+    if (contextKit !== null && (kind !== 'bulkStockId' || find(this.state.kits, contextKit).unitId !== header.unitId)) throw invalid('contextKitId');
+    let targets = fresh.filter((t) => t[kind] === input[kind] && (contextKit === null || t.contextKitId === contextKit));
+    if (!targets.length && contextKit !== null) {
+      const source = fresh.find((t) => t.bulkStockId === input[kind]);
+      if (source) targets.push({ ...source, holderPersonId: null, holderUnitId: null, contextKitId: contextKit, loanLineId: null, expectedQty: 0, snapshot: { ...source.snapshot, source: 'kit' } });
+    }
     if (!targets.length) throw new ApiError(404, 'not_found');
+    if (kind === 'bulkStockId') {
+      targets = targets.filter((t) => !this.state.targets.some((e) => e.inventoryId === id && e.bulkStockId === t.bulkStockId && e.contextKitId === t.contextKitId && e.loanLineId === t.loanLineId));
+      if (!targets.length) throw new ApiError(422, 'inventory_target_exists');
+    }
     for (const t of targets) {
       if (this.state.targets.some((e) => e.inventoryId === id && (t.itemId !== null ? e.itemId === t.itemId : t.kitId !== null ? e.kitId === t.kitId : e.bulkStockId === t.bulkStockId && e.contextKitId === t.contextKitId && e.loanLineId === t.loanLineId))) throw new ApiError(422, 'inventory_target_exists');
       this.state.targets.push({ ...structuredClone(t), id: this.next(), inventoryId: id, addedExplicitly: true, note });
@@ -132,8 +142,14 @@ export class MockInventories {
       if (input.mode === 'people' && (target.holderPersonId !== (input.personId ?? null) || target.holderUnitId !== (input.holderUnitId ?? null))) throw invalid('holder');
       const item = this.state.items.find((i) => i.id === target!.itemId);
       const loan = this.state.loans.find((l) => item ? l.lines.some((line) => line.itemId === item.id && !line.closedAt) : target!.kitId !== null ? l.kitId === target!.kitId && l.lines.some((line) => !line.closedAt) : l.lines.some((line) => line.id === target!.loanLineId && !line.closedAt));
-      if (input.mode === 'kit' && !(target.kitId === input.kitId || target.contextKitId === input.kitId || item?.kitId === input.kitId)) throw invalid('kitId');
+      let compositionConflict = false;
+      if (input.mode === 'kit' && !(target.kitId === input.kitId || target.contextKitId === input.kitId || item?.kitId === input.kitId)) {
+        if (!item || !positive) throw invalid('kitId');
+        if (!entry.confirmConflict || !entry.note?.trim()) { results.push({ code: 'not_in_kit', targetId: target.id, context: { kitId: input.kitId, intendedKitId: item.kitId } }); continue; }
+        compositionConflict = true;
+      }
       const context: Inv.InventoryCheck['context'] = { personId: input.personId ?? null, holderUnitId: input.holderUnitId ?? null, kitId: input.kitId ?? null, holder: loan?.holder ?? null, loanId: loan?.id ?? null, location: item?.location ?? null };
+      if (compositionConflict) Object.assign(context, { confirmedCompositionConflict: true, intendedKitId: item?.kitId ?? null });
       if (bulk) context.expectedQty = current.find((t) => t.bulkStockId === target!.bulkStockId && t.contextKitId === target!.contextKitId && t.loanLineId === target!.loanLineId)?.expectedQty ?? 0;
       let code: Inv.InventoryCheckOutcome['code'] | null = positive && item?.retiredAt ? 'item_retired' : null;
       if (positive && loan && !(input.mode === 'people' ? input.personId != null ? 'personId' in loan.holder && loan.holder.personId === input.personId : 'unitId' in loan.holder && loan.holder.unitId === input.holderUnitId : input.mode === 'kit' ? loan.kitId === input.kitId : false)) code = 'loaned_to';
