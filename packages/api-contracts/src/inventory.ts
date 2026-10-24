@@ -151,7 +151,9 @@ export interface WorkOrderInput {
   assignee?: string | null;
   dueOn?: string | null;
 }
+export type WorkOrderCreate = WorkOrderInput & Partial<import('./inventories').InventoryOperationContext>;
 export interface WorkOrder extends Required<WorkOrderInput> {
+  inventoryId?: number | null;
   id: number;
   unitId: number;
   itemId: number;

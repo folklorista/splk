@@ -6,6 +6,7 @@ namespace Splk\Api\Domain\Costumes;
 
 use PDO;
 use Splk\Api\Http\Input;
+use Splk\Api\Http\HttpException;
 use Splk\Api\Http\InventoryInput;
 
 /** Builds a single consistent scope snapshot, including disjoint bulk contexts (D-61). */
@@ -36,9 +37,15 @@ final class InventoryScope
     public function freeze(int $unit, array $scope): array
     {
         // Short shared locks prevent a handover/composition/catalog change halfway through the snapshot.
-        $this->db->exec('LOCK TABLE costume_items, costume_kits, costume_bulk_stocks, costume_kit_bulk_lines,
-            costume_loans, costume_loan_lines, costume_series, costume_part_types, costume_regions,
-            groups, group_memberships, unit_affiliations IN SHARE MODE');
+        try {
+            $this->db->exec('LOCK TABLE costume_items, costume_kits, costume_bulk_stocks, costume_kit_bulk_lines,
+                costume_loans, costume_loan_lines, costume_series, costume_part_types, costume_regions,
+                groups, group_memberships, unit_affiliations IN SHARE MODE NOWAIT');
+        } catch (\PDOException $e) {
+            // Never wait holding only part of this lock set: ordinary handovers use row locks.
+            if ($e->getCode() === '55P03') throw new HttpException(409, 'inventory_busy', 'Property is changing. Retry the inventory operation.');
+            throw $e;
+        }
         $items = $this->rows("SELECT i.*, s.name AS series_name, s.part_type_id, coalesce(s.region_id, t.region_id) AS effective_region_id,
             coalesce(s.gender, t.gender) AS gender, coalesce(i.variant, s.variant) AS effective_variant,
             r.name AS region_name, r.parent_id AS region_parent_id, ll.id AS loan_line_id, l.id AS loan_id, l.holder_person_id, l.holder_unit_id

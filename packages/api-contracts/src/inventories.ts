@@ -84,6 +84,8 @@ export interface InventoryVisit {
   completedAt: string | null;
 }
 export interface InventoryCreate { name: string; scope: InventoryScope }
+/** Both fields are required together when an ordinary movement/work order belongs to an open inventory. */
+export interface InventoryOperationContext { inventoryId: number; inventoryVersion: number }
 export interface InventoryClose { version: number; closedWithIssues: boolean; reason?: string }
 export type InventoryTargetAdd = { version: number; note: string } & (
   | { itemId: number; kitId?: never; bulkStockId?: never }

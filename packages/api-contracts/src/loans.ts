@@ -1,9 +1,11 @@
 import type { BulkStock, ItemCondition, ItemLocation, PageQuery } from './inventory';
+import type { InventoryOperationContext } from './inventories';
 
 /** Handovers are facts, independently of intended kit membership (API v1 chap. 4.5). */
 export type LoanHolder = { personId: number; unitId?: never } | { unitId: number; personId?: never };
 export type LoanCloseType = 'returned' | 'exchanged' | 'settled';
 export interface LoanLine {
+  inventoryId?: number | null;
   /** Current catalog label for presentation; snapshot identity is itemId or bulkStockId. */
   label: string;
   region: string | null;
@@ -19,6 +21,7 @@ export interface LoanLine {
   closeNote: string | null;
 }
 export interface LoanReturn {
+  inventoryId?: number | null;
   lostQty: number;
   id: number;
   lineId: number;
@@ -42,7 +45,7 @@ export interface CostumeLoan {
   lines: LoanLine[];
   returns: LoanReturn[];
 }
-export type LoanCreate = {
+export type LoanCreate = Partial<InventoryOperationContext> & {
   holder: LoanHolder;
   dueAt?: string | null;
   note?: string | null;
@@ -53,7 +56,7 @@ export type LoanCreate = {
 export interface LoanIssueResult extends CostumeLoan {
   omittedItemIds: number[];
 }
-export interface LoanReturnInput {
+export interface LoanReturnInput extends Partial<InventoryOperationContext> {
   lines: {
     lineId: number;
     /** Quantity physically handed back now. settled writes off the remaining loss and requires a note. */
@@ -65,7 +68,7 @@ export interface LoanReturnInput {
     location?: ItemLocation;
   }[];
 }
-export interface LoanExchangeInput {
+export interface LoanExchangeInput extends Partial<InventoryOperationContext> {
   lineId: number;
   itemId: number;
   note?: string | null;
@@ -82,6 +85,7 @@ export interface LoanQuery extends PageQuery {
   kit?: number;
 }
 export interface MovementQuery extends PageQuery {
+  inventoryId?: number;
   person?: number;
   item?: number;
   kit?: number;
@@ -89,6 +93,7 @@ export interface MovementQuery extends PageQuery {
   to?: string;
 }
 export interface LoanMovement {
+  inventoryId?: number | null;
   lostQty: number;
   id: number;
   loanId: number;

@@ -208,3 +208,10 @@ Uživatel rozhodl Q-21 → D-63: fyzické ověření plní pokrytí, pozdější
 - Fondově chráněné zakládání a částečné změny termínů/návštěv, kontrola časových pásem, kapacity a příslušnosti termínu do téže inventury. Kapacitu hlídá společný zámek inventury; zrušení rezervaci uvolní.
 - Návštěvy jen pro držitele ze zmrazeného rozsahu. Dokončená nebo zrušená návštěva zůstává v historii, další návštěva je samostatná. Dokončení nezapisuje fyzické kontroly a opakované návštěvy nezvyšují počet odbavených osob.
 - PHPUnit: **208 testů / 1631 assertions**, TypeScript kontraktů a `git diff --check` prošly. Ověřena i obsazená kapacita, neplatné časy, cizí termín, souběžná aktivní návštěva a neměnnost dokončené historie. Navazují vazby běžných pohybů a frontend.
+
+### Krok 7, etapa 2e – návaznost běžných pohybů a práce
+
+- Existující výdej/vrácení/výměna a založení pracovního úkolu podporují kontext otevřené inventury stejného fondu s verzí. Zachovány běžné validační a auditní operace; pohyb nezakládá fyzickou kontrolu ani tiše nemění rozsah.
+- Rekapitulace pohybů a otevřených pracovních úkolů se při uzavření uloží do výsledku. Pozdější dokončení úkolu tento výsledek nezmění. Nové zápisy do uzavřeného kontextu, cizí fond a zastaralá verze jsou zamítnuty atomicky.
+- Doplněn test skutečného souběžného databázového spojení. Inventura získává soubor sdílených zámků bez čekání a při probíhajícím zápisu vrátí opakovatelný konflikt `inventory_busy`; tím se zabrání deadlocku s běžnými pohyby. První fixture tohoto testu samo drželo zámky z předchozího náhledu v obalové testovací transakci; opraveno sestavení fixture, nikoli ověřované chování.
+- PHPUnit: **214 testů / 1692 assertions**; TypeScript aplikace, testů a kontraktů i `git diff --check` prošly. Zbývá dokončit podklady pro výběr skupin a frontendové adaptéry, logiku a obrazovky. Krok 7 stále není dokončen, produkce ani deploy nebyly použity.

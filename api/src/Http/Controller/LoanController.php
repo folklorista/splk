@@ -9,6 +9,7 @@ use Splk\Api\Domain\Costumes\BulkStockRepository;
 use Splk\Api\Domain\Costumes\ItemRepository;
 use Splk\Api\Domain\Costumes\KitRepository;
 use Splk\Api\Domain\Costumes\LoanRepository;
+use Splk\Api\Domain\Costumes\InventoryLink;
 use Splk\Api\Http\HttpException;
 use Splk\Api\Http\Input;
 use Splk\Api\Http\InventoryInput;
@@ -59,9 +60,9 @@ final class LoanController extends Controller
     private function movements(Request $request, RequestContext $context): Response
     {
         $unit = $this->fund($context, $context->params['unitId'], false);
-        InventoryInput::only($request->query, ['limit', 'offset', 'person', 'item', 'kit', 'from', 'to']);
+        InventoryInput::only($request->query, ['limit', 'offset', 'person', 'item', 'kit', 'inventoryId', 'from', 'to']);
         $filters = [];
-        foreach (['person', 'item', 'kit'] as $field) {
+        foreach (['person', 'item', 'kit', 'inventoryId'] as $field) {
             if (isset($request->query[$field])) {
                 $filters[$field] = InventoryInput::queryInteger($request->query[$field], $field);
             }
@@ -87,7 +88,7 @@ final class LoanController extends Controller
     {
         $unit = $this->fund($context, $context->params['unitId'], true);
         $body = $request->json();
-        InventoryInput::only($body, ['holder', 'items', 'bulk', 'kitId', 'kitVersion', 'kitBulk', 'omitItemIds', 'dueAt', 'note']);
+        InventoryInput::only($body, ['holder', 'items', 'bulk', 'kitId', 'kitVersion', 'kitBulk', 'omitItemIds', 'dueAt', 'note', 'inventoryId', 'inventoryVersion']);
         $holder = $body['holder'] ?? null;
         if (!is_array($holder) || count($holder) !== 1 || (!isset($holder['personId']) && !isset($holder['unitId']))) {
             throw Input::invalid('holder', 'invalid');
@@ -108,13 +109,15 @@ final class LoanController extends Controller
         $kitBulk = array_key_exists('kitBulk', $body) ? self::bulk($body['kitBulk'], 0) : null;
         $due = self::timestamp($body, 'dueAt');
         $note = (new Input($body))->optionalString('note', 5000);
-        return Response::json($this->audited($context, 'loan.issue', $unit, function () use ($unit, $holder, $kitId, $ids, $omit, $bulk, $due, $note, $kitVersion, $kitBulk, $context): array {
+        return Response::json($this->audited($context, 'loan.issue', $unit, function () use ($unit, $holder, $kitId, $ids, $omit, $bulk, $due, $note, $kitVersion, $kitBulk, $context, $body): array {
+            $link = new InventoryLink($this->db()); $inventory = $link->lock($unit, $body);
             $this->validateHolder($unit, $holder);
-            return $this->issue($unit, $holder, $kitId, $ids, $omit, $bulk, $due, $note, self::actor($context), null, $kitVersion, $kitBulk);
+            $result = $this->issue($unit, $holder, $kitId, $ids, $omit, $bulk, $due, $note, self::actor($context), null, $kitVersion, $kitBulk, $inventory);
+            $link->touch($inventory); return $result;
         }, 'item_unavailable'), 201);
     }
 
-    private function issue(int $unit, array $holder, ?int $kitId, array $ids, array $omit, array $bulk, ?string $due, ?string $note, int $actor, ?int $replaces = null, ?int $kitVersion = null, ?array $kitBulk = null): array
+    private function issue(int $unit, array $holder, ?int $kitId, array $ids, array $omit, array $bulk, ?string $due, ?string $note, int $actor, ?int $replaces = null, ?int $kitVersion = null, ?array $kitBulk = null, ?int $inventory = null): array
     {
         $kit = null;
         $missingBulk = false;
@@ -187,11 +190,11 @@ final class LoanController extends Controller
         }
         $id = $this->loans()->insert($unit, $holder, $kitId, $due, $note, $actor, $replaces);
         foreach ($actual as $itemId) {
-            $this->loans()->addLine($unit, $id, $itemId, null, 1);
+            $this->loans()->addLine($unit, $id, $itemId, null, 1, $inventory);
             $items->record($itemId, $actor, 'issued', ['loanId' => $id, 'holder' => $holder]);
         }
         foreach ($bulk as $line) {
-            $this->loans()->addLine($unit, $id, null, $line['stockId'], $line['qty']);
+            $this->loans()->addLine($unit, $id, null, $line['stockId'], $line['qty'], $inventory);
         }
         return $this->loans()->find($id) + ['omittedItemIds' => $omitted];
     }
@@ -199,12 +202,14 @@ final class LoanController extends Controller
     private function return(Request $request, RequestContext $context): Response
     {
         $initial = $this->accessible($context, true);
-        InventoryInput::only($request->json(), ['lines']);
+        InventoryInput::only($request->json(), ['lines', 'inventoryId', 'inventoryVersion']);
         $lines = $request->json()['lines'] ?? null;
         if (!is_array($lines) || !array_is_list($lines) || $lines === [] || count($lines) > 200) {
             throw Input::invalid('lines', 'invalid');
         }
-        return Response::json($this->audited($context, 'loan.return', $initial['unitId'], function () use ($initial, $lines, $context): array {
+        $body = $request->json();
+        return Response::json($this->audited($context, 'loan.return', $initial['unitId'], function () use ($initial, $lines, $context, $body): array {
+            $link = new InventoryLink($this->db()); $inventory = $link->lock($initial['unitId'], $body);
             $loan = $this->loans()->find($initial['id'], true);
             if ($loan['kitId'] !== null) {
                 (new KitRepository($this->db()))->find($loan['kitId'], true);
@@ -237,13 +242,13 @@ final class LoanController extends Controller
             // Lock pieces and stocks in stable order before applying any return.
             $this->lockReturnItems(array_column($validated, 0));
             foreach ($validated as [$line, $qty, $values]) {
-                $this->receive($loan, $line, $qty, $values['closeType'], $values, self::actor($context));
+                $this->receive($loan, $line, $qty, $values['closeType'], $values, self::actor($context), $inventory);
             }
-            return $this->loans()->find($loan['id']);
+            $link->touch($inventory); return $this->loans()->find($loan['id']);
         }));
     }
 
-    private function receive(array $loan, array $line, int $qty, string $type, array $values, int $actor): void
+    private function receive(array $loan, array $line, int $qty, string $type, array $values, int $actor, ?int $inventory = null): void
     {
         $input = new Input($values);
         $note = $input->optionalString('note', 5000);
@@ -262,7 +267,7 @@ final class LoanController extends Controller
         if ($line['itemId'] === null && $updates !== []) {
             throw Input::invalid('condition', 'not_allowed');
         }
-        $this->loans()->returnLine($loan['unitId'], $line, $qty, $type, $note, $actor);
+        $this->loans()->returnLine($loan['unitId'], $line, $qty, $type, $note, $actor, $inventory);
         if ($type === 'settled') {
             $this->lose($loan, $line, $qty, $note, $actor);
         }
@@ -319,20 +324,22 @@ final class LoanController extends Controller
     {
         $initial = $this->accessible($context, true);
         $values = $request->json();
-        InventoryInput::only($values, ['lineId', 'itemId', 'note', 'condition', 'issuable', 'location']);
+        InventoryInput::only($values, ['lineId', 'itemId', 'note', 'condition', 'issuable', 'location', 'inventoryId', 'inventoryVersion']);
         $input = new Input($values);
         $lineId = $input->id('lineId');
         $newId = $input->id('itemId');
         return Response::json($this->audited($context, 'loan.exchange', $initial['unitId'], function () use ($initial, $lineId, $newId, $values, $context): array {
+            $link = new InventoryLink($this->db()); $inventory = $link->lock($initial['unitId'], $values);
             $loan = $this->loans()->find($initial['id'], true);
             $line = $this->line($loan, $lineId);
             if ($line['itemId'] === null || $line['closedAt'] !== null || $line['itemId'] === $newId) {
                 throw Input::invalid('lineId', 'invalid');
             }
             $this->lockReturnItems([$line, ['itemId' => $newId, 'bulkStockId' => null]]);
-            $this->receive($loan, $line, 1, 'exchanged', $values, self::actor($context));
-            return $this->issue($loan['unitId'], $loan['holder'], null, [$newId], [], [], $loan['dueAt'],
-                (new Input($values))->optionalString('note', 5000), self::actor($context), $loan['id']);
+            $this->receive($loan, $line, 1, 'exchanged', $values, self::actor($context), $inventory);
+            $result = $this->issue($loan['unitId'], $loan['holder'], null, [$newId], [], [], $loan['dueAt'],
+                (new Input($values))->optionalString('note', 5000), self::actor($context), $loan['id'], inventory: $inventory);
+            $link->touch($inventory); return $result;
         }, 'item_unavailable'), 201);
     }
 

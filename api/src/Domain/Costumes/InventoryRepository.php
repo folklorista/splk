@@ -117,7 +117,13 @@ final class InventoryRepository
     {
         $query = $this->db->prepare("SELECT DISTINCT w.id, w.item_id, w.status FROM costume_work_orders w JOIN inventory_targets t ON t.item_id = w.item_id WHERE t.inventory_id = :id AND w.status IN ('open', 'in_progress') ORDER BY w.id");
         $query->execute(['id' => $id]);
-        return array_map(static fn (array $r): array => ['id' => (int) $r['id'], 'itemId' => (int) $r['item_id'], 'status' => $r['status']], $query->fetchAll());
+        return array_map(fn (array $r): array => (new WorkOrderRepository($this->db))->find((int) $r['id']), $query->fetchAll());
+    }
+
+    public function movements(int $id): array
+    {
+        $inventory = $this->find($id) ?? throw new \LogicException('Inventory does not exist');
+        return (new LoanRepository($this->db))->movements($inventory['unitId'], ['inventoryId' => $id], PHP_INT_MAX, 0)['items'];
     }
 
     public function touch(int $id): void { $this->db->prepare('UPDATE inventories SET version = version + 1 WHERE id = :id')->execute(['id' => $id]); }
@@ -129,7 +135,7 @@ final class InventoryRepository
         if (!$issues && !$progress['canCloseCleanly']) throw new HttpException(422, 'inventory_has_issues', 'Unverified targets or discrepancies remain.');
         if ($issues && ($reason === null || trim($reason) === '')) throw Input::invalid('reason', 'required');
         $snapshot = ['progress' => $progress, 'targets' => $this->targets($inventory['id']), 'checks' => $this->checks($inventory['id']),
-            'visits' => $this->visits($inventory['id']), 'slots' => $this->slots($inventory['id']), 'workOrders' => $this->workOrders($inventory['id'])];
+            'visits' => $this->visits($inventory['id']), 'slots' => $this->slots($inventory['id']), 'workOrders' => $this->workOrders($inventory['id']), 'movements' => $this->movements($inventory['id'])];
         $query = $this->db->prepare("UPDATE inventories SET status = 'closed', closed_at = clock_timestamp(), closed_by = :actor,
             closed_with_issues = :issues, close_reason = :reason, result_snapshot = CAST(:snapshot AS jsonb), version = version + 1 WHERE id = :id");
         $query->execute(['id' => $inventory['id'], 'actor' => $actor, 'issues' => $issues ? 'true' : 'false', 'reason' => $reason, 'snapshot' => self::json($snapshot)]);

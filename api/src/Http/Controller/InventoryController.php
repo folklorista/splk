@@ -29,10 +29,11 @@ final class InventoryController extends Controller
         $router->add('GET', '/v1/funds/{unitId}/inventories', $this->list(...));
         $router->add('POST', '/v1/funds/{unitId}/inventories', $this->create(...));
         $router->add('GET', '/v1/inventories/{id}', $this->detail(...));
-        foreach (['targets', 'checks', 'issues', 'slots', 'visits'] as $collection) {
+        foreach (['targets', 'checks', 'issues', 'slots', 'visits', 'movements'] as $collection) {
             $router->add('GET', '/v1/inventories/{id}/' . $collection,
                 fn (Request $r, RequestContext $c): Response => $this->collection($r, $c, $collection));
         }
+        $router->add('GET', '/v1/inventories/{id}/work-orders', fn (Request $r, RequestContext $c): Response => $this->collection($r, $c, 'workOrders'));
         foreach (['slots' => 'slot', 'visits' => 'visit'] as $collection => $method) {
             $handler = fn (Request $r, RequestContext $c): Response => $this->appointment($r, $c, $method);
             $router->add('POST', '/v1/inventories/{id}/' . $collection, $handler);
@@ -122,7 +123,11 @@ final class InventoryController extends Controller
         if (!$issues && $reason !== null) throw Input::invalid('reason', 'not_allowed');
         return Response::json($this->audited($context, 'inventory.close', $initial['unitId'], function () use ($initial, $version, $issues, $reason, $context): array {
             $inventory = $this->open($initial['id'], $version);
-            $this->db()->exec('LOCK TABLE costume_items, costume_work_orders IN SHARE MODE');
+            try { $this->db()->exec('LOCK TABLE costume_items, costume_work_orders IN SHARE MODE NOWAIT'); }
+            catch (\PDOException $e) {
+                if ($e->getCode() === '55P03') throw new HttpException(409, 'inventory_busy', 'Property is changing. Retry closure.');
+                throw $e;
+            }
             $this->repository()->close($inventory, $issues, $reason, self::actor($context));
             return $this->withProgress($this->repository()->find($inventory['id']));
         }));

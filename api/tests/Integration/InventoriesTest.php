@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Splk\Api\Tests\Integration;
 
 use Splk\Api\Domain\Costumes\InventoryRepository;
+use Splk\Api\Infrastructure\Db\ConnectionFactory;
 
 final class InventoriesTest extends ApiTestCase
 {
@@ -109,6 +110,29 @@ final class InventoriesTest extends ApiTestCase
     {
         $response = $this->post($this->base(), ['name' => 'Autumn', 'scope' => (object) []]);
         self::assertStatus(201, $response); return $response->decodedBody();
+    }
+
+    public function testConcurrentPropertyWritesReturnARetryableConflictWithoutPartialInventoryWrites(): void
+    {
+        // Do not acquire a scope's shared locks in the outer test transaction before the competing writer.
+        $repository = new InventoryRepository($this->db);
+        $id = $repository->insert($this->fund, 'Concurrent inventory', [], $this->actor);
+        $repository->addTarget($this->fund, $id, ['itemId' => $this->item, 'kitId' => null, 'bulkStockId' => null,
+            'holderPersonId' => null, 'holderUnitId' => null, 'contextKitId' => null, 'loanLineId' => null,
+            'expectedQty' => 1, 'snapshot' => ['number' => '3']]);
+        $url = '/v1/inventories/' . $id;
+        $other = ConnectionFactory::create(self::settings((getenv('DB_NAME') ?: 'splk') . '_test'));
+        $other->beginTransaction();
+        try {
+            $other->exec('LOCK TABLE costume_items IN ROW EXCLUSIVE MODE');
+            self::assertError(409, 'inventory_busy', $this->post($this->base() . '/preview', ['scope' => (object) []]));
+            self::assertError(409, 'inventory_busy', $this->post($url . '/checks', ['version' => 1, 'mode' => 'store', 'entries' => [['seriesId' => $this->series, 'number' => '3', 'result' => 'found']]]));
+            self::assertError(409, 'inventory_busy', $this->post($url . '/close', ['version' => 1, 'closedWithIssues' => true, 'reason' => 'Stop']));
+            self::assertSame(0, $this->auditCount('inventory.check')); self::assertSame(0, $this->auditCount('inventory.close'));
+            self::assertSame(1, $this->get($url)->decodedBody()['version']);
+        } finally { $other->rollBack(); }
+        self::assertStatus(200, $this->post($this->base() . '/preview', ['scope' => (object) []]));
+        self::assertStatus(200, $this->post($url . '/close', ['version' => 1, 'closedWithIssues' => true, 'reason' => 'Stop']));
     }
     private function base(): string { return '/v1/funds/' . $this->fund . '/inventories'; }
     private function newItem(string $number): int

@@ -35,10 +35,10 @@ final class LoanRepository
             'lines' => array_map(static fn (array $line): array => [
                 'id' => (int) $line['id'], 'label' => $line['label'], 'region' => $line['region'], 'gender' => $line['gender'], 'itemId' => self::nullableInt($line['item_id']), 'bulkStockId' => self::nullableInt($line['bulk_stock_id']),
                 'qty' => (int) $line['qty'], 'returnedQty' => (int) $line['returned_qty'], 'closedAt' => $line['closed_at'],
-                'closedBy' => self::nullableInt($line['closed_by']), 'closeType' => $line['close_type'], 'closeNote' => $line['close_note'],
+                'closedBy' => self::nullableInt($line['closed_by']), 'closeType' => $line['close_type'], 'closeNote' => $line['close_note'], 'inventoryId' => self::nullableInt($line['inventory_id']),
             ], $lines->fetchAll()),
             'returns' => array_map(static fn (array $r): array => ['id' => (int) $r['id'], 'lineId' => (int) $r['line_id'],
-                'qty' => (int) $r['qty'], 'lostQty' => (int) $r['lost_qty'], 'closeType' => $r['close_type'], 'note' => $r['note'], 'at' => $r['at'], 'by' => (int) $r['by']], $returns->fetchAll())];
+                'qty' => (int) $r['qty'], 'lostQty' => (int) $r['lost_qty'], 'closeType' => $r['close_type'], 'note' => $r['note'], 'at' => $r['at'], 'by' => (int) $r['by'], 'inventoryId' => self::nullableInt($r['inventory_id'])], $returns->fetchAll())];
     }
 
     public function openItem(int $id): ?array
@@ -71,20 +71,20 @@ final class LoanRepository
         return (int) $query->fetchColumn();
     }
 
-    public function addLine(int $unit, int $loan, ?int $item, ?int $stock, int $qty): void
+    public function addLine(int $unit, int $loan, ?int $item, ?int $stock, int $qty, ?int $inventory = null): void
     {
-        $this->db->prepare('INSERT INTO costume_loan_lines (unit_id, loan_id, item_id, bulk_stock_id, qty) VALUES (:unit, :loan, :item, :stock, :qty)')
-            ->execute(['unit' => $unit, 'loan' => $loan, 'item' => $item, 'stock' => $stock, 'qty' => $qty]);
+        $this->db->prepare('INSERT INTO costume_loan_lines (unit_id, loan_id, item_id, bulk_stock_id, qty, inventory_id) VALUES (:unit, :loan, :item, :stock, :qty, :inventory)')
+            ->execute(['unit' => $unit, 'loan' => $loan, 'item' => $item, 'stock' => $stock, 'qty' => $qty, 'inventory' => $inventory]);
     }
 
-    public function returnLine(int $unit, array $line, int $qty, string $type, ?string $note, int $actor): void
+    public function returnLine(int $unit, array $line, int $qty, string $type, ?string $note, int $actor, ?int $inventory = null): void
     {
         $closed = $line['returnedQty'] + $qty === $line['qty'] || $type === 'settled';
         $query = $this->db->prepare('UPDATE costume_loan_lines SET returned_qty = returned_qty + :qty'
             . ($closed ? ', closed_at = now(), closed_by = :actor, close_type = :type, close_note = :note' : '') . ' WHERE id = :id');
         $query->execute(['qty' => $qty, 'id' => $line['id']] + ($closed ? ['actor' => $actor, 'type' => $type, 'note' => $note] : []));
-        $this->db->prepare('INSERT INTO costume_loan_returns (unit_id, line_id, qty, close_type, note, by) VALUES (:unit, :line, :qty, :type, :note, :actor)')
-            ->execute(['unit' => $unit, 'line' => $line['id'], 'qty' => $qty, 'type' => $type, 'note' => $note, 'actor' => $actor]);
+        $this->db->prepare('INSERT INTO costume_loan_returns (unit_id, line_id, qty, close_type, note, by, inventory_id) VALUES (:unit, :line, :qty, :type, :note, :actor, :inventory)')
+            ->execute(['unit' => $unit, 'line' => $line['id'], 'qty' => $qty, 'type' => $type, 'note' => $note, 'actor' => $actor, 'inventory' => $inventory]);
     }
 
     public function update(int $id, ?string $due, ?string $note): void
@@ -126,17 +126,17 @@ final class LoanRepository
     {
         $where = ['l.unit_id = :unit'];
         $params = ['unit' => $unit];
-        foreach (['person' => 'l.holder_person_id', 'item' => 'll.item_id', 'kit' => 'l.kit_id', 'from' => 'm.at', 'to' => 'm.at'] as $field => $column) {
+        foreach (['person' => 'l.holder_person_id', 'item' => 'll.item_id', 'kit' => 'l.kit_id', 'inventoryId' => 'm.inventory_id', 'from' => 'm.at', 'to' => 'm.at'] as $field => $column) {
             if (isset($filters[$field])) {
                 $where[] = $column . match ($field) { 'from' => ' >= ', 'to' => ' <= ', default => ' = ' } . ':' . $field;
                 $params[$field] = $filters[$field];
             }
         }
         $sql = "FROM (
-            SELECT ll.id, ll.id AS line_id, 'issued'::text AS type, l.issued_at AS at, l.issued_by AS by, ll.qty, l.note
+            SELECT ll.id, ll.id AS line_id, 'issued'::text AS type, l.issued_at AS at, l.issued_by AS by, ll.qty, l.note, ll.inventory_id
                 FROM costume_loan_lines ll JOIN costume_loans l ON l.id = ll.loan_id
             UNION ALL
-            SELECT r.id, r.line_id, r.close_type, r.at, r.by, r.qty, r.note FROM costume_loan_returns r
+            SELECT r.id, r.line_id, r.close_type, r.at, r.by, r.qty, r.note, r.inventory_id FROM costume_loan_returns r
             ) m JOIN costume_loan_lines ll ON ll.id = m.line_id JOIN costume_loans l ON l.id = ll.loan_id
             WHERE " . implode(' AND ', $where);
         $count = $this->db->prepare('SELECT count(*) ' . $sql);
@@ -147,7 +147,7 @@ final class LoanRepository
         return ['items' => array_map(static fn (array $r): array => ['id' => (int) $r['id'], 'loanId' => (int) $r['loan_id'], 'lineId' => (int) $r['line_id'],
             'lostQty' => (int) $r['lost_qty'], 'type' => $r['type'], 'at' => $r['at'], 'by' => (int) $r['by'], 'qty' => (int) $r['qty'], 'note' => $r['note'],
             'holder' => self::holder($r), 'kitId' => self::nullableInt($r['kit_id']), 'itemId' => self::nullableInt($r['item_id']),
-            'bulkStockId' => self::nullableInt($r['bulk_stock_id'])], $query->fetchAll()), 'total' => (int) $count->fetchColumn()];
+            'bulkStockId' => self::nullableInt($r['bulk_stock_id']), 'inventoryId' => self::nullableInt($r['inventory_id'])], $query->fetchAll()), 'total' => (int) $count->fetchColumn()];
     }
 
     private static function holder(array $row): array

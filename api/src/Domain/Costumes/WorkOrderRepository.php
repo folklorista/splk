@@ -41,11 +41,11 @@ final class WorkOrderRepository
         return ['items' => array_map(self::order(...), $list->fetchAll()), 'total' => (int) $count->fetchColumn()];
     }
 
-    public function insert(int $itemId, array $values, int $actor): int
+    public function insert(int $itemId, array $values, int $actor, ?int $inventory = null): int
     {
-        $statement = $this->db->prepare('INSERT INTO costume_work_orders (item_id, type, description, assignee, due_on, created_by)
-            VALUES (:item, :type, :description, :assignee, :dueOn, :actor) RETURNING id');
-        $statement->execute(['item' => $itemId, 'actor' => $actor] + $values);
+        $statement = $this->db->prepare('INSERT INTO costume_work_orders (item_id, type, description, assignee, due_on, created_by, inventory_id)
+            VALUES (:item, :type, :description, :assignee, :dueOn, :actor, :inventory) RETURNING id');
+        $statement->execute(['item' => $itemId, 'actor' => $actor, 'inventory' => $inventory] + $values);
         return (int) $statement->fetchColumn();
     }
 
@@ -58,6 +58,6 @@ final class WorkOrderRepository
     private static function order(array $row): array
     {
         return ['id' => (int) $row['id'], 'itemId' => (int) $row['item_id'], 'unitId' => (int) $row['unit_id'], 'type' => $row['type'],
-            'description' => $row['description'], 'assignee' => $row['assignee'], 'dueOn' => $row['due_on'], 'status' => $row['status']];
+            'description' => $row['description'], 'assignee' => $row['assignee'], 'dueOn' => $row['due_on'], 'status' => $row['status'], 'inventoryId' => $row['inventory_id'] === null ? null : (int) $row['inventory_id']];
     }
 }

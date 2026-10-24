@@ -6,6 +6,7 @@ namespace Splk\Api\Http\Controller;
 
 use Splk\Api\Authorization\FundAccess;
 use Splk\Api\Domain\Costumes\ItemRepository;
+use Splk\Api\Domain\Costumes\InventoryLink;
 use Splk\Api\Domain\Costumes\WorkOrderRepository;
 use Splk\Api\Http\HttpException;
 use Splk\Api\Http\Input;
@@ -43,18 +44,20 @@ final class WorkOrderController extends Controller
     private function create(Request $request, RequestContext $context): Response
     {
         $initial = $this->item($context, true);
-        InventoryInput::only($request->json(), self::FIELDS);
+        InventoryInput::only($request->json(), [...self::FIELDS, 'inventoryId', 'inventoryVersion']);
         $values = $this->values(Input::fromRequest($request));
-        return Response::json($this->audited($context, 'work_order.create', $initial['unitId'], function () use ($initial, $values, $context): array {
+        $body = $request->json();
+        return Response::json($this->audited($context, 'work_order.create', $initial['unitId'], function () use ($initial, $values, $context, $body): array {
+            $link = new InventoryLink($this->db()); $inventory = $link->lock($initial['unitId'], $body);
             $items = new ItemRepository($this->db());
             $item = $items->find($initial['id'], true) ?? throw self::notFound();
             if ($item['retiredAt'] !== null) {
                 throw new HttpException(422, 'item_retired', 'A retired item cannot receive new work orders.');
             }
-            $id = $this->orders()->insert($item['id'], $values, self::actor($context));
+            $id = $this->orders()->insert($item['id'], $values, self::actor($context), $inventory);
             $order = $this->orders()->find($id);
             $items->record($item['id'], self::actor($context), 'work_order_created', $order);
-            return $order;
+            $link->touch($inventory); return $order;
         }), 201);
     }
 
