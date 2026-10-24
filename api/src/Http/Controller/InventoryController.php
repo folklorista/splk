@@ -6,6 +6,8 @@ namespace Splk\Api\Http\Controller;
 
 use Splk\Api\Authorization\FundAccess;
 use Splk\Api\Domain\Costumes\InventoryCoverage;
+use Splk\Api\Domain\Costumes\InventoryChecks;
+use Splk\Api\Domain\Costumes\ItemRepository;
 use Splk\Api\Domain\Costumes\InventoryRepository;
 use Splk\Api\Domain\Costumes\InventoryScope;
 use Splk\Api\Http\HttpException;
@@ -31,6 +33,7 @@ final class InventoryController extends Controller
                 fn (Request $r, RequestContext $c): Response => $this->collection($r, $c, $collection));
         }
         $router->add('POST', '/v1/inventories/{id}/targets', $this->addTarget(...));
+        $router->add('POST', '/v1/inventories/{id}/checks', $this->checks(...));
         $router->add('POST', '/v1/inventories/{id}/close', $this->close(...));
         $router->add('DELETE', '/v1/inventory-checks/{id}', $this->cancel(...));
     }
@@ -119,6 +122,16 @@ final class InventoryController extends Controller
         }));
     }
 
+    private function checks(Request $request, RequestContext $context): Response
+    {
+        $initial = $this->accessible($context, true);
+        $writer = new InventoryChecks($this->db()); $batch = $writer->validate($request->json());
+        $version = Input::fromRequest($request)->id('version');
+        return Response::json($this->audited($context, 'inventory.check', $initial['unitId'], function () use ($initial, $version, $writer, $batch, $context): array {
+            return $writer->record($this->open($initial['id'], $version), $batch, self::actor($context));
+        }));
+    }
+
     private function cancel(Request $request, RequestContext $context): Response
     {
         $check = $this->repository()->check(self::routeId($context)) ?? throw self::notFound();
@@ -129,6 +142,9 @@ final class InventoryController extends Controller
         return Response::json($this->audited($context, 'inventory.cancel_check', $initial['unitId'], function () use ($initial, $version, $check, $context): array {
             $this->open($initial['id'], $version);
             $this->repository()->cancel($check['id'], self::actor($context));
+            foreach ($this->repository()->targets($initial['id']) as $target) if ($target['id'] === $check['targetId'] && $target['itemId'] !== null) {
+                (new ItemRepository($this->db()))->record($target['itemId'], self::actor($context), 'inventory_check_cancelled', ['checkId' => $check['id'], 'inventoryId' => $initial['id']]);
+            }
             $this->repository()->touch($initial['id']);
             return $this->withProgress($this->repository()->find($initial['id']));
         }, auditData: ['checkId' => $check['id'], 'inventoryId' => $initial['id']]));

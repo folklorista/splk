@@ -57,6 +57,16 @@ export interface InventoryCheck {
   at: string;
   cancelledAt: string | null;
   cancelledBy: number | null;
+  /** Server-captured facts at observation time; frozen targets are never rewritten. */
+  context: {
+    personId?: number | null;
+    kitId?: number | null;
+    holder?: { personId: number } | { unitId: number } | null;
+    loanId?: number | null;
+    location?: string | null;
+    expectedQty?: number;
+    confirmedLocationConflict?: boolean;
+  };
 }
 export interface InventorySlot {
   id: number;
@@ -114,3 +124,26 @@ export interface InventoryProgress {
 }
 export interface InventoryDetail extends CostumeInventory { progress: InventoryProgress }
 export interface InventoryPreview { scope: InventoryScope; progress: InventoryProgress; unloanedItemCount: number }
+export type InventoryCheckEntry = {
+  result: InventoryResult;
+  condition?: ItemCondition;
+  checkedQty?: number;
+  note?: string;
+  recheck?: boolean;
+  /** Explicit physical observation despite recorded location; requires a note, never returns a loan. */
+  confirmConflict?: boolean;
+} & ({ targetId: number; seriesId?: never; number?: never } | { seriesId: number; number: string; targetId?: never });
+export interface InventoryCheckBatch {
+  version: number;
+  mode: InventoryMode;
+  personId?: number;
+  kitId?: number;
+  entries: InventoryCheckEntry[];
+}
+export interface InventoryCheckOutcome {
+  code: 'ok' | 'already_checked' | 'unknown_number' | 'loaned_to' | 'not_in_store' | 'item_retired';
+  targetId: number | null;
+  check?: InventoryCheck;
+  context?: InventoryCheck['context'];
+}
+export interface InventoryCheckResponse { id: number; inventory: InventoryDetail; results: InventoryCheckOutcome[] }

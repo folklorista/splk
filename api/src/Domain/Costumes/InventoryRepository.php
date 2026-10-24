@@ -68,14 +68,15 @@ final class InventoryRepository
         $query = $this->db->prepare('SELECT * FROM inventory_checks WHERE inventory_id = :id ORDER BY at, id'); $query->execute(['id' => $inventory]);
         return array_map(static fn (array $r): array => ['id' => (int) $r['id'], 'inventoryId' => (int) $r['inventory_id'], 'targetId' => (int) $r['target_id'],
             'mode' => $r['mode'], 'result' => $r['result'], 'condition' => $r['condition'], 'checkedQty' => self::id($r['checked_qty']), 'note' => $r['note'],
-            'by' => (int) $r['by'], 'at' => $r['at'], 'cancelledAt' => $r['cancelled_at'], 'cancelledBy' => self::id($r['cancelled_by'])], $query->fetchAll());
+            'by' => (int) $r['by'], 'at' => $r['at'], 'cancelledAt' => $r['cancelled_at'], 'cancelledBy' => self::id($r['cancelled_by']),
+            'context' => (object) json_decode($r['context'], true, flags: JSON_THROW_ON_ERROR)], $query->fetchAll());
     }
 
-    public function addCheck(int $unit, int $inventory, int $target, string $mode, string $result, ?string $condition, ?int $qty, ?string $note, int $actor): int
+    public function addCheck(int $unit, int $inventory, int $target, string $mode, string $result, ?string $condition, ?int $qty, ?string $note, int $actor, array $context = []): int
     {
-        $query = $this->db->prepare('INSERT INTO inventory_checks (unit_id, inventory_id, target_id, mode, result, condition, checked_qty, note, by, at)
-            VALUES (:unit, :inventory, :target, :mode, :result, :condition, :qty, :note, :actor, clock_timestamp()) RETURNING id');
-        $query->execute(['unit' => $unit, 'inventory' => $inventory, 'target' => $target, 'mode' => $mode, 'result' => $result, 'condition' => $condition, 'qty' => $qty, 'note' => $note, 'actor' => $actor]);
+        $query = $this->db->prepare('INSERT INTO inventory_checks (unit_id, inventory_id, target_id, mode, result, condition, checked_qty, note, by, at, context)
+            VALUES (:unit, :inventory, :target, :mode, :result, :condition, :qty, :note, :actor, clock_timestamp(), CAST(:context AS jsonb)) RETURNING id');
+        $query->execute(['unit' => $unit, 'inventory' => $inventory, 'target' => $target, 'mode' => $mode, 'result' => $result, 'condition' => $condition, 'qty' => $qty, 'note' => $note, 'actor' => $actor, 'context' => self::json((object) $context)]);
         return (int) $query->fetchColumn();
     }
 

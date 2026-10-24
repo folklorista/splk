@@ -195,3 +195,10 @@ Uživatel rozhodl Q-21 → D-63: fyzické ověření plní pokrytí, pozdější
 - Náhled bez zápisu, založení se zmrazením rozsahu, seznam/detail a stránkované kolekce. Výslovné rozšíření vyžaduje poznámku; duplicity se odmítají atomicky. Rušení kontrol uchová historii.
 - Zápisy mají fondové pověření, zámek a kontrolu verze, audit ve stejné transakci. Čisté uzavření odmítne neověřené cíle nebo nesrovnalosti; výslovné uzavření vyžaduje důvod. Čtení uzavřené inventury vrací uložený výsledek včetně kolekcí.
 - PHPUnit: **196 testů / 1516 assertions**, TypeScript kontraktů a `git diff --check` prošly. Ověřeny i zamítnuté operace čtenáře, cizí fond, neplatné verze, duplicity a zápisy po uzavření. Zápisy kontrol, termíny/návštěvy a frontend ještě následují; žádné nasazení.
+
+### Krok 7, etapa 2c – dávky fyzických kontrol
+
+- Kontroly ve skladu, u lidí a v kompletu se sdílenou historií. Každý vstup vrací výsledek; opakované ověření vyžaduje výslovnou volbu. Číslo se hledá podle aktuální fyzické identity v již zmrazeném rozsahu.
+- Zapůjčení a umístění mimo sklad se vracejí jako konflikty. Výslovné fyzické zjištění s poznámkou může překonat rozpor v evidovaném umístění, nikdy však skrytě nevrátí výpůjčku. Stav, přidělené množství, složení ani vyřazení se kontrolou automaticky nemění.
+- Nová dopředná/vratná migrace uchová dobový kontext kontroly. Zásoby se samostatně porovnávají s aktuálně evidovaným množstvím příslušného kontextu; žádné pozorování nezvyšuje procento ověřených kusů.
+- PHPUnit: **203 testů / 1576 assertions**, TypeScript kontraktů a `git diff --check` prošly. Testován i atomický rollback dávky, přečíslovaný kus, pozdější nepřítomnost, zapůjčená součást kompletu a nezměněné početní přidělení. Zbývají termíny/návštěvy, vazby běžných pohybů a frontend; krok 7 není dokončen.

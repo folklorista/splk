@@ -103,11 +103,13 @@ final class InventorySchemaTest extends DatabaseTestCase
         $migration->setAdapter(new \Phinx\Db\Adapter\PostgresAdapter(['connection' => $this->db]));
         $loan = $this->insert("INSERT INTO costume_loans (unit_id, holder_person_id, issued_by) VALUES ({$this->fund}, {$this->person}, {$this->actor})");
         $line = $this->insert("INSERT INTO costume_loan_lines (unit_id, loan_id, item_id, qty) VALUES ({$this->fund}, $loan, {$this->item}, 1)");
+        $later = $this->rollbackLaterMigrations(20261024200000);
         $migration->down();
         self::assertSame(1, $this->db->query('SELECT count(*) FROM costume_items')->fetchColumn());
         self::assertSame(1, $this->db->query('SELECT count(*) FROM costume_loans')->fetchColumn());
         self::assertSame(1, $this->db->query("SELECT qty FROM costume_loan_lines WHERE id = $line")->fetchColumn());
         $migration->up();
+        foreach ($later as $dependent) $dependent->up();
         self::assertSame(0, $this->db->query('SELECT count(*) FROM inventories')->fetchColumn());
         self::assertSame($this->person, $this->db->query("SELECT holder_person_id FROM costume_loans WHERE id = $loan")->fetchColumn());
     }

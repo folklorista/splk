@@ -39,8 +39,9 @@ final class InventoryCoverage
             if ($latest !== null && !self::physical($latest)) {
                 $add($latest['result'], ['checkId' => $latest['id'], 'note' => $latest['note']]);
             }
-            if ($latest !== null && self::physical($latest) && $target['bulkStockId'] !== null && $latest['checkedQty'] !== $expected) {
-                $add('quantity_mismatch', ['checkId' => $latest['id'], 'expectedQty' => $expected, 'checkedQty' => $latest['checkedQty']]);
+            $comparedQuantity = $latest === null ? $expected : ((array) ($latest['context'] ?? []))['expectedQty'] ?? $expected;
+            if ($latest !== null && self::physical($latest) && $target['bulkStockId'] !== null && $latest['checkedQty'] !== $comparedQuantity) {
+                $add('quantity_mismatch', ['checkId' => $latest['id'], 'expectedQty' => $comparedQuantity, 'checkedQty' => $latest['checkedQty']]);
             }
             $lastPhysical = $positive === [] ? null : $positive[array_key_last($positive)];
             $condition = $lastPhysical['condition'] ?? $target['currentCondition'] ?? $target['snapshot']['condition'] ?? null;
