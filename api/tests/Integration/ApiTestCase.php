@@ -69,7 +69,7 @@ abstract class ApiTestCase extends DatabaseTestCase
     }
 
     /** @param array<string, mixed>|null $body */
-    protected function send(string $method, string $path, ?array $body = null, ?array $form = null, array $files = []): Response
+    protected function send(string $method, string $path, ?array $body = null, ?array $form = null, array $files = [], array $extraHeaders = []): Response
     {
         $headers = ['Origin' => self::ORIGIN];
         if ($body !== null) {
@@ -86,7 +86,7 @@ abstract class ApiTestCase extends DatabaseTestCase
         return $this->app->handle(new Request(
             $method,
             parse_url($path, PHP_URL_PATH),
-            $headers,
+            $extraHeaders + $headers,
             query: $query,
             cookies: $this->signedIn === null ? [] : [self::COOKIE => $this->signedIn['token']],
             body: $body === null ? '' : json_encode($body, JSON_THROW_ON_ERROR),
