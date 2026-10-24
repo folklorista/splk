@@ -160,3 +160,9 @@
     padding: var(--space-md);
   }
 }
+
+@media print {
+  :host { min-height: 0; }
+  .topbar, .sidebar, .backdrop { display: none !important; }
+  .content { margin: 0; padding: 0; max-width: none; }
+}

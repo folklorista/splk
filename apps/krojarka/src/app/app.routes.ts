@@ -7,11 +7,9 @@ import { MENU } from './core/layout/menu';
 import { PlaceholderPage } from './core/layout/placeholder-page';
 import { Shell } from './core/layout/shell';
 import { fundGuard, organizationAdminGuard, settingsHomeGuard } from './core/auth/mandate.guards';
-import { CatalogPage } from './features/nastaveni/catalog-page';
-import { SeriesPage } from './features/nastaveni/series-page';
 import { SettingsLayout, SettingsNoAccess } from './features/nastaveni/settings-layout';
 
-const IMPLEMENTED = ['ucet', 'nastaveni', 'soucastky', 'lide', 'krojove-karty', 'vypujcky', 'inventury', 'dokumenty'];
+const IMPLEMENTED = ['ucet', 'nastaveni', 'soucastky', 'lide', 'krojove-karty', 'vypujcky', 'inventury', 'dokumenty', 'prehledy', 'hledat'];
 
 const placeholders: Routes = MENU.filter((item) => !IMPLEMENTED.includes(item.path)).map((item) => ({
   path: item.path,
@@ -53,6 +51,8 @@ export const routes: Routes = [
         { path: 'kusy/:id', loadComponent: () => import('./features/soucastky/item-page').then((m) => m.ItemPage), title: 'Součástka · Krojařka' },
         { path: 'komplety/:id', loadComponent: () => import('./features/soucastky/kit-page').then((m) => m.KitPage), title: 'Komplet · Krojařka' },
       ] },
+      { path: 'prehledy', canActivate: [fundGuard], loadComponent: () => import('./features/prehledy/reports-page').then((m) => m.ReportsPage), title: 'Přehledy · Krojařka' },
+      { path: 'hledat', canActivate: [fundGuard], loadComponent: () => import('./features/prehledy/search-page').then((m) => m.SearchPage), title: 'Hledat · Krojařka' },
       { path: 'ucet', loadComponent: () => import('./features/ucet/account-page').then((m) => m.AccountPage), title: 'Můj účet · Krojařka' },
       { path: 'dokumenty', loadComponent: () => import('./features/dokumenty/documents-page').then((m) => m.DocumentsPage), canActivate: [fundGuard], title: 'Dokumenty · Krojařka' },
       {
@@ -60,8 +60,8 @@ export const routes: Routes = [
         component: SettingsLayout,
         children: [
           { path: '', pathMatch: 'full', component: SettingsNoAccess, canActivate: [settingsHomeGuard], title: 'Nastavení · Krojařka' },
-          { path: 'katalog', component: CatalogPage, canActivate: [fundGuard], title: 'Katalog · Nastavení · Krojařka' },
-          { path: 'rady', component: SeriesPage, canActivate: [fundGuard], title: 'Evidenční řady · Nastavení · Krojařka' },
+          { path: 'katalog', loadComponent: () => import('./features/nastaveni/catalog-page').then((m) => m.CatalogPage), canActivate: [fundGuard], title: 'Katalog · Nastavení · Krojařka' },
+          { path: 'rady', loadComponent: () => import('./features/nastaveni/series-page').then((m) => m.SeriesPage), canActivate: [fundGuard], title: 'Evidenční řady · Nastavení · Krojařka' },
           { path: 'uzivatele', loadComponent: () => import('./features/nastaveni/users-page').then((m) => m.UsersPage), canActivate: [organizationAdminGuard], title: 'Uživatelé a pověření · Krojařka' },
         ],
       },

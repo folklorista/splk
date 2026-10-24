@@ -1,3 +1,6 @@
+import { ReportsApi } from './reports/reports-api';
+import { HttpReportsApi } from './reports/http-reports-api';
+import { MockReportsApi } from './reports/mock-reports-api';
 import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 import { API_BASE_URL, MOCK_DATA } from './api-config';
 import { AuthApi } from './auth/auth-api';
@@ -30,6 +33,7 @@ export function provideData(options: { dataSource: 'http' | 'mock'; apiBaseUrl: 
     { provide: InventoryApi, useClass: mock ? MockInventoryApi : HttpInventoryApi },
     { provide: CatalogApi, useClass: mock ? MockCatalogApi : HttpCatalogApi },
     { provide: OrganizationApi, useClass: mock ? MockOrganizationApi : HttpOrganizationApi },
+    { provide: ReportsApi, useClass: mock ? MockReportsApi : HttpReportsApi },
     { provide: AttachmentsApi, useClass: mock ? MockAttachmentsApi : HttpAttachmentsApi },
   ]);
 }
