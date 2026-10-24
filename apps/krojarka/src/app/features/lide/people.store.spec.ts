@@ -36,4 +36,12 @@ describe('PeopleStore', () => {
     await expect(store.create({ firstName: 'Jan', lastName: 'Novák' })).rejects.toMatchObject({ code: 'possible_duplicate', details: { people: [card.person] } });
     expect(store.busy()).toBe(false); expect(api['create']).toHaveBeenCalledTimes(1);
   });
+  it('requests real open-loan holders for costume cards', async () => {
+    const api = TestBed.inject(PeopleApi);
+    const read = vi.spyOn(api, 'people').mockReturnValue(of({ items: [], total: 0 }));
+    store.onlyWithLoans.set(true); TestBed.tick();
+    await vi.waitFor(() => expect(store.loading()).toBe(false));
+    expect(read).toHaveBeenCalledWith({ fund: 1, limit: 200, offset: 0, hasLoans: true });
+  });
+
 });

@@ -59,7 +59,7 @@ export class MockInventoryApi extends InventoryApi {
       const item: CostumeItem = { id: this.nextId++, unitId: unit, seriesId: input.seriesId, number: text(input.number), variant: text(input.variant),
         size: text(input.size), description: text(input.description), note: text(input.note), condition: input.condition ?? 'ok',
         issuable: input.issuable ?? true, location: input.location ?? 'unknown', locationNote: text(input.locationNote), acquiredOn: text(input.acquiredOn),
-        available: input.issuable ?? true, holder: null, kitId: null, retiredAt: null, retiredBy: null, retireReason: null, version: 1 };
+        available: input.issuable ?? true, holder: null, loanId: null, loanKitId: null, kitId: null, retiredAt: null, retiredBy: null, retireReason: null, version: 1 };
       this.state.items.push(item);
       this.event(item.id, 'created', { ...item });
       return item;
@@ -144,7 +144,7 @@ export class MockInventoryApi extends InventoryApi {
   createKit(unit: number, input: KitInput) {
     return this.run(async () => {
       await this.validateSeries(unit, input.seriesId, 'kit', input.number, null);
-      const kit: KitDetail = { id: this.nextId++, unitId: unit, seriesId: input.seriesId, number: text(input.number), description: text(input.description),
+      const kit: KitDetail = { holder: null, loanId: null, id: this.nextId++, unitId: unit, seriesId: input.seriesId, number: text(input.number), description: text(input.description),
         note: text(input.note), compositionState: input.compositionState ?? 'unverified', retiredAt: null, version: 1, items: [], bulkLines: [], changes: [] };
       this.state.kits.push(kit);
       return this.detail(kit);
@@ -255,7 +255,7 @@ export class MockInventoryApi extends InventoryApi {
       const open = loan.lines.some((l) => !l.closedAt);
       const overdue = open && loan.dueAt !== null && Date.parse(loan.dueAt) < Date.now();
       return loan.unitId === unit && (query.open === undefined || query.open === open) && (query.overdue === undefined || query.overdue === overdue)
-        && (!query.person || 'personId' in loan.holder && loan.holder.personId === query.person) && (!query.holderType || 'personId' in loan.holder);
+        && (!query.kit || loan.kitId === query.kit) && (!query.person || 'personId' in loan.holder && loan.holder.personId === query.person) && (!query.holderType || 'personId' in loan.holder);
     }).sort((a, b) => b.issuedAt.localeCompare(a.issuedAt) || b.id - a.id), query));
   }
   loan(id: number) { return this.run(() => this.find(this.state.loans, id)); }
@@ -279,7 +279,7 @@ export class MockInventoryApi extends InventoryApi {
   movements(unit: number, query: MovementQuery = {}) {
     return this.run(() => {
       const rows: LoanMovement[] = [];
-      for (const loan of this.state.loans) if (loan.unitId === unit && (!query.person || 'personId' in loan.holder && loan.holder.personId === query.person) && (!query.kit || loan.kitId === query.kit)) {
+      for (const loan of this.state.loans) if (loan.unitId === unit && (!query.kit || loan.kitId === query.kit) && (!query.person || 'personId' in loan.holder && loan.holder.personId === query.person) && (!query.kit || loan.kitId === query.kit)) {
         for (const line of loan.lines) {
           if (query.item && line.itemId !== query.item) continue;
           const base = { loanId: loan.id, lineId: line.id, itemId: line.itemId, bulkStockId: line.bulkStockId, holder: loan.holder, kitId: loan.kitId };
@@ -331,13 +331,16 @@ export class MockInventoryApi extends InventoryApi {
       if (!kit && this.stock(stock).quantityAvailable < line.qty) throw new ApiError(422, 'insufficient_stock');
     }
     if (!actual.length && !bulk.length) throw invalid('items');
+    const [series, types, regions] = await Promise.all([firstValueFrom(this.catalog.series(unit)), firstValueFrom(this.catalog.partTypes(unit)), firstValueFrom(this.catalog.regions(unit))]);
+    const classification = (seriesId: number | null, partTypeId: number | null) => { const s = series.find((s) => s.id === seriesId), t = types.find((t) => t.id === (partTypeId ?? s?.partTypeId)), region = regions.find((r) => r.id === (s?.regionId ?? t?.regionId)); return { region: region ? [regions.find((r) => r.id === region.parentId)?.name, region.name].filter(Boolean).join(' · ') : null, gender: s?.gender ?? t?.gender ?? null }; };
     const loan: CostumeLoan = { id: this.nextId++, unitId: unit, holder: structuredClone(holder), kitId: kit?.id ?? null,
       issuedAt: new Date().toISOString(), issuedBy: 1, dueAt: input.dueAt ?? null, note: text(input.note), replacesLoanId: null, lines: [], returns: [] };
     for (const itemId of actual) {
-      loan.lines.push({ id: this.nextId++, itemId, bulkStockId: null, qty: 1, returnedQty: 0, closedAt: null, closedBy: null, closeType: null, closeNote: null });
+      const item = this.find(this.state.items, itemId);
+      loan.lines.push({ ...classification(item.seriesId, null), id: this.nextId++, label: `${series.find((s) => s.id === item.seriesId)?.name ?? 'Součástka'} ${item.number ?? '(bez čísla)'}`, itemId, bulkStockId: null, qty: 1, returnedQty: 0, closedAt: null, closedBy: null, closeType: null, closeNote: null });
       this.event(itemId, 'issued', { loanId: loan.id, holder });
     }
-    for (const line of bulk) loan.lines.push({ id: this.nextId++, itemId: null, bulkStockId: line.stockId, qty: line.qty, returnedQty: 0, closedAt: null, closedBy: null, closeType: null, closeNote: null });
+    for (const line of bulk) loan.lines.push({ ...classification(null, this.find(this.state.stocks, line.stockId).partTypeId), id: this.nextId++, label: `${types.find((t) => t.id === this.find(this.state.stocks, line.stockId).partTypeId)?.name ?? 'Zásoba'} ${this.find(this.state.stocks, line.stockId).variant ?? ''}`.trim(), itemId: null, bulkStockId: line.stockId, qty: line.qty, returnedQty: 0, closedAt: null, closedBy: null, closeType: null, closeNote: null });
     this.state.loans.push(loan);
     return { ...loan, omittedItemIds };
   }
@@ -379,7 +382,8 @@ export class MockInventoryApi extends InventoryApi {
   private openItem(id: number) { return this.state.loans.find((l) => l.lines.some((line) => line.itemId === id && !line.closedAt)); }
   private dateTime(value: string | null) { if (value !== null && (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) || !Number.isFinite(Date.parse(value)))) throw invalid('dueAt'); }
   private refresh() {
-    for (const item of this.state.items) { const loan = this.openItem(item.id); item.available = !item.retiredAt && item.issuable && !loan; item.holder = loan?.holder ?? null; }
+    for (const item of this.state.items) { const loan = this.openItem(item.id); item.available = !item.retiredAt && item.issuable && !loan; item.holder = loan?.holder ?? null; item.loanId = loan?.id ?? null; item.loanKitId = loan?.kitId ?? null; }
+    for (const kit of this.state.kits) { const loan = this.state.loans.find((l) => l.kitId === kit.id && l.lines.some((line) => !line.closedAt)); kit.loanId = loan?.id ?? null; kit.holder = loan?.holder ?? null; }
     for (const stock of this.state.stocks) { Object.assign(stock, this.stock(stock)); if (stock.quantityAvailable < 0 || stock.quantityTotal < 0) throw new ApiError(422, 'insufficient_stock'); }
   }
 

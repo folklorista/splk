@@ -18,7 +18,7 @@ final class KitRepository
         $statement = $this->db->prepare('SELECT * FROM costume_kits WHERE id = :id' . ($lock ? ' FOR UPDATE' : ''));
         $statement->execute(['id' => $id]);
         $row = $statement->fetch();
-        return $row === false ? null : self::kit($row);
+        return $row === false ? null : $this->kit($row);
     }
 
     public function detail(int $id): ?array
@@ -60,7 +60,7 @@ final class KitRepository
         $count->execute($params);
         $list = $this->db->prepare('SELECT k.*' . $from . " ORDER BY s.name, k.number NULLS LAST, k.id LIMIT $limit OFFSET $offset");
         $list->execute($params);
-        return ['items' => array_map(self::kit(...), $list->fetchAll()), 'total' => (int) $count->fetchColumn()];
+        return ['items' => array_map($this->kit(...), $list->fetchAll()), 'total' => (int) $count->fetchColumn()];
     }
 
     public function insert(int $unitId, array $input, int $actor): int
@@ -128,9 +128,10 @@ final class KitRepository
             ->execute(['unit' => $unitId, 'kit' => $kitId, 'item' => $itemId, 'stock' => $stockId, 'change' => $change, 'qty' => $qty, 'actor' => $actor, 'note' => $note]);
     }
 
-    private static function kit(array $row): array
+    private function kit(array $row): array
     {
-        return ['id' => (int) $row['id'], 'unitId' => (int) $row['unit_id'], 'seriesId' => (int) $row['series_id'], 'number' => $row['number'],
+        $loan = (new LoanRepository($this->db))->currentKitLoan((int) $row['id']);
+        return ['holder' => $loan['holder'] ?? null, 'loanId' => $loan['loanId'] ?? null, 'id' => (int) $row['id'], 'unitId' => (int) $row['unit_id'], 'seriesId' => (int) $row['series_id'], 'number' => $row['number'],
             'description' => $row['description'], 'note' => $row['note'], 'compositionState' => $row['composition_state'],
             'retiredAt' => $row['retired_at'], 'version' => (int) $row['version']];
     }

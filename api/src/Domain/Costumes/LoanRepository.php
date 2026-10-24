@@ -21,7 +21,11 @@ final class LoanRepository
         if ($row === false) {
             return null;
         }
-        $lines = $this->db->prepare('SELECT * FROM costume_loan_lines WHERE loan_id = :id ORDER BY id');
+        $lines = $this->db->prepare("SELECT ll.*, CASE WHEN ll.item_id IS NOT NULL THEN concat_ws(' ', s.name, coalesce(i.number, '(bez čísla)')) ELSE concat_ws(' ', t.name, b.variant) END AS label, nullif(concat_ws(' · ', parent.name, r.name), '') AS region, coalesce(s.gender, t.gender) AS gender
+            FROM costume_loan_lines ll LEFT JOIN costume_items i ON i.id = ll.item_id LEFT JOIN costume_series s ON s.id = i.series_id
+            LEFT JOIN costume_bulk_stocks b ON b.id = ll.bulk_stock_id LEFT JOIN costume_part_types t ON t.id = coalesce(b.part_type_id, s.part_type_id)
+            LEFT JOIN costume_regions r ON r.id = coalesce(s.region_id, t.region_id) LEFT JOIN costume_regions parent ON parent.id = r.parent_id
+            WHERE ll.loan_id = :id ORDER BY ll.id");
         $lines->execute(['id' => $id]);
         $returns = $this->db->prepare("SELECT r.*, CASE WHEN r.close_type = 'settled' THEN l.qty - l.returned_qty ELSE 0 END AS lost_qty FROM costume_loan_returns r JOIN costume_loan_lines l ON l.id = r.line_id WHERE l.loan_id = :id ORDER BY r.at, r.id");
         $returns->execute(['id' => $id]);
@@ -29,7 +33,7 @@ final class LoanRepository
             'kitId' => self::nullableInt($row['kit_id']), 'issuedAt' => $row['issued_at'], 'issuedBy' => (int) $row['issued_by'],
             'dueAt' => $row['due_at'], 'note' => $row['note'], 'replacesLoanId' => self::nullableInt($row['replaces_loan_id']),
             'lines' => array_map(static fn (array $line): array => [
-                'id' => (int) $line['id'], 'itemId' => self::nullableInt($line['item_id']), 'bulkStockId' => self::nullableInt($line['bulk_stock_id']),
+                'id' => (int) $line['id'], 'label' => $line['label'], 'region' => $line['region'], 'gender' => $line['gender'], 'itemId' => self::nullableInt($line['item_id']), 'bulkStockId' => self::nullableInt($line['bulk_stock_id']),
                 'qty' => (int) $line['qty'], 'returnedQty' => (int) $line['returned_qty'], 'closedAt' => $line['closed_at'],
                 'closedBy' => self::nullableInt($line['closed_by']), 'closeType' => $line['close_type'], 'closeNote' => $line['close_note'],
             ], $lines->fetchAll()),
@@ -42,14 +46,20 @@ final class LoanRepository
         $query = $this->db->prepare('SELECT l.*, ll.id AS line_id FROM costume_loans l JOIN costume_loan_lines ll ON ll.loan_id = l.id WHERE ll.item_id = :id AND ll.closed_at IS NULL');
         $query->execute(['id' => $id]);
         $row = $query->fetch();
-        return $row === false ? null : ['loanId' => (int) $row['id'], 'lineId' => (int) $row['line_id'], 'holder' => self::holder($row)];
+        return $row === false ? null : ['loanId' => (int) $row['id'], 'lineId' => (int) $row['line_id'], 'kitId' => self::nullableInt($row['kit_id']), 'holder' => self::holder($row)];
     }
 
     public function openKit(int $id): bool
     {
-        $query = $this->db->prepare('SELECT 1 FROM costume_loans l JOIN costume_loan_lines ll ON ll.loan_id = l.id WHERE l.kit_id = :id AND ll.closed_at IS NULL LIMIT 1');
+        return $this->currentKitLoan($id) !== null;
+    }
+
+    public function currentKitLoan(int $id): ?array
+    {
+        $query = $this->db->prepare('SELECT l.* FROM costume_loans l WHERE l.kit_id = :id AND EXISTS (SELECT 1 FROM costume_loan_lines ll WHERE ll.loan_id = l.id AND ll.closed_at IS NULL) ORDER BY l.id DESC LIMIT 1');
         $query->execute(['id' => $id]);
-        return $query->fetchColumn() !== false;
+        $row = $query->fetch();
+        return $row === false ? null : ['loanId' => (int) $row['id'], 'holder' => self::holder($row)];
     }
 
     public function insert(int $unit, array $holder, ?int $kit, ?string $due, ?string $note, int $actor, ?int $replaces = null): int
@@ -92,6 +102,10 @@ final class LoanRepository
         }
         if (isset($filters['overdue'])) {
             $where[] = ($filters['overdue'] ? '' : 'NOT ') . "($open AND l.due_at IS NOT NULL AND l.due_at < now())";
+        }
+        if (isset($filters['kit'])) {
+            $where[] = 'l.kit_id = :kit';
+            $params['kit'] = $filters['kit'];
         }
         if (isset($filters['person'])) {
             $where[] = 'l.holder_person_id = :person';

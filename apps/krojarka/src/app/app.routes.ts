@@ -13,17 +13,7 @@ import { SettingsLayout, SettingsNoAccess } from './features/nastaveni/settings-
 import { UsersPage } from './features/nastaveni/users-page';
 import { AccountPage } from './features/ucet/account-page';
 
-import { InventoryLayout } from './features/soucastky/inventory-layout';
-import { InventoryPage } from './features/soucastky/inventory-page';
-import { ItemPage } from './features/soucastky/item-page';
-import { KitPage } from './features/soucastky/kit-page';
-
-import { PeopleLayout } from './features/lide/people-layout';
-import { PeoplePage } from './features/lide/people-page';
-import { PersonCardPage } from './features/lide/person-card-page';
-import { CardsPage } from './features/lide/cards-page';
-
-const IMPLEMENTED = ['ucet', 'nastaveni', 'soucastky', 'lide', 'krojove-karty'];
+const IMPLEMENTED = ['ucet', 'nastaveni', 'soucastky', 'lide', 'krojove-karty', 'vypujcky'];
 
 const placeholders: Routes = MENU.filter((item) => !IMPLEMENTED.includes(item.path)).map((item) => ({
   path: item.path,
@@ -44,16 +34,21 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       ...placeholders,
-      { path: 'lide', component: PeopleLayout, canActivate: [fundGuard], children: [
-        { path: '', pathMatch: 'full', component: PeoplePage, title: 'Lidé · Krojařka' },
-        { path: ':id', component: PersonCardPage, title: 'Krojová karta osoby · Krojařka' },
+      { path: 'vypujcky', canActivate: [fundGuard], loadComponent: () => import('./features/vypujcky/loans-layout').then((m) => m.LoansLayout), children: [
+        { path: '', pathMatch: 'full', loadComponent: () => import('./features/vypujcky/loans-page').then((m) => m.LoansPage), title: 'Výpůjčky · Krojařka' },
+        { path: 'vydat', loadComponent: () => import('./features/vypujcky/issue-page').then((m) => m.IssuePage), title: 'Výdej · Krojařka' },
+        { path: ':id', loadComponent: () => import('./features/vypujcky/loan-page').then((m) => m.LoanPage), title: 'Předání · Krojařka' },
       ] },
-      { path: 'krojove-karty', component: CardsPage, canActivate: [fundGuard], title: 'Krojové karty · Krojařka' },
-      { path: 'soucastky', component: InventoryLayout, canActivate: [fundGuard], children: [
-        { path: '', pathMatch: 'full', component: InventoryPage, title: 'Součástky · Krojařka' },
-        { path: 'nova', component: ItemPage, title: 'Nová součástka · Krojařka' },
-        { path: 'kusy/:id', component: ItemPage, title: 'Součástka · Krojařka' },
-        { path: 'komplety/:id', component: KitPage, title: 'Komplet · Krojařka' },
+      { path: 'lide', loadComponent: () => import('./features/lide/people-layout').then((m) => m.PeopleLayout), canActivate: [fundGuard], children: [
+        { path: '', pathMatch: 'full', loadComponent: () => import('./features/lide/people-page').then((m) => m.PeoplePage), title: 'Lidé · Krojařka' },
+        { path: ':id', loadComponent: () => import('./features/lide/person-card-page').then((m) => m.PersonCardPage), title: 'Krojová karta osoby · Krojařka' },
+      ] },
+      { path: 'krojove-karty', loadComponent: () => import('./features/lide/cards-page').then((m) => m.CardsPage), canActivate: [fundGuard], title: 'Krojové karty · Krojařka' },
+      { path: 'soucastky', loadComponent: () => import('./features/soucastky/inventory-layout').then((m) => m.InventoryLayout), canActivate: [fundGuard], children: [
+        { path: '', pathMatch: 'full', loadComponent: () => import('./features/soucastky/inventory-page').then((m) => m.InventoryPage), title: 'Součástky · Krojařka' },
+        { path: 'nova', loadComponent: () => import('./features/soucastky/item-page').then((m) => m.ItemPage), title: 'Nová součástka · Krojařka' },
+        { path: 'kusy/:id', loadComponent: () => import('./features/soucastky/item-page').then((m) => m.ItemPage), title: 'Součástka · Krojařka' },
+        { path: 'komplety/:id', loadComponent: () => import('./features/soucastky/kit-page').then((m) => m.KitPage), title: 'Komplet · Krojařka' },
       ] },
       { path: 'ucet', component: AccountPage, title: 'Můj účet · Krojařka' },
       {

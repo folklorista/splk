@@ -78,6 +78,11 @@ final class LoansTest extends ApiTestCase
         $item = $this->item($kit);
         $loan = $this->issue(['kitId' => $kit, 'note' => 'Checked exceptions']);
         self::assertSame(2, count($loan['lines']));
+        $currentKit = $this->get("/v1/kits/$kit")->decodedBody();
+        self::assertSame($loan['id'], $currentKit['loanId']);
+        self::assertSame(['personId' => $this->person], $currentKit['holder']);
+        self::assertSame($kit, $currentKit['items'][0]['loanKitId']);
+        self::assertSame(1, $this->get($this->path() . "?kit=$kit")->decodedBody()['total']);
         self::assertSame($item, $loan['lines'][0]['itemId']);
         self::assertSame(2, $loan['lines'][1]['qty']);
         self::assertSame(2, $this->db->query('SELECT present_qty FROM costume_kit_bulk_lines')->fetchColumn());
@@ -347,6 +352,20 @@ final class LoansTest extends ApiTestCase
         $loan = $this->issue(['kitId' => $kit, 'kitVersion' => 1, 'kitBulk' => [['stockId' => $this->stock, 'qty' => 1]], 'note' => 'Only one ribbon handed over']);
         self::assertSame(1, $loan['lines'][0]['qty']);
         self::assertSame(2, $this->db->query('SELECT present_qty FROM costume_kit_bulk_lines')->fetchColumn());
+    }
+
+    public function testCardLinesHaveReadableLabelsAndRegionClassification(): void
+    {
+        $region = $this->insert("INSERT INTO costume_regions (unit_id, name) VALUES ({$this->fund}, 'Slovensko')");
+        $area = $this->insert("INSERT INTO costume_regions (unit_id, name, parent_id) VALUES ({$this->fund}, 'Zemplín', $region)");
+        $this->db->exec("UPDATE costume_series SET region_id = $area, gender = 'female' WHERE id = {$this->series}");
+        $loan = $this->issue(['items' => [$this->item()]]);
+        $card = $this->get("/v1/funds/{$this->fund}/people/{$this->person}/card")->decodedBody();
+        $line = $card['openLoans']['items'][0]['lines'][0];
+        self::assertSame('Slovensko · Zemplín', $line['region']);
+        self::assertSame('female', $line['gender']);
+        self::assertSame('shirts (bez čísla)', $line['label']);
+        self::assertSame($loan['lines'][0]['itemId'], $line['itemId']);
     }
 
     private function issue(array $body): array

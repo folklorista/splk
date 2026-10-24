@@ -27,7 +27,8 @@ final class KitsTest extends ApiTestCase
         self::assertSame([], $kit['items']);
         self::assertSame([], $kit['bulkLines']);
         self::assertSame([], $kit['changes']);
-        self::assertArrayNotHasKey('holder', $kit);
+        self::assertNull($kit['holder']);
+        self::assertNull($kit['loanId']);
         self::assertSame(1, $this->get($this->url() . '?q=kopanicke&limit=1')->decodedBody()['total']);
         self::assertError(422, 'number_already_used', $this->post($this->url(), ['seriesId' => $this->series, 'number' => 'K1']));
         self::assertStatus(200, $this->patch('/v1/kits/' . $kit['id'], ['version' => 1, 'description' => 'Copied label', 'compositionState' => 'pending_check']));

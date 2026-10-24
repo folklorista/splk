@@ -28,6 +28,9 @@ export class InventoryPage {
   protected readonly variant = signal('');
   protected readonly condition = signal<'' | ItemCondition>('');
   protected readonly location = signal<'' | ItemLocation>('');
+  protected readonly availability = signal('');
+  protected readonly holder = signal('');
+  protected readonly holders = computed(() => [...new Map(this.store.items().filter((i) => i.holder).map((i) => [this.store.holderKey(i.holder), { key: this.store.holderKey(i.holder), name: this.store.holderName(i.holder) }])).values()]);
   protected readonly acquiredFrom = signal('');
   protected readonly acquiredTo = signal('');
   protected readonly retired = signal(false);
@@ -39,7 +42,7 @@ export class InventoryPage {
     .filter((s) => (!this.region() || this.region() === s.regionId || this.store.regions().find((r) => r.id === s.regionId)?.parentId === this.region())
       && (!this.gender() || this.gender() === s.gender) && (!this.partType() || this.partType() === s.partTypeId))
     .map((series) => ({ series, items: this.store.items().filter((i) => i.seriesId === series.id && !!i.retiredAt === this.retired())
-      .filter((i) => (!this.condition() || this.condition() === i.condition) && (!this.location() || this.location() === i.location)
+      .filter((i) => (!this.holder() || this.store.holderKey(i.holder) === this.holder()) && (!this.availability() || i.available === (this.availability() === 'available')) && (!this.condition() || this.condition() === i.condition) && (!this.location() || this.location() === i.location)
         && (!this.variant() || normalize(i.variant ?? series.variant ?? '').includes(normalize(this.variant())))
         && (!this.acquiredFrom() || !!i.acquiredOn && i.acquiredOn >= this.acquiredFrom()) && (!this.acquiredTo() || !!i.acquiredOn && i.acquiredOn <= this.acquiredTo()))
       .filter((i) => !this.search() || normalize([series.name, series.variant, i.number, i.variant, i.description, i.note].join(' ')).includes(normalize(this.search())))

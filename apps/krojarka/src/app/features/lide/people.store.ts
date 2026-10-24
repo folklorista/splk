@@ -17,6 +17,7 @@ export class PeopleStore {
   readonly canEditIdentity = computed(() => this.auth.hasMandate('costumes.manage'));
   readonly canManageProfile = computed(() => this.fund()?.canManage ?? false);
   readonly people = signal<PersonInFund[]>([]);
+  readonly onlyWithLoans = signal(false);
   readonly units = signal<Unit[]>([]);
   readonly card = signal<PersonCard | null>(null);
   readonly loading = signal(false);
@@ -29,6 +30,7 @@ export class PeopleStore {
 
   constructor() {
     effect(() => {
+      this.onlyWithLoans();
       const fund = this.fund();
       untracked(() => { this.generation++; this.listRequest++; this.closeCard(); this.people.set([]); this.units.set([]); this.error.set(null); this.busy.set(false); this.loading.set(false); if (fund) void this.load(); });
     });
@@ -64,8 +66,9 @@ export class PeopleStore {
   private current(unit: number, generation: number) { return this.fund()?.unitId === unit && generation === this.generation; }
   private async allPeople(unit: number): Promise<PersonInFund[]> {
     const result: PersonInFund[] = [];
+    const onlyWithLoans = this.onlyWithLoans();
     while (true) {
-      const page = await firstValueFrom(this.api.people({ fund: unit, limit: 200, offset: result.length }));
+      const page = await firstValueFrom(this.api.people({ fund: unit, limit: 200, offset: result.length, ...(onlyWithLoans ? { hasLoans: true } : {}) }));
       result.push(...page.items);
       if (result.length >= page.total) return result;
       if (!page.items.length) throw new ApiError(0, 'internal_error');

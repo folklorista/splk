@@ -4,6 +4,10 @@ import type { BulkStock, ItemCondition, ItemLocation, PageQuery } from './invent
 export type LoanHolder = { personId: number; unitId?: never } | { unitId: number; personId?: never };
 export type LoanCloseType = 'returned' | 'exchanged' | 'settled';
 export interface LoanLine {
+  /** Current catalog label for presentation; snapshot identity is itemId or bulkStockId. */
+  label: string;
+  region: string | null;
+  gender: 'male' | 'female' | null;
   id: number;
   itemId: number | null;
   bulkStockId: number | null;
@@ -75,6 +79,7 @@ export interface LoanQuery extends PageQuery {
   overdue?: boolean;
   holderType?: 'external';
   person?: number;
+  kit?: number;
 }
 export interface MovementQuery extends PageQuery {
   person?: number;

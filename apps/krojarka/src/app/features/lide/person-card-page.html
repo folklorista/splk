@@ -26,5 +26,15 @@
       @if (store.canManageProfile()) { <button class="button button-primary" [disabled]="profileForm.invalid">Uložit profil fondu</button> }
     </fieldset></form>
   </section>
-  <section class="card"><h2>Předání krojů</h2><p class="muted">Papírové záznamy se do digitální evidence nepřevádějí automaticky. Tato karta zatím slouží k osobním údajům a profilu evidence; digitální výdeje a vrácení budou navazovat samostatně.</p></section>
+  <section class="card"><h2>Předání krojů v tomto fondu</h2>
+    @if (store.canManageProfile()) { <a class="button" routerLink="/vypujcky/vydat" [queryParams]="{person: card.person.id}">Vydat součástky</a> }
+    <p><a routerLink="/vypujcky" [queryParams]="{person: card.person.id}">Všechny výpůjčky a pohyby držitele</a></p>
+    <p>Papírové záznamy se do digitální evidence nepřevádějí automaticky.</p>
+    <h3>Otevřené výpůjčky ({{ card.openLoans.total }})</h3>
+    @for (group of loanGroups(); track group.label) { <h4>{{ group.label }}</h4><ul>@for (entry of group.entries; track entry.line.id) {
+      <li><a [routerLink]="['/vypujcky', entry.loan.id]">{{ entry.line.label }}</a> · {{ entry.line.qty - entry.line.returnedQty }} ks · termín {{ entry.loan.dueAt ? (entry.loan.dueAt | date:'d. M. yyyy') : 'dlouhodobě' }}</li>
+    }</ul> } @empty { <p>Žádná otevřená digitálně evidovaná výpůjčka.</p> }
+    @if (card.openLoans.total > card.openLoans.items.length) { <p>Karta ukazuje prvních 50 předání. Zbytek je v odkazu na všechny výpůjčky držitele.</p> }
+    <h3>Poslední pohyby</h3><ul>@for (m of card.movements.items; track m.type + ':' + m.id) { <li><a [routerLink]="['/vypujcky', m.loanId]">{{ m.at | date:'d. M. yyyy HH:mm' }} · {{ m.type === 'issued' ? 'výdej' : m.type === 'returned' ? 'vrácení' : m.type === 'exchanged' ? 'výměna' : 'ztráta' }}</a> · {{ m.qty }} ks@if (m.lostQty) { · ztraceno {{ m.lostQty }} } · {{ m.note }}</li> }</ul>
+  </section>
 }

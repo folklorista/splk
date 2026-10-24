@@ -6,9 +6,11 @@ import { Fund, FundContext } from '../../core/fund/fund-context';
 import { ApiError } from '../../data/api-error';
 import { CatalogApi } from '../../data/catalog/catalog-api';
 import { InventoryApi } from '../../data/inventory/inventory-api';
+import { PeopleApi } from '../../data/people/people-api';
+import { OrganizationApi } from '../../data/organization/organization-api';
 import { InventoryStore } from './inventory.store';
 
-const item = (id: number, unitId = 1): CostumeItem => ({ available: true, holder: null, id, unitId, seriesId: 1, number: String(id), variant: null, size: null, description: null,
+const item = (id: number, unitId = 1): CostumeItem => ({ available: true, holder: null, loanId: null, loanKitId: null, id, unitId, seriesId: 1, number: String(id), variant: null, size: null, description: null,
   note: null, condition: 'ok', issuable: true, location: 'unknown', locationNote: null, acquiredOn: null, kitId: null,
   retiredAt: null, retiredBy: null, retireReason: null, version: 1 });
 
@@ -22,7 +24,7 @@ describe('InventoryStore', () => {
       stocks: vi.fn(() => of({ items: [], total: 0 })), kits: vi.fn(() => of({ items: [], total: 0 })),
       item: vi.fn(() => of(item(1))), history: vi.fn(() => of({ items: [], total: 0 })), workOrders: vi.fn(() => of({ items: [], total: 0 })),
       createItem: vi.fn(() => of(item(9))), updateItem: vi.fn(() => throwError(() => new ApiError(409, 'version_conflict'))) };
-    TestBed.configureTestingModule({ providers: [InventoryStore, { provide: FundContext, useValue: { current } }, { provide: InventoryApi, useValue: api },
+    TestBed.configureTestingModule({ providers: [InventoryStore, { provide: PeopleApi, useValue: { people: () => of({ items: [], total: 0 }) } }, { provide: OrganizationApi, useValue: { units: () => of([]) } }, { provide: FundContext, useValue: { current } }, { provide: InventoryApi, useValue: api },
       { provide: CatalogApi, useValue: { series: () => of([]), partTypes: () => of([]), regions: () => of([]) } }] });
     store = TestBed.inject(InventoryStore); TestBed.tick();
   });

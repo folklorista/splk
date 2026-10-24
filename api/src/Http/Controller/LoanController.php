@@ -33,7 +33,7 @@ final class LoanController extends Controller
     private function list(Request $request, RequestContext $context): Response
     {
         $unit = $this->fund($context, $context->params['unitId'], false);
-        InventoryInput::only($request->query, ['limit', 'offset', 'open', 'overdue', 'holderType', 'person']);
+        InventoryInput::only($request->query, ['limit', 'offset', 'open', 'overdue', 'holderType', 'person', 'kit']);
         $filters = [];
         foreach (['open', 'overdue'] as $field) {
             if (isset($request->query[$field])) {
@@ -42,6 +42,9 @@ final class LoanController extends Controller
         }
         if (isset($request->query['person'])) {
             $filters['person'] = InventoryInput::queryInteger($request->query['person'], 'person');
+        }
+        if (isset($request->query['kit'])) {
+            $filters['kit'] = InventoryInput::queryInteger($request->query['kit'], 'kit');
         }
         if (isset($request->query['holderType'])) {
             if ($request->query['holderType'] !== 'external') {

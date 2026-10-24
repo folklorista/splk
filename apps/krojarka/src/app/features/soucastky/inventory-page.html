@@ -14,6 +14,8 @@
     <label class="field"><span>Varianta</span><input (input)="variant.set($any($event.target).value)" /></label>
     <label class="field"><span>Stav</span><select (change)="condition.set($any($event.target).value)"><option value="">všechny</option>@for (c of conditions; track c[0]) { <option [value]="c[0]">{{ c[1] }}</option> }</select></label>
     <label class="field"><span>Umístění</span><select (change)="location.set($any($event.target).value)"><option value="">všechna</option>@for (l of locations; track l[0]) { <option [value]="l[0]">{{ l[1] }}</option> }</select></label>
+    <label class="field"><span>Dostupnost</span><select (change)="availability.set($any($event.target).value)"><option value="">všechny</option><option value="available">dostupné k výdeji</option><option value="unavailable">nedostupné</option></select></label>
+    <label class="field"><span>Aktuální držitel</span><select (change)="holder.set($any($event.target).value)"><option value="">všichni</option>@for (h of holders(); track h.key) { <option [value]="h.key">{{ h.name }}</option> }</select></label>
     <label class="field"><span>Pořízeno od</span><input type="date" (change)="acquiredFrom.set($any($event.target).value)" /></label>
     <label class="field"><span>Pořízeno do</span><input type="date" (change)="acquiredTo.set($any($event.target).value)" /></label>
     <label class="check"><input type="checkbox" (change)="retired.set($any($event.target).checked)" /> pouze vyřazené kusy</label>
@@ -22,7 +24,7 @@
     <details class="inventory-group" [open]="group.items.length > 0 || !!selectedSeries()"><summary>{{ store.seriesName(group.series.id) }} <span class="tag">{{ group.items.length }} kusů</span></summary>
     <ul class="inventory-list">
       @for (item of group.items; track item.id) {
-        <li><a [routerLink]="['kusy', item.id]">{{ store.itemName(item) }}</a><span>{{ conditionLabel[item.condition] }} · {{ locationLabel[item.location] }} · {{ item.issuable ? 'vydatelný' : 'nevydatelný' }}@if (item.retiredAt) { · vyřazeno }</span></li>
+        <li><a [routerLink]="['kusy', item.id]">{{ store.itemName(item) }}</a><span>{{ conditionLabel[item.condition] }} · {{ locationLabel[item.location] }} · {{ item.issuable ? 'vydatelný' : 'nevydatelný' }} · {{ item.available ? 'dostupný k výdeji' : 'nedostupný' }}@if (item.holder) { · {{ store.holderName(item.holder) }} }@if (item.retiredAt) { · vyřazeno }</span></li>
       } @empty { <li class="muted">Žádný evidovaný kus pro tento výběr. Mezery v číslech neznamenají chybějící předměty.</li> }
     </ul></details>
   } @empty { <p>Žádná řada. Číselníky lze doplnit v <a routerLink="/nastaveni/rady">Nastavení</a>.</p> }
@@ -31,7 +33,7 @@
   <h2>Nečíslované zásoby</h2><p class="muted">Záměrně nečíslované druhy se evidují počtem. Údaj „v kompletech“ vyjadřuje evidované přidělení.</p>
   <ul class="inventory-list">
     @for (stock of store.stocks(); track stock.id) {
-      <li><strong>{{ store.stockName(stock) }}</strong><span>celkem {{ stock.quantityTotal }}, v kompletech {{ stock.quantityInKits }}, mimo komplety {{ stock.quantityTotal - stock.quantityInKits }}</span>@if (stock.note) { <span>{{ stock.note }}</span> }@if (store.canManage()) { <button type="button" class="link-button" (click)="editStock(stock)">Upravit</button> }</li>
+      <li><strong>{{ store.stockName(stock) }}</strong><span>celkem {{ stock.quantityTotal }}, v kompletech {{ stock.quantityInKits }}, celkem přiděleno či půjčeno {{ stock.quantityReserved }}, volné {{ stock.quantityAvailable }}</span>@if (stock.note) { <span>{{ stock.note }}</span> }@if (store.canManage()) { <button type="button" class="link-button" (click)="editStock(stock)">Upravit</button> }</li>
     } @empty { <li class="muted">Žádná zásoba.</li> }
   </ul>
   @if (store.canManage()) {
@@ -47,7 +49,7 @@
 </section>
 <section class="card" id="kits">
   <h2>Fyzické komplety</h2>
-  <ul class="inventory-list">@for (kit of visibleKits(); track kit.id) { <li><a [routerLink]="['komplety', kit.id]">{{ store.kitName(kit) }}</a><span>{{ stateLabel[kit.compositionState] }}</span></li> } @empty { <li class="muted">Žádný komplet pro tento výběr.</li> }</ul>
+  <ul class="inventory-list">@for (kit of visibleKits(); track kit.id) { <li><a [routerLink]="['komplety', kit.id]">{{ store.kitName(kit) }}</a><span>{{ stateLabel[kit.compositionState] }}@if (kit.holder) { · svěřeno {{ store.holderName(kit.holder) }} }</span></li> } @empty { <li class="muted">Žádný komplet pro tento výběr.</li> }</ul>
   @if (store.canManage()) {
     <h3>Nový komplet</h3><p class="muted">Opsané složení bude neověřené. Řady kompletů se zakládají v <a routerLink="/nastaveni/rady">Nastavení</a>.</p>
     <form [formGroup]="kitForm" (ngSubmit)="saveKit()" class="form-row">

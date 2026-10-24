@@ -3,7 +3,7 @@ import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { DefaultCostume, PaperState, PersonPatch } from '@splk/api-contracts';
+import { CostumeLoan, DefaultCostume, LoanLine, PaperState, PersonPatch } from '@splk/api-contracts';
 import { errorMessage } from '../../core/auth/error-messages';
 import { PeopleStore } from './people.store';
 import { PAPER_LABELS } from './people-page';
@@ -29,6 +29,14 @@ export class PersonCardPage {
         if (!this.profileForm.dirty) this.profileForm.reset({ paperState: card.profile?.paperState ?? '', note: card.profile?.note ?? '' });
       });
     });
+  }
+  protected loanGroups() {
+    const groups = new Map<string, { label: string; entries: { loan: CostumeLoan; line: LoanLine }[] }>();
+    for (const loan of this.store.card()?.openLoans.items ?? []) for (const line of loan.lines) if (!line.closedAt) {
+      const label = `${line.region ?? 'Univerzální'} · ${line.gender === 'male' ? 'mužský kroj' : line.gender === 'female' ? 'ženský kroj' : 'pro oba kroje'}`;
+      const group = groups.get(label) ?? { label, entries: [] }; group.entries.push({ loan, line }); groups.set(label, group);
+    }
+    return [...groups.values()].sort((a, b) => a.label.localeCompare(b.label, 'cs'));
   }
   protected async refresh(): Promise<void> { this.identityForm.markAsPristine(); this.profileForm.markAsPristine(); const id = Number(this.params()?.get('id')); if (id) await this.store.openCard(id); }
   protected async saveIdentity(): Promise<void> {

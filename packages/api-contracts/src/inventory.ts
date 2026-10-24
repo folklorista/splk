@@ -36,6 +36,8 @@ export interface CostumeItem extends Required<ItemInput> {
   id: number;
   unitId: number;
   available: boolean;
+  loanId: number | null;
+  loanKitId: number | null;
   holder: LoanHolder | null;
   /** Intended membership only; presence and physical checks are separate facts. */
   kitId: number | null;
@@ -91,6 +93,8 @@ export interface KitInput {
   compositionState?: CompositionState;
 }
 export interface CostumeKit extends Required<KitInput> {
+  loanId: number | null;
+  holder: LoanHolder | null;
   id: number;
   unitId: number;
   retiredAt: string | null;

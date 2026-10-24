@@ -6,9 +6,9 @@ import { CostumeItem, KitDetail } from '@splk/api-contracts';
 import { InventoryStore } from './inventory.store';
 import { KitPage } from './kit-page';
 
-const kit: KitDetail = { id: 7, unitId: 1, seriesId: 2, number: 'K1', description: null, note: null, compositionState: 'unverified',
+const kit: KitDetail = { holder: null, loanId: null, id: 7, unitId: 1, seriesId: 2, number: 'K1', description: null, note: null, compositionState: 'unverified',
   version: 1, retiredAt: null, items: [], bulkLines: [], changes: [] };
-const piece: CostumeItem = { available: true, holder: null, id: 3, unitId: 1, seriesId: 1, number: '17', variant: null, size: null, description: null, note: null,
+const piece: CostumeItem = { available: true, holder: null, loanId: null, loanKitId: null, id: 3, unitId: 1, seriesId: 1, number: '17', variant: null, size: null, description: null, note: null,
   condition: 'ok', issuable: true, location: 'unknown', locationNote: null, acquiredOn: null, kitId: null, retiredAt: null, retiredBy: null, retireReason: null, version: 4 };
 
 describe('KitPage composition confirmation', () => {

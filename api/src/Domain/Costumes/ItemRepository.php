@@ -168,7 +168,7 @@ final class ItemRepository
         $loan = (new LoanRepository($this->db))->openItem((int) $row['id']);
         return $result + [
             'available' => (bool) $row['issuable'] && $row['retired_at'] === null && $loan === null,
-            'holder' => $loan['holder'] ?? null,
+            'holder' => $loan['holder'] ?? null, 'loanId' => $loan['loanId'] ?? null, 'loanKitId' => $loan['kitId'] ?? null,
             'id' => (int) $row['id'], 'unitId' => (int) $row['unit_id'],
             'kitId' => $row['kit_id'] === null ? null : (int) $row['kit_id'],
             'retiredAt' => $row['retired_at'], 'retiredBy' => $row['retired_by'] === null ? null : (int) $row['retired_by'],

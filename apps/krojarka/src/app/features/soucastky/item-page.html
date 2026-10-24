@@ -6,6 +6,9 @@
     <h2>{{ id() && store.item() ? store.itemName(store.item()!) : 'Nová součástka' }}</h2>
     @if (store.item(); as item) {
       <p>{{ conditionLabel[item.condition] }} · {{ locationLabel[item.location] }} · {{ item.issuable ? 'vydatelný' : 'nevydatelný' }}</p>
+      <p>{{ item.available ? 'Dostupný k výdeji' : 'Nedostupný k výdeji' }}@if (item.holder?.personId) { · držitel <a [routerLink]="['/lide', item.holder!.personId]">{{ store.holderName(item.holder) }}</a> }@if (item.holder?.unitId) { · svěřeno {{ store.holderName(item.holder) }} }</p>
+      @if (item.loanId) { <p><a [routerLink]="['/vypujcky', item.loanId]">Otevřít předání · vrátit nebo vyměnit</a></p> }
+      @if (store.canManage() && item.available) { <p><a routerLink="/vypujcky/vydat">Vydat součástky</a></p> }
       @if (item.kitId) { <p>Určený komplet: <a [routerLink]="['/soucastky/komplety', item.kitId]">otevřít komplet</a>. Příslušnost neprokazuje fyzickou přítomnost.</p> }
       @if (item.retiredAt) { <p class="notice notice-warn">Vyřazeno {{ item.retiredAt | date:'d. M. yyyy' }}: {{ item.retireReason }}</p> }
       <button type="button" class="link-button" [disabled]="store.busy()" (click)="refresh()">Obnovit údaje a zahodit rozepsané změny</button>
@@ -60,6 +63,9 @@
       <li><strong>{{ events[event.event] || 'Změna evidence' }}</strong><span>{{ event.at | date:'d. M. yyyy H:mm' }} · účet {{ event.by }}</span>
         @if (event.data['field']; as field) { <span>{{ fields[$any(field)] || 'Údaj' }}: {{ eventValue($any(field), event.data['from']) }} → {{ eventValue($any(field), event.data['to']) }}</span> }
         @if (event.event === 'retired') { <span>{{ event.data['reason'] }}</span> }
+        @if (event.data['loanId']; as loanId) { <a [routerLink]="['/vypujcky', loanId]">Předání #{{ loanId }}</a> }
+        @if (event.data['holder']; as holder) { <span>Držitel: {{ store.holderName($any(holder)) }}</span> }
+        @if (event.data['note']; as note) { <span>{{ note }}</span> }
         @if (event.event === 'created') { <span>Počáteční poznámka: {{ event.data['note'] || 'neuvedena' }}</span> }
         @if (event.event === 'kit_changed') { <span>Určený komplet: {{ event.data['from'] || 'žádný' }} → {{ event.data['to'] || 'žádný' }}</span> }
         @if (event.event === 'work_order_created') { <span>{{ event.data['description'] }}</span> }
