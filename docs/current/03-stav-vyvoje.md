@@ -10,7 +10,7 @@ Co je hotové a co se právě dělá. Pořadí vývoje určuje [`../decisions.md
 | **API** (`api.vonica.cz`) | Kroky 1–2 ve větvi `feature/api-skeleton`: kostra (router, `GET /v1/health`, CORS/origin/JSON, sessions v PostgreSQL, CSRF), migrace identity a přístupu, `auth/*` podle kap. 4.1 (přihlášení s omezením pokusů, odhlášení, `me`, změna hesla, obnova hesla e-mailem přes PHPMailer, přihlášená zařízení), seed prvního účtu `organization.admin` (pozvaný, heslo si nastaví odkazem). Testy PHPUnit (Unit + Integration). Nasazeno 2026-10-24 jako `feature/api-skeleton@62b8310`: `config/config.php` z `.env`, migrace `CreateIdentityAndAccess` (záloha před migrací v `dev/local/backups/`), pozvaný účet `organization.admin`. Krok 3 (nasazeno 2026-10-24 jako `908001d`, se seedy `VonicaUnits` a `VonicaCatalog`): migrace `CreateCatalogAndAudit` (regiony, druhy, řady, `audit_log`, `mandates.revoked_at`), katalog `/v1/funds/{u}/regions\|part-types\|series` s kontrolou pověření (404 mimo rozsah, 403 jen pro čtení), správa organizace (`/v1/persons`, `/v1/accounts`, `/v1/mandates`, `/v1/units`), audit všech zápisů, seedy `VonicaUnits` a `VonicaCatalog`. Krok 4 dokončen lokálně: migrace fyzické evidence, API kusů, zásob, kompletů, složení a pracovních úkolů; zatím nenasazeno. Krok 5 dokončen lokálně: Lidé, společné kontakty (D-60), fondové profily krojových karet; bez výpůjček. |
 | **Demo** (`demo.vonica.cz`) | Prototyp nasazený jako `design/identity-03@ce20f01`. Přesun z `moje` dokončen 22. 10. 2026. Nasazení: `/deploy` (`--target demo`). Popis kódu: `../archive/implementace-2026-10-21/`. |
 | **moje.vonica.cz** | Vývoj odložen. Po přesunu dema prázdná, vyhrazená budoucí členské aplikaci. |
-| Monorepo | npm workspaces `apps/*`, `packages/*`, Node ≥ 24 (`.nvmrc`). `packages/api-contracts` (DTO a chybové kódy auth) – první sdílený balíček. Deploy: `npm run deploy -- --target api\|krojarka` (`scripts/deploy-app.mjs`). Kroky 4 a 5 dokončeny lokálně; před krokem 6 čeká rozhodnutí Q-19. |
+| Monorepo | npm workspaces `apps/*`, `packages/*`, Node ≥ 24 (`.nvmrc`). `packages/api-contracts` (DTO a chybové kódy auth) – první sdílený balíček. Deploy: `npm run deploy -- --target api\|krojarka` (`scripts/deploy-app.mjs`). Kroky 4 a 5 dokončeny lokálně; Q-19 rozhodnuta → D-61, krok 6 rozpracován. |
 
 ## Krok 4 – Součástky (dokončeno 2026-10-24)
 
@@ -93,9 +93,9 @@ Q-18 rozhodnuta uživatelem → D-60: kontakty společné všem krojařkám, kro
 - Ručně zbývá v HTTP i mock režimu ověřit založení externisty bez účtu, shodu jmen a výslovné potvrzení, změnu společného kontaktu ve dvou fondech a oddělené poznámky, přepínání fondů při načítání a mobilní ergonomii. Samostatné ruční testování zatím neproběhlo.
 - Migrace pouze v lokální testovací DB, žádná produkční data, deploy ani push. Při návrhu kroku 6 zjištěn rozpor počítání doplňků (Q-19, níže); kroky 6–10 ještě nejsou implementované.
 
-## Krok 6 – čeká na Q-19
+## Krok 6 – rozpracováno po rozhodnutí Q-19
 
-Při rozboru výdeje kompletu nalezen překryv evidovaných početních doplňků a jejich snímku ve výpůjčce: doslovný vzorec volného množství v API kap. 3.3 je odečítá dvakrát. Je potřeba určit, zda `present_qty` zůstává obsahem kompletu i během výpůjčky, nebo znamená pouze obsah kompletu ve skladu. Viz Q-19 v [`open-questions.md`](../open-questions.md).
+Uživatel rozhodl Q-19 → D-61: počet doplňků v kompletu při výpůjčce zachovat a zabránit dvojímu odečtu. Navazuje migrace a API výpůjček, potom adaptéry a obrazovky. Krok 6 zatím není dokončen.
 
 Podle pravidel autonomie uživatele je implementace před krokem 6 zastavena. Nebyla zvolena vlastní interpretace množství a nevznikly migrace ani endpointy výpůjček. Poslední dokončený a otestovaný celek je krok 5. Kroky 4–5 jsou technicky připravené k řízenému nasazení po ruční kontrole a revizi migrací; žádné produkční spojení, migrace, nasazení, push ani merge neproběhly.
 
@@ -114,3 +114,12 @@ Demo vzniklo před rozhodnutími z 22. 10. 2026 a dál se nerozvíjí ani nekonz
 - **2026-10-24** – krok 3: katalog a řady, Uživatelé a pověření, audit log (D-59); nasazeno `908001d`.
 - **2026-10-24** – první nasazení `api` a `krojarka` (`62b8310`); ověřeno: health, CORS z Krojařky, 403 pro cizí origin a zápis bez Origin, 404 pro `config/` a `src/`, HSTS.
 - **2026-10-22** – uspořádání dokumentace (registr rozhodnutí, otevřené otázky, archiv); ověření hostingu a PostgreSQL 18; přesun dema z `moje` na `demo.vonica.cz` dokončen; deploy skript má povinný `--target`; lokální Docker převeden na PostgreSQL 18; rozhodnuto D-31 až D-33.
+
+
+### Krok 6, etapa 1 – databáze a kontrakty
+
+- D-61 řeší Q-19: doplňky zůstávají v evidenci kompletu, výpůjčka se neodečítá podruhé.
+- Přidána zpětně vratná migrace výpůjček, řádků a historie jednotlivých vrácení, fondové cizí klíče, jedinečnost otevřené výpůjčky kusu a kapacitní ochrana zásob včetně následné změny složení.
+- Sdílené TypeScript kontrakty výdeje, vrácení, výměny, seznamů a pohybů. API a obrazovky kroku 6 zatím nejsou dokončené.
+- PHPUnit: **144 testů / 1104 assertions**, TypeScript kontrakty a `git diff --check` prošly. První běh odhalil chybu nového triggeru, opraveno a celá sada zopakována úspěšně. Migrace ověřena pouze v lokální testovací DB včetně down/up a zachování dosavadní evidence.
+- Ručně zatím není co ovládat v UI; před případným nasazením bude potřeba ověřit výdej a částečné vrácení v HTTP režimu. Produkce, deploy a push neprovedeny.

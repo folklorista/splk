@@ -110,7 +110,7 @@ Odvozené údaje (nikde se neukládají):
 
 - **dostupnost kusu** = vydatelný + bez otevřené výpůjčky + nevyřazený;
 - **„chybí v kompletu“** = kus s `kit_id`, který je samostatně půjčený;
-- **volné nečíslované kusy** = `quantity_total` − počty v kompletech − otevřené výpůjčky.
+- **volné nečíslované kusy** = `quantity_total` − přidělené nebo dosud zapůjčené množství bez dvojího odečtu (D-61). Počty v kompletech zůstávají při jejich výpůjčce zachované; snímek předání se podruhé neodečítá. Samostatné výpůjčky se odečítají zvlášť. Změna složení nesmí uvolnit dosud nevrácené množství.
 
 #### Implementační upřesnění kroku 4 (2026-10-24, etapa 1)
 
@@ -133,6 +133,13 @@ Integrita [N]:
 - výdej, vrácení i výměna jsou v **jedné transakci**, včetně zápisu do `costume_item_events`.
 
 Pohled **Výpůjčky = skladové pohyby od nejnovějších** [R D-22] se skládá z výdejů a uzavření řádků (endpoint v kap. 4.5).
+
+#### Implementační upřesnění kroku 6 (2026-10-24, databáze a kontrakty)
+
+- D-61: pro každou zásobu se sčítají samostatné otevřené výpůjčky a za každý komplet větší z jeho evidovaného přidělení a dosud nevráceného snímku výpůjčky. Překryv se odečítá jednou; pozdější odebrání ze složení neuvolní dosud předané množství. Výdej a vrácení nemění `present_qty` ani stav fyzického ověření.
+- Tabulky řádků mají technické `unit_id` a složené cizí klíče chrání fondové vazby. Historie částečných vrácení v `costume_loan_returns` zachovává každé převzetí, počet, čas, autora a poznámku; souhrnné `returned_qty` je kumulativní.
+- `inventory_id` přibude s krokem 7. Nová migrace nemění dřívější migrace ani nevytváří historické výpůjčky z dosavadního umístění kusů.
+- Sdílené kontrakty výpůjček používají čas v ISO 8601 s časovým pásmem; `returnedQty` ve vstupu znamená počet převzatý právě nyní. `omitItemIds` při výdeji kompletu umožňuje výslovné vynechání kusu podle kap. 5.1b specifikace skladu.
 
 ### 3.5 Pracovní úkoly, historie, osoby ve fondu
 

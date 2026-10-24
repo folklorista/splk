@@ -10,9 +10,9 @@ Co ještě musíme rozhodnout (úroveň **B**). Každá otázka uvádí, odkud p
 
 ## Blokuje Krojařku
 
-### Q-19 Počítání nečíslovaných zásob při výpůjčce celého kompletu – blokuje krok 6
+### Q-19 Počítání nečíslovaných zásob při výpůjčce celého kompletu – *rozhodnuto → D-61*
 
-Zjištěno při návrhu kroku 6 dne 2026-10-24; **čeká na rozhodnutí uživatele**.
+Rozhodnuto uživatelem 2026-10-24 → D-61: počet v kompletu zachovat, výpůjčku celého kompletu nezapočítávat podruhé. Následuje původní podklad otázky.
 
 - API kap. 3.3 uvádí volné množství jako celkovou zásobu minus počty v kompletech minus otevřené výpůjčky.
 - Tentýž dokument a `current/06` kap. 3.4, 4 a 5.1b evidují početní doplňky v kompletu a jejich přesný počet ve výpůjčce celého kompletu.

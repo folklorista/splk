@@ -4,3 +4,4 @@ export * from './errors';
 export * from './organization';
 export * from './inventory';
 export * from './people';
+export * from './loans';

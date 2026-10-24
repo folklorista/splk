@@ -354,6 +354,14 @@ Krojařka používá výchozí test runner Angularu 22 – **Vitest** (jsdom). D
 
 **Zdroj:** uživatel 2026-10-24 (odpověď na Q-18: „Kontakty sdílet všem krojařkám; poznámky ke krojům zůstávají po fondech.“). Vymezení technických pověření navazuje na D-18, D-21 a D-36.
 
+### D-61 Nečíslované doplňky půjčeného kompletu se odečítají jen jednou
+
+- Při výpůjčce celého kompletu zůstává evidovaný počet doplňků v `costume_kit_bulk_lines.present_qty` zachován. Výdej ani vrácení samy nemění určené složení nebo nepotvrzují fyzickou úplnost.
+- Snímek výpůjčky obsahuje skutečně předané počty, ale jejich překryv s přidělením do kompletu se při výpočtu volné zásoby nesmí odečíst podruhé. Samostatné výpůjčky mimo komplet volnou zásobu snižují.
+- Změna složení nesmí přepsat snímek již uskutečněného předání ani uvolnit množství, které zůstává u držitele.
+
+**Zdroj:** uživatel 2026-10-24 (Q-19: „Počet v kompletu zachovat; výpůjčku celého kompletu nezapočítávat podruhé. Doplnit pravidlo proti dvojímu odečtu.“). Poslední bod navazuje na neměnnost obsahu předání v `current/06` kap. 5.1b.
+
 ## API v1 (2026-10-23, `current/api-v1-a-schema.md` kap. 7)
 
 ### D-48 Správa organizace v Krojařce
