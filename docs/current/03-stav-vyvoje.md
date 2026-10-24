@@ -4,7 +4,7 @@
 
 ## Aktuální stav
 
-**Poslední dokončený krok: 8 – Přílohy a převod papírových karet, etapa 3b (obrazovky a převod).** Kroky 1–8 jsou dokončené lokálně a automaticky otestované. Ruční provozní ověření zůstává před nasazením. Kroky 9–10 následují ve schváleném pořadí. Q-14 a převzetí držení z papíru jsou rozhodnuté (D-65 až D-67).
+**Poslední dokončený krok: 9 – Přehledy a hledání, etapa 2 (obrazovky a závěrečné ověření).** Kroky 1–9 jsou dokončené lokálně a automaticky otestované. Ruční provozní ověření zůstává před nasazením. **Krok 10 nezačal: čeká na rozhodnutí Q-24 o měně a záporných částkách nákladů.** Q-14 a převzetí držení z papíru jsou rozhodnuté (D-65 až D-67).
 
 | Oblast | Současný stav |
 |---|---|
@@ -14,6 +14,8 @@
 | Krok 6 – Výpůjčky | Výdej, částečné vrácení, výměny, ztráty, pohyby a fondové karty. Dostupnost a držitelé ze skutečných výpůjček a výslovně převzatého aktuálního držení z papíru (D-67); ochrana proti dvojímu odečtu doplňků celého kompletu (D-61), ztráta s vyřazením kusu či snížením zásoby (D-62). Dokončeno lokálně, nenasazeno. |
 | Krok 7 – Inventury | Zmrazený rozsah, tři režimy kontrol, termíny a návštěvy, rozšíření rozsahu, historie, nesrovnalosti, běžné operace s kontextem, neměnné uzavření a skupiny (D-48/D-51, D-63/D-64). Dokončeno lokálně, nenasazeno. |
 | Krok 8 – Přílohy | Dokončeno lokálně: databáze, API, kontrakty, HTTP/mock adaptéry, galerie a průvodce převodem s původem držení `paper_migration`. GPS údaje se odstraňují se zachováním obrazu/orientace (D-65); osobní skeny čtou i fondoví čtenáři (D-66). Lokální doplnění `gd` a `zip` uživatel schválil. |
+| Krok 9 – Přehledy a hledání | Kompletní fondové soupisy, JSON/CSV, tisk A4, hledání společných jmen a krojových objektů jen v povolených fondech. Dokončeno lokálně, nenasazeno. |
+| Krok 10 – Náklady | Před zahájením, čeká na Q-24 (měna a dobropisy). Pověření pokladníka určuje D-49. |
 | Krojařka a API | Standalone Angular, feature služby, zaměnitelné HTTP/mock adaptéry; PHP API, PostgreSQL, sdílené TS kontrakty a čistá doménová logika. Bez nových npm/Composer knihoven a změny architektury; lokální PHP `gd`/`zip` a systémové knihovny výslovně schválil uživatel. |
 | Demo a moje | Demo zůstává historickým prototypem; kód se z něj nepřebírá. Vývoj členské aplikace `moje.vonica.cz` je odložen. |
 
@@ -82,11 +84,33 @@ Změněné oblasti: `api/db/migrations`, `api/src/Domain/Costumes/LoanRepository
 
 Před nasazením ručně ověřit obě datové varianty, reálnou čitelnost A4 a mobilní zoom/otočení/posun, JPEG s GPS a orientací i PDF, archivaci a ZIP uložený mimo aplikaci, přerušení dávky a opakování úklidu; dále převod s neznámým/známým datem, konflikt držitele, opakování, dokončení s nejasnostmi a skutečné vrácení. Galerie podporuje klávesnici a vrací fokus po zavření. Ruční průchod v prohlížeči zatím neproběhl. Produkční připravenost není tímto potvrzena.
 
+## Dokončený krok 9
+
+Etapa 1 (API, kontrakty) a etapa 2 (HTTP/mock adaptéry, obrazovky a závěrečné ověření) jsou dokončené:
+
+- Soupisy podle řady kusů i kompletů, člověka a konkrétního kusu s historií; samostatně fyzický komplet, inventurní cíle/kontroly/nesrovnalosti, výpůjčky a pracovní úkoly. Filtry stavu, umístění, vyřazení, dostupnosti a data pořízení, otevřené/opožděné výpůjčky a externisté. Pracovní úkoly lze omezit na otevřené a rozpracované či konkrétní stav. Nepoužitelné filtry řad kompletů API odmítá a UI je nenabízí.
+- JSON i CSV obsahují celou sestavu včetně dalších stránek. Server používá read-only opakovatelný snímek, uzavřená inventura vlastní uložené výsledky. Výstupy rozlišují evidenci, skutečné výdeje, převzetí z papíru a fyzické inventurní kontroly; neznámé původní datum výdeje zůstává prázdné. Přehledy nezpřístupňují strukturované kontakty.
+- CSV: UTF-8, BOM, středník, korektní uvozovky/nové řádky a ochrana před interpretací uživatelských textů jako tabulkových vzorců. Evidenční čísla při importu do tabulky načítat jako text kvůli úvodním nulám. Tisk A4 obsahuje fond a datum sestavení, skrývá navigaci a opakuje hlavičky tabulek.
+- Hledání jmen/přezdívek a označení řada + číslo, bez diakritiky a rozdílů velikosti, doslovné `%`/`_`, stránkování. Fyzické objekty pouze z přístupných fondů, společná identita bez kontaktů. UI dovoluje aktuální nebo všechny přístupné fondy a před otevřením výsledku zvolí jeho oprávněný fond. Opožděné odpovědi ani CSV se nepřenesou do jiného kontextu.
+- Lazy trasy `/prehledy`, `/hledat`; stejné feature služby a zaměnitelné HTTP/mock adaptéry. Katalog a evidenční řady se nově načítají při vstupu do jejich tras, rozpočet se nezvyšoval. Žádná nová migrace ani závislost v kroku 9.
+
+| Závěrečná kontrola kroku 9 | Výsledek |
+|---|---|
+| `npm run api:test` | **292 testů / 2433 assertions – prošlo**, lokální `_test` DB; devět scénářů přehledů/hledání navíc proti dokončenému kroku 8, starší testy zachované |
+| `npm run krojarka:test` (Node 24) | **198 testů / 44 souborů – prošlo**; nové adaptéry, fondová oprávnění, řady kompletů, papírový původ, filtry, stale odpovědi a exporty, CSV a hledání |
+| TypeScript aplikace / testů / kontraktů | **Všechny tři kontroly prošly** |
+| `npm run krojarka:build` | **Prošlo, úvodní balíček 477,35 kB**, bez varování rozpočtu |
+| `git diff --check` | **Prošlo** |
+
+Commity: `db4eb0e` API/kontrakty, `5e49bbc` filtry pracovních úkolů a validace kompletů, `e49b0b7` adaptéry, obrazovky, tisk a testy. Změněné oblasti: `api/src/Domain/Costumes/Report{Repository,Labels}.php`, `ReportController`, `SearchController`, registrace v `App.php`, `ReportsSearchTest` a zpětně kompatibilní volitelné hlavičky testovacího helperu; `packages/api-contracts/src/reports.ts`, čistá CSV logika v `packages/domain/src`; Krojařka `data/reports`, `features/prehledy`, trasy, výběr adaptérů a tiskové styly. Dokumentace aktuálního stavu, API a Q-24 je synchronizovaná.
+
+Ruční ověření zatím neproběhlo: tisk reálných dlouhých sestav A4, import CSV v používaném tabulkovém programu (diakritika, úvodní nuly, víceřádkové texty), mobilní tabulky, srovnání filtrů s evidencí, výsledek jiné přístupné složky a zamítnutí neoprávněných vstupů. Automatické testy zahrnují i sestavu přes 200 řádků, ochranu vzorců, původ z papíru a neměnnost uzavřené inventury po změně kusu.
+
 ## Ruční ověření před případným nasazením
 
 Po místním použití migrací ověřit v HTTP i mock režimu, na počítači i mobilu:
 
-Před souhrnným nasazením kroků 4–7 ověřit také založení a úpravy kusů, zásob a složení kompletů, společné kontakty a oddělené fondové poznámky, běžný výdej, částečné vrácení, výměnu a vypořádání ztrátou. Tyto uživatelské průchody dosud nebyly samostatně ručně provedeny.
+Před souhrnným nasazením kroků 4–9 ověřit také založení a úpravy kusů, zásob a složení kompletů, společné kontakty a oddělené fondové poznámky, běžný výdej, částečné vrácení, výměnu a vypořádání ztrátou. Tyto uživatelské průchody dosud nebyly samostatně ručně provedeny.
 
 1. Náhled průniku filtrů, skupinu jiné složky (Muzika), prázdný rozsah a zachování cílů po změně členství či výpůjčky. Mock registr nemá příslušnosti osob ke složkám, proto tento filtr v jeho současných syntetických datech správně vrací prázdný rozsah.
 2. Skladovou mřížku po řadách, Enter `1, 03, 12-15`, neexistující a opakované číslo, půjčený kus, rozpor v umístění, přečíslování a zrušení poslední kontroly.
@@ -98,7 +122,7 @@ Před souhrnným nasazením kroků 4–7 ověřit také založení a úpravy kus
 
 ## Další postup a omezení
 
-- **Poslední kompletně dokončený krok: 8 – Přílohy a převod papírových karet, etapa 3b.** Následují přehledy/hledání (9), potom náklady (10).
+- **Poslední kompletně dokončený krok: 9 – Přehledy a hledání, etapa 2.** Krok 10 nezačal kvůli Q-24; dvě otázky byly předloženy uživateli a odpověď se nepředpokládá.
 - **Q-14 je vyřešená:** odstraňovat polohová EXIF data při zachování obrazu a orientace (D-65), osobní skeny i pro fondové čtenáře (D-66). Retence D-40 zůstává beze změny. Závěrečné výsledky jednotlivých kroků jsou oddělené výše; historický deník je odkazovaný níže.
 - Stav je připravený k místnímu a případnému testovacímu ověření. Produkční připravenost vyžaduje výše uvedené ruční ověření a výslovné schválení produkčních migrací a nasazení. V této části práce nebyla použita produkční DB, produkční migrace, deploy ani `git push`.
 

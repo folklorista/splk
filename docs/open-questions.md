@@ -10,6 +10,17 @@ Co ještě musíme rozhodnout (úroveň **B**). Každá otázka uvádí, odkud p
 
 ## Blokuje Krojařku
 
+### Q-24 Měna a znaménko částky nákladů – čeká na rozhodnutí pro krok 10
+
+D-23 a schválené API kap. 3.7 stanoví náklady, datum, částku, dodavatele, odkaz na doklad, popis/účel a volitelné vazby na součástky. D-49 řeší přístup pokladníka. Podklady však neurčují měnu a zda jsou dovoleny opravné záporné částky. Bez toho nelze dokončit integritu částek, formuláře ani souhrny; **blokuje krok 10, nikoli dokončené kroky 8–9**.
+
+Uživateli byly 2026-10-24 položeny dvě otázky:
+
+1. Pouze Kč bez přepočtů, nebo měna u každého nákladu?
+2. Pouze kladné výdaje, nebo také záporné částky pro dobropisy a vratky?
+
+Odpověď zatím nepřišla. Nebyla nahrazena předpokladem; krok 10 ani jeho migrace nezačaly.
+
 ### Q-23 Převzetí současného držení z papíru – *rozhodnuto → D-67*
 
 Uživatel 2026-10-24 schválil převzetí jednoznačného současného držení s původem `paper_migration`, samostatným datem/autorem digitalizace a bez vymyšleného původního data výdeje. Nejednoznačnosti a konflikty mají zůstat jako nesrovnalosti; dokončení převodu dovoluje D-40 i s nimi. Běžný výdej nesmí sloužit jako náhradní způsob importu ani přepisovat existující držení. Otázka již neblokuje krok 8.

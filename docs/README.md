@@ -74,7 +74,7 @@ Viz [`context/README.md`](context/README.md). Podrobné popisy `vonica.md` a `vo
 
 ## Otevřené otázky, které teď blokují Krojařku
 
-Q-02 omezení výdeje · **Q-03 rozsah financí** · **Q-04 detaily kompletů** · Q-05 body pro krojařky · **Q-10 API v1 a monorepo** · Q-11 hosting · Q-14 přihlašování a skeny · Q-17 mobilní lišta. Podrobně v [`open-questions.md`](open-questions.md).
+Aktuálně **Q-24 – měna a záporné částky nákladů** blokuje krok 10. Kroky 1–9 jsou dokončené lokálně. Starší rozhodnuté otázky (včetně Q-14 a převodu držení Q-23) jsou v [registru otevřených otázek](open-questions.md) výslovně označené jako vyřešené; jejich původní znění není současná blokace.
 
 ## Závazná pravidla pro vývojáře a AI asistenty
 
