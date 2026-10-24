@@ -302,6 +302,42 @@ final class LoansTest extends ApiTestCase
         self::assertSame(0, $this->auditCount('loan.return'));
     }
 
+    public function testAvailabilityAndHolderFollowActualLoansIndependentlyOfLocation(): void
+    {
+        $item = $this->item();
+        self::assertTrue($this->get("/v1/items/$item")->decodedBody()['available']);
+        self::assertNull($this->get("/v1/items/$item")->decodedBody()['holder']);
+        $loan = $this->issue(['items' => [$item]]);
+        $piece = $this->get("/v1/items/$item")->decodedBody();
+        self::assertFalse($piece['available']);
+        self::assertSame(['personId' => $this->person], $piece['holder']);
+        self::assertSame('unknown', $piece['location']);
+        self::assertSame(0, $this->get("/v1/funds/{$this->fund}/items?available=true")->decodedBody()['total']);
+        self::assertSame(1, $this->get("/v1/funds/{$this->fund}/items?holder={$this->person}")->decodedBody()['total']);
+        self::assertSame(1, $this->get("/v1/funds/{$this->fund}/items?available=false")->decodedBody()['total']);
+        $this->post("/v1/loans/{$loan['id']}/return", ['lines' => [['lineId' => $loan['lines'][0]['id'], 'returnedQty' => 1, 'closeType' => 'returned']]]);
+        self::assertTrue($this->get("/v1/items/$item")->decodedBody()['available']);
+        self::assertNull($this->get("/v1/items/$item")->decodedBody()['holder']);
+    }
+
+    public function testCardsAndPeopleFiltersContainOnlyAuthorizedFundLoans(): void
+    {
+        $loan = $this->issue(['items' => [$this->item()]]);
+        $card = $this->get("/v1/funds/{$this->fund}/people/{$this->person}/card")->decodedBody();
+        self::assertSame($loan['id'], $card['openLoans']['items'][0]['id']);
+        self::assertSame(1, $card['movements']['total']);
+        self::assertSame(1, $this->get("/v1/people?fund={$this->fund}&hasLoans=true")->decodedBody()['total']);
+        $other = $this->createUnit('Other');
+        $this->grant($this->actor, 'costumes.manage', $other);
+        $otherCard = $this->get("/v1/funds/$other/people/{$this->person}/card")->decodedBody();
+        self::assertSame(0, $otherCard['openLoans']['total']);
+        self::assertSame(0, $otherCard['movements']['total']);
+        self::assertSame(0, $this->get("/v1/people?fund=$other&hasLoans=true")->decodedBody()['total']);
+        $this->post("/v1/loans/{$loan['id']}/return", ['lines' => [['lineId' => $loan['lines'][0]['id'], 'returnedQty' => 1, 'closeType' => 'returned']]]);
+        self::assertSame(0, $this->get("/v1/people?fund={$this->fund}&hasLoans=true")->decodedBody()['total']);
+        self::assertSame(0, $this->get("/v1/funds/{$this->fund}/people/{$this->person}/card")->decodedBody()['openLoans']['total']);
+    }
+
     private function issue(array $body): array
     {
         $response = $this->post($this->path(), $this->holder() + $body);

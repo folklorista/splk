@@ -36,6 +36,10 @@ final class PeopleRepository
             $where[] = 'EXISTS (SELECT 1 FROM costume_holder_profiles h WHERE h.person_id = p.id AND h.unit_id = :fund AND h.paper_state = :state)';
             $params['fund'] = $fund; $params['state'] = $filters['paperState'];
         }
+        if (isset($filters['hasLoans'])) {
+            $where[] = ($filters['hasLoans'] ? '' : 'NOT ') . 'EXISTS (SELECT 1 FROM costume_loans cl JOIN costume_loan_lines ll ON ll.loan_id = cl.id WHERE cl.holder_person_id = p.id AND cl.unit_id = :loanFund AND ll.closed_at IS NULL)';
+            $params['loanFund'] = $fund;
+        }
         $from = ' FROM persons p' . ($where === [] ? '' : ' WHERE ' . implode(' AND ', $where));
         $count = $this->db->prepare('SELECT count(*)' . $from); $count->execute($params);
         $statement = $this->db->prepare('SELECT p.id, p.first_name, p.last_name, p.nickname, p.contact' . $from . " ORDER BY p.last_name, p.first_name, p.id LIMIT $limit OFFSET $offset");

@@ -6,7 +6,7 @@ namespace Splk\Api\Domain\Costumes;
 
 use PDO;
 
-/** Physical items and their own events; no inferred loan or inventory facts (docs/06 chap. 3). */
+/** Physical items and their own events; actual loan responsibility and independent physical state (docs/06 chap. 3). */
 final class ItemRepository
 {
     private const FIELDS = [
@@ -24,7 +24,7 @@ final class ItemRepository
         $statement = $this->db->prepare('SELECT * FROM costume_items WHERE id = :id' . ($lock ? ' FOR UPDATE' : ''));
         $statement->execute(['id' => $id]);
         $row = $statement->fetch();
-        return $row === false ? null : self::item($row);
+        return $row === false ? null : $this->item($row);
     }
 
     /** The series lock serializes number checks, including numbers of retired items. */
@@ -134,12 +134,20 @@ final class ItemRepository
             $where[] = "unaccent(lower(concat_ws(' ', s.name, i.number, i.variant, i.description, i.note))) LIKE unaccent(lower(:q)) ESCAPE '!'";
             $params['q'] = '%' . strtr($filters['q'], ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
         }
+        $open = 'EXISTS (SELECT 1 FROM costume_loan_lines ll WHERE ll.item_id = i.id AND ll.closed_at IS NULL)';
+        if (isset($filters['available'])) {
+            $where[] = ($filters['available'] ? '' : 'NOT ') . "(i.issuable AND i.retired_at IS NULL AND NOT $open)";
+        }
+        if (isset($filters['holder'])) {
+            $where[] = 'EXISTS (SELECT 1 FROM costume_loan_lines ll JOIN costume_loans l ON l.id = ll.loan_id WHERE ll.item_id = i.id AND ll.closed_at IS NULL AND l.holder_person_id = :holder)';
+            $params['holder'] = $filters['holder'];
+        }
         $from = ' FROM costume_items i JOIN costume_series s ON s.id = i.series_id WHERE ' . implode(' AND ', $where);
         $count = $this->db->prepare('SELECT count(*)' . $from);
         $count->execute($params);
         $statement = $this->db->prepare('SELECT i.*' . $from . " ORDER BY $sort, i.id ASC LIMIT $limit OFFSET $offset");
         $statement->execute($params);
-        return ['items' => array_map(self::item(...), $statement->fetchAll()), 'total' => (int) $count->fetchColumn()];
+        return ['items' => array_map($this->item(...), $statement->fetchAll()), 'total' => (int) $count->fetchColumn()];
     }
 
     private static function parameters(array $input): array
@@ -149,7 +157,7 @@ final class ItemRepository
         return $params;
     }
 
-    private static function item(array $row): array
+    private function item(array $row): array
     {
         $result = [];
         foreach (self::FIELDS as $key => $column) {
@@ -157,7 +165,10 @@ final class ItemRepository
         }
         $result['seriesId'] = (int) $row['series_id'];
         $result['issuable'] = (bool) $row['issuable'];
+        $loan = (new LoanRepository($this->db))->openItem((int) $row['id']);
         return $result + [
+            'available' => (bool) $row['issuable'] && $row['retired_at'] === null && $loan === null,
+            'holder' => $loan['holder'] ?? null,
             'id' => (int) $row['id'], 'unitId' => (int) $row['unit_id'],
             'kitId' => $row['kit_id'] === null ? null : (int) $row['kit_id'],
             'retiredAt' => $row['retired_at'], 'retiredBy' => $row['retired_by'] === null ? null : (int) $row['retired_by'],

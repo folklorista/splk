@@ -39,7 +39,7 @@ final class ItemController extends Controller
     private function list(Request $request, RequestContext $context): Response
     {
         $unitId = $this->fund($context, $context->params['unitId'], false);
-        $this->only($request->query, ['limit', 'offset', 'sort', 'series', 'q', 'condition', 'location', 'acquiredFrom', 'acquiredTo', 'retired']);
+        $this->only($request->query, ['limit', 'offset', 'sort', 'series', 'q', 'condition', 'location', 'acquiredFrom', 'acquiredTo', 'retired', 'available', 'holder']);
         [$limit, $offset] = $this->pagination($request->query);
         $filters = ['retired' => false];
         if (isset($request->query['retired'])) {
@@ -50,6 +50,12 @@ final class ItemController extends Controller
         }
         if (isset($request->query['series'])) {
             $filters['series'] = $this->queryInteger($request->query['series'], 'series', 1, PHP_INT_MAX);
+        }
+        if (isset($request->query['available'])) {
+            $filters['available'] = match ($request->query['available']) { 'true' => true, 'false' => false, default => throw Input::invalid('available', 'invalid') };
+        }
+        if (isset($request->query['holder'])) {
+            $filters['holder'] = $this->queryInteger($request->query['holder'], 'holder', 1, PHP_INT_MAX);
         }
         foreach (['condition' => self::CONDITIONS, 'location' => self::LOCATIONS] as $key => $allowed) {
             if (array_key_exists($key, $request->query)) {

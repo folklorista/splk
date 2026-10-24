@@ -6,6 +6,7 @@ namespace Splk\Api\Http\Controller;
 
 use Splk\Api\Authorization\FundAccess;
 use Splk\Api\Domain\Identity\PeopleRepository;
+use Splk\Api\Domain\Costumes\LoanRepository;
 use Splk\Api\Http\HttpException;
 use Splk\Api\Http\Input;
 use Splk\Api\Http\InventoryInput;
@@ -31,7 +32,7 @@ final class PeopleController extends Controller
     private function list(Request $request, RequestContext $context): Response
     {
         $contact = $this->requireAccess($context, false);
-        InventoryInput::only($request->query, ['limit', 'offset', 'q', 'unit', 'fund', 'paperState']);
+        InventoryInput::only($request->query, ['limit', 'offset', 'q', 'unit', 'fund', 'paperState', 'hasLoans']);
         [$limit, $offset] = InventoryInput::pagination($request->query);
         $filters = ['q' => (new Input($request->query))->optionalString('q', 200)];
         if (isset($request->query['unit'])) $filters['unit'] = InventoryInput::queryInteger($request->query['unit'], 'unit');
@@ -40,6 +41,10 @@ final class PeopleController extends Controller
         if (isset($request->query['paperState'])) {
             if ($fund === null) throw Input::invalid('fund', 'required');
             $filters['paperState'] = (new Input($request->query))->enum('paperState', self::PAPER_STATES);
+        }
+        if (isset($request->query['hasLoans'])) {
+            if ($fund === null) throw Input::invalid('fund', 'required');
+            $filters['hasLoans'] = match ($request->query['hasLoans']) { 'true' => true, 'false' => false, default => throw Input::invalid('hasLoans', 'invalid') };
         }
         return Response::json($this->people()->list($filters, $contact, $fund, $limit, $offset));
     }
@@ -74,7 +79,9 @@ final class PeopleController extends Controller
     {
         $unit = $this->fund($context, $context->params['unitId'], false);
         $person = $this->people()->find(self::routeId($context), $this->hasManageAccess($context)) ?? throw self::notFound();
-        return Response::json(['person' => $person, 'profile' => $this->people()->profile($unit, $person['id'])]);
+        return Response::json(['person' => $person, 'profile' => $this->people()->profile($unit, $person['id']),
+            'openLoans' => (new LoanRepository($this->db()))->list($unit, ['person' => $person['id'], 'open' => true], 50, 0),
+            'movements' => (new LoanRepository($this->db()))->movements($unit, ['person' => $person['id']], 50, 0)]);
     }
 
     private function profile(Request $request, RequestContext $context): Response

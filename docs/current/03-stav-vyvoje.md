@@ -132,3 +132,10 @@ Demo vzniklo před rozhodnutími z 22. 10. 2026 a dál se nerozvíjí ani nekonz
 - Kapacitní ochrana D-61 platí i pro nové výpůjčky, snížení zásoby a změnu složení; selhání vrací `insufficient_stock` a operace se vrátí zpět.
 - PHPUnit: **161 testů / 1298 assertions**, Vitest: **75 testů / 20 souborů**, TypeScript aplikace, testů a kontraktů a kontrola diffu prošly. Produkční build: **492,46 kB**. Během doplnění ztrát opraven SQL řetězec a celá API sada zopakována úspěšně.
 - Krok 6 není dokončen: následuje odvození dostupnosti a držitelů, napojení karet, HTTP/mock adaptéry a UI. Ruční ověření celých uživatelských toků bude možné po dokončení obrazovek. Produkce, deploy a push neprovedeny.
+
+
+### Krok 6, etapa 2b – dostupnost a krojové karty v API
+
+- Dostupnost a držitel kusu jsou odvozené z reálných výpůjček a oddělené od umístění. Přidány filtry `available` a `holder`; nevznikají fiktivní výpůjčky.
+- Fondová karta vrací stránkované otevřené výpůjčky a pohyby; `hasLoans` v seznamu osob vyžaduje konkrétní oprávněný fond. Kontakty ani karta nezpřístupňují cizí fondové výpůjčky.
+- PHPUnit: **163 testů / 1318 assertions**, kontrola diffu prošla. Navazuje etapa 3 – datové adaptéry a feature logika frontendu.

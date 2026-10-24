@@ -37,8 +37,8 @@ final class ItemsTest extends ApiTestCase
         self::assertSame(1, $item['version']);
         self::assertNull($item['number']);
         self::assertNull($item['kitId']);
-        self::assertArrayNotHasKey('available', $item);
-        self::assertArrayNotHasKey('holder', $item);
+        self::assertTrue($item['available']);
+        self::assertNull($item['holder']);
         self::assertSame($item, $this->get('/v1/items/' . $item['id'])->decodedBody());
         $history = $this->get('/v1/items/' . $item['id'] . '/history')->decodedBody();
         self::assertSame(1, $history['total']);
@@ -276,7 +276,7 @@ final class ItemsTest extends ApiTestCase
     {
         foreach (['limit=0', 'limit=201', 'offset=-1', 'offset=99999999999999999999999', 'sort=number;DROP', 'series=abc',
             'location=loaned', 'condition=lost', 'acquiredFrom=2026-02-30', 'acquiredFrom[]=x',
-            'acquiredFrom=2026-10-24&acquiredTo=2026-10-23', 'q[]=x', 'retired=yes', 'available=true', 'holder=1'] as $query) {
+            'acquiredFrom=2026-10-24&acquiredTo=2026-10-23', 'q[]=x', 'retired=yes', 'available=yes', 'holder=0'] as $query) {
             self::assertError(422, 'validation_failed', $this->get($this->url('?' . $query)));
         }
     }
