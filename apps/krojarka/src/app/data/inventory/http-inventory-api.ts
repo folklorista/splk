@@ -1,4 +1,5 @@
 import type { CostumeLoan, LoanCreate, LoanIssueResult, LoanReturnInput, LoanExchangeInput, LoanPatch, LoanQuery, LoanMovement, MovementQuery } from '@splk/api-contracts';
+import type * as Inv from '@splk/api-contracts';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
@@ -15,6 +16,20 @@ import { InventoryApi } from './inventory-api';
 export class HttpInventoryApi extends InventoryApi {
   private readonly http = inject(HttpClient);
   private readonly base = inject(API_BASE_URL);
+
+  inventories(unit: number, query: PageQuery = {}) { return this.get<Page<Inv.CostumeInventory>>(`/funds/${unit}/inventories`, query); }
+  inventory(id: number) { return this.get<Inv.InventoryDetail>(`/inventories/${id}`); }
+  inventoryPreview(unit: number, scope: Inv.InventoryScope) { return this.write<Inv.InventoryPreview>('POST', `/funds/${unit}/inventories/preview`, { scope }); }
+  createInventory(unit: number, input: Inv.InventoryCreate) { return this.write<Inv.InventoryDetail>('POST', `/funds/${unit}/inventories`, input); }
+  inventoryCollection<K extends keyof Inv.InventoryCollections>(id: number, kind: K, query: PageQuery = {}) { return this.get<Page<Inv.InventoryCollections[K]>>(`/inventories/${id}/${kind === 'workOrders' ? 'work-orders' : kind}`, query); }
+  addInventoryTarget(id: number, input: Inv.InventoryTargetAdd) { return this.write<Inv.InventoryDetail>('POST', `/inventories/${id}/targets`, input); }
+  checkInventory(id: number, input: Inv.InventoryCheckBatch) { return this.write<Inv.InventoryCheckResponse>('POST', `/inventories/${id}/checks`, input); }
+  cancelInventoryCheck(id: number, version: number) { return this.http.delete<Inv.InventoryDetail>(`${this.base}/inventory-checks/${id}`, { params: { version } }).pipe(catchError((error: unknown) => throwError(() => ApiError.from(error)))); }
+  createInventorySlot(id: number, input: Inv.InventorySlotInput) { return this.write<Inv.InventorySlotResponse>('POST', `/inventories/${id}/slots`, input); }
+  updateInventorySlot(id: number, slot: number, input: Inv.InventorySlotPatch) { return this.write<Inv.InventorySlotResponse>('PATCH', `/inventories/${id}/slots/${slot}`, input); }
+  createInventoryVisit(id: number, input: Inv.InventoryVisitInput) { return this.write<Inv.InventoryVisitResponse>('POST', `/inventories/${id}/visits`, input); }
+  updateInventoryVisit(id: number, visit: number, input: Inv.InventoryVisitPatch) { return this.write<Inv.InventoryVisitResponse>('PATCH', `/inventories/${id}/visits/${visit}`, input); }
+  closeInventory(id: number, input: Inv.InventoryClose) { return this.write<Inv.InventoryDetail>('POST', `/inventories/${id}/close`, input); }
 
   loans(unit: number, query: LoanQuery = {}) { return this.get<Page<CostumeLoan>>(`/funds/${unit}/loans`, query); }
   loan(id: number) { return this.get<CostumeLoan>(`/loans/${id}`); }
@@ -39,7 +54,7 @@ export class HttpInventoryApi extends InventoryApi {
   updateKit(id: number, input: KitPatch) { return this.write<KitDetail>('PATCH', `/kits/${id}`, input); }
   composition(id: number, input: CompositionInput) { return this.write<KitDetail>('POST', `/kits/${id}/composition`, input); }
   workOrders(id: number, query: PageQuery & { status?: WorkOrderStatus } = {}) { return this.get<Page<WorkOrder>>(`/items/${id}/work-orders`, query); }
-  createWorkOrder(id: number, input: WorkOrderInput) { return this.write<WorkOrder>('POST', `/items/${id}/work-orders`, input); }
+  createWorkOrder(id: number, input: Inv.WorkOrderCreate) { return this.write<WorkOrder>('POST', `/items/${id}/work-orders`, input); }
   updateWorkOrder(id: number, input: WorkOrderPatch) { return this.write<WorkOrder>('PATCH', `/work-orders/${id}`, input); }
 
   private get<T>(path: string, query: object = {}): Observable<T> {

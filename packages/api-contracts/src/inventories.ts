@@ -1,4 +1,5 @@
-import type { ItemCondition, Page } from './inventory';
+import type { ItemCondition, Page, WorkOrder } from './inventory';
+import type { LoanMovement } from './loans';
 
 /** Inventory scope is evaluated once at start; combinations are intersections (docs/06 chap. 7.1). */
 export interface InventoryScope {
@@ -154,3 +155,12 @@ export interface InventoryCheckOutcome {
   context?: InventoryCheck['context'];
 }
 export interface InventoryCheckResponse { id: number; inventory: InventoryDetail; results: InventoryCheckOutcome[] }
+export interface InventoryCollections {
+  targets: InventoryTarget;
+  checks: InventoryCheck;
+  issues: InventoryIssue;
+  slots: InventorySlot;
+  visits: InventoryVisit;
+  movements: LoanMovement;
+  workOrders: WorkOrder;
+}

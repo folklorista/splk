@@ -228,3 +228,10 @@ Uživatel rozhodl Q-21 → D-63: fyzické ověření plní pokrytí, pozdější
 - Schválené `packages/domain/src` obsahuje parser čísel a projekci inventurního průběhu pro UI/mock. Připojeno TS aliasem bez nové npm závislosti. Autoritou pro integritu a uzavírání zůstává PHP.
 - Parser zachová přesná čísla včetně nul a písmen, rozbalí číselné rozsahy a omezí dávku na 200 položek. Odmítá obrácené, nejednoznačně doplněné a příliš velké rozsahy. Opakování zachová pro odpověď serveru, nezkouší domýšlet chybějící čísla.
 - Projekce D-63/D-64 odděluje pokrytí číslovaných součástek, komplety, zásoby, návštěvy a nesrovnalosti. Vitest: **110 testů / 27 souborů**; TypeScript aplikace/testů a `git diff --check` prošly. Navazují inventurní adaptéry a obrazovky.
+
+### Krok 7, etapa 3b – zaměnitelné inventurní adaptéry
+
+- Stávající `InventoryApi` má HTTP i mock operace náhledu, založení, kolekcí, explicitního rozsahu, kontrol, termínů, návštěv a uzavření. Mock sdílí stav i transakční frontu s fyzickou evidencí a výpůjčkami; odložené chybné operace vrátí celý stav včetně inventurních verzí a událostí.
+- Mock podporuje D-63/D-64, samostatné početní kontexty D-61, konflikty skladu, zrušení kontroly, skupinový průnik a neměnné uzavřené výsledky. Syntetický registr zatím nemá příslušnosti osob ke složkám; filtr příslušnosti proto v mock datech vrací prázdný rozsah, žádná členství se nedomýšlejí. Skupiny se berou ze společného mock registru správy organizace.
+- Kontext inventury je zapojen i do běžného mock výdeje, vrácení, výměny a pracovního úkolu; pohyby lze filtrovat podle inventury. Komponenty dále používají feature služby, nikoli HTTP.
+- Vitest: **120 testů / 29 souborů**; TypeScript aplikace, testů a kontraktů a `git diff --check` prošly. Inventurní feature služba a obrazovky ještě nejsou hotové.

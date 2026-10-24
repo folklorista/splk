@@ -1,4 +1,5 @@
 import type { CostumeLoan, LoanCreate, LoanIssueResult, LoanReturnInput, LoanExchangeInput, LoanPatch, LoanQuery, LoanMovement, MovementQuery } from '@splk/api-contracts';
+import type * as Inv from '@splk/api-contracts';
 import { inject, Injectable } from '@angular/core';
 import { defer, firstValueFrom, from, Observable } from 'rxjs';
 import {
@@ -10,14 +11,10 @@ import { ApiError } from '../api-error';
 import { CatalogApi } from '../catalog/catalog-api';
 import { OrganizationApi } from '../organization/organization-api';
 import { InventoryApi } from './inventory-api';
+import { MockInventories, MockInventoryState, inventoryPage } from './mock-inventories';
 
-interface State {
-  loans: CostumeLoan[];
-  items: CostumeItem[];
-  stocks: BulkStock[];
-  kits: KitDetail[];
+interface State extends MockInventoryState {
   events: ItemEvent[];
-  orders: WorkOrder[];
 }
 
 /** Session-only synthetic inventory. Serialized operations roll back together, like server transactions. */
@@ -25,9 +22,30 @@ interface State {
 export class MockInventoryApi extends InventoryApi {
   private readonly catalog = inject(CatalogApi);
   private readonly organization = inject(OrganizationApi, { optional: true });
-  private state: State = { items: [], stocks: [], kits: [], events: [], orders: [], loans: [] };
+  private state: State = { items: [], stocks: [], kits: [], events: [], orders: [], loans: [], inventories: [], targets: [], checks: [], slots: [], visits: [] };
   private nextId = 1;
   private queue: Promise<unknown> = Promise.resolve();
+
+  inventories(unit: number, query: PageQuery = {}) { return this.run(() => inventoryPage(this.state.inventories.filter((i) => i.unitId === unit).sort((a, b) => Date.parse(b.startedAt) - Date.parse(a.startedAt) || b.id - a.id), query)); }
+  inventory(id: number) { return this.run(() => this.inventoryEngine().detail(id)); }
+  inventoryPreview(unit: number, scope: Inv.InventoryScope) { return this.run(async () => (await this.inventoryScopeEngine(unit)).preview(unit, scope)); }
+  createInventory(unit: number, input: Inv.InventoryCreate) { return this.run(async () => (await this.inventoryScopeEngine(unit)).create(unit, input)); }
+  inventoryCollection<K extends keyof Inv.InventoryCollections>(id: number, kind: K, query: PageQuery = {}) { return this.run(() => inventoryPage(this.inventoryEngine().collection(id, kind), query)); }
+  addInventoryTarget(id: number, input: Inv.InventoryTargetAdd) { return this.run(async () => (await this.inventoryScopeEngine(this.inventoryEngine().header(id).unitId)).add(id, input)); }
+  checkInventory(id: number, input: Inv.InventoryCheckBatch) { return this.run(async () => (await this.inventoryScopeEngine(this.inventoryEngine().header(id).unitId)).check(id, input)); }
+  cancelInventoryCheck(id: number, version: number) { return this.run(() => this.inventoryEngine().cancel(id, version)); }
+  createInventorySlot(id: number, input: Inv.InventorySlotInput) { return this.run(() => this.inventoryEngine().slot(id, null, input)); }
+  updateInventorySlot(id: number, slot: number, input: Inv.InventorySlotPatch) { return this.run(() => this.inventoryEngine().slot(id, slot, input)); }
+  createInventoryVisit(id: number, input: Inv.InventoryVisitInput) { return this.run(() => this.inventoryEngine().visit(id, null, input)); }
+  updateInventoryVisit(id: number, visit: number, input: Inv.InventoryVisitPatch) { return this.run(() => this.inventoryEngine().visit(id, visit, input)); }
+  closeInventory(id: number, input: Inv.InventoryClose) { return this.run(() => this.inventoryEngine().close(id, input)); }
+
+  private inventoryEngine() { return new MockInventories(this.state, () => this.nextId++, this.event.bind(this)); }
+  private async inventoryScopeEngine(unit: number) {
+    const [series, types, regions, groups, units] = await Promise.all([firstValueFrom(this.catalog.series(unit)), firstValueFrom(this.catalog.partTypes(unit)), firstValueFrom(this.catalog.regions(unit)),
+      this.organization ? firstValueFrom(this.organization.groups()) : Promise.resolve([]), this.organization ? firstValueFrom(this.organization.units()) : Promise.resolve([])]);
+    return new MockInventories(this.state, () => this.nextId++, this.event.bind(this), { series, types, regions, groups, units });
+  }
 
   items(unit: number, query: ItemQuery = {}) {
     return this.run(async () => {
@@ -227,15 +245,17 @@ export class MockInventoryApi extends InventoryApi {
     return this.run(() => { this.find(this.state.items, id); return page(this.state.orders.filter((w) => w.itemId === id && (!query.status || w.status === query.status)).slice().reverse(), query); });
   }
 
-  createWorkOrder(id: number, input: WorkOrderInput) {
+  createWorkOrder(id: number, input: Inv.WorkOrderCreate) {
     return this.run(() => {
       const item = this.find(this.state.items, id);
+      const inventory = this.inventoryEngine().link(item.unitId, input);
       if (item.retiredAt) throw new ApiError(422, 'item_retired');
       if (!input.description.trim()) throw invalid('description');
       const order: WorkOrder = { id: this.nextId++, itemId: id, unitId: item.unitId, type: input.type, description: input.description.trim(),
-        assignee: text(input.assignee), dueOn: text(input.dueOn), status: 'open' };
+        assignee: text(input.assignee), dueOn: text(input.dueOn), status: 'open', inventoryId: inventory?.id ?? null };
       this.state.orders.push(order);
       this.event(id, 'work_order_created', { ...order });
+      if (inventory) inventory.version++;
       return order;
     });
   }
@@ -259,17 +279,27 @@ export class MockInventoryApi extends InventoryApi {
     }).sort((a, b) => b.issuedAt.localeCompare(a.issuedAt) || b.id - a.id), query));
   }
   loan(id: number) { return this.run(() => this.find(this.state.loans, id)); }
-  issue(unit: number, input: LoanCreate) { return this.run(() => this.handover(unit, input)); }
-  returnLoan(id: number, input: LoanReturnInput) { return this.run(() => this.receive(this.find(this.state.loans, id), input)); }
+  issue(unit: number, input: LoanCreate) { return this.run(async () => {
+    const inventory = this.inventoryEngine().link(unit, input), loan = await this.handover(unit, input);
+    for (const line of loan.lines) line.inventoryId = inventory?.id ?? null;
+    if (inventory) inventory.version++; return loan;
+  }); }
+  returnLoan(id: number, input: LoanReturnInput) { return this.run(() => {
+    const loan = this.find(this.state.loans, id), inventory = this.inventoryEngine().link(loan.unitId, input);
+    const result = this.receive(loan, input, false, inventory?.id ?? null); if (inventory) inventory.version++; return result;
+  }); }
   exchange(id: number, input: LoanExchangeInput) {
     return this.run(async () => {
       const old = this.find(this.state.loans, id), line = old.lines.find((l) => l.id === input.lineId);
+      const inventory = this.inventoryEngine().link(old.unitId, input);
       if (!line?.itemId || line.closedAt || line.itemId === input.itemId) throw invalid('lineId');
-      const { itemId, ...values } = input;
-      this.receive(old, { lines: [{ ...values, returnedQty: 1, closeType: 'exchanged' }] }, true);
+      const { itemId, inventoryId: _, inventoryVersion: __, ...values } = input;
+      this.receive(old, { lines: [{ ...values, returnedQty: 1, closeType: 'exchanged' }] }, true, inventory?.id ?? null);
       const next = await this.handover(old.unitId, { holder: old.holder, items: [itemId], dueAt: old.dueAt, note: input.note });
       next.replacesLoanId = old.id;
       this.find(this.state.loans, next.id).replacesLoanId = old.id;
+      for (const line of next.lines) line.inventoryId = inventory?.id ?? null;
+      if (inventory) inventory.version++;
       return next;
     });
   }
@@ -278,16 +308,8 @@ export class MockInventoryApi extends InventoryApi {
   }
   movements(unit: number, query: MovementQuery = {}) {
     return this.run(() => {
-      const rows: LoanMovement[] = [];
-      for (const loan of this.state.loans) if (loan.unitId === unit && (!query.kit || loan.kitId === query.kit) && (!query.person || 'personId' in loan.holder && loan.holder.personId === query.person) && (!query.kit || loan.kitId === query.kit)) {
-        for (const line of loan.lines) {
-          if (query.item && line.itemId !== query.item) continue;
-          const base = { loanId: loan.id, lineId: line.id, itemId: line.itemId, bulkStockId: line.bulkStockId, holder: loan.holder, kitId: loan.kitId };
-          rows.push({ ...base, id: line.id, type: 'issued', at: loan.issuedAt, by: loan.issuedBy, qty: line.qty, lostQty: 0, note: loan.note });
-          for (const r of loan.returns.filter((r) => r.lineId === line.id)) rows.push({ ...base, ...r, type: r.closeType });
-        }
-      }
-      return page(rows.filter((r) => (!query.from || r.at >= query.from) && (!query.to || r.at <= query.to)).sort((a, b) => b.at.localeCompare(a.at) || b.id - a.id), query);
+      return page(this.inventoryEngine().movements(unit).filter((r) => (!query.kit || r.kitId === query.kit) && (!query.person || 'personId' in r.holder && r.holder.personId === query.person)
+        && (!query.item || r.itemId === query.item) && (!query.inventoryId || r.inventoryId === query.inventoryId) && (!query.from || Date.parse(r.at) >= Date.parse(query.from)) && (!query.to || Date.parse(r.at) <= Date.parse(query.to))), query);
     });
   }
 
@@ -345,7 +367,7 @@ export class MockInventoryApi extends InventoryApi {
     return { ...loan, omittedItemIds };
   }
 
-  private receive(loan: CostumeLoan, input: LoanReturnInput, exchange = false): CostumeLoan {
+  private receive(loan: CostumeLoan, input: LoanReturnInput, exchange = false, inventory: number | null = null): CostumeLoan {
     if (!input.lines.length || new Set(input.lines.map((l) => l.lineId)).size !== input.lines.length) throw invalid('lines');
     for (const values of input.lines) {
       const line = loan.lines.find((l) => l.id === values.lineId);
@@ -360,7 +382,7 @@ export class MockInventoryApi extends InventoryApi {
       if (Object.keys(patch).length && (!line.itemId || lostQty)) throw invalid('condition');
       line.returnedQty += values.returnedQty;
       if (lostQty || line.returnedQty === line.qty) Object.assign(line, { closedAt: new Date().toISOString(), closedBy: 1, closeType: values.closeType, closeNote: text(values.note) });
-      loan.returns.push({ id: this.nextId++, lineId: line.id, qty: values.returnedQty, lostQty, closeType: values.closeType, note: text(values.note), at: new Date().toISOString(), by: 1 });
+      loan.returns.push({ id: this.nextId++, lineId: line.id, qty: values.returnedQty, lostQty, closeType: values.closeType, note: text(values.note), at: new Date().toISOString(), by: 1, inventoryId: inventory });
       if (line.itemId) {
         const item = this.find(this.state.items, line.itemId);
         for (const [field, to] of Object.entries(patch)) if (item[field as keyof CostumeItem] !== to) this.event(item.id, `${field}_changed`, { to, loanId: loan.id });
