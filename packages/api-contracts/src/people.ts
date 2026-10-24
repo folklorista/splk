@@ -1,4 +1,5 @@
-import { PageQuery } from './inventory';
+import type { CostumeLoan, LoanMovement } from './loans';
+import { Page, PageQuery } from './inventory';
 
 export type DefaultCostume = 'male' | 'female' | 'unspecified';
 export type PaperState = 'paper' | 'migrating' | 'digital';
@@ -33,6 +34,8 @@ export interface PeopleQuery extends PageQuery {
   unit?: number;
   fund?: number;
   paperState?: PaperState;
+  /** Requires an explicit authorized fund. */
+  hasLoans?: boolean;
 }
 export interface PersonCreateInput {
   firstName: string;
@@ -45,6 +48,8 @@ export interface PersonCreateInput {
 }
 export type PersonPatch = Partial<Pick<PersonCreateInput, 'firstName' | 'lastName' | 'nickname' | 'contact' | 'defaultCostume'>>;
 export interface PersonCard {
+  openLoans: Page<CostumeLoan>;
+  movements: Page<LoanMovement>;
   person: PersonIdentity;
   profile: HolderProfile | null;
 }

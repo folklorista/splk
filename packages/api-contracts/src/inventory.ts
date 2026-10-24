@@ -1,3 +1,5 @@
+import type { LoanHolder } from './loans';
+
 /** Physical inventory (API v1 chap. 3.3 and 4.4). No loan or physical-check assertions in step 4. */
 export type ItemCondition = 'ok' | 'needs_adjustment' | 'damaged';
 export type ItemLocation = 'store' | 'holder' | 'seamstress' | 'repair' | 'unknown';
@@ -33,6 +35,8 @@ export interface ItemInput {
 export interface CostumeItem extends Required<ItemInput> {
   id: number;
   unitId: number;
+  available: boolean;
+  holder: LoanHolder | null;
   /** Intended membership only; presence and physical checks are separate facts. */
   kitId: number | null;
   retiredAt: string | null;
@@ -56,6 +60,9 @@ export interface ItemQuery extends PageQuery {
   acquiredFrom?: string;
   acquiredTo?: string;
   retired?: boolean;
+  available?: boolean;
+  /** Person holding an open loan. */
+  holder?: number;
 }
 
 export interface BulkStockInput {
@@ -69,6 +76,9 @@ export interface BulkStock extends Required<BulkStockInput> {
   unitId: number;
   /** Recorded allocations; does not certify that the stock was physically checked. */
   quantityInKits: number;
+  /** Kit allocations and outstanding handovers, with overlap counted once (D-61). */
+  quantityReserved: number;
+  quantityAvailable: number;
 }
 export type BulkStockPatch = Partial<Pick<BulkStockInput, 'variant' | 'quantityTotal' | 'note'>>;
 

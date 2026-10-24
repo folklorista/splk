@@ -1,3 +1,4 @@
+import type { CostumeLoan, LoanCreate, LoanIssueResult, LoanReturnInput, LoanExchangeInput, LoanPatch, LoanQuery, LoanMovement, MovementQuery } from '@splk/api-contracts';
 import { inject, Injectable } from '@angular/core';
 import { defer, firstValueFrom, from, Observable } from 'rxjs';
 import {
@@ -7,9 +8,11 @@ import {
 } from '@splk/api-contracts';
 import { ApiError } from '../api-error';
 import { CatalogApi } from '../catalog/catalog-api';
+import { OrganizationApi } from '../organization/organization-api';
 import { InventoryApi } from './inventory-api';
 
 interface State {
+  loans: CostumeLoan[];
   items: CostumeItem[];
   stocks: BulkStock[];
   kits: KitDetail[];
@@ -21,7 +24,8 @@ interface State {
 @Injectable()
 export class MockInventoryApi extends InventoryApi {
   private readonly catalog = inject(CatalogApi);
-  private state: State = { items: [], stocks: [], kits: [], events: [], orders: [] };
+  private readonly organization = inject(OrganizationApi, { optional: true });
+  private state: State = { items: [], stocks: [], kits: [], events: [], orders: [], loans: [] };
   private nextId = 1;
   private queue: Promise<unknown> = Promise.resolve();
 
@@ -29,7 +33,7 @@ export class MockInventoryApi extends InventoryApi {
     return this.run(async () => {
       const series = await firstValueFrom(this.catalog.series(unit));
       let rows = this.state.items.filter((i) => i.unitId === unit && !!i.retiredAt === (query.retired ?? false));
-      rows = rows.filter((i) => (!query.series || i.seriesId === query.series) && (!query.condition || i.condition === query.condition)
+      rows = rows.filter((i) => (query.available === undefined || i.available === query.available) && (!query.holder || i.holder && 'personId' in i.holder && i.holder.personId === query.holder) && (!query.series || i.seriesId === query.series) && (!query.condition || i.condition === query.condition)
         && (!query.location || i.location === query.location) && (!query.acquiredFrom || (i.acquiredOn !== null && i.acquiredOn >= query.acquiredFrom))
         && (!query.acquiredTo || (i.acquiredOn !== null && i.acquiredOn <= query.acquiredTo))
         && (!query.q || normalize([series.find((s) => s.id === i.seriesId)?.name, i.number, i.variant, i.description, i.note].join(' ')).includes(normalize(query.q))));
@@ -55,7 +59,7 @@ export class MockInventoryApi extends InventoryApi {
       const item: CostumeItem = { id: this.nextId++, unitId: unit, seriesId: input.seriesId, number: text(input.number), variant: text(input.variant),
         size: text(input.size), description: text(input.description), note: text(input.note), condition: input.condition ?? 'ok',
         issuable: input.issuable ?? true, location: input.location ?? 'unknown', locationNote: text(input.locationNote), acquiredOn: text(input.acquiredOn),
-        kitId: null, retiredAt: null, retiredBy: null, retireReason: null, version: 1 };
+        available: input.issuable ?? true, holder: null, kitId: null, retiredAt: null, retiredBy: null, retireReason: null, version: 1 };
       this.state.items.push(item);
       this.event(item.id, 'created', { ...item });
       return item;
@@ -108,7 +112,7 @@ export class MockInventoryApi extends InventoryApi {
       quantity(input.quantityTotal);
       this.uniqueStock(unit, input.partTypeId, text(input.variant));
       const stock: BulkStock = { id: this.nextId++, unitId: unit, partTypeId: input.partTypeId, variant: text(input.variant),
-        quantityTotal: input.quantityTotal, quantityInKits: 0, note: text(input.note) };
+        quantityTotal: input.quantityTotal, quantityInKits: 0, quantityReserved: 0, quantityAvailable: input.quantityTotal, note: text(input.note) };
       this.state.stocks.push(stock);
       return stock;
     });
@@ -119,7 +123,7 @@ export class MockInventoryApi extends InventoryApi {
       const stock = this.find(this.state.stocks, id);
       const next = { ...stock, ...input };
       quantity(next.quantityTotal);
-      if (next.quantityTotal < this.stock(stock).quantityInKits) throw new ApiError(422, 'insufficient_stock');
+      if (next.quantityTotal < this.stock(stock).quantityReserved) throw new ApiError(422, 'insufficient_stock');
       this.uniqueStock(stock.unitId, stock.partTypeId, text(next.variant), id);
       Object.assign(stock, input, { variant: text(next.variant), note: text(next.note) });
       return this.stock(stock);
@@ -246,6 +250,139 @@ export class MockInventoryApi extends InventoryApi {
     });
   }
 
+  loans(unit: number, query: LoanQuery = {}) {
+    return this.run(() => page(this.state.loans.filter((loan) => {
+      const open = loan.lines.some((l) => !l.closedAt);
+      const overdue = open && loan.dueAt !== null && Date.parse(loan.dueAt) < Date.now();
+      return loan.unitId === unit && (query.open === undefined || query.open === open) && (query.overdue === undefined || query.overdue === overdue)
+        && (!query.person || 'personId' in loan.holder && loan.holder.personId === query.person) && (!query.holderType || 'personId' in loan.holder);
+    }).sort((a, b) => b.issuedAt.localeCompare(a.issuedAt) || b.id - a.id), query));
+  }
+  loan(id: number) { return this.run(() => this.find(this.state.loans, id)); }
+  issue(unit: number, input: LoanCreate) { return this.run(() => this.handover(unit, input)); }
+  returnLoan(id: number, input: LoanReturnInput) { return this.run(() => this.receive(this.find(this.state.loans, id), input)); }
+  exchange(id: number, input: LoanExchangeInput) {
+    return this.run(async () => {
+      const old = this.find(this.state.loans, id), line = old.lines.find((l) => l.id === input.lineId);
+      if (!line?.itemId || line.closedAt || line.itemId === input.itemId) throw invalid('lineId');
+      const { itemId, ...values } = input;
+      this.receive(old, { lines: [{ ...values, returnedQty: 1, closeType: 'exchanged' }] }, true);
+      const next = await this.handover(old.unitId, { holder: old.holder, items: [itemId], dueAt: old.dueAt, note: input.note });
+      next.replacesLoanId = old.id;
+      this.find(this.state.loans, next.id).replacesLoanId = old.id;
+      return next;
+    });
+  }
+  updateLoan(id: number, input: LoanPatch) {
+    return this.run(() => { const loan = this.find(this.state.loans, id); if (input.dueAt !== undefined) this.dateTime(input.dueAt); Object.assign(loan, input); return loan; });
+  }
+  movements(unit: number, query: MovementQuery = {}) {
+    return this.run(() => {
+      const rows: LoanMovement[] = [];
+      for (const loan of this.state.loans) if (loan.unitId === unit && (!query.person || 'personId' in loan.holder && loan.holder.personId === query.person) && (!query.kit || loan.kitId === query.kit)) {
+        for (const line of loan.lines) {
+          if (query.item && line.itemId !== query.item) continue;
+          const base = { loanId: loan.id, lineId: line.id, itemId: line.itemId, bulkStockId: line.bulkStockId, holder: loan.holder, kitId: loan.kitId };
+          rows.push({ ...base, id: line.id, type: 'issued', at: loan.issuedAt, by: loan.issuedBy, qty: line.qty, lostQty: 0, note: loan.note });
+          for (const r of loan.returns.filter((r) => r.lineId === line.id)) rows.push({ ...base, ...r, type: r.closeType });
+        }
+      }
+      return page(rows.filter((r) => (!query.from || r.at >= query.from) && (!query.to || r.at <= query.to)).sort((a, b) => b.at.localeCompare(a.at) || b.id - a.id), query);
+    });
+  }
+
+  private async handover(unit: number, input: LoanCreate): Promise<LoanIssueResult> {
+    if (!this.organization) throw new ApiError(500, 'internal_error');
+    const holder = input.holder;
+    if ('personId' in holder) {
+      if (!(await firstValueFrom(this.organization.persons())).some((p) => p.id === holder.personId)) throw invalid('holder');
+    } else if (holder.unitId === unit || !(await firstValueFrom(this.organization.units())).some((u) => u.id === holder.unitId && !u.archived)) throw invalid('holder');
+    this.dateTime(input.dueAt ?? null);
+    const kit = input.kitId ? this.find(this.state.kits, input.kitId) : null;
+    if (kit && 'kitVersion' in input && input.kitVersion !== undefined) this.version(kit, input.kitVersion);
+    if (kit && kit.unitId !== unit) throw new ApiError(404, 'not_found');
+    if (kit && (kit.retiredAt || this.state.loans.some((l) => l.kitId === kit.id && l.lines.some((line) => !line.closedAt)))) throw new ApiError(422, 'kit_unavailable');
+    const ids = kit ? this.state.items.filter((i) => i.kitId === kit.id).map((i) => i.id) : input.items ?? [];
+    if (new Set(ids).size !== ids.length) throw invalid('items');
+    const omit = 'omitItemIds' in input ? input.omitItemIds ?? [] : [];
+    if (omit.some((id) => !ids.includes(id))) throw invalid('omitItemIds');
+    const omittedItemIds: number[] = [], actual: number[] = [];
+    for (const id of ids) {
+      const item = this.find(this.state.items, id);
+      if (item.unitId !== unit) throw new ApiError(404, 'not_found');
+      if (omit.includes(id) || !item.issuable || item.retiredAt || this.openItem(id)) {
+        if (!kit) throw new ApiError(422, 'item_unavailable');
+        omittedItemIds.push(id);
+      } else actual.push(id);
+    }
+    if (kit && (omittedItemIds.length || kit.compositionState === 'incomplete' || kit.bulkLines.some((l) => l.presentQty < l.requiredQty)) && !text(input.note)) throw invalid('note');
+    let bulk = kit ? kit.bulkLines.filter((l) => l.presentQty > 0).map((l) => ({ stockId: l.bulkStockId, qty: l.presentQty })) : input.bulk ?? [];
+    if (kit && 'kitBulk' in input && input.kitBulk !== undefined) {
+      const present = new Map(bulk.map((l) => [l.stockId, l.qty]));
+      for (const line of input.kitBulk) { quantity(line.qty); if (!present.has(line.stockId) || line.qty > present.get(line.stockId)!) throw invalid('kitBulk'); }
+      if (input.kitBulk.reduce((sum, l) => sum + l.qty, 0) < bulk.reduce((sum, l) => sum + l.qty, 0) && !text(input.note)) throw invalid('note');
+      bulk = input.kitBulk.filter((l) => l.qty > 0);
+    }
+    if (new Set(bulk.map((l) => l.stockId)).size !== bulk.length) throw invalid('bulk');
+    for (const line of bulk) {
+      quantity(line.qty, 1);
+      const stock = this.find(this.state.stocks, line.stockId);
+      if (stock.unitId !== unit) throw new ApiError(404, 'not_found');
+      if (!kit && this.stock(stock).quantityAvailable < line.qty) throw new ApiError(422, 'insufficient_stock');
+    }
+    if (!actual.length && !bulk.length) throw invalid('items');
+    const loan: CostumeLoan = { id: this.nextId++, unitId: unit, holder: structuredClone(holder), kitId: kit?.id ?? null,
+      issuedAt: new Date().toISOString(), issuedBy: 1, dueAt: input.dueAt ?? null, note: text(input.note), replacesLoanId: null, lines: [], returns: [] };
+    for (const itemId of actual) {
+      loan.lines.push({ id: this.nextId++, itemId, bulkStockId: null, qty: 1, returnedQty: 0, closedAt: null, closedBy: null, closeType: null, closeNote: null });
+      this.event(itemId, 'issued', { loanId: loan.id, holder });
+    }
+    for (const line of bulk) loan.lines.push({ id: this.nextId++, itemId: null, bulkStockId: line.stockId, qty: line.qty, returnedQty: 0, closedAt: null, closedBy: null, closeType: null, closeNote: null });
+    this.state.loans.push(loan);
+    return { ...loan, omittedItemIds };
+  }
+
+  private receive(loan: CostumeLoan, input: LoanReturnInput, exchange = false): CostumeLoan {
+    if (!input.lines.length || new Set(input.lines.map((l) => l.lineId)).size !== input.lines.length) throw invalid('lines');
+    for (const values of input.lines) {
+      const line = loan.lines.find((l) => l.id === values.lineId);
+      if (!line) throw new ApiError(404, 'not_found');
+      if (values.closeType === 'exchanged' && !exchange) throw invalid('closeType');
+      quantity(values.returnedQty, values.closeType === 'settled' ? 0 : 1);
+      const remaining = line.qty - line.returnedQty;
+      if (line.closedAt || values.returnedQty > remaining) throw new ApiError(422, 'loan_line_closed');
+      const lostQty = values.closeType === 'settled' ? remaining - values.returnedQty : 0;
+      if (values.closeType === 'settled' && (!text(values.note) || lostQty <= 0)) throw invalid('note');
+      const patch = { ...(values.condition !== undefined ? { condition: values.condition } : {}), ...(values.issuable !== undefined ? { issuable: values.issuable } : {}), ...(values.location !== undefined ? { location: values.location } : {}) };
+      if (Object.keys(patch).length && (!line.itemId || lostQty)) throw invalid('condition');
+      line.returnedQty += values.returnedQty;
+      if (lostQty || line.returnedQty === line.qty) Object.assign(line, { closedAt: new Date().toISOString(), closedBy: 1, closeType: values.closeType, closeNote: text(values.note) });
+      loan.returns.push({ id: this.nextId++, lineId: line.id, qty: values.returnedQty, lostQty, closeType: values.closeType, note: text(values.note), at: new Date().toISOString(), by: 1 });
+      if (line.itemId) {
+        const item = this.find(this.state.items, line.itemId);
+        for (const [field, to] of Object.entries(patch)) if (item[field as keyof CostumeItem] !== to) this.event(item.id, `${field}_changed`, { to, loanId: loan.id });
+        if (Object.keys(patch).length) Object.assign(item, patch, { version: item.version + 1 });
+        if (lostQty && !item.retiredAt) { Object.assign(item, { retiredAt: new Date().toISOString(), retiredBy: 1, retireReason: text(values.note), version: item.version + 1 }); this.event(item.id, 'retired', { reason: values.note, loanId: loan.id }); }
+        this.event(item.id, values.closeType, { loanId: loan.id, note: values.note });
+      } else if (lostQty) {
+        this.find(this.state.stocks, line.bulkStockId!).quantityTotal -= lostQty;
+        if (loan.kitId) {
+          const kit = this.find(this.state.kits, loan.kitId), allocation = kit.bulkLines.find((l) => l.bulkStockId === line.bulkStockId);
+          if (allocation) { const removed = Math.min(lostQty, allocation.presentQty); allocation.presentQty -= removed; if (removed) kit.changes.push({ id: this.nextId++, kitId: kit.id, itemId: null, bulkStockId: line.bulkStockId, change: 'removed', qty: removed, at: new Date().toISOString(), by: 1, note: text(values.note) }); }
+        }
+      }
+      if (lostQty && loan.kitId) { const kit = this.find(this.state.kits, loan.kitId); kit.version++; if (kit.compositionState !== 'unverified') kit.compositionState = 'pending_check'; }
+    }
+    return loan;
+  }
+
+  private openItem(id: number) { return this.state.loans.find((l) => l.lines.some((line) => line.itemId === id && !line.closedAt)); }
+  private dateTime(value: string | null) { if (value !== null && (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) || !Number.isFinite(Date.parse(value)))) throw invalid('dueAt'); }
+  private refresh() {
+    for (const item of this.state.items) { const loan = this.openItem(item.id); item.available = !item.retiredAt && item.issuable && !loan; item.holder = loan?.holder ?? null; }
+    for (const stock of this.state.stocks) { Object.assign(stock, this.stock(stock)); if (stock.quantityAvailable < 0 || stock.quantityTotal < 0) throw new ApiError(422, 'insufficient_stock'); }
+  }
+
   private async validateSeries(unit: number, id: number, kind: Series['kind'], number: string | null, except: number | null) {
     const series = (await firstValueFrom(this.catalog.series(unit))).find((s) => s.id === id);
     if (!series || series.archived || series.kind !== kind) throw invalid('seriesId');
@@ -270,7 +407,18 @@ export class MockInventoryApi extends InventoryApi {
   }
 
   private stock(stock: BulkStock): BulkStock {
-    return { ...stock, quantityInKits: this.state.kits.flatMap((k) => k.bulkLines).filter((l) => l.bulkStockId === stock.id).reduce((sum, l) => sum + l.presentQty, 0) };
+    const allocations = new Map<number, number>();
+    for (const kit of this.state.kits) for (const line of kit.bulkLines) if (line.bulkStockId === stock.id) allocations.set(kit.id, line.presentQty);
+    const quantityInKits = [...allocations.values()].reduce((sum, qty) => sum + qty, 0);
+    const handed = new Map<number, number>();
+    let direct = 0;
+    for (const loan of this.state.loans) for (const line of loan.lines) if (line.bulkStockId === stock.id && !line.closedAt) {
+      const qty = line.qty - line.returnedQty;
+      if (loan.kitId === null) direct += qty; else handed.set(loan.kitId, (handed.get(loan.kitId) ?? 0) + qty);
+    }
+    for (const [kit, qty] of handed) allocations.set(kit, Math.max(qty, allocations.get(kit) ?? 0));
+    const quantityReserved = direct + [...allocations.values()].reduce((sum, qty) => sum + qty, 0);
+    return { ...stock, quantityInKits, quantityReserved, quantityAvailable: stock.quantityTotal - quantityReserved };
   }
 
   private uniqueStock(unit: number, type: number, variant: string | null, except?: number) {
@@ -294,7 +442,7 @@ export class MockInventoryApi extends InventoryApi {
     return defer(() => {
       const task = this.queue.then(async () => {
         const before = structuredClone(this.state);
-        try { return structuredClone(await work()); } catch (error) { this.state = before; throw error; }
+        try { this.refresh(); const result = await work(); this.refresh(); return structuredClone(result); } catch (error) { this.state = before; throw error; }
       });
       this.queue = task.catch(() => undefined);
       return from(task);

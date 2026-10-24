@@ -4,12 +4,14 @@ import { DefaultCostume, HolderProfile, HolderProfileInput, ManagedPerson, Page,
 import { AuthService } from '../../core/auth/auth.service';
 import { ApiError } from '../api-error';
 import { OrganizationApi } from '../organization/organization-api';
+import { InventoryApi } from '../inventory/inventory-api';
 import { PeopleApi } from './people-api';
 
 /** Uses the same mock persons as organization administration; never creates a second identity registry. */
 @Injectable()
 export class MockPeopleApi extends PeopleApi {
   private readonly organization = inject(OrganizationApi);
+  private readonly inventory = inject(InventoryApi, { optional: true });
   private readonly auth = inject(AuthService);
   private readonly defaults = new Map<number, DefaultCostume>();
   private readonly profiles = new Map<string, HolderProfile>();
@@ -20,10 +22,21 @@ export class MockPeopleApi extends PeopleApi {
   people(query: PeopleQuery = {}) {
     return this.run(async (): Promise<Page<PersonInFund>> => {
       await this.access(query.fund, false);
+      if (query.hasLoans !== undefined && !query.fund) throw new ApiError(422, 'validation_failed', { field: 'fund', reason: 'required' });
+      const holders = new Set<number>();
+      if (query.hasLoans !== undefined && this.inventory) {
+        let offset = 0;
+        while (true) {
+          const loans = await firstValueFrom(this.inventory.loans(query.fund!, { open: true, limit: 200, offset }));
+          for (const loan of loans.items) if ('personId' in loan.holder && loan.holder.personId) holders.add(loan.holder.personId);
+          offset += loans.items.length;
+          if (offset >= loans.total || !loans.items.length) break;
+        }
+      }
       const people = await firstValueFrom(this.organization.persons());
       const rows = people.map((p) => ({ ...this.summary(p), profile: query.fund ? this.getProfile(query.fund, p.id) : null }))
         .filter((p) => (!query.q || normalize(`${p.firstName} ${p.lastName} ${p.nickname ?? ''}`).includes(normalize(query.q)))
-          && (!query.paperState || p.profile?.paperState === query.paperState) && !query.unit)
+          && (!query.paperState || p.profile?.paperState === query.paperState) && !query.unit && (query.hasLoans === undefined || holders.has(p.id) === query.hasLoans))
         .sort((a, b) => a.lastName.localeCompare(b.lastName, 'cs') || a.firstName.localeCompare(b.firstName, 'cs'));
       const offset = query.offset ?? 0;
       return { items: rows.slice(offset, offset + (query.limit ?? 50)), total: rows.length };
@@ -53,7 +66,9 @@ export class MockPeopleApi extends PeopleApi {
   card(unit: number, id: number) {
     return this.run(async (): Promise<PersonCard> => {
       await this.access(unit, false);
-      return { person: this.identity(await this.find(id)), profile: this.getProfile(unit, id) };
+      const openLoans = this.inventory ? await firstValueFrom(this.inventory.loans(unit, { person: id, open: true })) : { items: [], total: 0 };
+      const movements = this.inventory ? await firstValueFrom(this.inventory.movements(unit, { person: id })) : { items: [], total: 0 };
+      return { person: this.identity(await this.find(id)), profile: this.getProfile(unit, id), openLoans, movements };
     });
   }
   profile(unit: number, id: number, input: HolderProfileInput) {

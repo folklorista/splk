@@ -44,7 +44,7 @@ export type LoanCreate = {
   note?: string | null;
 } & (
   | { items?: number[]; bulk?: { stockId: number; qty: number }[]; kitId?: never }
-  | { kitId: number; omitItemIds?: number[]; items?: never; bulk?: never }
+  | { kitId: number; kitVersion?: number; kitBulk?: { stockId: number; qty: number }[]; omitItemIds?: number[]; items?: never; bulk?: never }
 );
 export interface LoanIssueResult extends CostumeLoan {
   omittedItemIds: number[];

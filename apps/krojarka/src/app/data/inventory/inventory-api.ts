@@ -1,3 +1,4 @@
+import type { CostumeLoan, LoanCreate, LoanIssueResult, LoanReturnInput, LoanExchangeInput, LoanPatch, LoanQuery, LoanMovement, MovementQuery } from '@splk/api-contracts';
 import { Observable } from 'rxjs';
 import {
   BulkStock, BulkStockInput, BulkStockPatch, CompositionInput, CostumeItem, CostumeKit, ItemEvent,
@@ -6,6 +7,13 @@ import {
 } from '@splk/api-contracts';
 
 export abstract class InventoryApi {
+  abstract loans(unitId: number, query?: LoanQuery): Observable<Page<CostumeLoan>>;
+  abstract loan(id: number): Observable<CostumeLoan>;
+  abstract issue(unitId: number, input: LoanCreate): Observable<LoanIssueResult>;
+  abstract returnLoan(id: number, input: LoanReturnInput): Observable<CostumeLoan>;
+  abstract exchange(id: number, input: LoanExchangeInput): Observable<LoanIssueResult>;
+  abstract updateLoan(id: number, input: LoanPatch): Observable<CostumeLoan>;
+  abstract movements(unitId: number, query?: MovementQuery): Observable<Page<LoanMovement>>;
   abstract items(unitId: number, query?: ItemQuery): Observable<Page<CostumeItem>>;
   abstract item(id: number): Observable<CostumeItem>;
   abstract createItem(unitId: number, input: ItemInput): Observable<CostumeItem>;

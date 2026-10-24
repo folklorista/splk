@@ -8,7 +8,7 @@ import { CatalogApi } from '../../data/catalog/catalog-api';
 import { InventoryApi } from '../../data/inventory/inventory-api';
 import { InventoryStore } from './inventory.store';
 
-const item = (id: number, unitId = 1): CostumeItem => ({ id, unitId, seriesId: 1, number: String(id), variant: null, size: null, description: null,
+const item = (id: number, unitId = 1): CostumeItem => ({ available: true, holder: null, id, unitId, seriesId: 1, number: String(id), variant: null, size: null, description: null,
   note: null, condition: 'ok', issuable: true, location: 'unknown', locationNote: null, acquiredOn: null, kitId: null,
   retiredAt: null, retiredBy: null, retireReason: null, version: 1 });
 

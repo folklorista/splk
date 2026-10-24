@@ -84,7 +84,7 @@ final class LoanController extends Controller
     {
         $unit = $this->fund($context, $context->params['unitId'], true);
         $body = $request->json();
-        InventoryInput::only($body, ['holder', 'items', 'bulk', 'kitId', 'omitItemIds', 'dueAt', 'note']);
+        InventoryInput::only($body, ['holder', 'items', 'bulk', 'kitId', 'kitVersion', 'kitBulk', 'omitItemIds', 'dueAt', 'note']);
         $holder = $body['holder'] ?? null;
         if (!is_array($holder) || count($holder) !== 1 || (!isset($holder['personId']) && !isset($holder['unitId']))) {
             throw Input::invalid('holder', 'invalid');
@@ -95,21 +95,23 @@ final class LoanController extends Controller
         if ($kitId !== null && (isset($body['items']) || isset($body['bulk']))) {
             throw Input::invalid('kitId', 'invalid');
         }
-        if ($kitId === null && array_key_exists('omitItemIds', $body)) {
+        if ($kitId === null && array_intersect(['omitItemIds', 'kitVersion', 'kitBulk'], array_keys($body)) !== []) {
             throw Input::invalid('omitItemIds', 'not_allowed');
         }
         $ids = self::ids($body['items'] ?? [], 'items');
         $omit = self::ids($body['omitItemIds'] ?? [], 'omitItemIds');
         $bulk = self::bulk($body['bulk'] ?? []);
+        $kitVersion = array_key_exists('kitVersion', $body) ? (new Input($body))->id('kitVersion') : null;
+        $kitBulk = array_key_exists('kitBulk', $body) ? self::bulk($body['kitBulk'], 0) : null;
         $due = self::timestamp($body, 'dueAt');
         $note = (new Input($body))->optionalString('note', 5000);
-        return Response::json($this->audited($context, 'loan.issue', $unit, function () use ($unit, $holder, $kitId, $ids, $omit, $bulk, $due, $note, $context): array {
+        return Response::json($this->audited($context, 'loan.issue', $unit, function () use ($unit, $holder, $kitId, $ids, $omit, $bulk, $due, $note, $kitVersion, $kitBulk, $context): array {
             $this->validateHolder($unit, $holder);
-            return $this->issue($unit, $holder, $kitId, $ids, $omit, $bulk, $due, $note, self::actor($context));
+            return $this->issue($unit, $holder, $kitId, $ids, $omit, $bulk, $due, $note, self::actor($context), null, $kitVersion, $kitBulk);
         }, 'item_unavailable'), 201);
     }
 
-    private function issue(int $unit, array $holder, ?int $kitId, array $ids, array $omit, array $bulk, ?string $due, ?string $note, int $actor, ?int $replaces = null): array
+    private function issue(int $unit, array $holder, ?int $kitId, array $ids, array $omit, array $bulk, ?string $due, ?string $note, int $actor, ?int $replaces = null, ?int $kitVersion = null, ?array $kitBulk = null): array
     {
         $kit = null;
         $missingBulk = false;
@@ -122,6 +124,9 @@ final class LoanController extends Controller
             if ($kit['retiredAt'] !== null || $this->loans()->openKit($kitId)) {
                 throw new HttpException(422, 'kit_unavailable', 'The kit is retired or still on loan.');
             }
+            if ($kitVersion !== null) {
+                InventoryInput::version($kit, $kitVersion);
+            }
             $detail = $kits->detail($kitId);
             $ids = array_column($detail['items'], 'id');
             $missingBulk = array_any($detail['bulkLines'], static fn (array $line): bool => $line['presentQty'] < $line['requiredQty']);
@@ -130,6 +135,16 @@ final class LoanController extends Controller
             }
             $bulk = array_map(static fn (array $line): array => ['stockId' => $line['bulkStockId'], 'qty' => $line['presentQty']],
                 array_values(array_filter($detail['bulkLines'], static fn (array $line): bool => $line['presentQty'] > 0)));
+        }
+        if ($kitBulk !== null) {
+            $present = array_column($bulk, 'qty', 'stockId');
+            foreach ($kitBulk as $line) {
+                if (!array_key_exists($line['stockId'], $present) || $line['qty'] > $present[$line['stockId']]) {
+                    throw Input::invalid('kitBulk', 'invalid');
+                }
+            }
+            $missingBulk = $missingBulk || array_sum(array_column($kitBulk, 'qty')) < array_sum($present);
+            $bulk = array_values(array_filter($kitBulk, static fn (array $line): bool => $line['qty'] > 0));
         }
         sort($ids, SORT_NUMERIC);
         $omitted = [];
@@ -388,7 +403,7 @@ final class LoanController extends Controller
         return $values;
     }
 
-    private static function bulk(mixed $values): array
+    private static function bulk(mixed $values, int $minimum = 1): array
     {
         if (!is_array($values) || !array_is_list($values) || count($values) > 200) {
             throw Input::invalid('bulk', 'invalid');
@@ -400,7 +415,7 @@ final class LoanController extends Controller
             }
             InventoryInput::only($line, ['stockId', 'qty']);
             $id = (new Input($line))->id('stockId');
-            InventoryInput::quantity($line, 'qty', 1);
+            InventoryInput::quantity($line, 'qty', $minimum);
             if (isset($seen[$id])) {
                 throw Input::invalid('stockId', 'invalid');
             }

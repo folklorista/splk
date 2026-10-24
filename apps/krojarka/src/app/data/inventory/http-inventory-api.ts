@@ -1,3 +1,4 @@
+import type { CostumeLoan, LoanCreate, LoanIssueResult, LoanReturnInput, LoanExchangeInput, LoanPatch, LoanQuery, LoanMovement, MovementQuery } from '@splk/api-contracts';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
@@ -14,6 +15,14 @@ import { InventoryApi } from './inventory-api';
 export class HttpInventoryApi extends InventoryApi {
   private readonly http = inject(HttpClient);
   private readonly base = inject(API_BASE_URL);
+
+  loans(unit: number, query: LoanQuery = {}) { return this.get<Page<CostumeLoan>>(`/funds/${unit}/loans`, query); }
+  loan(id: number) { return this.get<CostumeLoan>(`/loans/${id}`); }
+  issue(unit: number, input: LoanCreate) { return this.write<LoanIssueResult>('POST', `/funds/${unit}/loans`, input); }
+  returnLoan(id: number, input: LoanReturnInput) { return this.write<CostumeLoan>('POST', `/loans/${id}/return`, input); }
+  exchange(id: number, input: LoanExchangeInput) { return this.write<LoanIssueResult>('POST', `/loans/${id}/exchange`, input); }
+  updateLoan(id: number, input: LoanPatch) { return this.write<CostumeLoan>('PATCH', `/loans/${id}`, input); }
+  movements(unit: number, query: MovementQuery = {}) { return this.get<Page<LoanMovement>>(`/funds/${unit}/movements`, query); }
 
   items(unit: number, query: ItemQuery = {}) { return this.get<Page<CostumeItem>>(`/funds/${unit}/items`, query); }
   item(id: number) { return this.get<CostumeItem>(`/items/${id}`); }

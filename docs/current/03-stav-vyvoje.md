@@ -139,3 +139,10 @@ Demo vzniklo před rozhodnutími z 22. 10. 2026 a dál se nerozvíjí ani nekonz
 - Dostupnost a držitel kusu jsou odvozené z reálných výpůjček a oddělené od umístění. Přidány filtry `available` a `holder`; nevznikají fiktivní výpůjčky.
 - Fondová karta vrací stránkované otevřené výpůjčky a pohyby; `hasLoans` v seznamu osob vyžaduje konkrétní oprávněný fond. Kontakty ani karta nezpřístupňují cizí fondové výpůjčky.
 - PHPUnit: **163 testů / 1318 assertions**, kontrola diffu prošla. Navazuje etapa 3 – datové adaptéry a feature logika frontendu.
+
+
+### Krok 6, etapa 3a – HTTP/mock adaptéry
+
+- Sdílené kontrakty a zaměnitelné adaptéry pro všechny operace výpůjček, zásobu bez překryvu, reálnou dostupnost a fondové karty. Mock sdílí fyzickou evidenci a registr osob s dosavadními adaptéry; sériové operace mají rollback.
+- Výslovné výjimky při předání kompletu zahrnují kusy i početní doplňky; verze náhledu brání předání mezitím změněného složení bez nového posouzení.
+- PHPUnit: **164 testů / 1327 assertions**, Vitest: **85 testů / 22 souborů**, TypeScript aplikace a testů prošel. UI a feature store ještě nejsou dokončené; nic se nenasazovalo.

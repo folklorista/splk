@@ -9,7 +9,7 @@ import { PeopleApi } from '../../data/people/people-api';
 import { PersonCard } from '@splk/api-contracts';
 import { PeopleStore } from './people.store';
 
-const card: PersonCard = { person: { id: 3, firstName: 'Jan', lastName: 'Novák', nickname: null, contact: '555', contactVisible: true, affiliations: [], defaultCostume: 'unspecified' }, profile: null };
+const card: PersonCard = { openLoans: { items: [], total: 0 }, movements: { items: [], total: 0 }, person: { id: 3, firstName: 'Jan', lastName: 'Novák', nickname: null, contact: '555', contactVisible: true, affiliations: [], defaultCostume: 'unspecified' }, profile: null };
 describe('PeopleStore', () => {
   let current: ReturnType<typeof signal<Fund | null>>, api: Record<string, ReturnType<typeof vi.fn>>, store: PeopleStore;
   beforeEach(() => {

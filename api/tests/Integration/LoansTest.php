@@ -338,6 +338,17 @@ final class LoansTest extends ApiTestCase
         self::assertSame(0, $this->get("/v1/funds/{$this->fund}/people/{$this->person}/card")->decodedBody()['openLoans']['total']);
     }
 
+    public function testKitPreviewVersionAndExplicitBulkExceptions(): void
+    {
+        $kit = $this->kit();
+        self::assertError(409, 'version_conflict', $this->post($this->path(), $this->holder() + ['kitId' => $kit, 'kitVersion' => 9]));
+        self::assertError(422, 'validation_failed', $this->post($this->path(), $this->holder() + ['kitId' => $kit, 'kitBulk' => [['stockId' => $this->stock, 'qty' => 3]]]));
+        self::assertError(422, 'validation_failed', $this->post($this->path(), $this->holder() + ['kitId' => $kit, 'kitBulk' => [['stockId' => $this->stock, 'qty' => 1]]]));
+        $loan = $this->issue(['kitId' => $kit, 'kitVersion' => 1, 'kitBulk' => [['stockId' => $this->stock, 'qty' => 1]], 'note' => 'Only one ribbon handed over']);
+        self::assertSame(1, $loan['lines'][0]['qty']);
+        self::assertSame(2, $this->db->query('SELECT present_qty FROM costume_kit_bulk_lines')->fetchColumn());
+    }
+
     private function issue(array $body): array
     {
         $response = $this->post($this->path(), $this->holder() + $body);

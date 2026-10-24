@@ -7,7 +7,7 @@ import { ApiError } from '../../data/api-error';
 import { InventoryStore } from './inventory.store';
 import { ItemPage } from './item-page';
 
-const piece: CostumeItem = { id: 1, unitId: 1, seriesId: 1, number: '17', variant: null, size: null, description: null, note: 'Stored note',
+const piece: CostumeItem = { available: true, holder: null, id: 1, unitId: 1, seriesId: 1, number: '17', variant: null, size: null, description: null, note: 'Stored note',
   condition: 'ok', issuable: true, location: 'unknown', locationNote: null, acquiredOn: null, kitId: null, retiredAt: null, retiredBy: null, retireReason: null, version: 1 };
 
 describe('ItemPage form behavior', () => {
