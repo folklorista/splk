@@ -1,3 +1,6 @@
+import { CostsApi } from './costs/costs-api';
+import { HttpCostsApi } from './costs/http-costs-api';
+import { MockCostsApi } from './costs/mock-costs-api';
 import { ReportsApi } from './reports/reports-api';
 import { HttpReportsApi } from './reports/http-reports-api';
 import { MockReportsApi } from './reports/mock-reports-api';
@@ -33,6 +36,7 @@ export function provideData(options: { dataSource: 'http' | 'mock'; apiBaseUrl: 
     { provide: InventoryApi, useClass: mock ? MockInventoryApi : HttpInventoryApi },
     { provide: CatalogApi, useClass: mock ? MockCatalogApi : HttpCatalogApi },
     { provide: OrganizationApi, useClass: mock ? MockOrganizationApi : HttpOrganizationApi },
+    { provide: CostsApi, useClass: mock ? MockCostsApi : HttpCostsApi },
     { provide: ReportsApi, useClass: mock ? MockReportsApi : HttpReportsApi },
     { provide: AttachmentsApi, useClass: mock ? MockAttachmentsApi : HttpAttachmentsApi },
   ]);
