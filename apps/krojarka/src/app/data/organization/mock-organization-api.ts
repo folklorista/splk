@@ -43,6 +43,8 @@ export class MockOrganizationApi extends OrganizationApi {
   createPerson(input: PersonInput): Observable<ManagedPerson> {
     const person = this.person(this.nextId++, input.firstName.trim(), input.lastName.trim(), null, []);
     person.nickname = input.nickname ?? null;
+    person.contact = input.contact ?? null;
+    person.note = input.note ?? null;
     this.people.push(person);
     return mockOk(person);
   }

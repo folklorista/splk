@@ -16,6 +16,7 @@ const MESSAGES: Record<string, string> = {
   account_not_disabled: 'Účet není zablokovaný.',
   cannot_disable_self: 'Vlastní účet zablokovat nelze.',
   mandate_exists: 'Osoba už toto pověření má.',
+  possible_duplicate: 'Osoba se stejným jménem už může být evidovaná. Zkontrolujte shody; samostatnou osobu lze výslovně potvrdit.',
   version_conflict: 'Záznam mezitím změnila jiná krojařka. Vaše rozepsané údaje zůstaly zachované. Obnovte záznam a změny porovnejte.',
   number_already_used: 'Číslo už v této řadě existuje, nebo jej podle pravidel řady nelze použít znovu.',
   duplicate_stock: 'Zásoba stejného druhu a varianty už existuje.',
