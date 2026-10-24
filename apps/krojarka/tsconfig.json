@@ -14,7 +14,8 @@
     "target": "ES2022",
     "module": "preserve",
     "paths": {
-      "@splk/api-contracts": ["../../packages/api-contracts/src/index.ts"]
+      "@splk/api-contracts": ["../../packages/api-contracts/src/index.ts"],
+      "@splk/domain": ["../../packages/domain/src/index.ts"]
     }
   },
   "angularCompilerOptions": {

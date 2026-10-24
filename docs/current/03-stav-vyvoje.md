@@ -222,3 +222,9 @@ Uživatel rozhodl Q-21 → D-63: fyzické ověření plní pokrytí, pozdější
 - Překryvy členství se kontrolují pod zámkem skupiny. Odebrání uchová historii a projeví se ihned i pro členství založené dnes; nová vratná migrace proto přidává technické `revoked_at/by`, místo mazání nebo nepravdivého zpětného datování. Inventury už zmrazený rozsah nezmění. Jde o dokončení výslovně schválené potřeby skupin ve v1, bez nové hlavní nabídky či závislostí.
 - PHPUnit: **217 testů / 1738 assertions**; Vitest **105 testů / 26 souborů**; TypeScript aplikace, testů a kontraktů; produkční build **455,14 kB** a `git diff --check` prošly. Testy pokrývají správu/odebrání/překryv, pověření, zachování rozsahu, HTTP cesty, mock historii a souběh frontendového načítání/zápisu.
 - Ručně ověřit správu skupiny, opakované členství, archivaci a použití skupiny jiné složky (Muzika) pro inventuru oprávněného fondu. Inventurní frontend ještě následuje. Žádné produkční operace, deploy nebo push.
+
+### Krok 7, etapa 3a – sdílená čistá frontendová logika
+
+- Schválené `packages/domain/src` obsahuje parser čísel a projekci inventurního průběhu pro UI/mock. Připojeno TS aliasem bez nové npm závislosti. Autoritou pro integritu a uzavírání zůstává PHP.
+- Parser zachová přesná čísla včetně nul a písmen, rozbalí číselné rozsahy a omezí dávku na 200 položek. Odmítá obrácené, nejednoznačně doplněné a příliš velké rozsahy. Opakování zachová pro odpověď serveru, nezkouší domýšlet chybějící čísla.
+- Projekce D-63/D-64 odděluje pokrytí číslovaných součástek, komplety, zásoby, návštěvy a nesrovnalosti. Vitest: **110 testů / 27 souborů**; TypeScript aplikace/testů a `git diff --check` prošly. Navazují inventurní adaptéry a obrazovky.

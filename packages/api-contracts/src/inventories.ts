@@ -29,6 +29,7 @@ export interface CostumeInventory {
   version: number;
 }
 export interface InventoryTarget {
+  currentCondition?: ItemCondition | null;
   id: number;
   inventoryId: number;
   itemId: number | null;
