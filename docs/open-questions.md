@@ -10,6 +10,21 @@ Co ještě musíme rozhodnout (úroveň **B**). Každá otázka uvádí, odkud p
 
 ## Blokuje Krojařku
 
+### Q-19 Počítání nečíslovaných zásob při výpůjčce celého kompletu – blokuje krok 6
+
+Zjištěno při návrhu kroku 6 dne 2026-10-24; **čeká na rozhodnutí uživatele**.
+
+- API kap. 3.3 uvádí volné množství jako celkovou zásobu minus počty v kompletech minus otevřené výpůjčky.
+- Tentýž dokument a `current/06` kap. 3.4, 4 a 5.1b evidují početní doplňky v kompletu a jejich přesný počet ve výpůjčce celého kompletu.
+- Příklad: zásoba obsahuje celkem 2 mašle, obě jsou v kompletu (`present_qty=2`). Při půjčení celého kompletu má snímek výpůjčky 2 mašle. Pokud počet v kompletu zůstane 2 a vzorec se použije doslova, volné množství vyjde `2 − 2 − 2 = −2`.
+
+Je potřeba určit význam evidovaného počtu v kompletu během jeho výpůjčky:
+
+1. Počet zůstává obsahem kompletu i u držitele. Výpůjčka celého kompletu se proti jeho přidělení nesmí odečíst podruhé; vzorec a pravidla návratu se výslovně doplní o zabránění překryvu.
+2. Počet v kompletu vyjadřuje pouze přítomnost ve skladu. Výdej jej snižuje a vrácení zvyšuje; tomu musí odpovídat popisky i zobrazení půjčeného kompletu.
+
+Určené složení se v obou variantách zachovává a nevzniká tím fyzické ověření. Rozhodnutí nebylo nahrazeno předpokladem; migrace a operace kroku 6 zatím nevznikly. Krok 5 je dokončený a otestovaný.
+
 ### Q-18 Přístup krojařek ke kontaktům osob – *rozhodnuto → D-60*
 
 Rozhodnuto uživatelem 2026-10-24: kontakty sdílet všem krojařkám, krojové poznámky po fondech (D-60). Následuje původní podklad otázky.
