@@ -1,0 +1,30 @@
+<a routerLink="/lide">← Lidé</a>
+@if (notice()) { <p class="notice" role="status">{{ notice() }}</p> }
+@if (store.detailLoading()) { <p role="status">Načítám krojovou kartu…</p> }
+@if (store.card(); as card) {
+  <section class="card"><h2>{{ store.name(card.person) }}</h2>
+    <p>{{ card.profile ? paperLabels[card.profile.paperState] : 'Stav karty v tomto fondu zatím není evidovaný.' }}</p>
+    @for (a of card.person.affiliations; track $index) { <p>{{ a.unitName }} · {{ a.status === 'active' ? 'aktivní' : 'zájemce' }}@if (a.validTo) { · do {{ a.validTo | date:'d. M. yyyy' }} }</p> }
+    <button type="button" class="link-button" [disabled]="store.busy()" (click)="refresh()">Obnovit údaje a zahodit rozepsané změny</button>
+  </section>
+  <section class="card"><h2>Společné údaje osoby</h2><p class="muted">Kontakt je společný krojařkám všech fondů. Výchozí kroj je jeden pro všechny fondy.</p>
+    @if (!card.person.contactVisible) { <p class="notice">Společný kontakt není součástí vašeho pověření jen pro čtení.</p> }
+    <form [formGroup]="identityForm" (ngSubmit)="saveIdentity()"><fieldset class="form-row inventory-fieldset" [disabled]="!store.canEditIdentity() || store.busy()">
+      <label class="field"><span>Jméno</span><input formControlName="firstName" maxlength="100" required /></label>
+      <label class="field"><span>Příjmení</span><input formControlName="lastName" maxlength="100" required /></label>
+      <label class="field"><span>Přezdívka</span><input formControlName="nickname" maxlength="100" /></label>
+      @if (card.person.contactVisible) { <label class="field"><span>Společný kontakt</span><textarea formControlName="contact" maxlength="1000"></textarea></label> }
+      <label class="field"><span>Výchozí kroj</span><select formControlName="defaultCostume"><option value="unspecified">neurčeno</option><option value="male">mužský</option><option value="female">ženský</option></select></label>
+      @if (store.canEditIdentity()) { <button class="button button-primary" [disabled]="identityForm.invalid">Uložit společné údaje</button> }
+    </fieldset></form>
+  </section>
+  <section class="card"><h2>Profil ve fondu {{ store.fund()?.name }}</h2><p class="muted">Poznámka patří pouze tomuto fondu, například „má vlastní krpce“. Změna stavu evidence nepotvrzuje fyzické ověření ani výpůjčku.</p>
+    @if (card.profile?.migratedAt) { <p>První zaznamenané dokončení převodu: {{ card.profile!.migratedAt | date:'d. M. yyyy H:mm' }}.</p> }
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()"><fieldset class="form-row inventory-fieldset" [disabled]="!store.canManageProfile() || store.busy()">
+      <label class="field"><span>Stav evidence</span><select formControlName="paperState"><option value="">— vyberte —</option><option value="paper">papírová evidence</option><option value="migrating">převádí se</option><option value="digital">digitální evidence</option></select></label>
+      <label class="field field-wide"><span>Krojová poznámka tohoto fondu</span><textarea formControlName="note" maxlength="5000"></textarea></label>
+      @if (store.canManageProfile()) { <button class="button button-primary" [disabled]="profileForm.invalid">Uložit profil fondu</button> }
+    </fieldset></form>
+  </section>
+  <section class="card"><h2>Předání krojů</h2><p class="muted">Papírové záznamy se do digitální evidence nepřevádějí automaticky. Tato karta zatím slouží k osobním údajům a profilu evidence; digitální výdeje a vrácení budou navazovat samostatně.</p></section>
+}

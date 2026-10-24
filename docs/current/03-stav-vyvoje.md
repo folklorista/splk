@@ -80,11 +80,18 @@ Ruční ověření UI, které zbývá provést v prohlížeči (zejména mobil 3
 4. Se dvěma přihlášeními ověřit konflikt verze, zachování rozepsaného formuláře a výslovné obnovení. Přepnout fond během načítání a při probíhajícím zápisu. Zopakovat jako čtenář a jako správce organizace bez přístupu k fondu.
 5. V HTTP režimu proti lokální migrované DB zopakovat ukládání a obnovení stránky. Automatické testy pokrývají uvedená pravidla, nenahrazují ruční kontrolu ergonomie.
 
-## Pokračování po kroku 4 – čeká na Q-18
+## Krok 5 – Lidé a krojové karty (dokončeno 2026-10-24)
 
-Po dokončení kroku 4 byla prověřena návaznost kroku 5. Před implementací kontaktů osob je potřeba rozhodnout jejich viditelnost a správu mezi fondy, zejména pro externisty bez příslušnosti (viz [`Q-18`](../open-questions.md#q-18-přístup-krojařek-ke-kontaktům-osob--blokuje-dokončení-kroku-5)). Implementace kroku 5 byla podle pravidel autonomie uživatele zastavena; žádný endpoint ani migrace kroku 5 zatím nevznikly. Rozhodnutí nebylo nahrazeno předpokladem a další kroky se nepřeskakovaly.
+Q-18 rozhodnuta uživatelem → D-60: kontakty společné všem krojařkám, krojové poznámky po fondech.
 
-Stav po kroku 4: lokální commity, čistý pracovní strom po zapsání tohoto bodu, kompletní testy prošly. Pro řízené nasazení je připravený krok 4; před ním zbývá ruční kontrola UI a obvyklá revize a záloha migrace. Vývojový ani produkční provoz nebyl automaticky migrován, produkční DB nebyla navštívena a žádný deploy, push, merge ani mazání větví neproběhly.
+- Etapa 1: kompatibilní migrace `CreateCostumeHolderProfiles`, DTO a API osob a profilů. Základní identita, společný kontakt a výchozí kroj jsou u osoby; fondové poznámky a stav evidence jen v autorizovaném profilu. Čtenář nemá nový přístup ke společnému kontaktu. Žádné automatické účty, příslušnosti, zápůjčky ani fyzické kontroly.
+- Možná shoda jmen se potvrzuje samostatným požadavkem; lze založit dvě skutečně rozdílné osoby se stejným jménem. Zápisy osob, profilů a audit jsou transakční. Samotná správa organizace neotvírá krojové endpointy.
+- Etapa 2: HTTP a mock adaptér `PeopleApi`, mock používá stejný registr osob jako mock správy organizace. Fondové profily jsou oddělené, společný kontakt se promítá i do Nastavení.
+- Etapa 3: Lidé s hledáním bez diakritiky, filtrem příslušnosti a stavu karty; založení a úprava osoby, explicitní varování před duplicitou, společný kontakt a výchozí kroj, samostatný profil a poznámka zvoleného fondu. Trasy `/lide` a `/lide/:id`.
+- Krojové karty nadále znamenají lidi s výpůjčkami (D-22). V kroku 5 je dostupný profil osoby ve fondu, zatímco seznam osob s výpůjčkami a historie předání navážou v kroku 6; UI tuto skutečnost přiznává a nevymýšlí prázdné výpůjčky či inventurní ověření.
+- Kompletní ověření: **PHPUnit 137 testů / 1 076 assertions**, **Vitest 75 testů**, TypeScript aplikace, testů a kontraktů, produkční build **492,08 kB** a kontrola diffu. Testy zahrnují sdílení kontaktů, izolaci profilů, přístup jen pro čtení, duplicitní jména, opožděné odpovědi a rollback auditu.
+- Ručně zbývá v HTTP i mock režimu ověřit založení externisty bez účtu, shodu jmen a výslovné potvrzení, změnu společného kontaktu ve dvou fondech a oddělené poznámky, přepínání fondů při načítání a mobilní ergonomii. Samostatné ruční testování zatím neproběhlo.
+- Migrace pouze v lokální testovací DB, žádná produkční data, deploy ani push. Pokračuje krok 6; kroky 6–10 ještě nejsou dokončené.
 
 ## Známé rozdíly mezi demem a platnými rozhodnutími
 

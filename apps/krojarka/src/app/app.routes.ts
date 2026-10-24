@@ -18,7 +18,12 @@ import { InventoryPage } from './features/soucastky/inventory-page';
 import { ItemPage } from './features/soucastky/item-page';
 import { KitPage } from './features/soucastky/kit-page';
 
-const IMPLEMENTED = ['ucet', 'nastaveni', 'soucastky'];
+import { PeopleLayout } from './features/lide/people-layout';
+import { PeoplePage } from './features/lide/people-page';
+import { PersonCardPage } from './features/lide/person-card-page';
+import { CardsPage } from './features/lide/cards-page';
+
+const IMPLEMENTED = ['ucet', 'nastaveni', 'soucastky', 'lide', 'krojove-karty'];
 
 const placeholders: Routes = MENU.filter((item) => !IMPLEMENTED.includes(item.path)).map((item) => ({
   path: item.path,
@@ -39,6 +44,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       ...placeholders,
+      { path: 'lide', component: PeopleLayout, canActivate: [fundGuard], children: [
+        { path: '', pathMatch: 'full', component: PeoplePage, title: 'Lidé · Krojařka' },
+        { path: ':id', component: PersonCardPage, title: 'Krojová karta osoby · Krojařka' },
+      ] },
+      { path: 'krojove-karty', component: CardsPage, canActivate: [fundGuard], title: 'Krojové karty · Krojařka' },
       { path: 'soucastky', component: InventoryLayout, canActivate: [fundGuard], children: [
         { path: '', pathMatch: 'full', component: InventoryPage, title: 'Součástky · Krojařka' },
         { path: 'nova', component: ItemPage, title: 'Nová součástka · Krojařka' },
