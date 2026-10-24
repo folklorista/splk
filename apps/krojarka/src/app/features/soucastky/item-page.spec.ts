@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { CostumeItem } from '@splk/api-contracts';
+import { CostumeItem, ItemEvent } from '@splk/api-contracts';
 import { ApiError } from '../../data/api-error';
 import { InventoryStore } from './inventory.store';
 import { ItemPage } from './item-page';
@@ -14,7 +14,7 @@ const piece: CostumeItem = { available: true, holder: null, loanId: null, loanKi
 describe('ItemPage form behavior', () => {
   const setup = async (canManage = true) => {
     const store = { fund: signal({ unitId: 1, name: 'Vonica', canManage }), canManage: signal(canManage), item: signal<CostumeItem | null>({ ...piece }),
-      kit: signal(null), series: signal([{ id: 1, name: 'Košile', kind: 'part', archived: false }]), orders: signal([]), history: signal([]),
+      kit: signal(null), series: signal([{ id: 1, name: 'Košile', kind: 'part', archived: false }]), orders: signal([]), history: signal<ItemEvent[]>([]),
       detailLoading: signal(false), busy: signal(false), openItem: vi.fn(async () => undefined), closeDetail: vi.fn(),
       updateItem: vi.fn(async () => { throw new ApiError(409, 'version_conflict'); }), retireItem: vi.fn(async () => piece),
       itemName: () => 'Košile · 17', seriesName: () => 'Košile' };
@@ -67,5 +67,14 @@ describe('ItemPage form behavior', () => {
     reason.value = 'Worn out'; reason.dispatchEvent(new Event('input')); fixture.detectChanges();
     expect(confirm.disabled).toBe(false); confirm.click(); await fixture.whenStable();
     expect(store.retireItem).toHaveBeenCalledWith(1, 1, 'Worn out');
+  });
+  it('shows the latest noncancelled physical check across inventories despite a later absence', async () => {
+    const { fixture, store, element } = await setup();
+    const event = (id: number, at: string, result: string, inventoryId: number): ItemEvent => ({ id, itemId: 1, at, by: 2, event: 'inventory_checked', data: { id, at, result, inventoryId } });
+    store.history.set([event(3, '2026-10-24T10:00:00Z', 'not_found', 9), event(2, '2026-10-23T10:00:00Z', 'found', 9), event(1, '2026-10-22T10:00:00Z', 'presented', 7),
+      { id: 4, itemId: 1, at: '2026-10-24T11:00:00Z', by: 2, event: 'inventory_check_cancelled', data: { checkId: 2, inventoryId: 9 } }]);
+    fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
+    const summary = Array.from(element.querySelectorAll('p')).find((p) => p.textContent?.includes('Naposledy fyzicky ověřeno'));
+    expect(summary?.textContent).toContain('22. 10. 2026'); expect(element.textContent).toContain('kontrola zrušena'); expect(element.textContent).toContain('Nenalezen');
   });
 });

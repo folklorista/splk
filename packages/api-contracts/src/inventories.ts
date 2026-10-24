@@ -97,6 +97,8 @@ export type InventoryTargetAdd = { version: number; note: string } & (
   | { kitId: number; itemId?: never; bulkStockId?: never }
   | { bulkStockId: number; contextKitId?: number; itemId?: never; kitId?: never }
 );
+type WithoutVersion<T> = T extends unknown ? Omit<T, 'version'> : never;
+export type InventoryTargetSelection = WithoutVersion<InventoryTargetAdd>;
 export type InventorySlotInput = Pick<InventorySlot, 'startsAt' | 'endsAt' | 'capacity'> & { version: number };
 export type InventorySlotPatch = Partial<Pick<InventorySlot, 'startsAt' | 'endsAt' | 'capacity'>> & { version: number };
 export type InventoryVisitInput = Pick<InventoryVisit, 'personId'> & Partial<Pick<InventoryVisit, 'slotId' | 'status'>> & { version: number };

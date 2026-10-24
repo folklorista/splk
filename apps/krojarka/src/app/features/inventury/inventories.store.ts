@@ -20,6 +20,7 @@ export class InventoriesStore {
   readonly canManage = computed(() => this.fund()?.canManage ?? false);
   readonly inventories = signal<Inv.CostumeInventory[]>([]);
   readonly detail = signal<Inv.InventoryDetail | null>(null);
+  readonly kitDetail = signal<Inv.KitDetail | null>(null);
   readonly targets = signal<Inv.InventoryTarget[]>([]);
   readonly checks = signal<Inv.InventoryCheck[]>([]);
   readonly slots = signal<Inv.InventorySlot[]>([]);
@@ -35,6 +36,7 @@ export class InventoriesStore {
   readonly items = signal<Inv.CostumeItem[]>([]);
   readonly kits = signal<Inv.CostumeKit[]>([]);
   readonly stocks = signal<Inv.BulkStock[]>([]);
+  readonly loans = signal<Inv.CostumeLoan[]>([]);
   readonly preview = signal<Inv.InventoryPreview | null>(null);
   readonly loading = signal(false);
   readonly detailLoading = signal(false);
@@ -45,13 +47,14 @@ export class InventoriesStore {
   private listRequest = 0;
   private detailRequest = 0;
   private previewRequest = 0;
+  private kitRequest = 0;
   private selectedId: number | null = null;
 
   constructor() {
     effect(() => { const fund = this.fund(); untracked(() => {
-      this.generation++; this.listRequest++; this.detailRequest++; this.previewRequest++; this.selectedId = null;
+      this.generation++; this.listRequest++; this.detailRequest++; this.previewRequest++; this.kitRequest++; this.kitDetail.set(null); this.selectedId = null;
       this.inventories.set([]); this.clearDetail(); this.preview.set(null); this.people.set([]); this.units.set([]); this.groups.set([]);
-      this.items.set([]); this.kits.set([]); this.stocks.set([]); this.series.set([]); this.types.set([]); this.regions.set([]);
+      this.items.set([]); this.kits.set([]); this.stocks.set([]); this.loans.set([]); this.series.set([]); this.types.set([]); this.regions.set([]);
       this.busy.set(false); this.error.set(null); this.loading.set(false);
       if (fund) void this.reload();
     }); });
@@ -61,16 +64,17 @@ export class InventoriesStore {
     if (!unit) return;
     this.loading.set(true); this.error.set(null);
     try {
-      const [inventories, series, types, regions, groups, people, units, items, retired, kits, stocks] = await Promise.all([
+      const [inventories, series, types, regions, groups, people, units, items, retired, kits, stocks, loans] = await Promise.all([
         this.all((offset) => this.api.inventories(unit, { limit: 200, offset })), firstValueFrom(this.catalog.series(unit)), firstValueFrom(this.catalog.partTypes(unit)),
         firstValueFrom(this.catalog.regions(unit)), firstValueFrom(this.organization.groupOptions(unit)),
         this.all((offset) => this.peopleApi.people({ fund: unit, limit: 200, offset })), firstValueFrom(this.organization.units()),
         this.all((offset) => this.api.items(unit, { limit: 200, offset })), this.all((offset) => this.api.items(unit, { limit: 200, offset, retired: true })),
         this.all((offset) => this.api.kits(unit, { limit: 200, offset })), this.all((offset) => this.api.stocks(unit, { limit: 200, offset })),
+        this.all((offset) => this.api.loans(unit, { open: true, limit: 200, offset })),
       ]);
       if (!this.current(unit, generation) || request !== this.listRequest) return;
       this.inventories.set(inventories); this.series.set(series); this.types.set(types); this.regions.set(regions); this.groups.set(groups); this.people.set(people); this.units.set(units);
-      this.items.set([...items, ...retired]); this.kits.set(kits); this.stocks.set(stocks);
+      this.items.set([...items, ...retired]); this.kits.set(kits); this.stocks.set(stocks); this.loans.set(loans);
     } catch (e) { if (this.current(unit, generation) && request === this.listRequest) this.error.set(errorMessage(e)); }
     finally { if (this.current(unit, generation) && request === this.listRequest) this.loading.set(false); }
   }
@@ -115,12 +119,21 @@ export class InventoriesStore {
     await this.write((_unit, detail) => this.api.cancelInventoryCheck(checkId, this.required(detail).version));
     if (this.lastWrittenCheck() === checkId) this.lastWrittenCheck.set(null);
   }
-  addTarget(input: Omit<Inv.InventoryTargetAdd, 'version'>) { return this.write((_unit, d) => this.api.addInventoryTarget(this.required(d).id, { ...input, version: this.required(d).version } as Inv.InventoryTargetAdd)); }
+  addTarget(input: Inv.InventoryTargetSelection) { return this.write((_unit, d) => this.api.addInventoryTarget(this.required(d).id, { ...input, version: this.required(d).version } as Inv.InventoryTargetAdd)); }
   createSlot(input: Omit<Inv.InventorySlotInput, 'version'>) { return this.write((_unit, d) => this.api.createInventorySlot(this.required(d).id, { ...input, version: this.required(d).version })); }
-  updateSlot(id: number, input: Omit<Inv.InventorySlotPatch, 'version'>) { return this.write((_unit, d) => this.api.updateInventorySlot(this.required(d).id, id, { ...input, version: this.required(d).version })); }
+  updateSlot(id: number, input: Omit<Inv.InventorySlotPatch, 'version'>, version?: number) { return this.write((_unit, d) => this.api.updateInventorySlot(this.required(d).id, id, { ...input, version: version ?? this.required(d).version })); }
   createVisit(input: Omit<Inv.InventoryVisitInput, 'version'>) { return this.write((_unit, d) => this.api.createInventoryVisit(this.required(d).id, { ...input, version: this.required(d).version })); }
   updateVisit(id: number, input: Omit<Inv.InventoryVisitPatch, 'version'>) { return this.write((_unit, d) => this.api.updateInventoryVisit(this.required(d).id, id, { ...input, version: this.required(d).version })); }
   close(input: Omit<Inv.InventoryClose, 'version'>) { return this.write((_unit, d) => this.api.closeInventory(this.required(d).id, { ...input, version: this.required(d).version })); }
+  async loadKit(id: number): Promise<void> {
+    const unit = this.fund()?.unitId, generation = this.generation, request = ++this.kitRequest; this.kitDetail.set(null);
+    if (!unit || !id) return;
+    try {
+      const kit = await firstValueFrom(this.api.kit(id));
+      if (!this.current(unit, generation) || request !== this.kitRequest) return;
+      if (kit.unitId !== unit) throw new ApiError(404, 'not_found'); this.kitDetail.set(kit);
+    } catch (e) { if (this.current(unit, generation) && request === this.kitRequest) this.error.set(errorMessage(e)); }
+  }
   personName(id: number): string { const p = this.people().find((p) => p.id === id); return p ? `${p.firstName} ${p.lastName}${p.nickname ? ' („' + p.nickname + '“)' : ''}` : `Osoba #${id}`; }
   targetLabel(t: Inv.InventoryTarget): string { return String(t.snapshot['label'] ?? 'Součástka'); }
   holderLabel(t: Inv.InventoryTarget): string { return t.holderPersonId !== null ? this.personName(t.holderPersonId) : t.holderUnitId !== null ? this.units().find((u) => u.id === t.holderUnitId)?.name ?? `Složka #${t.holderUnitId}` : 'bez výpůjčky při zahájení'; }

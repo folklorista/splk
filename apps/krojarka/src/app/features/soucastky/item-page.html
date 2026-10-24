@@ -60,6 +60,7 @@
     }
   </section>
   <section class="card"><h2>Historie součástky</h2>
+    @if (lastPhysicalCheck(); as last) { <p>Naposledy fyzicky ověřeno v inventuře: {{ $any(last.data['at'] || last.at) | date:'d. M. yyyy H:mm' }}.</p> }
     <ol class="inventory-list">@for (event of store.history(); track event.id) {
       <li><strong>{{ events[event.event] || 'Změna evidence' }}</strong><span>{{ event.at | date:'d. M. yyyy H:mm' }} · účet {{ event.by }}</span>
         @if (event.data['field']; as field) { <span>{{ fields[$any(field)] || 'Údaj' }}: {{ eventValue($any(field), event.data['from']) }} → {{ eventValue($any(field), event.data['to']) }}</span> }
@@ -70,6 +71,8 @@
         @if (event.event === 'created') { <span>Počáteční poznámka: {{ event.data['note'] || 'neuvedena' }}</span> }
         @if (event.event === 'kit_changed') { <span>Určený komplet: {{ event.data['from'] || 'žádný' }} → {{ event.data['to'] || 'žádný' }}</span> }
         @if (event.event === 'work_order_created') { <span>{{ event.data['description'] }}</span> }
+        @if (event.event === 'inventory_checked') { <span>{{ checkResult(event.data['result']) }}{{ cancelledChecks().has(event.data['id']) ? ' · kontrola zrušena' : '' }}</span> }
+        @if (event.data['inventoryId']; as inventoryId) { <a [routerLink]="['/inventury', inventoryId]">Inventura #{{ inventoryId }}</a> }
         @if (event.event === 'work_order_changed') { <span>Úkol: {{ $any(event.data['from']).description }} · {{ orderStatus($any(event.data['from']).status) }} → {{ orderStatus($any(event.data['to']).status) }}</span> }
       </li>
     } @empty { <li class="muted">Žádná zaznamenaná událost.</li> }</ol>

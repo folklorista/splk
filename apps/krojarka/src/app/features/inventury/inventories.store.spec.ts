@@ -19,7 +19,7 @@ describe('InventoriesStore', () => {
     current = signal<Fund | null>({ unitId: 1, name: 'Vonica', canManage: true }); const empty = () => of({ items: [], total: 0 });
     api = { inventories: vi.fn(empty), inventory: vi.fn(() => of(header())), inventoryCollection: vi.fn(empty), createInventory: vi.fn(() => of(header())),
       inventoryPreview: vi.fn(() => of({ scope: {}, progress: inventoryProgress([], []), unloanedItemCount: 0 })), closeInventory: vi.fn(() => of(header())),
-      items: vi.fn(empty), stocks: vi.fn(empty), kits: vi.fn(empty) };
+      items: vi.fn(empty), stocks: vi.fn(empty), kits: vi.fn(empty), loans: vi.fn(empty) };
     TestBed.configureTestingModule({ providers: [InventoriesStore, { provide: FundContext, useValue: { current } }, { provide: InventoryApi, useValue: api },
       { provide: CatalogApi, useValue: { series: () => of([]), partTypes: () => of([]), regions: () => of([]) } },
       { provide: PeopleApi, useValue: { people: empty } }, { provide: OrganizationApi, useValue: { units: () => of([]), groupOptions: () => of([]) } }] });
@@ -62,5 +62,12 @@ describe('InventoriesStore', () => {
     await expect(store.close({ closedWithIssues: false })).rejects.toMatchObject({ code: 'validation_failed' });
     current.set({ unitId: 2, name: 'Other', canManage: true }); TestBed.tick(); response.next(header()); response.complete();
     await expect(pending).rejects.toMatchObject({ code: 'not_found' }); expect(store.detail()).toBeNull(); expect(store.busy()).toBe(false);
+  });
+  it('rejects foreign kit composition and discards its late response after changing funds', async () => {
+    const kit = { id: 4, unitId: 1, seriesId: 2, number: '1', description: null, note: null, compositionState: 'unverified', holder: null, loanId: null, retiredAt: null, version: 1, items: [], bulkLines: [], changes: [] };
+    api['kit'] = vi.fn(() => of({ ...kit, unitId: 2 })); await store.loadKit(4); expect(store.kitDetail()).toBeNull(); expect(store.error()).toBeTruthy();
+    const response = new Subject<typeof kit>(); api['kit'].mockReturnValue(response); const pending = store.loadKit(4);
+    current.set({ unitId: 2, name: 'Other', canManage: false }); TestBed.tick(); response.next(kit); response.complete(); await pending;
+    expect(store.kitDetail()).toBeNull();
   });
 });

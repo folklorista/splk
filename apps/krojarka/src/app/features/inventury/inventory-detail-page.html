@@ -1,0 +1,133 @@
+<p><a routerLink="/inventury">← Seznam inventur</a></p>
+@if (store.detailLoading()) { <p role="status">Načítám rozsah a kontroly…</p> }
+@if (message) { <p class="notice" role="status">{{ message }}</p> }
+<button type="button" class="button" [disabled]="store.busy() || store.detailLoading()" (click)="refresh()">Obnovit inventuru a evidenci</button>
+@if (store.detail(); as inventory) {
+  <h2>{{ inventory.name }}</h2><p>Zahájena {{ inventory.startedAt | date:'d. M. y H:mm' }}.</p>
+  @if (inventory.status === 'closed') { <p class="notice">Uzavřena {{ inventory.closedAt | date:'d. M. y H:mm' }}{{ inventory.closedWithIssues ? ' s nesrovnalostmi' : '' }}. {{ inventory.closeReason }}</p> }
+  <app-inventory-progress [progress]="inventory.progress" />
+  <nav class="mode-buttons" aria-label="Režim inventury">
+    <button type="button" class="button" [disabled]="store.busy()" [attr.aria-pressed]="mode === 'store'" (click)="chooseMode('store')">Ve skladu</button>
+    <button type="button" class="button" [disabled]="store.busy()" [attr.aria-pressed]="mode === 'people'" (click)="chooseMode('people')">Podle lidí</button>
+    <button type="button" class="button" [disabled]="store.busy()" [attr.aria-pressed]="mode === 'kit'" (click)="chooseMode('kit')">Komplety</button>
+  </nav>
+
+  @if (mode === 'store') {
+    <section class="card"><h3>Nezapůjčené součástky podle řady</h3>
+      <label>Evidenční řada <select [(ngModel)]="seriesId" (ngModelChange)="targetId = 0" [disabled]="store.busy()"><option [ngValue]="0">Všechny řady a volné zásoby</option>@for (series of store.series(); track series.id) { @if (series.kind === 'part') { <option [ngValue]="series.id">{{ series.name }}</option> } }</select></label>
+      @if (store.canManage() && inventory.status === 'open') {
+        <form (ngSubmit)="quickCheck()" class="toolbar"><label>Rychlé zadání čísel <input #quickField name="numbers" [(ngModel)]="quick" placeholder="1, 3, 12-15" autocomplete="off" [disabled]="store.busy() || !seriesId" /></label><button class="button button-primary" [disabled]="!seriesId || !quick.trim() || store.busy() || store.detailLoading()">Potvrdit fyzicky nalezené</button></form>
+        <p class="muted">Vyberte řadu číslovaných kusů. Enter zapíše dávku; výsledky vrátí neznámá čísla, opakované kontroly i rozpory s výpůjčkou nebo umístěním.</p>
+      }
+    </section>
+  }
+  @if (mode === 'people') {
+    <section class="card"><h3>Držitelé ze zmrazeného rozsahu</h3>
+      <label>Osoba nebo složka <select [(ngModel)]="holder" (ngModelChange)="targetId = 0; slotId = 0" [disabled]="store.busy()"><option value="">Vyberte držitele</option>@for (h of holderChoices(); track h.key) { <option [value]="h.key">{{ h.label }}</option> }</select></label>
+      <p>Seznam vychází z držení při zahrnutí do inventury. Pozdější vrácení nebo výměna tento seznam nepřepíše. Započítává se skutečné fyzické předložení.</p>
+      @if (personId(); as person) {
+        <p><a [routerLink]="['/lide', person]">Krojová karta osoby</a> · <a routerLink="/vypujcky/vydat" [queryParams]="{ inventoryId: inventory.id, person: person }">Běžný nový výdej v této inventuře</a></p>
+        @if (store.canManage() && inventory.status === 'open') {
+          @if (activeVisit(); as visit) {
+            <p>Návštěva: {{ visitLabel(visit.status) }}.</p><div class="actions">
+              @if (visit.status === 'booked') { <button type="button" class="button" [disabled]="store.busy()" (click)="visitStatus(visit, 'in_progress')">Zahájit návštěvu</button> }
+              <button type="button" class="button" [disabled]="store.busy()" (click)="visitStatus(visit, 'cancelled')">Zrušit návštěvu</button>
+            </div>
+          } @else {
+            <label>Termín <select [(ngModel)]="slotId"><option [ngValue]="0">Bez objednání</option>@for (s of store.slots(); track s.id) { <option [ngValue]="s.id">{{ s.startsAt | date:'d. M. y H:mm' }} · obsazeno {{ occupancy(s.id) }} / {{ s.capacity }}</option> }</select></label>
+            <div class="actions"><button type="button" class="button" [disabled]="!slotId || store.busy()" (click)="startVisit('booked')">Objednat termín</button><button type="button" class="button" [disabled]="store.busy()" (click)="startVisit('in_progress')">Zahájit novou návštěvu</button></div>
+          }
+        }
+        <ul>@for (v of store.visits(); track v.id) { @if (v.personId === person) { <li>Návštěva #{{ v.id }}: {{ visitLabel(v.status) }}{{ v.completedAt ? ' · ' : '' }}{{ v.completedAt | date:'d. M. y H:mm' }}</li> } }</ul>
+      }
+    </section>
+  }
+  @if (mode === 'kit') {
+    <section class="card"><h3>Fyzická kontrola kompletu</h3>
+      <label>Komplet <select [(ngModel)]="kitId" (ngModelChange)="chooseKit()" [disabled]="store.busy()"><option [ngValue]="0">Vyberte komplet</option>@for (k of kitChoices(); track k.id) { <option [ngValue]="k.id">{{ k.label }}</option> }</select></label>
+      @if (kitId) { <p><a [routerLink]="['/soucastky/komplety', kitId]">Karta a určené složení kompletu</a></p> }
+      @if (store.kitDetail(); as kit) { @if (kit.id === kitId) {
+        <p>Aktuální evidovaný stav složení: {{ compositionLabels[kit.compositionState] }}. Opsaný lístek ani počet řádků nepotvrzuje fyzickou úplnost.</p>
+        <h4>Aktuálně určené složení</h4>
+        <ul>@for (item of kit.items; track item.id) { <li>{{ seriesName(item.seriesId) }} {{ item.number || '(bez čísla)' }} · {{ item.loanId ? (item.loanKitId === kit.id ? 'předáno v tomto kompletu' : 'samostatná nebo jiná výpůjčka') : 'bez otevřené výpůjčky' }}
+          @if (item.loanId) { <a [routerLink]="['/vypujcky', item.loanId]" [queryParams]="{ inventoryId: inventory.id }">Předání / běžné vrácení</a> }
+        </li> } @for (line of kit.bulkLines; track line.id) { <li>{{ stockName(line.bulkStockId) }} · požadováno {{ line.requiredQty }}, evidováno {{ line.presentQty }}. Fyzický počet zapište v kontrole níže.</li> }</ul>
+      } }
+      @if (kitId && inventory.status === 'open' && store.canManage()) {
+        <label>Další číslovaný kus nalezený v tomto kompletu <select [(ngModel)]="targetId"><option [ngValue]="0">Vyberte kus již v rozsahu</option>@for (t of store.targets(); track t.id) { @if (t.itemId !== null) { <option [ngValue]="t.id">{{ store.targetLabel(t) }}</option> } }</select></label>
+        <p>Nález mimo určené složení potvrďte s poznámkou. Dosud nezahrnutou součástku nejprve výslovně přidejte do rozsahu níže.</p>
+      }
+    </section>
+  }
+
+  <section aria-label="Cílové součástky"><h3>{{ mode === 'people' ? 'Rekapitulace cílových součástek držitele' : mode === 'kit' ? 'Cíle kontroly kompletu' : 'Číselná mřížka a zásoby' }}</h3>
+    @for (group of targetGroups(); track group.key) { <h4>{{ group.label }}</h4><div class="number-grid">@for (t of group.targets; track t.id) {
+      <button type="button" class="button" [class.verified]="verified(t)" [class.unresolved]="targetIssues(t).length > 0" [attr.aria-pressed]="targetId === t.id" (click)="selectTarget(t.id)" [disabled]="store.busy()">
+        <strong>{{ store.targetLabel(t) }}{{ t.kitId !== null ? ' · obal kompletu' : '' }}</strong><small>{{ status(t) }}</small>
+        @if (currentLabel(t)) { <small>{{ currentLabel(t) }}</small> }
+        @if (latest(t); as last) { @if (t.bulkStockId === null && (last.result === 'not_found' || last.result === 'not_presented')) { <small>{{ resultLabels[last.result] }}</small> } }
+      </button>
+    }</div> } @empty { <p>V tomto výběru nejsou cílové součástky. Vyberte řadu, držitele nebo komplet.</p> }
+  </section>
+  @if (target(); as t) {
+    <p>{{ store.targetLabel(t) }} · držitel při zahrnutí: {{ store.holderLabel(t) }}.</p>
+    <div class="actions">
+      @if (t.itemId !== null) { <a [routerLink]="['/soucastky/kusy', t.itemId]" [queryParams]="{ inventoryId: inventory.id }">Detail kusu, historie a pracovní úkol</a> }
+      @if (loanId(t); as loan) { <a [routerLink]="['/vypujcky', loan]" [queryParams]="{ inventoryId: inventory.id }">Aktuální výpůjčka / běžné vrácení či výměna</a> }
+    </div>
+    @if (store.canManage() && inventory.status === 'open' && (mode === 'store' || mode === 'people' && holder || mode === 'kit' && kitId)) {
+      <app-inventory-check-form [target]="t" [mode]="mode" [holder]="holder" [kitId]="kitId" (saved)="saved($event)" />
+    }
+  }
+  @if (outcomes.length) { <section class="notice" aria-live="polite"><h3>Výsledky posledního zadání</h3><ul>@for (row of outcomes; track $index) { <li><strong>{{ row.label }}</strong>: {{ outcomeMessage(row.outcome) }} {{ contextHolder(row.outcome.context) }}
+    @if (row.outcome.context?.loanId; as loan) { <a [routerLink]="['/vypujcky', loan]" [queryParams]="{ inventoryId: inventory.id }">Předání</a> }
+  </li> }</ul></section> }
+  @if (inventory.status === 'open' && store.canManage() && store.lastWrittenCheck(); as last) { <button type="button" class="button" [disabled]="store.busy()" (click)="cancel(last)">Zrušit poslední zapsanou kontrolu</button> }
+  @if (mode === 'people' && activeVisit(); as visit) { @if (visit.status === 'in_progress' && store.canManage() && inventory.status === 'open') {
+    <section class="card"><h3>Dokončení návštěvy</h3><p>Zkontrolujte výše ověřené a nepředložené součástky a níže nesrovnalosti, pohyby a otevřené úkoly. Dokončení návštěvy je eviduje odděleně od pokrytí.</p><button type="button" class="button" [disabled]="store.busy()" (click)="visitStatus(visit, 'completed')">Potvrdit dokončení návštěvy</button></section>
+  } }
+
+  <details class="card"><summary>Termíny návštěv</summary>
+    <ul>@for (s of store.slots(); track s.id) { <li>{{ s.startsAt | date:'d. M. y H:mm' }} – {{ s.endsAt | date:'H:mm' }} · obsazeno {{ occupancy(s.id) }} / {{ s.capacity }}
+      @if (store.canManage() && inventory.status === 'open') { <button type="button" class="button" (click)="editSlot(s)" [disabled]="store.busy()">Upravit termín</button> }
+    </li> } @empty { <li>Zatím žádné termíny.</li> }</ul>
+    @if (store.canManage() && inventory.status === 'open') { <form (ngSubmit)="saveSlot()"><fieldset [disabled]="store.busy()"><legend>{{ editingSlotId ? 'Upravit termín' : 'Nový termín' }}</legend>
+      <label>Začátek <input type="datetime-local" name="start" [(ngModel)]="startsAt" required /></label><label>Konec <input type="datetime-local" name="end" [(ngModel)]="endsAt" required /></label><label>Kapacita <input type="number" name="capacity" min="1" step="1" [(ngModel)]="capacity" required /></label>
+      <div class="actions"><button class="button" [disabled]="!startsAt || !endsAt || capacity < 1">Uložit termín</button>@if (editingSlotId) { <button type="button" class="button" (click)="editingSlotId = 0; startsAt = endsAt = ''">Nový termín</button> }</div>
+    </fieldset></form> }
+  </details>
+
+  <section class="card"><h3>Nesrovnalosti a otevřené cíle</h3><ul class="entry-list">@for (issue of inventory.progress.issues; track $index) {
+    <li>{{ targetName(issue.targetId) }}: {{ issueLabels[issue.kind] }}{{ issue.expectedQty !== undefined ? ' · očekáváno ' + issue.expectedQty : '' }}{{ issue.checkedQty !== undefined ? ', zjištěno ' + issue.checkedQty : '' }} {{ issue.note || '' }} <button type="button" class="button" (click)="selectTarget(issue.targetId)">Vybrat cíl</button></li>
+  } @empty { <li>Bez otevřených nesrovnalostí.</li> }</ul></section>
+  <div class="columns">
+    <section class="card"><h3>Pracovní úkoly cílových kusů</h3><ul>@for (order of store.orders(); track order.id) { <li>{{ order.description }} · {{ orderStates[order.status] }} <a [routerLink]="['/soucastky/kusy', order.itemId]" [queryParams]="{ inventoryId: inventory.id }">Součástka a úkol</a></li> } @empty { <li>Žádné otevřené úkoly.</li> }</ul></section>
+    <section class="card"><h3>Pohyby zapsané v této inventuře</h3><ul>@for (movement of store.movements(); track $index) { <li>{{ movement.at | date:'d. M. y H:mm' }} · {{ movementLabel(movement.type) }} · {{ movement.qty }} ks{{ movement.lostQty ? ' · ztráta ' + movement.lostQty : '' }} · <a [routerLink]="['/vypujcky', movement.loanId]" [queryParams]="{ inventoryId: inventory.id }">Předání #{{ movement.loanId }}</a></li> } @empty { <li>Žádné pohyby s tímto inventurním kontextem.</li> }</ul></section>
+  </div>
+  <details class="card"><summary>Historie kontrol v aktuálním výběru</summary><ol class="entry-list">@for (c of checkHistory(); track c.id) {
+    <li>{{ targetName(c.targetId) }} · {{ c.at | date:'d. M. y H:mm' }} · {{ resultLabels[c.result] }}{{ c.condition ? ' · ' + conditions[c.condition] : '' }}{{ c.checkedQty !== null ? ' · počet ' + c.checkedQty : '' }}{{ c.cancelledAt ? ' · zrušeno' : '' }} · účet {{ c.by }}<p>{{ c.note }}</p>
+      @if (!c.cancelledAt && inventory.status === 'open' && store.canManage()) { <button type="button" class="button" [disabled]="store.busy()" (click)="cancel(c.id)">Zrušit chybnou kontrolu</button> }
+    </li>
+  } @empty { <li>Dosud bez kontroly.</li> }</ol></details>
+
+  @if (store.canManage() && inventory.status === 'open') {
+    <details class="card"><summary>Výslovně rozšířit rozsah s poznámkou</summary><p>Nové nebo později nalezené součástky se přidávají jednotlivě. Původní seznam se nepřepisuje.</p><p><a routerLink="/soucastky/nova" [queryParams]="{ inventoryId: inventory.id }">Založit dosud neznámý fyzický kus v evidenci</a></p>
+      <form (ngSubmit)="addTarget()"><fieldset [disabled]="store.busy()"><legend>Nový cíl</legend><label>Evidence <select name="addKind" [(ngModel)]="addKind" (ngModelChange)="addId = 0"><option value="item">Číslovaný kus</option><option value="kit">Komplet</option><option value="bulk">Nečíslovaná zásoba</option></select></label>
+        <label>Součástka <select name="addId" [(ngModel)]="addId"><option [ngValue]="0">Vyberte…</option>
+          @if (addKind === 'item') { @for (item of store.items(); track item.id) { @if (!item.retiredAt) { <option [ngValue]="item.id">{{ seriesName(item.seriesId) }} {{ item.number || '(bez čísla)' }}</option> } } }
+          @if (addKind === 'kit') { @for (kit of store.kits(); track kit.id) { <option [ngValue]="kit.id">{{ kitName(kit.id) }}</option> } }
+          @if (addKind === 'bulk') { @for (stock of store.stocks(); track stock.id) { <option [ngValue]="stock.id">{{ stockName(stock.id) }}</option> } }
+        </select></label>
+        @if (addKind === 'bulk' && mode === 'kit' && kitId) { <p>Početní nález bude zahrnut pro komplet {{ kitName(kitId) }}. Přidání cíle nemění přidělení doplňků ani celkovou zásobu.</p> }
+        <label>Důvod zahrnutí <textarea name="addNote" [(ngModel)]="addNote" maxlength="2000" required></textarea></label><button class="button" [disabled]="!addId || !addNote.trim()">Výslovně zahrnout do inventury</button>
+      </fieldset></form>
+    </details>
+    <section class="card"><h3>Uzavření inventury</h3><p>Před uzavřením projděte rekapitulaci, nesrovnalosti a otevřené úkoly. Výsledek se po uzavření zachová.</p>
+      <form (ngSubmit)="close()"><fieldset [disabled]="store.busy() || store.detailLoading()"><legend>Způsob uzavření</legend>
+        <label><input type="checkbox" name="issues" [(ngModel)]="closedWithIssues" /> Výslovně uzavřít s nesrovnalostmi</label>
+        @if (closedWithIssues) { <label>Důvod uzavření s nesrovnalostmi <textarea name="closeReason" maxlength="2000" required [(ngModel)]="closeReason"></textarea></label> }
+        <button class="button button-primary" [disabled]="closedWithIssues ? !closeReason.trim() : !inventory.progress.canCloseCleanly">{{ closedWithIssues ? 'Uzavřít s uvedenými nesrovnalostmi a důvodem' : 'Uzavřít – vše fyzicky ověřeno, bez nesrovnalostí' }}</button>
+      </fieldset></form>
+    </section>
+  }
+}

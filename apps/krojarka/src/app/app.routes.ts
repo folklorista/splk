@@ -13,7 +13,7 @@ import { SettingsLayout, SettingsNoAccess } from './features/nastaveni/settings-
 import { UsersPage } from './features/nastaveni/users-page';
 import { AccountPage } from './features/ucet/account-page';
 
-const IMPLEMENTED = ['ucet', 'nastaveni', 'soucastky', 'lide', 'krojove-karty', 'vypujcky'];
+const IMPLEMENTED = ['ucet', 'nastaveni', 'soucastky', 'lide', 'krojove-karty', 'vypujcky', 'inventury'];
 
 const placeholders: Routes = MENU.filter((item) => !IMPLEMENTED.includes(item.path)).map((item) => ({
   path: item.path,
@@ -34,6 +34,10 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       ...placeholders,
+      { path: 'inventury', canActivate: [fundGuard], loadComponent: () => import('./features/inventury/inventories-layout').then((m) => m.InventoriesLayout), children: [
+        { path: '', pathMatch: 'full', loadComponent: () => import('./features/inventury/inventories-page').then((m) => m.InventoriesPage), title: 'Inventury · Krojařka' },
+        { path: ':id', loadComponent: () => import('./features/inventury/inventory-detail-page').then((m) => m.InventoryDetailPage), title: 'Inventura · Krojařka' },
+      ] },
       { path: 'vypujcky', canActivate: [fundGuard], loadComponent: () => import('./features/vypujcky/loans-layout').then((m) => m.LoansLayout), children: [
         { path: '', pathMatch: 'full', loadComponent: () => import('./features/vypujcky/loans-page').then((m) => m.LoansPage), title: 'Výpůjčky · Krojařka' },
         { path: 'vydat', loadComponent: () => import('./features/vypujcky/issue-page').then((m) => m.IssuePage), title: 'Výdej · Krojařka' },

@@ -3,10 +3,11 @@ import { Component, computed, effect, inject, signal, untracked } from '@angular
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ItemCondition, ItemInput, ItemLocation, WorkOrder, WorkOrderStatus, WorkOrderType } from '@splk/api-contracts';
+import { InventoryResult, ItemCondition, ItemInput, ItemLocation, WorkOrder, WorkOrderStatus, WorkOrderType } from '@splk/api-contracts';
 import { errorMessage } from '../../core/auth/error-messages';
 import { InventoryStore } from './inventory.store';
 import { InventoryOperationNotice } from '../inventury/inventory-operation-notice';
+import { CHECK_RESULTS } from '../inventury/inventory-feedback';
 import { CONDITIONS, EVENT_LABELS, FIELD_LABELS, LOCATIONS, ORDER_STATES, ORDER_TYPES } from './inventory-labels';
 
 @Component({ selector: 'app-item-page', imports: [ReactiveFormsModule, RouterLink, DatePipe, InventoryOperationNotice], templateUrl: './item-page.html' })
@@ -31,6 +32,10 @@ export class ItemPage {
   protected readonly orderTypeLabel = ORDER_TYPES;
   protected readonly orderStateLabel = ORDER_STATES;
   protected readonly events = EVENT_LABELS;
+  protected readonly cancelledChecks = computed(() => new Set(this.store.history().filter((e) => e.event === 'inventory_check_cancelled').map((e) => e.data['checkId'])));
+  protected readonly lastPhysicalCheck = computed(() => this.store.history().filter((e) => e.event === 'inventory_checked'
+    && ['presented', 'found'].includes(String(e.data['result'])) && !this.cancelledChecks().has(e.data['id']))
+    .sort((a, b) => Date.parse(String(b.data['at'] ?? b.at)) - Date.parse(String(a.data['at'] ?? a.at)) || b.id - a.id)[0] ?? null);
   protected readonly fields = FIELD_LABELS;
   protected readonly partSeries = computed(() => this.store.series().filter((s) => s.kind === 'part' && (!s.archived || s.id === this.store.item()?.seriesId)));
   protected readonly form = this.fb.group({ seriesId: [0, Validators.min(1)], number: [''], variant: [''], size: [''], description: [''], note: [''],
@@ -63,7 +68,7 @@ export class ItemPage {
       const saved = this.id() && item ? await this.store.updateItem(item.id, { ...input, version: this.editVersion }) : await this.store.createItem(input);
       if (this.store.fund()?.unitId !== unit) return;
       if (this.id()) { this.form.markAsPristine(); await this.store.openItem(saved.id); this.notice.set('Součástka je uložená.'); }
-      else await this.router.navigate(['/soucastky/kusy', saved.id]);
+      else await this.router.navigate(['/soucastky/kusy', saved.id], { queryParamsHandling: 'preserve' });
     } catch (error) { if (this.store.fund()?.unitId === unit) this.notice.set(errorMessage(error)); }
   }
   protected async retire(): Promise<void> {
@@ -97,6 +102,7 @@ export class ItemPage {
     catch (error) { if (this.store.fund()?.unitId === unit) this.notice.set(errorMessage(error)); }
   }
   protected orderStatus(value: unknown): string { return ORDER_STATES[value as WorkOrderStatus] ?? 'neuvedeno'; }
+  protected checkResult(value: unknown): string { return CHECK_RESULTS[value as InventoryResult] ?? 'Kontrola'; }
 
   protected eventValue(field: string, value: unknown): string {
     if (value === null || value === undefined || value === '') return 'neuvedeno';
