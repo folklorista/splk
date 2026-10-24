@@ -34,6 +34,7 @@ export type ApiErrorCode =
   | 'last_admin'
   | 'version_conflict'
   | 'number_already_used'
+  | 'possible_duplicate'
   | 'duplicate_stock'
   | 'insufficient_stock'
   | 'item_retired'

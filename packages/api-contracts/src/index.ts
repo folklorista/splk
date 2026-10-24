@@ -3,3 +3,4 @@ export * from './catalog';
 export * from './errors';
 export * from './organization';
 export * from './inventory';
+export * from './people';

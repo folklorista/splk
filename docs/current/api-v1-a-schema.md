@@ -66,7 +66,7 @@ Model identity (D-07) se zavede postupně: v1 vytvoří `persons`, `user_account
 
 Pravidla:
 
-- Krojařka jiné složky vidí jen **seznam osob** (jméno, přezdívka, příslušnost ke složkám), ne fondy, výpůjčky ani náklady [R D-21].
+- Krojařka jiné složky vidí **společné údaje osob** (jméno, přezdívka, příslušnost ke složkám a kontakt podle D-60), ne fondy, výpůjčky ani náklady [R D-21].
 - Každé pravidlo se vyhodnocuje na serveru. Testy PHPUnit pokrývají ke každému endpointu i **zamítnuté** případy [R D-44].
 
 ## 3. Schéma
@@ -190,9 +190,19 @@ První účet se správou organizace vytvoří seed z `.env` při první migraci
 | Metoda a cesta | Účel |
 |---|---|
 | `GET /v1/people?q=&unit=&hasLoans=&paperState=` | **Lidé**: seznam osob (jméno, přezdívka, příslušnosti); údaje fondu jen pro fondy s pověřením |
+| `PATCH /v1/people/{id}` | úprava základní identity, společného kontaktu a výchozího kroje krojařkou (K04, D-50, D-60); nikoli globální poznámky |
 | `POST /v1/people` | rychlé založení osoby krojařkou (externista, nová osoba) s upozorněním na možné duplicity [R zadání K04] |
 | `GET /v1/funds/{u}/people/{id}/card` | **Krojová karta**: otevřené výpůjčky, historie, profil fondu |
 | `PUT /v1/funds/{u}/people/{id}/profile` | stav papírové karty, převod, poznámka |
+
+#### Implementace kroku 5 (2026-10-24)
+
+- `GET /v1/people` vyžaduje platný přístup k alespoň jednomu aktivnímu fondu. Kontakty jsou společné pro `costumes.manage` (D-60); čtenářům se vrací `contact=null, contactVisible=false`. Účet, pověření a společná organizační poznámka osoby se nikdy nevrací.
+- Stránkování je `limit` 1–200 (výchozí 50), `offset` od 0; hledání jména/přezdívky bez diakritiky, `unit` vybírá současnou příslušnost. `fund` výslovně určuje autorizovaný fond pro `profile` a filtr `paperState`. Bez zadaného fondu se soukromé profily nevracejí; neexistující profil je `null`, nikoli automaticky „papírový“.
+- Založení shodného jména vrací 422 `possible_duplicate` se seznamem kandidátů; `confirmDuplicate=true` výslovně založí jinou identitu. Nevzniká účet ani příslušnost. Krojová poznámka se ukládá jen přes profil fondu, nikoli přes společnou osobu.
+- `defaultCostume` je jediný u osoby (D-50). PATCH společných údajů vyžaduje `costumes.manage` některého aktivního fondu; samotné `organization.admin` nemá přístup k těmto krojovým endpointům a používá vlastní správu osob.
+- PUT profilu přijímá `paperState` a `note`; první přechod na `digital` zaznamená `migrated_at/by`. Nejde o fyzické ověření; `paper_checked_at` zůstává bez automatické hodnoty a nesmí se zaslat z klienta. Zápis profilu i audit jsou atomické.
+- Karta v kroku 5 obsahuje společnou identitu a profil konkrétního fondu. Výpůjčky, jejich historie a filtr `hasLoans` navazují v kroku 6; do té doby se nevytvářejí smyšlené údaje a filtr je výslovně odmítnut.
 
 ### 4.4 Katalog, kusy, komplety (pod `/v1/funds/{u}`)
 
