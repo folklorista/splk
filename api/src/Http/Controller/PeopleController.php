@@ -88,13 +88,13 @@ final class PeopleController extends Controller
     {
         $unit = $this->fund($context, $context->params['unitId'], true);
         $id = self::routeId($context);
-        InventoryInput::only($request->json(), ['paperState', 'note']);
+        InventoryInput::only($request->json(), ['paperState', 'note', 'originalChecked']);
         $input = Input::fromRequest($request); $state = $input->enum('paperState', self::PAPER_STATES);
         return Response::json($this->audited($context, 'holder_profile.update', $unit, function () use ($id, $unit, $input, $state, $context): array {
             $this->people()->find($id, true, true) ?? throw self::notFound();
             $old = $this->people()->profile($unit, $id);
             $note = $input->has('note') ? $input->optionalString('note', 5000) : ($old['note'] ?? null);
-            return $this->people()->saveProfile($unit, $id, $state, $note, self::actor($context));
+            return $this->people()->saveProfile($unit, $id, $state, $note, self::actor($context), $input->has('originalChecked') ? $input->bool('originalChecked') : false);
         }));
     }
 

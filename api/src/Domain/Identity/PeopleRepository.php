@@ -83,7 +83,7 @@ final class PeopleRepository
             'migratedBy' => $row['migrated_by'] === null ? null : (int) $row['migrated_by'], 'note' => $row['note']];
     }
 
-    public function saveProfile(int $unit, int $person, string $state, ?string $note, int $actor): array
+    public function saveProfile(int $unit, int $person, string $state, ?string $note, int $actor, bool $originalChecked = false): array
     {
         $this->db->prepare("INSERT INTO costume_holder_profiles (unit_id, person_id, paper_state, note, created_by, migrated_at, migrated_by)
             VALUES (:unit, :person, :state, :note, :actor, CASE WHEN :digital THEN now() ELSE NULL END, :migratedBy)
@@ -92,6 +92,9 @@ final class PeopleRepository
                 migrated_by = CASE WHEN EXCLUDED.paper_state = 'digital' THEN coalesce(costume_holder_profiles.migrated_by, EXCLUDED.migrated_by) ELSE costume_holder_profiles.migrated_by END")
             ->execute(['unit' => $unit, 'person' => $person, 'state' => $state, 'note' => $note, 'actor' => $actor,
                 'digital' => $state === 'digital' ? 'true' : 'false', 'migratedBy' => $state === 'digital' ? $actor : null]);
+        if ($originalChecked) {
+            $this->db->prepare('UPDATE costume_holder_profiles SET paper_checked_at = now() WHERE unit_id = :unit AND person_id = :person')->execute(['unit' => $unit, 'person' => $person]);
+        }
         return $this->profile($unit, $person);
     }
 

@@ -115,6 +115,29 @@ final class PaperMigrationsTest extends ApiTestCase
             catch (\PDOException $error) { self::assertSame('23514', $error->getCode()); }
         }
     }
+    public function testOnlyExplicitComparisonRecordsPaperOriginalCheckAndDoesNotVerifyCostumes(): void
+    {
+        $url = "/v1/funds/{$this->fund}/people/{$this->person}/profile";
+        $first = $this->send('PUT', $url, ['paperState' => 'migrating']); self::assertStatus(200, $first); self::assertNull($first->decodedBody()['paperCheckedAt']);
+        $checked = $this->send('PUT', $url, ['paperState' => 'migrating', 'originalChecked' => true]); self::assertStatus(200, $checked); self::assertNotNull($checked->decodedBody()['paperCheckedAt']);
+        $finished = $this->send('PUT', $url, ['paperState' => 'digital', 'originalChecked' => false]); self::assertStatus(200, $finished); self::assertSame($checked->decodedBody()['paperCheckedAt'], $finished->decodedBody()['paperCheckedAt']);
+        self::assertSame(0, $this->db->query('SELECT count(*) FROM inventory_checks')->fetchColumn()); self::assertSame(0, $this->db->query('SELECT count(*) FROM costume_loans')->fetchColumn());
+        self::assertError(422, 'validation_failed', $this->send('PUT', $url, ['paperState' => 'digital', 'originalChecked' => 'yes']));
+    }
+    public function testSourceMustBeTheSamePersonsFundDocumentAndItsReferenceIsRetained(): void
+    {
+        $uuid = $this->db->query("INSERT INTO attachments (uuid, unit_id, owner_type, owner_id, kind, storage_key, mime, size, sha256, uploaded_by)
+            SELECT uuid, {$this->fund}, 'person', {$this->person}, 'person_card', uuid::text, 'image/jpeg', 12, repeat('a', 64), {$this->actor}
+            FROM (SELECT gen_random_uuid() AS uuid) AS source RETURNING uuid")->fetchColumn();
+        self::assertStatus(200, $this->post($this->url(), ['entries' => [['seriesId' => $this->series, 'number' => 'Missing']], 'sourceAttachmentId' => $uuid]));
+        self::assertSame($uuid, $this->get($this->url('paper-migration-findings'))->decodedBody()['items'][0]['sourceAttachmentId']);
+        $other = $this->insert("INSERT INTO persons (first_name, last_name) VALUES ('Other', 'Card')");
+        self::assertError(404, 'not_found', $this->post("/v1/funds/{$this->fund}/people/$other/paper-migrations", ['entries' => [['itemId' => $this->item]], 'sourceAttachmentId' => $uuid]));
+        self::assertSame(0, $this->db->query('SELECT count(*) FROM costume_loans')->fetchColumn());
+        self::assertStatus(200, $this->post($this->url(), ['entries' => [['itemId' => $this->item], ['seriesId' => $this->series, 'number' => '03']], 'sourceAttachmentId' => $uuid]));
+        self::assertSame(1, $this->db->query('SELECT count(*) FROM costume_loans')->fetchColumn());
+        self::assertSame($uuid, json_decode($this->db->query("SELECT data FROM costume_item_events WHERE event = 'paper_migration'")->fetchColumn(), true)['sourceAttachmentId']);
+    }
     private function url(string $suffix = 'paper-migrations'): string { return "/v1/funds/{$this->fund}/people/{$this->person}/$suffix"; }
     private function piece(string $number): int { return $this->insert("INSERT INTO costume_items (unit_id, series_id, number) VALUES ({$this->fund}, {$this->series}, '$number')"); }
     private function insert(string $sql): int { return (int) $this->db->query($sql . ' RETURNING id')->fetchColumn(); }
