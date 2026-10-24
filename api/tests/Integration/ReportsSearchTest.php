@@ -75,6 +75,7 @@ final class ReportsSearchTest extends ApiTestCase
         $this->db->exec("UPDATE costume_items SET kit_id = $kit WHERE id = {$this->item}");
         $report = $this->get($this->url("kit/$kit")); self::assertStatus(200, $report); self::assertStringContainsString('nikoli fyzické ověření', $report->body); self::assertSame($this->item, $report->decodedBody()['sections'][0]['rows'][0][0]);
         $bySeries = $this->get($this->url("series/$series")); self::assertStatus(200, $bySeries); self::assertSame($kit, $bySeries->decodedBody()['sections'][0]['rows'][0][0]);
+        self::assertError(422, 'validation_failed', $this->get($this->url("series/$series") . '?condition=damaged'));
     }
     public function testClosedInventoryReportUsesFrozenEvidenceAfterPropertyChanges(): void
     {
@@ -85,6 +86,15 @@ final class ReportsSearchTest extends ApiTestCase
         $this->db->exec("UPDATE costume_items SET number = '99', condition = 'ok' WHERE id = {$this->item}");
         $second = $this->get($this->url("inventory/$id")); self::assertStatus(200, $second); self::assertSame($first->decodedBody()['sections'], $second->decodedBody()['sections']);
         self::assertStringContainsString('03', $second->body); self::assertNotEmpty($second->decodedBody()['sections'][2]['rows']);
+    }
+    public function testWorkOrderReportFiltersOpenWorkWithoutChangingTasks(): void
+    {
+        $this->grant($this->actor, 'costumes.manage', $this->fund);
+        $created = $this->post("/v1/items/{$this->item}/work-orders", ['type' => 'repair', 'description' => 'Repair']); self::assertStatus(201, $created);
+        $open = $this->get($this->url('work-orders') . '?status=active'); self::assertStatus(200, $open); self::assertCount(1, $open->decodedBody()['sections'][0]['rows']);
+        self::assertSame([], $this->get($this->url('work-orders') . '?status=done')->decodedBody()['sections'][0]['rows']);
+        self::assertError(422, 'validation_failed', $this->get($this->url('work-orders') . '?status=invalid'));
+        self::assertSame('open', $this->db->query('SELECT status FROM costume_work_orders')->fetchColumn());
     }
     private function url(string $suffix): string { return "/v1/funds/{$this->fund}/reports/$suffix"; }
     private function insert(string $sql): int { return (int) $this->db->query($sql . ' RETURNING id')->fetchColumn(); }

@@ -24,13 +24,14 @@ final class ReportController extends Controller
             $sql = "SELECT id FROM $table WHERE id = :id" . ($kind === 'person' ? '' : ' AND unit_id = :unit');
             $query = $this->db()->prepare($sql); $query->execute($kind === 'person' ? ['id' => $id] : ['id' => $id, 'unit' => $unit]); if ($query->fetchColumn() === false) throw self::notFound();
         }
-        $allowed = match ($kind) { 'items', 'series' => ['condition', 'location', 'retired', 'available', 'acquiredFrom', 'acquiredTo'], 'loans', 'person' => ['open', 'overdue', 'holderType'], default => [] };
+        $allowed = match ($kind) { 'items', 'series' => ['condition', 'location', 'retired', 'available', 'acquiredFrom', 'acquiredTo'], 'loans', 'person' => ['open', 'overdue', 'holderType'], 'work-orders' => ['status'], default => [] };
         InventoryInput::only($request->query, $allowed); $filters = [];
         foreach ($request->query as $field => $value) {
             $filters[$field] = match ($field) {
                 'retired', 'available', 'open', 'overdue' => match ($value) { 'true' => true, 'false' => false, default => throw Input::invalid($field, 'invalid') },
                 'condition' => (new Input($request->query))->enum($field, ['ok', 'damaged', 'needs_adjustment']),
                 'location' => (new Input($request->query))->enum($field, ['store', 'holder', 'seamstress', 'repair', 'unknown']),
+                'status' => (new Input($request->query))->enum($field, ['active', 'open', 'in_progress', 'done', 'cancelled']),
                 'holderType' => (new Input($request->query))->enum($field, ['external']),
                 default => $this->date($value, $field),
             };

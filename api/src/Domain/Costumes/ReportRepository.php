@@ -24,6 +24,7 @@ final class ReportRepository
         $sections = []; $title = 'Soupis součástek';
         $kitSeries = false;
         if ($kind === 'series') { $q = $this->db->prepare('SELECT kind FROM costume_series WHERE id = :id'); $q->execute(['id' => $id]); $kitSeries = $q->fetchColumn() === 'kit'; }
+        if ($kitSeries && $filters !== []) throw \Splk\Api\Http\Input::invalid((string) array_key_first($filters), 'not_allowed');
         if ($kitSeries) {
             $kits = $this->all(fn ($offset) => (new KitRepository($this->db))->list($unit, 200, $offset, $id, null));
             $sections[] = $this->table('Komplety podle evidence; složení není fyzické ověření', ['Komplet ID', 'Řada', 'Číslo', 'Stav složení', 'Držitel'], array_map(fn ($k) => [$k['id'], $this->name('costume_series', $id), $k['number'], ReportLabels::label($k['compositionState']), $this->holder($k['holder'])], $kits));
@@ -70,6 +71,7 @@ final class ReportRepository
         }
         if ($kind === 'work-orders') {
             $title = 'Pracovní úkoly'; $orders = $this->all(fn ($offset) => (new WorkOrderRepository($this->db))->list($unit, null, null, 200, $offset));
+            if (isset($filters['status'])) $orders = array_values(array_filter($orders, fn ($o) => $filters['status'] === 'active' ? in_array($o['status'], ['open', 'in_progress'], true) : $o['status'] === $filters['status']));
             $sections[] = $this->table('Opravy a další úkoly', ['Úkol ID', 'Kus ID', 'Typ', 'Stav', 'Popis', 'Termín'], array_map(fn ($o) => [$o['id'], $o['itemId'], $o['type'], $o['status'], $o['description'], $o['dueOn']], $orders));
         }
         return ['unitId' => $unit, 'generatedAt' => gmdate('c'), 'title' => $title, 'notice' => 'Podle evidence v okamžiku sestavení. Pouze výslovná nezrušená inventurní kontrola je fyzické ověření. Historická evidence nemusí být úplná.', 'sections' => $sections];
