@@ -6,7 +6,7 @@ namespace Splk\Api\Http;
 
 /**
  * CORS and the request-level protection layers from hosting doc chap. 4 and 7 (D-12):
- * origin allowlist, Sec-Fetch-Site, JSON-only writes. The CSRF token is checked per route in App.
+ * origin allowlist, Sec-Fetch-Site, JSON writes and the one multipart upload route. CSRF is checked in App.
  */
 final class RequestPolicy
 {
@@ -37,7 +37,8 @@ final class RequestPolicy
         if ($request->header('sec-fetch-site') === 'cross-site') {
             throw new HttpException(403, 'cross_site_request', 'Cross-site requests are not allowed.');
         }
-        if (trim($request->body) !== '' && $request->mediaType() !== 'application/json') {
+        $upload = $request->method === 'POST' && $request->path === '/v1/attachments' && $request->mediaType() === 'multipart/form-data';
+        if (!$upload && (trim($request->body) !== '' || $request->form !== [] || $request->files !== []) && $request->mediaType() !== 'application/json') {
             throw new HttpException(415, 'unsupported_media_type', 'Request body must be application/json.');
         }
     }
@@ -69,6 +70,7 @@ final class RequestPolicy
             $response = $response
                 ->withHeader('Access-Control-Allow-Origin', $origin)
                 ->withHeader('Access-Control-Allow-Credentials', 'true');
+            $response = $response->withHeader('Access-Control-Expose-Headers', 'X-Attachment-Export-Id, Content-Disposition');
         }
 
         return $response;

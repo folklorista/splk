@@ -4,6 +4,14 @@
 // The real file is git-ignored. Local Docker uses config/config.docker.php instead.
 
 return [
+    'attachments' => [
+        // Default root: api/storage/attachments, outside public/. Back up with the database.
+        'maxBytes' => 10 * 1024 * 1024,
+        'maxPixels' => 24000000,
+        'maxPerOwner' => 100,
+        'maxExportBytes' => 50 * 1024 * 1024,
+        // PHP upload_max_filesize/post_max_size must also accommodate the configured upload.
+    ],
     'db' => [
         'host' => '',
         'port' => 5432,

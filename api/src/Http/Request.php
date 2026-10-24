@@ -22,6 +22,9 @@ final class Request
         public readonly array $cookies = [],
         public readonly string $body = '',
         public readonly string $clientIp = '',
+        public readonly array $form = [],
+        /** @var array<string, UploadedFile> */
+        public readonly array $files = [],
     ) {
         $this->headers = array_change_key_case($headers, CASE_LOWER);
     }
@@ -50,6 +53,8 @@ final class Request
             array_map('strval', $_COOKIE),
             (string) file_get_contents('php://input'),
             (string) ($_SERVER['REMOTE_ADDR'] ?? ''),
+            $_POST,
+            array_map(UploadedFile::fromGlobals(...), $_FILES),
         );
     }
 

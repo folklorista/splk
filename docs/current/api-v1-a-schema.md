@@ -183,6 +183,8 @@ Rozsah inventury ve v1: klasifikace (region, pohlaví, druh, varianta, řada) a 
 
 Fotografie se ukládají bez polohových EXIF dat se zachováním obrazu a orientace (D-65). Skeny osobních karet čte i `costumes.view` v daném fondu (D-66); kontakt ve strukturovaném DTO osoby se tím nezpřístupňuje. Příprava formátů serveru pokrývá JPEG/PNG a PDF. `attachment_exports` uchovává manifest verze a kontrolního součtu exportovaných příloh pro následné výslovně potvrzené odstranění po uložení ZIP mimo aplikaci (D-40). API a obrazovky jsou rozpracované.
 
+**Krok 8, etapa 2a:** základní autorizované API souborů je implementované: multipart upload s polem `file`, textovými poli `unitId`, `ownerType`, `ownerId`, `kind` a volitelně `page`, `caption`, `originalDate`; čtení metadat/obsahu/miniatury, PATCH metadat a `archive` s `version`. Seznam vyžaduje `unitId`; dvojice `ownerType`/`ownerId` filtruje vlastníka, bez ní vrací fondový přehled. `archived=true` a `purged=true` zahrnou odpovídající historická metadata. Výchozí konfigurovatelné limity: 10 MiB/soubor, 24 megapixelů (navíc ochrana dostupné paměti), 100 dosud neodstraněných příloh na vlastníka. Originální JPEG/PNG zachová komprimované obrazové údaje i orientaci, odstraní doprovodná EXIF/XMP/IPTC metadata a vloží pouze orientaci. Miniatura JPEG má delší stranu nejvýše 480 px a fyzicky správnou orientaci. PDF se poskytuje jako soubor ke stažení, bez předstírané obrazové miniatury; `hasThumbnail=false`. Multipart je povolen jen pro upload a zachovává Origin, session a CSRF kontroly. Úložiště není veřejné; audit neobsahuje cesty ani binární obsah. Selhání auditu vrací zpět metadata i nový soubor.
+
 ## 4. Endpointy v1
 
 ### 4.1 Přihlášení a účet

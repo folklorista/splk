@@ -60,6 +60,14 @@ Lokální commit doplněných testů: `532cec1` (`test: cover inventory start co
 - Krojařka: `data/inventory/` a organizační adaptéry; nové `features/inventury/`; skupiny v `features/nastaveni/groups*` a `users-page`; kontext v trasách výpůjček/součástek, historie v `soucastky/item-page`, překlady a `app.routes.ts`. Doplněné Vitest testy adaptérů, stores, parseru a chování formulářů.
 - Dokumentace: tento stav, `api-v1-a-schema.md`, `monorepo-struktura.md`, `decisions.md` (D-63/D-64) a `open-questions.md` (Q-21/Q-22 vyřešeny; později vyřešena i Q-14).
 
+## Rozpracovaný krok 8 – průběžné ověření
+
+Databáze a kontrakty jsou v `a59044b`, zpracování fotografií v `700f932`. Základní API příloh zahrnuje upload, metadata, autorizované originály/miniatury a archivaci. ZIP export, odstranění po digitalizaci, adaptéry a obrazovky ještě nejsou dokončené.
+
+Průběžné kontroly: **PHPUnit 260 testů / 2125 assertions**, TypeScript kontraktů a kontrola diffu prošly. Patří sem šest databázových testů příloh, obrazové testy včetně všech osmi orientací, deset integračních scénářů endpointů a ochrany soukromého úložiště/multipartu. Toto nejsou závěrečné výsledky dokončeného kroku 8; výsledky kroku 7 zůstávají oddělené výše.
+
+Produkční migrace, data ani nasazení se nemění. Ruční testy uploadu, čitelnosti reálných A4 karet a mobilního ovládání proběhnou až po doplnění UI; limity souborů jsou konfigurovatelné.
+
 ## Ruční ověření před případným nasazením
 
 Po místním použití migrací ověřit v HTTP i mock režimu, na počítači i mobilu:

@@ -53,7 +53,11 @@ export interface PurgeAttachmentsRequest {
   confirmArchived: true;
   attachments: AttachmentVersion[];
 }
-export interface AttachmentListQuery extends AttachmentOwner {
+export interface AttachmentListQuery {
+  unitId: number;
+  /** Supply ownerType and ownerId together; omit both for the fund's document overview. */
+  ownerType?: AttachmentOwnerType;
+  ownerId?: number;
   archived?: boolean;
   purged?: boolean;
   limit?: number;

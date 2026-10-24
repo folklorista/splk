@@ -69,12 +69,13 @@ abstract class ApiTestCase extends DatabaseTestCase
     }
 
     /** @param array<string, mixed>|null $body */
-    protected function send(string $method, string $path, ?array $body = null): Response
+    protected function send(string $method, string $path, ?array $body = null, ?array $form = null, array $files = []): Response
     {
         $headers = ['Origin' => self::ORIGIN];
         if ($body !== null) {
             $headers['Content-Type'] = 'application/json';
         }
+        if ($form !== null) $headers['Content-Type'] = 'multipart/form-data; boundary=phpunit';
         if ($this->signedIn !== null) {
             $headers['X-CSRF-Token'] = $this->signedIn['csrf'];
         }
@@ -90,6 +91,8 @@ abstract class ApiTestCase extends DatabaseTestCase
             cookies: $this->signedIn === null ? [] : [self::COOKIE => $this->signedIn['token']],
             body: $body === null ? '' : json_encode($body, JSON_THROW_ON_ERROR),
             clientIp: '192.0.2.1',
+            form: $form ?? [],
+            files: $files,
         ));
     }
 

@@ -35,6 +35,11 @@ const MESSAGES: Record<string, string> = {
   inventory_visit_exists: 'Osoba už má v této inventuře aktivní návštěvu.',
   inventory_visit_closed: 'Návštěva je dokončená nebo zrušená. Pro další kontrolu založte novou návštěvu.',
   inventory_busy: 'Evidence se právě mění. Zkuste operaci znovu.',
+  invalid_file: 'Soubor je poškozený, nepodporovaný nebo příliš velký pro zpracování. Použijte JPEG, PNG nebo PDF.',
+  file_too_large: 'Soubor nebo export překračuje povolenou velikost.',
+  attachment_limit: 'Byl dosažen povolený počet příloh.',
+  attachment_purged: 'Obsah přílohy už byl po exportu odstraněn. Metadata zůstávají v evidenci.',
+  attachment_export_required: 'Nejprve stáhněte aktuální ZIP a potvrďte jeho uložení do digiarchivu mimo aplikaci.',
 };
 
 const REASONS: Record<string, string> = {

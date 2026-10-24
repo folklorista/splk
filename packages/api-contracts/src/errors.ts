@@ -50,6 +50,11 @@ export type ApiErrorCode =
   | 'inventory_visit_closed'
   | 'inventory_busy'
   | 'group_membership_exists'
+  | 'invalid_file'
+  | 'file_too_large'
+  | 'attachment_limit'
+  | 'attachment_purged'
+  | 'attachment_export_required'
   | 'internal_error';
 
 /** `details.reason` of `validation_failed`. */

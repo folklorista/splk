@@ -7,6 +7,7 @@ RUN a2enmod rewrite headers \
  && rm -rf /var/lib/apt/lists/* \
  && docker-php-ext-configure gd --with-jpeg \
  && docker-php-ext-install pdo_pgsql gd zip \
+ && printf 'upload_max_filesize=10M\npost_max_size=12M\n' > /usr/local/etc/php/conf.d/splk-uploads.ini \
  && sed -ri 's!/var/www/html!/app/public!g' /etc/apache2/sites-available/000-default.conf \
  && printf '<Directory /app/public>\n    AllowOverride All\n    Require all granted\n</Directory>\n' > /etc/apache2/conf-enabled/splk-api.conf
 

@@ -43,6 +43,19 @@ final class RequestPolicyTest extends TestCase
         $this->addToAssertionCount(1);
     }
 
+    public function testMultipartIsAllowedOnlyOnTheUploadRouteAndStillRequiresAnAllowedOrigin(): void
+    {
+        $headers = ['Origin' => self::ORIGIN, 'Content-Type' => 'multipart/form-data; boundary=test'];
+        $this->policy->check(new Request('POST', '/v1/attachments', $headers, form: ['unitId' => '1']));
+        $this->addToAssertionCount(1);
+        $this->assertRejected(new Request('POST', '/v1/people', $headers, form: ['name' => 'Test']), 415, 'unsupported_media_type');
+        $this->assertRejected(new Request('PATCH', '/v1/attachments', $headers, form: ['name' => 'Test']), 415, 'unsupported_media_type');
+        unset($headers['Origin']);
+        $this->assertRejected(new Request('POST', '/v1/attachments', $headers, form: ['unitId' => '1']), 403, 'origin_required');
+        $headers['Origin'] = 'https://evil.example';
+        $this->assertRejected(new Request('POST', '/v1/attachments', $headers, form: ['unitId' => '1']), 403, 'origin_not_allowed');
+    }
+
     public function testRejectsWriteWithoutOrigin(): void
     {
         $this->assertRejected($this->post(['Content-Type' => 'application/json'], origin: null), 403, 'origin_required');
