@@ -99,6 +99,18 @@ final class AttachmentsTest extends ApiTestCase
         self::assertError(401, 'unauthenticated', $this->upload($this->png()));
     }
 
+    public function testMultipartUploadCannotBypassCsrfOrOriginChecks(): void
+    {
+        ['token' => $token] = $this->app->sessions()->create($this->actor, 'Missing CSRF');
+        $request = new \Splk\Api\Http\Request('POST', '/v1/attachments',
+            ['Origin' => self::ORIGIN, 'Content-Type' => 'multipart/form-data; boundary=test'],
+            cookies: [self::COOKIE => $token], form: ['unitId' => (string) $this->fund], files: ['file' => new UploadedFile('', UPLOAD_ERR_NO_FILE)]);
+        self::assertError(403, 'csrf_token_invalid', $this->app->handle($request));
+        self::assertError(403, 'origin_required', $this->app->handle(new \Splk\Api\Http\Request('POST', '/v1/attachments',
+            ['Content-Type' => 'multipart/form-data'], cookies: [self::COOKIE => $token], form: ['unitId' => (string) $this->fund])));
+        self::assertSame(0, $this->auditCount('attachment.upload')); self::assertSame([], glob($this->root . '/*/content'));
+    }
+
     public function testMetadataVersionsArchiveAndPaginationPreserveEveryOriginal(): void
     {
         $first = $this->upload($this->png())->decodedBody(); $second = $this->upload($this->png(), ['page' => '1'])->decodedBody();

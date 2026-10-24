@@ -21,6 +21,7 @@ use Splk\Api\Http\Controller\PeopleController;
 use Splk\Api\Http\Controller\LoanController;
 use Splk\Api\Http\Controller\InventoryController;
 use Splk\Api\Http\Controller\AttachmentController;
+use Splk\Api\Http\Controller\AttachmentExportController;
 use Splk\Api\Http\Controller\GroupController;
 use Splk\Api\Http\Controller\OrganizationController;
 use Splk\Api\Http\HttpException;
@@ -153,6 +154,7 @@ final class App
         (new LoanController($this->db->pdo(...)))->register($this->router);
         (new InventoryController($this->db->pdo(...)))->register($this->router);
         (new AttachmentController($this->db->pdo(...), (array) $this->config->get('attachments', [])))->register($this->router);
+        (new AttachmentExportController($this->db->pdo(...), (array) $this->config->get('attachments', [])))->register($this->router);
         (new GroupController($this->db->pdo(...)))->register($this->router);
         (new OrganizationController($this->db->pdo(...), $passwordLinks, $this->sessions(...)))->register($this->router);
     }

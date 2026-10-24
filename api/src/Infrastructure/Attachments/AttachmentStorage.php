@@ -50,7 +50,7 @@ final class AttachmentStorage
             if (is_link($path)) throw new \RuntimeException('Invalid attachment file.');
             if (is_file($path) && !unlink($path)) throw new \RuntimeException('Cannot remove attachment content.');
         }
-        if (is_dir($directory) && !rmdir($directory)) throw new \RuntimeException('Cannot remove attachment directory.');
+        if (is_dir($directory) && !@rmdir($directory)) throw new \RuntimeException('Cannot remove attachment directory.');
     }
 
     public function temporaryFile(): string
