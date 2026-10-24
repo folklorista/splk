@@ -44,7 +44,7 @@ final class ReportController extends Controller
     public static function csv(array $report): string
     {
         $file = fopen('php://temp', 'w+'); fwrite($file, "\xEF\xBB\xBF");
-        $write = static function (array $cells) use ($file): void { fputcsv($file, array_map(static fn ($v): string => is_string($v) && preg_match('/^[\s\x00-\x1f]*[=+@-]/u', $v) ? "'" . $v : (string) ($v ?? ''), $cells), ';', '"', '', "\r\n"); };
+        $write = static function (array $cells) use ($file): void { fputcsv($file, array_map(static fn ($v): string => is_string($v) && !preg_match('/^-?[0-9]+(?:\.[0-9]{1,4})?$/D', $v) && preg_match('/^[\s\x00-\x1f]*[=+@-]/u', $v) ? "'" . $v : (string) ($v ?? ''), $cells), ';', '"', '', "\r\n"); };
         $write([$report['title'], $report['generatedAt'], $report['notice']]);
         foreach ($report['sections'] as $section) { $write([]); $write([$section['title']]); $write($section['columns']); foreach ($section['rows'] as $row) $write($row); }
         rewind($file); $content = stream_get_contents($file); fclose($file); return $content;

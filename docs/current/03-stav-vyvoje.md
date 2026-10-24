@@ -112,6 +112,8 @@ Etapa 1: migrace `20261024234000_create_costume_costs`, sdílené DTO nákladů 
 
 **Průběžné testy: PHPUnit 295 testů / 2445 assertions – prošlo**, pouze lokální testovací databáze; tři nové testy schématu včetně neplatných dat, fondů, zachování přesných záporných částek, down/up a odmítnutí rollbacku se vzniklou evidencí. Kontrakty prošly TypeScriptem. Nejde ještě o závěrečné ověření celého kroku 10.
 
+Etapa 2: fondové a souhrnné API, přesné částky, dobropisy/vratky, souhrny po měnách, vazby na fyzické objekty, omezený přístup pokladníka (D-49), audit a transakční rollback, verze a skutečný CSV export všech stránek. **PHPUnit 305 testů / 2568 assertions – prošlo**, deset nových integračních scénářů. Zkouší i existující cizí kus, odmítnuté zápisy, odvolání pověření ve stejné session, archivovaný fond, chybu auditu a simulované SQLSTATE `55P03` bez částečné evidence. Stávající reálné testy souběhu inventur jsou stále součástí celé sady. Frontendové datové adaptéry a obrazovky následují samostatně.
+
 ## Ruční ověření před případným nasazením
 
 Po místním použití migrací ověřit v HTTP i mock režimu, na počítači i mobilu:

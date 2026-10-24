@@ -40,6 +40,8 @@ final class Mandates
         return $this->has('organization.admin', null);
     }
 
+    public function canViewAllCosts(): bool { return $this->has('costs.view', null); }
+
     public function canManageFund(int $unitId): bool
     {
         return $this->has('costumes.manage', $unitId);

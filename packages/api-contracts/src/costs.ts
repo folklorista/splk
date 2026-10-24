@@ -23,3 +23,5 @@ export type CostPatch = Partial<CostInput> & { version: number };
 export interface CostQuery extends PageQuery { unitId?: number; from?: string; to?: string; currency?: string; q?: string }
 export interface CostTotal { currency: string; amount: CostAmount; count: number }
 export interface CostPage { items: CostumeCost[]; total: number; totals: CostTotal[] }
+
+export interface CostFund { unitId: number; name: string; archived: boolean; canManage: boolean }

@@ -24,6 +24,7 @@ use Splk\Api\Http\Controller\AttachmentController;
 use Splk\Api\Http\Controller\AttachmentExportController;
 use Splk\Api\Http\Controller\PaperMigrationController;
 use Splk\Api\Http\Controller\ReportController;
+use Splk\Api\Http\Controller\CostController;
 use Splk\Api\Http\Controller\SearchController;
 use Splk\Api\Http\Controller\GroupController;
 use Splk\Api\Http\Controller\OrganizationController;
@@ -159,6 +160,7 @@ final class App
         (new AttachmentController($this->db->pdo(...), (array) $this->config->get('attachments', [])))->register($this->router);
         (new AttachmentExportController($this->db->pdo(...), (array) $this->config->get('attachments', [])))->register($this->router);
         (new PaperMigrationController($this->db->pdo(...)))->register($this->router);
+        (new CostController($this->db->pdo(...)))->register($this->router);
         (new ReportController($this->db->pdo(...)))->register($this->router);
         (new SearchController($this->db->pdo(...)))->register($this->router);
         (new GroupController($this->db->pdo(...)))->register($this->router);
