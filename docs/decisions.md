@@ -370,6 +370,22 @@ Krojařka používá výchozí test runner Angularu 22 – **Vitest** (jsdom). D
 
 **Zdroj:** uživatel 2026-10-24 (Q-20: „Vypořádání znamená ztrátu: vyřadit kus a snížit zásobu“). Technické počty a integrita navazují na D-61 a požadovaný důvod vyřazení v API kap. 4.4.
 
+### D-63 Fyzické ověření plní pokrytí, novější nepřítomnost zůstává nesrovnalostí
+
+- V jedné inventuře stačí jedno nezrušené fyzické ověření cíle pro započtení do pokrytí. Pozdější nepředložení nebo nenalezení toto skutečné pozorování z historie ani pokrytí nemaže.
+- Novější nepřítomnost se eviduje jako samostatná nesrovnalost. Dosažení úplného pokrytí samo nedovoluje čisté uzavření, pokud zůstává otevřená nesrovnalost.
+- Zrušené kontroly se do pokrytí nepočítají; původní záznam, zrušení i autor zůstávají v historii. Inventurní kontrola sama nezakládá výdej, vrácení nebo ztrátu.
+
+**Zdroj:** uživatel 2026-10-24 (Q-21: „Jedno fyzické ověření stačí pro pokrytí; pozdější nepřítomnost se eviduje jako samostatná nesrovnalost“).
+
+### D-64 Nečíslované zásoby mají samostatné inventurní vykázání
+
+- Nečíslované zásoby se při inventuře vykazují samostatně, mimo procento fyzicky ověřených kusů. Bez identity jednotlivých zaměnitelných kusů se součet pozorování nepovažuje za počet různých ověřených kusů.
+- Zůstává zmrazený rozsah, evidované a pozorované počty po kontextech, historie a nesrovnalosti. Chybějící či rozdílný počet není automaticky ztráta a nemění výpůjčky ani celkovou zásobu.
+- D-63 nadále řídí pokrytí identifikovaných kusů a samostatné nesrovnalosti. Kontroly obalů kompletů se vykazují odděleně od pokrytí jejich součástí.
+
+**Zdroj:** uživatel 2026-10-24 (dotaz k opakovanému započítání přesunutých mašlí: „Zásoby vykazovat samostatně, mimo procento ověřených kusů“). Oddělení obalů a součástí zabraňuje dvojímu započtení podle `current/06` kap. 7.
+
 ## API v1 (2026-10-23, `current/api-v1-a-schema.md` kap. 7)
 
 ### D-48 Správa organizace v Krojařce

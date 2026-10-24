@@ -10,9 +10,15 @@ Co ještě musíme rozhodnout (úroveň **B**). Každá otázka uvádí, odkud p
 
 ## Blokuje Krojařku
 
-### Q-21 Výsledný stav opakovaných protichůdných kontrol – blokuje vyhodnocení a dokončení kroku 7
+### Q-22 Nečíslované zásoby přesunuté během inventury – *rozhodnuto → D-64*
 
-Zjištěno při návrhu inventur 2026-10-24. `current/06` kap. 7.3–7.4 požaduje jeden výsledný stav kusu, nezapočítávat nepředložené mezi ověřené a umožňuje uzavření „vše ověřeno“ jen při skutečném ověření. API kap. 3.6 současně uchovává opakované kontroly v historii a do pokrytí počítá cíl jednou.
+Rozhodnuto uživatelem 2026-10-24 → D-64: zásoby vykazovat samostatně, mimo procento ověřených kusů.
+
+Původní podklad: mašle se během inventury ověří u držitele, potom se vrátí a znovu započte ve skladu. Bez identity kusu nelze tvrdit, že jde o dvě různé ověřené mašle. Byly nabídnuty nové porovnání celé dotčené zásoby po pohybu, blokování pohybů, nebo samostatné vykázání zásob mimo procento ověření. Uživatel zvolil třetí variantu; pohyby se tím neblokují a nevzniká pravidlo povinného přepočtu po každém pohybu.
+
+### Q-21 Výsledný stav opakovaných protichůdných kontrol – *rozhodnuto → D-63*
+
+Rozhodnuto uživatelem 2026-10-24 → D-63: jedno fyzické ověření stačí pro pokrytí, novější nepřítomnost zůstává samostatnou nesrovnalostí. Následuje původní podklad otázky. `current/06` kap. 7.3–7.4 požaduje jeden výsledný stav kusu, nezapočítávat nepředložené mezi ověřené a umožňuje uzavření „vše ověřeno“ jen při skutečném ověření. API kap. 3.6 současně uchovává opakované kontroly v historii a do pokrytí počítá cíl jednou.
 
 Příklad v jedné otevřené inventuře: kus byl nejprve předložen, později při opakované kontrole nebyl předložen nebo byl nenalezený. Je potřeba určit výsledné pokrytí a nesrovnalost:
 

@@ -167,7 +167,8 @@ Rozsah inventury ve v1: klasifikace (region, pohlaví, druh, varianta, řada) a 
 - Cíle mají `snapshot` a `expected_qty`, u držitele také `holder_unit_id` pro D-52. Početní cíle mohou rozlišit `context_kit_id` a `loan_line_id`, aby bylo možné zmrazit přidělení a skutečně předané množství bez dvojího odečtu D-61. Jedinečnost cílů brání duplicitě stejného kusu či stejného početního kontextu.
 - Uzavření má vlastní `result_snapshot`; dokončená návštěva má `completed_at`. Zrušení kontroly zachová původní řádek a přidá `cancelled_at/by`. Nové tabulky samy neprovádějí pohyby, neověřují dosavadní evidenci a nevyřazují nepřítomné kusy.
 - Přidány volitelné vazby `inventory_id` u řádků výpůjček, jednotlivých vrácení a pracovních úkolů; databáze brání vazbě na jiný fond. Zapojení do API následuje až s inventurními operacemi.
-- Výsledná přednost opakovaných protichůdných kontrol čeká na Q-21. Tato etapa ji nevolí a nezavádí předčasné tvrzení o pokrytí či úplném ověření.
+- D-63 řeší Q-21: pokrytí plní alespoň jedna nezrušená fyzicky pozitivní kontrola. Pozdější nepřítomnost zůstává samostatnou nesrovnalostí a brání čistému uzavření i při úplném pokrytí.
+- D-64 řeší Q-22: nečíslované zásoby se vykazují samostatně, mimo procento fyzicky ověřených kusů. U každého početního kontextu se uvádí očekávaný a zjištěný počet; pozorování se nesčítají jako různé fyzické kusy. Komplety mají vlastní ukazatel, aby obal nezvyšoval počet ověřených součástek.
 
 ### 3.7 Přílohy, náklady, audit
 
