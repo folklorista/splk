@@ -11,8 +11,8 @@ describe('Group adapters', () => {
   it('routes group administration and membership removal through the shared HTTP adapter', async () => {
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), HttpOrganizationApi, { provide: API_BASE_URL, useValue: '/v1' }] });
     const api = TestBed.inject(HttpOrganizationApi), http = TestBed.inject(HttpTestingController);
-    const list = firstValueFrom(api.groups()); http.expectOne('/v1/groups').flush({ items: [] }); expect(await list).toEqual([]);
-    const options = firstValueFrom(api.groupOptions(2)); http.expectOne('/v1/funds/2/inventories/groups').flush({ items: [] }); await options;
+    const list = firstValueFrom(api.groups()); const groupPage = http.expectOne('/v1/groups?limit=200&offset=0'); groupPage.flush({ items: [], total: 0 }); expect(await list).toEqual([]);
+    const options = firstValueFrom(api.groupOptions(2)); http.expectOne('/v1/funds/2/inventories/groups?limit=200&offset=0').flush({ items: [], total: 0 }); await options;
     const add = firstValueFrom(api.addGroupMember(3, { personId: 7 }));
     const request = http.expectOne('/v1/groups/3/members'); expect(request.request.method).toBe('POST'); expect(request.request.body).toEqual({ personId: 7 }); request.flush({ id: 3 }); await add;
     const remove = firstValueFrom(api.revokeGroupMember(3, 8)); const deletion = http.expectOne('/v1/groups/3/members/8'); expect(deletion.request.method).toBe('DELETE'); deletion.flush({ id: 3 }); await remove;
@@ -35,5 +35,14 @@ describe('Group adapters', () => {
     await firstValueFrom(api.updateGroup(1, { archived: true }));
     await expect(firstValueFrom(api.addGroupMember(1, { personId: 2 }))).rejects.toMatchObject({ code: 'validation_failed' });
     expect((await firstValueFrom(api.groups()))[0].memberships).toHaveLength(1);
+  });
+  it('loads every page of group choices before returning the complete adapter result', async () => {
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), HttpOrganizationApi, { provide: API_BASE_URL, useValue: '/v1' }] });
+    const api = TestBed.inject(HttpOrganizationApi), http = TestBed.inject(HttpTestingController);
+    const response = firstValueFrom(api.groupOptions(1));
+    http.expectOne('/v1/funds/1/inventories/groups?limit=200&offset=0').flush({ items: [{ id: 1, name: 'One', unitId: null }], total: 2 });
+    await Promise.resolve(); await Promise.resolve();
+    http.expectOne('/v1/funds/1/inventories/groups?limit=200&offset=1').flush({ items: [{ id: 2, name: 'Two', unitId: null }], total: 2 });
+    expect((await response).map((g) => g.id)).toEqual([1, 2]); http.verify();
   });
 });

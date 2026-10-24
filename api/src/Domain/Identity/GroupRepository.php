@@ -24,15 +24,17 @@ final class GroupRepository
                 'validTo' => $m['valid_to'], 'revokedAt' => $m['revoked_at'], 'revokedBy' => $m['revoked_by'] === null ? null : (int) $m['revoked_by'], 'active' => (bool) $m['active']], $members->fetchAll())];
     }
 
-    public function list(): array
+    public function list(int $limit, int $offset): array
     {
-        return array_map(fn ($id): array => $this->find((int) $id), $this->db->query('SELECT id FROM groups ORDER BY archived_at NULLS FIRST, name, id')->fetchAll(PDO::FETCH_COLUMN));
+        return ['items' => array_map(fn ($id): array => $this->find((int) $id), $this->db->query("SELECT id FROM groups ORDER BY archived_at NULLS FIRST, name, id LIMIT $limit OFFSET $offset")->fetchAll(PDO::FETCH_COLUMN)),
+            'total' => (int) $this->db->query('SELECT count(*) FROM groups')->fetchColumn()];
     }
 
-    public function options(): array
+    public function options(int $limit, int $offset): array
     {
-        return array_map(static fn (array $r): array => ['id' => (int) $r['id'], 'unitId' => $r['unit_id'] === null ? null : (int) $r['unit_id'], 'name' => $r['name']],
-            $this->db->query('SELECT id, unit_id, name FROM groups WHERE archived_at IS NULL ORDER BY name, id')->fetchAll());
+        return ['items' => array_map(static fn (array $r): array => ['id' => (int) $r['id'], 'unitId' => $r['unit_id'] === null ? null : (int) $r['unit_id'], 'name' => $r['name']],
+            $this->db->query("SELECT id, unit_id, name FROM groups WHERE archived_at IS NULL ORDER BY name, id LIMIT $limit OFFSET $offset")->fetchAll()),
+            'total' => (int) $this->db->query('SELECT count(*) FROM groups WHERE archived_at IS NULL')->fetchColumn()];
     }
 
     public function insert(array $values, int $actor): int

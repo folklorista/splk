@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { catchError, map, Observable, throwError } from 'rxjs';
+import { catchError, defer, firstValueFrom, map, Observable, throwError } from 'rxjs';
 import {
-  GroupInput, GroupPatch, GroupMemberInput, ManagedGroup, GroupOption,
+  GroupInput, GroupPatch, GroupMemberInput, ManagedGroup, GroupOption, Page,
   CreateAccountRequest,
   CreateAccountResponse,
   GrantMandateRequest,
@@ -21,8 +21,8 @@ export class HttpOrganizationApi extends OrganizationApi {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = inject(API_BASE_URL);
 
-  groups() { return this.wrap(this.http.get<ListResponse<ManagedGroup>>(`${this.baseUrl}/groups`)).pipe(map((r) => r.items)); }
-  groupOptions(unit: number) { return this.wrap(this.http.get<ListResponse<GroupOption>>(`${this.baseUrl}/funds/${unit}/inventories/groups`)).pipe(map((r) => r.items)); }
+  groups() { return this.all<ManagedGroup>('/groups'); }
+  groupOptions(unit: number) { return this.all<GroupOption>(`/funds/${unit}/inventories/groups`); }
   createGroup(input: GroupInput) { return this.wrap(this.http.post<ManagedGroup>(`${this.baseUrl}/groups`, input)); }
   updateGroup(id: number, input: GroupPatch) { return this.wrap(this.http.patch<ManagedGroup>(`${this.baseUrl}/groups/${id}`, input)); }
   addGroupMember(id: number, input: GroupMemberInput) { return this.wrap(this.http.post<ManagedGroup>(`${this.baseUrl}/groups/${id}/members`, input)); }
@@ -71,5 +71,15 @@ export class HttpOrganizationApi extends OrganizationApi {
 
   private wrap<T>(source: Observable<T>): Observable<T> {
     return source.pipe(catchError((error: unknown) => throwError(() => ApiError.from(error))));
+  }
+  private all<T>(path: string): Observable<T[]> {
+    return defer(async () => {
+      const rows: T[] = [];
+      while (true) {
+        const page = await firstValueFrom(this.wrap(this.http.get<Page<T>>(`${this.baseUrl}${path}`, { params: { limit: 200, offset: rows.length } })));
+        rows.push(...page.items); if (rows.length >= page.total) return rows;
+        if (!page.items.length) throw new ApiError(500, 'internal_error');
+      }
+    });
   }
 }

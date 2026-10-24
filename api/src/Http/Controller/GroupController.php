@@ -29,13 +29,15 @@ final class GroupController extends Controller
     private function list(Request $request, RequestContext $context): Response
     {
         $this->mandates($context)->requireOrganizationAdmin();
-        return Response::json(['items' => $this->repository()->list()]);
+        InventoryInput::only($request->query, ['limit', 'offset']); [$limit, $offset] = InventoryInput::pagination($request->query);
+        return Response::json($this->repository()->list($limit, $offset));
     }
 
     private function options(Request $request, RequestContext $context): Response
     {
         (new FundAccess($this->db()))->require($this->mandates($context), $context->params['unitId'], false);
-        return Response::json(['items' => $this->repository()->options()]);
+        InventoryInput::only($request->query, ['limit', 'offset']); [$limit, $offset] = InventoryInput::pagination($request->query);
+        return Response::json($this->repository()->options($limit, $offset));
     }
 
     private function save(Request $request, RequestContext $context): Response

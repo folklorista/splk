@@ -77,4 +77,15 @@ final class GroupsTest extends ApiTestCase
     {
         $result = $this->post('/v1/groups', ['name' => 'Musicians', 'unitId' => $this->fund]); self::assertStatus(201, $result); return $result->decodedBody();
     }
+    public function testGroupListsAndCostumeOptionsRespectPaginationWithoutLeakingMemberships(): void
+    {
+        $this->group(); self::assertStatus(201, $this->post('/v1/groups', ['name' => 'Other']));
+        $page = $this->get('/v1/groups?limit=1&offset=1'); self::assertStatus(200, $page);
+        self::assertSame(2, $page->decodedBody()['total']); self::assertCount(1, $page->decodedBody()['items']);
+        self::assertError(422, 'validation_failed', $this->get('/v1/groups?limit=201'));
+        $this->grant($this->admin, 'costumes.view', $this->fund);
+        $options = $this->get('/v1/funds/' . $this->fund . '/inventories/groups?limit=1&offset=1'); self::assertStatus(200, $options);
+        self::assertSame(2, $options->decodedBody()['total']); self::assertCount(1, $options->decodedBody()['items']);
+        self::assertArrayNotHasKey('memberships', $options->decodedBody()['items'][0]);
+    }
 }
