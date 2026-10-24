@@ -125,4 +125,12 @@ describe('Mock inventory workflows', () => {
     expect((await firstValueFrom(api.inventoryCollection(inventory.id, 'movements'))).total).toBe(3);
     expect((await firstValueFrom(api.inventory(inventory.id))).version).toBe(3);
   });
+  it('physically verifies a handover to another unit without a fictional person or return', async () => {
+    const item = await piece(); await firstValueFrom(api.issue(1, { holder: { unitId: 2 }, items: [item.id] }));
+    const inventory = await create(), target = (await firstValueFrom(api.inventoryCollection(inventory.id, 'targets'))).items[0];
+    const result = await firstValueFrom(api.checkInventory(inventory.id, { version: 1, mode: 'people', holderUnitId: 2, entries: [{ targetId: target.id, result: 'presented' }] }));
+    expect(result.inventory.progress.verifiedQuantity).toBe(1); expect(result.inventory.progress.peopleCount).toBe(0);
+    expect(result.results[0].check?.context).toMatchObject({ personId: null, holderUnitId: 2, holder: { unitId: 2 } });
+    expect((await firstValueFrom(api.inventoryCollection(inventory.id, 'visits'))).items).toEqual([]);
+  });
 });

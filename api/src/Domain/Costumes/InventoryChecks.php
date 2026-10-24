@@ -17,11 +17,12 @@ final class InventoryChecks
 
     public function validate(array $body): array
     {
-        InventoryInput::only($body, ['version', 'mode', 'personId', 'kitId', 'entries']);
+        InventoryInput::only($body, ['version', 'mode', 'personId', 'holderUnitId', 'kitId', 'entries']);
         $input = new Input($body); $input->id('version');
         $mode = $input->enum('mode', ['people', 'store', 'kit']);
-        $person = $input->nullableId('personId'); $kit = $input->nullableId('kitId');
-        if (($mode === 'people') !== ($person !== null) || ($mode === 'kit') !== ($kit !== null)) throw Input::invalid('mode', 'invalid');
+        $person = $input->nullableId('personId'); $holderUnit = $input->nullableId('holderUnitId'); $kit = $input->nullableId('kitId');
+        $holders = (int) ($person !== null) + (int) ($holderUnit !== null);
+        if (($mode === 'people' ? $holders !== 1 : $holders !== 0) || ($mode === 'kit') !== ($kit !== null)) throw Input::invalid('mode', 'invalid');
         $entries = $body['entries'] ?? null;
         if (!is_array($entries) || !array_is_list($entries) || count($entries) < 1 || count($entries) > 200) throw Input::invalid('entries', 'invalid');
         $normalized = [];
@@ -41,7 +42,7 @@ final class InventoryChecks
                 'condition' => $condition, 'checkedQty' => $qty, 'note' => $e->optionalString('note', 2000),
                 'recheck' => $e->bool('recheck', false), 'confirmConflict' => $e->bool('confirmConflict', false)];
         }
-        return ['mode' => $mode, 'personId' => $person, 'kitId' => $kit, 'entries' => $normalized];
+        return ['mode' => $mode, 'personId' => $person, 'holderUnitId' => $holderUnit, 'kitId' => $kit, 'entries' => $normalized];
     }
 
     /** Called inside the audited transaction after locking and checking the inventory version. */
@@ -74,7 +75,7 @@ final class InventoryChecks
             if ($target['bulkStockId'] !== null && $entry['checkedQty'] === null) throw Input::invalid('checkedQty', 'required');
             if ($target['bulkStockId'] === null && $entry['checkedQty'] !== null) throw Input::invalid('checkedQty', 'not_allowed');
             if ($target['itemId'] === null && $entry['condition'] !== null) throw Input::invalid('condition', 'not_allowed');
-            if ($batch['mode'] === 'people' && $target['holderPersonId'] !== $batch['personId']) throw Input::invalid('personId', 'invalid');
+            if ($batch['mode'] === 'people' && ($target['holderPersonId'] !== $batch['personId'] || $target['holderUnitId'] !== $batch['holderUnitId'])) throw Input::invalid('holder', 'invalid');
             $item = $target['itemId'] === null ? null : $items->find($target['itemId']);
             $loan = $item === null ? ($target['kitId'] === null ? null : $loans->currentKitLoan($target['kitId'])) : $loans->openItem($item['id']);
             if ($target['loanLineId'] !== null && $target['bulkStockId'] !== null) {
@@ -87,7 +88,7 @@ final class InventoryChecks
                 $belongs = $target['kitId'] === $batch['kitId'] || $target['contextKitId'] === $batch['kitId'] || ($item !== null && $item['kitId'] === $batch['kitId']);
                 if (!$belongs) throw Input::invalid('kitId', 'invalid');
             }
-            $context = ['personId' => $batch['personId'], 'kitId' => $batch['kitId'], 'holder' => $loan['holder'] ?? null,
+            $context = ['personId' => $batch['personId'], 'holderUnitId' => $batch['holderUnitId'], 'kitId' => $batch['kitId'], 'holder' => $loan['holder'] ?? null,
                 'loanId' => $loan['loanId'] ?? null, 'location' => $item['location'] ?? null];
             if ($target['bulkStockId'] !== null) {
                 $context['expectedQty'] = 0;
@@ -97,7 +98,7 @@ final class InventoryChecks
             if ($positive && $item !== null && $item['retiredAt'] !== null) $code = 'item_retired';
             if ($positive && $loan !== null) {
                 $matches = match ($batch['mode']) {
-                    'people' => ($loan['holder']['personId'] ?? null) === $batch['personId'],
+                    'people' => $batch['personId'] !== null ? ($loan['holder']['personId'] ?? null) === $batch['personId'] : ($loan['holder']['unitId'] ?? null) === $batch['holderUnitId'],
                     'kit' => ($loan['kitId'] ?? ($target['kitId'] !== null ? $target['kitId'] : null)) === $batch['kitId'],
                     default => false,
                 };

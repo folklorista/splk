@@ -105,7 +105,8 @@ export class MockInventories {
 
   check(id: number, input: Inv.InventoryCheckBatch): Inv.InventoryCheckResponse {
     const header = this.open(id, input.version);
-    if (!['store', 'people', 'kit'].includes(input.mode) || (input.mode === 'people') !== (input.personId !== undefined) || (input.mode === 'kit') !== (input.kitId !== undefined)) throw invalid('mode');
+    const holders = Number(input.personId != null) + Number(input.holderUnitId != null);
+    if (!['store', 'people', 'kit'].includes(input.mode) || (input.mode === 'people' ? holders !== 1 : holders !== 0) || (input.mode === 'kit') !== (input.kitId !== undefined)) throw invalid('mode');
     if (!Array.isArray(input.entries) || input.entries.length < 1 || input.entries.length > 200) throw invalid('entries');
     if (input.mode === 'kit' && find(this.state.kits, input.kitId!).unitId !== header.unitId) throw new ApiError(404, 'not_found');
     const current = this.freeze(header.unitId, {}), targets = this.collection(id, 'targets'), results: Inv.InventoryCheckOutcome[] = [];
@@ -128,14 +129,14 @@ export class MockInventories {
       const bulk = target.bulkStockId !== null;
       if (bulk ? !Number.isInteger(entry.checkedQty) || entry.checkedQty! < 0 || entry.checkedQty! > 2147483647 : entry.checkedQty !== undefined) throw invalid('checkedQty');
       if (target.itemId === null && entry.condition !== undefined) throw invalid('condition');
-      if (input.mode === 'people' && target.holderPersonId !== input.personId) throw invalid('personId');
+      if (input.mode === 'people' && (target.holderPersonId !== (input.personId ?? null) || target.holderUnitId !== (input.holderUnitId ?? null))) throw invalid('holder');
       const item = this.state.items.find((i) => i.id === target!.itemId);
       const loan = this.state.loans.find((l) => item ? l.lines.some((line) => line.itemId === item.id && !line.closedAt) : target!.kitId !== null ? l.kitId === target!.kitId && l.lines.some((line) => !line.closedAt) : l.lines.some((line) => line.id === target!.loanLineId && !line.closedAt));
       if (input.mode === 'kit' && !(target.kitId === input.kitId || target.contextKitId === input.kitId || item?.kitId === input.kitId)) throw invalid('kitId');
-      const context: Inv.InventoryCheck['context'] = { personId: input.personId ?? null, kitId: input.kitId ?? null, holder: loan?.holder ?? null, loanId: loan?.id ?? null, location: item?.location ?? null };
+      const context: Inv.InventoryCheck['context'] = { personId: input.personId ?? null, holderUnitId: input.holderUnitId ?? null, kitId: input.kitId ?? null, holder: loan?.holder ?? null, loanId: loan?.id ?? null, location: item?.location ?? null };
       if (bulk) context.expectedQty = current.find((t) => t.bulkStockId === target!.bulkStockId && t.contextKitId === target!.contextKitId && t.loanLineId === target!.loanLineId)?.expectedQty ?? 0;
       let code: Inv.InventoryCheckOutcome['code'] | null = positive && item?.retiredAt ? 'item_retired' : null;
-      if (positive && loan && !(input.mode === 'people' ? 'personId' in loan.holder && loan.holder.personId === input.personId : input.mode === 'kit' ? loan.kitId === input.kitId : false)) code = 'loaned_to';
+      if (positive && loan && !(input.mode === 'people' ? input.personId != null ? 'personId' in loan.holder && loan.holder.personId === input.personId : 'unitId' in loan.holder && loan.holder.unitId === input.holderUnitId : input.mode === 'kit' ? loan.kitId === input.kitId : false)) code = 'loaned_to';
       if (positive && input.mode === 'store' && item && item.location !== 'store' && code === null) {
         if (!entry.confirmConflict || !entry.note?.trim()) code = 'not_in_store'; else context.confirmedLocationConflict = true;
       }

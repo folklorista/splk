@@ -114,6 +114,22 @@ final class InventoryChecksTest extends ApiTestCase
         self::assertStatus(201, $response); return $response->decodedBody();
     }
 
+    public function testAnotherUnitHandoverCanBePhysicallyCheckedWithoutInventingAPersonOrReturn(): void
+    {
+        $unit = $this->createUnit('Other');
+        $loan = $this->insert("INSERT INTO costume_loans (unit_id, holder_unit_id, issued_by) VALUES ({$this->fund}, $unit, {$this->actor})");
+        $this->db->exec("INSERT INTO costume_loan_lines (unit_id, loan_id, item_id, qty) VALUES ({$this->fund}, $loan, {$this->item}, 1)");
+        $inventory = $this->create(); $url = '/v1/inventories/' . $inventory['id'];
+        $target = $this->get($url . '/targets')->decodedBody()['items'][0]['id'];
+        $body = ['version' => 1, 'mode' => 'people', 'holderUnitId' => $unit, 'entries' => [['targetId' => $target, 'result' => 'presented']]];
+        self::assertError(422, 'validation_failed', $this->post($url . '/checks', $body + ['personId' => $this->person]));
+        $response = $this->post($url . '/checks', $body); self::assertStatus(200, $response); $result = $response->decodedBody();
+        self::assertSame(1, $result['inventory']['progress']['verifiedQuantity']); self::assertSame(0, $result['inventory']['progress']['peopleCount']);
+        self::assertSame($unit, $result['results'][0]['check']['context']['holderUnitId']); self::assertNull($result['results'][0]['check']['context']['personId']);
+        self::assertSame(0, $this->get($url . '/visits')->decodedBody()['total']);
+        self::assertSame(0, $this->db->query('SELECT count(*) FROM costume_loan_returns')->fetchColumn());
+    }
+
     public function testNumberLookupUsesCurrentIdentityWithoutExpandingTheFrozenScope(): void
     {
         $inventory = $this->create(); $url = '/v1/inventories/' . $inventory['id'];

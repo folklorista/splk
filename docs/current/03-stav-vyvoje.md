@@ -242,3 +242,9 @@ Uživatel rozhodl Q-21 → D-63: fyzické ověření plní pokrytí, pozdější
 - Stávající formuláře výdeje/vrácení/výměny a nového pracovního úkolu podporují výslovný URL kontext inventury. Kontext se načte s pověřením a verzí; neplatný, cizí, právě načítaný či uzavřený kontext se nikdy tiše nevynechá. Po úspěšném navázaném zápisu se jeho verze posune. Přechod po výdeji/výměně kontext zachová; opuštění kontextu je výslovné.
 - Vitest: **132 testů / 31 souborů**, TypeScript aplikace/testů, produkční build **475,24 kB** a `git diff --check` prošly. Testy zahrnují čtenáře, změnu fondu, souběh, nestabilní verzi při čtení a odmítnutí chybného kontextu. Původní komponentové fixture doplněny o novou závislost; navigační test nyní výslovně kontroluje zachování query kontextu.
 - Inventurní hlavní obrazovky ještě následují; krok 7 není uzavřený. Žádné nasazení ani produkční data.
+
+### Krok 7 – doplnění kontrol výdejů jiné složce (D-52)
+
+- Při přípravě obrazovek odhalena mezera: samostatně půjčený kus držiteli typu složka nebylo možné fyzicky ověřit bez vrácení. Režim kontroly u držitele nyní přijímá právě osobu nebo složku, v souladu s existující identitou držitelů D-52. Nevzniká smyšlená osoba, návštěva, výpůjčka ani vrácení. Fondové pověření se nemění.
+- PHP i mock zachovávají typ držitele v dobovém kontextu a odmítají kombinaci obou identit. Doplněny české popisky inventurních událostí v historii kusu.
+- PHPUnit: **218 testů / 1748 assertions**; Vitest **133 testů / 31 souborů**; TypeScript testů a `git diff --check` prošly. Technické upřesnění existujícího D-52, nikoli nové produktové rozhodnutí. Hlavní inventurní obrazovky zůstávají rozpracované.

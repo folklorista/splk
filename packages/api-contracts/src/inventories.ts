@@ -62,6 +62,7 @@ export interface InventoryCheck {
   /** Server-captured facts at observation time; frozen targets are never rewritten. */
   context: {
     personId?: number | null;
+    holderUnitId?: number | null;
     kitId?: number | null;
     holder?: { personId: number } | { unitId: number } | null;
     loanId?: number | null;
@@ -145,6 +146,8 @@ export interface InventoryCheckBatch {
   version: number;
   mode: InventoryMode;
   personId?: number;
+  /** Alternative holder in people mode (D-52); no fictional person or visit is created. */
+  holderUnitId?: number;
   kitId?: number;
   entries: InventoryCheckEntry[];
 }
