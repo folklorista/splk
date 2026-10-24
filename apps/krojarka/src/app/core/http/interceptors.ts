@@ -6,6 +6,7 @@ import { API_BASE_URL } from '../../data/api-config';
 import { CsrfTokenStore } from '../../data/http/csrf-token.store';
 import { AuthService } from '../auth/auth.service';
 import { LOGIN_PATH } from '../auth/auth.guards';
+import { unpackError } from '../../data/http/unpack-error';
 
 /** HTTP interceptors from hosting doc chap. 8, in this order: credentials → auth errors → CSRF. */
 
@@ -44,7 +45,7 @@ export const authErrorInterceptor: HttpInterceptorFn = (request, next) => {
   }
 
   return next(request).pipe(
-    catchError((error: unknown) => {
+    catchError((rawError: unknown) => from(unpackError(rawError)).pipe(switchMap((error: unknown) => {
       if (!(error instanceof HttpErrorResponse)) {
         return throwError(() => error);
       }
@@ -64,6 +65,6 @@ export const authErrorInterceptor: HttpInterceptorFn = (request, next) => {
       }
 
       return throwError(() => error);
-    }),
+    }))),
   );
 };

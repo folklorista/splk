@@ -96,4 +96,25 @@ describe('HTTP interceptors', () => {
     expect(await result).toBe(403);
     expect(auth.refresh).toHaveBeenCalledTimes(1);
   });
+
+  it('refreshes CSRF for a ZIP request whose JSON error arrives as a Blob', async () => {
+    auth.refresh.mockImplementation(async () => TestBed.inject(CsrfTokenStore).set('token-2'));
+    const body = { attachments: [{ id: 'opaque-id', version: 2 }] };
+    const pending = firstValueFrom(http.post(`${API}/funds/1/attachments/export`, body, { responseType: 'blob' }));
+    backend.expectOne(`${API}/funds/1/attachments/export`).flush(new Blob([JSON.stringify({ error: { code: 'csrf_token_invalid' } })], { type: 'application/json' }), { status: 403, statusText: 'Forbidden' });
+    await vi.waitFor(() => expect(auth.refresh).toHaveBeenCalledTimes(1));
+    const retry = backend.expectOne(`${API}/funds/1/attachments/export`);
+    expect(retry.request.headers.get('X-CSRF-Token')).toBe('token-2'); expect(retry.request.body).toEqual(body);
+    const zip = new Blob(['zip'], { type: 'application/zip' }); retry.flush(zip); expect(await pending).toBe(zip);
+  });
+
+  it('retains the original multipart file when refreshing CSRF', async () => {
+    auth.refresh.mockImplementation(async () => TestBed.inject(CsrfTokenStore).set('token-2'));
+    const form = new FormData(); const file = new File(['scan'], 'scan.pdf'); form.set('file', file);
+    const pending = firstValueFrom(http.post(`${API}/attachments`, form));
+    backend.expectOne(`${API}/attachments`).flush({ error: { code: 'csrf_token_invalid' } }, { status: 403, statusText: 'Forbidden' });
+    await vi.waitFor(() => expect(auth.refresh).toHaveBeenCalledTimes(1));
+    const retry = backend.expectOne(`${API}/attachments`); expect(retry.request.body).toBe(form); expect((retry.request.body as FormData).get('file')).toBe(file);
+    expect(retry.request.headers.has('Content-Type')).toBe(false); retry.flush({ id: 'uploaded' }); expect(await pending).toEqual({ id: 'uploaded' });
+  });
 });
