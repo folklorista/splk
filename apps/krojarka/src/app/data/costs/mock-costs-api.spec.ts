@@ -50,6 +50,6 @@ describe('MockCostsApi', () => {
   });
   it('exports all filtered records as real CSV with signed money and protected user formulas', async () => {
     await firstValueFrom(api.create(1, { ...input('-25', 'EUR'), description: '=HYPERLINK("bad")' })); await firstValueFrom(api.create(1, input()));
-    const csv = await firstValueFrom(api.csv({ currency: 'EUR', limit: 1 })); const text = await csv.text(); expect(text).toContain(';-25.0000;EUR;'); expect(text).toContain("'=HYPERLINK"); expect(text).not.toContain(';CZK;');
+    const csv = await firstValueFrom(api.csv({ currency: 'EUR', limit: 1 })); const text = await csv.text(); expect(text).toContain(';-25.0000;EUR;'); expect(text).toContain(';Fund 1;'); expect(text).toContain("'=HYPERLINK"); expect(text).not.toContain(';CZK;');
   });
 });

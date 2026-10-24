@@ -54,12 +54,13 @@ final class CostController extends Controller
             if (!$nested) $this->db()->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
             $data = $this->repo()->list($units, $filters, $csv ? 200 : $limit, $csv ? 0 : $offset);
             if ($csv) while (count($data['items']) < $data['total']) { $page = $this->repo()->list($units, $filters, 200, count($data['items'])); $data['items'] = [...$data['items'], ...$page['items']]; }
+            if ($csv) $data['fundNames'] = $this->db()->query('SELECT id, name FROM units')->fetchAll(\PDO::FETCH_KEY_PAIR);
             return $data;
         });
         if (!$csv) return Response::json($data)->withHeader('Cache-Control', 'no-store');
-        $rows = array_map(fn ($c) => [$c['id'], $c['unitId'], $c['spentOn'], $c['amount'], $c['currency'], $c['supplier'], $c['documentRef'], $c['description'], $c['purpose'], implode(' · ', array_map(fn ($l) => $l['object']['label'] . ' × ' . $l['qty'], $c['links']))], $data['items']);
+        $rows = array_map(fn ($c) => [$c['id'], $data['fundNames'][$c['unitId']], $c['spentOn'], $c['amount'], $c['currency'], $c['supplier'], $c['documentRef'], $c['description'], $c['purpose'], implode(' · ', array_map(fn ($l) => $l['object']['label'] . ' × ' . $l['qty'], $c['links']))], $data['items']);
         $report = ['title' => 'Náklady na kroje', 'generatedAt' => gmdate('c'), 'notice' => 'Evidence nákladů; souhrny po měnách bez přepočtu.', 'sections' => [
-            ['title' => 'Náklady a dobropisy', 'columns' => ['ID', 'Fond ID', 'Datum', 'Částka', 'Měna', 'Dodavatel', 'Doklad', 'Popis', 'Účel', 'Navázané součástky'], 'rows' => $rows],
+            ['title' => 'Náklady a dobropisy', 'columns' => ['ID', 'Fond', 'Datum', 'Částka', 'Měna', 'Dodavatel', 'Doklad', 'Popis', 'Účel', 'Navázané součástky'], 'rows' => $rows],
             ['title' => 'Souhrny po měnách', 'columns' => ['Měna', 'Částka', 'Počet záznamů'], 'rows' => array_map(fn ($t) => [$t['currency'], $t['amount'], $t['count']], $data['totals'])],
         ]];
         return new Response(200, ['Content-Type' => 'text/csv; charset=utf-8', 'Content-Disposition' => 'attachment; filename="naklady.csv"', 'Cache-Control' => 'no-store'], ReportController::csv($report));

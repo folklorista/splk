@@ -38,9 +38,9 @@ export class MockCostsApi extends CostsApi {
     Object.assign(row, value, { links, updatedAt: new Date().toISOString(), updatedBy: this.actor(), version: row.version + 1 }); return this.currentObjects(row);
   }); }
   csv(query: C.CostQuery = {}) { return this.run(async () => {
-    const rows = await this.filtered(query), totals = this.totals(rows);
+    const rows = await this.filtered(query), totals = this.totals(rows), units = await this.units();
     return new Blob([reportCsv({ unitId: query.unitId ?? 0, title: 'Náklady na kroje', generatedAt: new Date().toISOString(), notice: 'Evidence nákladů; souhrny po měnách bez přepočtu.', sections: [
-      { title: 'Náklady a dobropisy', columns: ['ID', 'Fond ID', 'Datum', 'Částka', 'Měna', 'Dodavatel', 'Doklad', 'Popis', 'Účel', 'Navázané součástky'], rows: rows.map((c) => [c.id, c.unitId, c.spentOn, c.amount, c.currency, c.supplier, c.documentRef, c.description, c.purpose, c.links.map((l) => `${l.object.label} × ${l.qty}`).join(' · ')]) },
+      { title: 'Náklady a dobropisy', columns: ['ID', 'Fond', 'Datum', 'Částka', 'Měna', 'Dodavatel', 'Doklad', 'Popis', 'Účel', 'Navázané součástky'], rows: rows.map((c) => [c.id, units.find((u) => u.id === c.unitId)?.name ?? '', c.spentOn, c.amount, c.currency, c.supplier, c.documentRef, c.description, c.purpose, c.links.map((l) => `${l.object.label} × ${l.qty}`).join(' · ')]) },
       { title: 'Souhrny po měnách', columns: ['Měna', 'Částka', 'Počet záznamů'], rows: totals.map((t) => [t.currency, t.amount, t.count]) },
     ] })], { type: 'text/csv;charset=utf-8' });
   }); }
