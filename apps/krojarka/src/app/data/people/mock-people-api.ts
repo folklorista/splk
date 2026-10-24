@@ -1,3 +1,5 @@
+import { AttachmentsApi } from '../attachments/attachments-api';
+import type { PaperMigrationRequest, PageQuery } from '@splk/api-contracts';
 import { inject, Injectable } from '@angular/core';
 import { defer, firstValueFrom, from } from 'rxjs';
 import { DefaultCostume, HolderProfile, HolderProfileInput, ManagedPerson, Page, PeopleQuery, PersonCard, PersonCreateInput, PersonIdentity, PersonInFund, PersonPatch } from '@splk/api-contracts';
@@ -10,6 +12,7 @@ import { PeopleApi } from './people-api';
 /** Uses the same mock persons as organization administration; never creates a second identity registry. */
 @Injectable()
 export class MockPeopleApi extends PeopleApi {
+  private readonly attachments = inject(AttachmentsApi, { optional: true });
   private readonly organization = inject(OrganizationApi);
   private readonly inventory = inject(InventoryApi, { optional: true });
   private readonly auth = inject(AuthService);
@@ -76,11 +79,22 @@ export class MockPeopleApi extends PeopleApi {
       await this.access(unit, true); await this.find(id);
       const old = this.getProfile(unit, id);
       const profile: HolderProfile = { id: old?.id ?? this.nextId++, personId: id, unitId: unit, paperState: input.paperState,
-        note: input.note === undefined ? old?.note ?? null : input.note?.trim() || null, paperCheckedAt: null,
+        note: input.note === undefined ? old?.note ?? null : input.note?.trim() || null, paperCheckedAt: input.originalChecked ? new Date().toISOString() : old?.paperCheckedAt ?? null,
         migratedAt: old?.migratedAt ?? (input.paperState === 'digital' ? new Date().toISOString() : null),
         migratedBy: old?.migratedBy ?? (input.paperState === 'digital' ? this.auth.user()?.account.id ?? 1 : null) };
       this.profiles.set(`${unit}:${id}`, profile); return profile;
     });
+  }
+  migratePaper(unit: number, person: number, input: PaperMigrationRequest) {
+    return this.run(async () => { await this.access(unit, true); await this.find(person); if (!this.inventory) throw new ApiError(500, 'internal_error'); if (input.sourceAttachmentId) {
+        if (!this.attachments) throw new ApiError(404, 'not_found');
+        const source = await firstValueFrom(this.attachments.metadata(input.sourceAttachmentId));
+        if (source.unitId !== unit || source.ownerType !== 'person' || source.ownerId !== person) throw new ApiError(404, 'not_found');
+      }
+      return firstValueFrom(this.inventory.migratePaper(unit, person, input)); });
+  }
+  paperFindings(unit: number, person: number, query: PageQuery = {}) {
+    return this.run(async () => { await this.access(unit, false); await this.find(person); if (!this.inventory) throw new ApiError(500, 'internal_error'); return firstValueFrom(this.inventory.paperFindings(unit, person, query)); });
   }
   private getProfile(unit: number, person: number) { return this.profiles.get(`${unit}:${person}`) ?? null; }
   private async find(id: number) { const person = (await firstValueFrom(this.organization.persons())).find((p) => p.id === id); if (!person) throw new ApiError(404, 'not_found'); return person; }

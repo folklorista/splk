@@ -49,7 +49,7 @@ export class MockInventories {
   movements(unit: number): Inv.LoanMovement[] {
     return this.state.loans.filter((l) => l.unitId === unit).flatMap((loan) => loan.lines.flatMap((line): Inv.LoanMovement[] => {
       const base = { loanId: loan.id, lineId: line.id, itemId: line.itemId, bulkStockId: line.bulkStockId, holder: loan.holder, kitId: loan.kitId };
-      return [{ ...base, inventoryId: line.inventoryId ?? null, id: line.id, type: 'issued', at: loan.issuedAt, by: loan.issuedBy, qty: line.qty, lostQty: 0, note: loan.note },
+      return [{ ...base, inventoryId: line.inventoryId ?? null, id: line.id, type: loan.origin === 'paper_migration' ? 'paper_migration' : 'issued', at: (loan.issuedAt ?? loan.migratedAt)!, by: (loan.issuedBy ?? loan.migratedBy)!, qty: line.qty, lostQty: 0, note: loan.note },
         ...loan.returns.filter((r) => r.lineId === line.id).map((r) => ({ ...base, ...r, inventoryId: r.inventoryId ?? null, type: r.closeType }))];
     })).sort((a, b) => Date.parse(b.at) - Date.parse(a.at) || b.id - a.id || a.type.localeCompare(b.type));
   }

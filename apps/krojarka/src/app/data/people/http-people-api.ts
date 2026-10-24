@@ -1,3 +1,4 @@
+import type { PaperMigrationRequest, PaperMigrationResult, PaperMigrationFindings, PageQuery as PaperPageQuery } from '@splk/api-contracts';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
@@ -8,6 +9,8 @@ import { PeopleApi } from './people-api';
 
 @Injectable()
 export class HttpPeopleApi extends PeopleApi {
+  migratePaper(unit: number, person: number, input: PaperMigrationRequest) { return this.wrap(this.http.post<PaperMigrationResult>(`${this.base}/funds/${unit}/people/${person}/paper-migrations`, input)); }
+  paperFindings(unit: number, person: number, query: PaperPageQuery = {}) { return this.wrap(this.http.get<PaperMigrationFindings>(`${this.base}/funds/${unit}/people/${person}/paper-migration-findings`, { params: { ...query } })); }
   private readonly http = inject(HttpClient);
   private readonly base = inject(API_BASE_URL);
   people(query: PeopleQuery = {}) {

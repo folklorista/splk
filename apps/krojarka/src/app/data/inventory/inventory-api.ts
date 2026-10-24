@@ -1,3 +1,4 @@
+import type { PaperMigrationRequest, PaperMigrationResult, PaperMigrationFindings, PageQuery as PaperPageQuery } from '@splk/api-contracts';
 import type { CostumeLoan, LoanCreate, LoanIssueResult, LoanReturnInput, LoanExchangeInput, LoanPatch, LoanQuery, LoanMovement, MovementQuery } from '@splk/api-contracts';
 import type * as Inv from '@splk/api-contracts';
 import { Observable } from 'rxjs';
@@ -8,6 +9,8 @@ import {
 } from '@splk/api-contracts';
 
 export abstract class InventoryApi {
+  abstract migratePaper(unit: number, person: number, input: PaperMigrationRequest): Observable<PaperMigrationResult>;
+  abstract paperFindings(unit: number, person: number, query?: PaperPageQuery): Observable<PaperMigrationFindings>;
   abstract inventories(unitId: number, query?: PageQuery): Observable<Page<Inv.CostumeInventory>>;
   abstract inventory(id: number): Observable<Inv.InventoryDetail>;
   abstract inventoryPreview(unitId: number, scope: Inv.InventoryScope): Observable<Inv.InventoryPreview>;

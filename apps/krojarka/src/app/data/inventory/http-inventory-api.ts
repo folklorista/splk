@@ -1,3 +1,4 @@
+import type { PaperMigrationRequest, PaperMigrationResult, PaperMigrationFindings, PageQuery as PaperPageQuery } from '@splk/api-contracts';
 import type { CostumeLoan, LoanCreate, LoanIssueResult, LoanReturnInput, LoanExchangeInput, LoanPatch, LoanQuery, LoanMovement, MovementQuery } from '@splk/api-contracts';
 import type * as Inv from '@splk/api-contracts';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -14,6 +15,8 @@ import { InventoryApi } from './inventory-api';
 
 @Injectable()
 export class HttpInventoryApi extends InventoryApi {
+  migratePaper(unit: number, person: number, input: PaperMigrationRequest) { return this.write<PaperMigrationResult>('POST', `/funds/${unit}/people/${person}/paper-migrations`, input); }
+  paperFindings(unit: number, person: number, query: PaperPageQuery = {}) { return this.get<PaperMigrationFindings>(`/funds/${unit}/people/${person}/paper-migration-findings`, query); }
   private readonly http = inject(HttpClient);
   private readonly base = inject(API_BASE_URL);
 

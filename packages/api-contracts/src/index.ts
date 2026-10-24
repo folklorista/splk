@@ -7,3 +7,4 @@ export * from './people';
 export * from './loans';
 export * from './inventories';
 export * from './attachments';
+export * from './paper-migrations';

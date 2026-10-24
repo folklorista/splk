@@ -55,6 +55,7 @@ export type ApiErrorCode =
   | 'attachment_limit'
   | 'attachment_purged'
   | 'attachment_export_required'
+  | 'paper_migration_busy'
   | 'internal_error';
 
 /** `details.reason` of `validation_failed`. */

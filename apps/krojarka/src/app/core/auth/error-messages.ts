@@ -40,6 +40,7 @@ const MESSAGES: Record<string, string> = {
   attachment_limit: 'Byl dosažen povolený počet příloh.',
   attachment_purged: 'Obsah přílohy už byl po exportu odstraněn. Metadata zůstávají v evidenci.',
   attachment_export_required: 'Nejprve stáhněte aktuální ZIP a potvrďte jeho uložení do digiarchivu mimo aplikaci.',
+  paper_migration_busy: 'Podklady nebo držení se právě mění. Převod zkuste znovu.',
 };
 
 const REASONS: Record<string, string> = {

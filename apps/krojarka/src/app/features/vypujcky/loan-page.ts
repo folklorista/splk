@@ -17,7 +17,8 @@ interface ReturnDraft { selected: boolean; qty: number; type: 'returned' | 'sett
   @if (store.detailLoading()) { <p role="status">Načítám předání…</p> }
   @if (store.detail(); as loan) {
     <section class="card"><h2>{{ store.holderLabel(loan.holder) }}</h2>
-      <p>Vydáno {{ loan.issuedAt | date:'d. M. y HH:mm' }} · {{ loan.kitId ? store.kitLabel(loan.kitId) : 'Jednotlivé součástky' }}</p>
+      @if (loan.origin === 'paper_migration') { <p>Převzato z papíru · digitalizováno {{ loan.migratedAt | date:'d. M. y HH:mm' }} · účet {{ loan.migratedBy }}.</p><p>Původní datum výdeje: {{ loan.originalIssuedOn ? (loan.originalIssuedOn | date:'d. M. y') : 'neznámé' }}. Převod není fyzické ověření ani nový výdej.</p> }
+      @else { <p>Vydáno {{ loan.issuedAt | date:'d. M. y HH:mm' }} · {{ loan.kitId ? store.kitLabel(loan.kitId) : 'Jednotlivé součástky' }}</p> }
       @if (loan.holder.personId) { <p><a [routerLink]="['/lide', loan.holder.personId]">Krojová karta držitele</a></p> }
       @if (loan.replacesLoanId) { <p>Navazuje výměnou na <a [routerLink]="['/vypujcky', loan.replacesLoanId]">předání #{{ loan.replacesLoanId }}</a>.</p> }
       <form (ngSubmit)="save()"><fieldset [disabled]="!store.canManage() || store.busy()"><legend>Termín a poznámka</legend>
@@ -25,7 +26,7 @@ interface ReturnDraft { selected: boolean; qty: number; type: 'returned' | 'sett
         <button>Uložit termín a poznámku</button>
       </fieldset></form>
     </section>
-    <section class="card"><h2>Skutečně předaný obsah</h2><p>Jde o snímek při výdeji. Pozdější změny složení kompletu tento obsah nemění.</p>
+    <section class="card"><h2>{{ loan.origin === 'paper_migration' ? 'Držení převzaté z papíru' : 'Skutečně předaný obsah' }}</h2><p>Pozdější změny složení kompletu tento obsah nemění.</p>
       <form (ngSubmit)="reviewReturn()"><fieldset [disabled]="!store.canManage() || store.busy() || store.operation?.blocked()"><legend>Vrácení po jednotlivých řádcích</legend>
         <button type="button" (click)="selectAll()">Označit všechny otevřené řádky k převzetí</button>
         @for (line of loan.lines; track line.id) {

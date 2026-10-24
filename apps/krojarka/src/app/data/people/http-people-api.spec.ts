@@ -17,6 +17,13 @@ describe('HttpPeopleApi', () => {
     const write = backend.expectOne('/v1/funds/2/people/8/profile'); expect(write.request.method).toBe('PUT'); expect(write.request.body).toEqual({ paperState: 'paper', note: 'Own shoes' }); write.flush({}); await profile;
     const identity = firstValueFrom(api.update(8, { contact: '555' })); const patch = backend.expectOne('/v1/people/8'); expect(patch.request.method).toBe('PATCH'); expect(patch.request.body).toEqual({ contact: '555' }); patch.flush({}); await identity;
   });
+  it('uses a dedicated import endpoint, preserving exact numbers and unknown issue dates', async () => {
+    const input = { entries: [{ seriesId: 7, number: '03', originalIssuedOn: null }] };
+    const pending = firstValueFrom(api.migratePaper(2, 8, input)); const request = backend.expectOne('/v1/funds/2/people/8/paper-migrations');
+    expect(request.request.method).toBe('POST'); expect(request.request.body).toEqual(input); request.flush({ id: 8, results: [] }); await pending;
+    const findings = firstValueFrom(api.paperFindings(2, 8, { limit: 200, offset: 200 }));
+    const read = backend.expectOne((r) => r.url === '/v1/funds/2/people/8/paper-migration-findings'); expect(read.request.params.get('offset')).toBe('200'); read.flush({ items: [], total: 0 }); await findings;
+  });
   it('preserves duplicate candidates for explicit user confirmation', async () => {
     const result = firstValueFrom(api.create({ firstName: 'Jan', lastName: 'Novák' })).catch((e: unknown) => e);
     const req = backend.expectOne('/v1/people'); expect(req.request.method).toBe('POST'); expect(req.request.body.confirmDuplicate).toBeUndefined();

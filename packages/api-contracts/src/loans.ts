@@ -36,8 +36,13 @@ export interface CostumeLoan {
   unitId: number;
   holder: LoanHolder;
   kitId: number | null;
-  issuedAt: string;
-  issuedBy: number;
+  issuedAt: string | null;
+  issuedBy: number | null;
+  /** Absent in older v1 responses means handover. Paper imports never imply a physical issue. */
+  origin?: 'handover' | 'paper_migration';
+  migratedAt?: string | null;
+  migratedBy?: number | null;
+  originalIssuedOn?: string | null;
   /** ISO 8601 timestamp; null means long-term. */
   dueAt: string | null;
   note: string | null;
@@ -98,7 +103,7 @@ export interface LoanMovement {
   id: number;
   loanId: number;
   lineId: number;
-  type: 'issued' | LoanCloseType;
+  type: 'issued' | 'paper_migration' | LoanCloseType;
   at: string;
   by: number;
   itemId: number | null;

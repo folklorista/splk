@@ -54,6 +54,8 @@ export interface PersonCard {
   profile: HolderProfile | null;
 }
 export interface HolderProfileInput {
+  /** Explicit comparison with the paper original, never physical verification of a costume. */
+  originalChecked?: boolean;
   paperState: PaperState;
   note?: string | null;
 }

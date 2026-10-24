@@ -19,8 +19,8 @@ import { LoansStore } from './loans.store';
       <button type="submit" [disabled]="store.loading()">Použít filtr</button>
     </form>
     @for (loan of store.loans(); track loan.id) {
-      <article class="entry"><a [routerLink]="[loan.id]">{{ store.holderLabel(loan.holder) }} · výdej #{{ loan.id }}</a>
-        <span>{{ loan.issuedAt | date:'d. M. y HH:mm' }} · {{ loan.kitId ? store.kitLabel(loan.kitId) : 'Jednotlivé součástky' }}</span>
+      <article class="entry"><a [routerLink]="[loan.id]">{{ store.holderLabel(loan.holder) }} · {{ loan.origin === 'paper_migration' ? 'převzato z papíru' : 'výdej' }} #{{ loan.id }}</a>
+        <span>{{ loan.origin === 'paper_migration' ? 'Digitalizováno' : 'Vydáno' }} {{ (loan.issuedAt ?? loan.migratedAt) | date:'d. M. y HH:mm' }} · {{ loan.kitId ? store.kitLabel(loan.kitId) : 'Jednotlivé součástky' }}</span>
         <span>{{ remaining(loan) }} nevráceno · termín {{ loan.dueAt ? (loan.dueAt | date:'d. M. y HH:mm') : 'dlouhodobě' }}</span>
         @if (loan.note) { <span>{{ loan.note }}</span> }
       </article>
@@ -36,7 +36,7 @@ import { LoansStore } from './loans.store';
     @for (m of store.movements(); track m.type + ':' + m.id) {
       <article class="entry"><a [routerLink]="[m.loanId]">{{ labels[m.type] }} · {{ store.holderLabel(m.holder) }}</a>
         <span>{{ m.at | date:'d. M. y HH:mm' }} · {{ m.itemId ? store.itemLabel(m.itemId) : store.stockLabel(m.bulkStockId) }}</span>
-        <span>{{ m.qty }} {{ m.type === 'issued' ? 'předáno' : 'převzato' }}@if (m.lostQty) { · {{ m.lostQty }} ztraceno }</span>
+        <span>{{ m.qty }} {{ m.type === 'paper_migration' ? 'převzato z papírové evidence' : m.type === 'issued' ? 'předáno' : 'převzato' }}@if (m.lostQty) { · {{ m.lostQty }} ztraceno }</span>
         @if (m.note) { <span>{{ m.note }}</span> }
       </article>
     } @empty { @if (!store.loading()) { <p>Zatím nejsou evidované žádné pohyby.</p> } }
@@ -47,7 +47,7 @@ export class LoansPage {
   private readonly route = inject(ActivatedRoute);
   constructor() { const person = Number(this.route.snapshot.queryParamMap.get('person')), kit = Number(this.route.snapshot.queryParamMap.get('kit')); if (person > 0 || kit > 0) { this.person = person || 0; this.kit = kit || 0; this.state = 'all'; const query = { ...(person > 0 ? { person } : {}), ...(kit > 0 ? { kit } : {}) }; void this.store.reload(query, query); } }
   state = 'open'; person = 0; external = false; item = 0; kit = 0; from = ''; to = '';
-  readonly labels = { issued: 'Výdej', returned: 'Vrácení', exchanged: 'Výměna', settled: 'Ztráta' };
+  readonly labels = { issued: 'Výdej', paper_migration: 'Převzato z papíru', returned: 'Vrácení', exchanged: 'Výměna', settled: 'Ztráta' };
   remaining(loan: ReturnType<LoansStore['loans']>[number]) { return loan.lines.filter((l) => !l.closedAt).reduce((sum, l) => sum + l.qty - l.returnedQty, 0); }
   filter() { void this.store.reload({ ...(this.state === 'open' ? { open: true } : this.state === 'closed' ? { open: false } : this.state === 'overdue' ? { overdue: true } : {}), ...(this.person ? { person: this.person } : {}), ...(this.external ? { holderType: 'external' as const } : {}) }); }
   filterMovements() { void this.store.reload(undefined, { ...(this.from ? { from: new Date(this.from).toISOString() } : {}), ...(this.to ? { to: new Date(this.to).toISOString() } : {}), ...(this.item ? { item: this.item } : {}), ...(this.kit ? { kit: this.kit } : {}), ...(this.person ? { person: this.person } : {}) }); }

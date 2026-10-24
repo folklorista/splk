@@ -59,7 +59,7 @@ export class InventoryDetailPage {
   seriesName(id: number): string { return this.store.series().find((s) => s.id === id)?.name ?? `Řada #${id}`; }
   stockName(id: number): string { const stock = this.store.stocks().find((s) => s.id === id); return stock ? `${this.store.types().find((t) => t.id === stock.partTypeId)?.name ?? 'Zásoba'} ${stock.variant ?? ''}`.trim() : `Zásoba #${id}`; }
   targetName(id: number): string { const target = this.store.targets().find((t) => t.id === id); return target ? this.store.targetLabel(target) : `Cíl #${id}`; }
-  movementLabel(type: Inv.LoanMovement['type']): string { return { issued: 'Výdej', returned: 'Vrácení', exchanged: 'Výměna', settled: 'Vypořádání ztrátou' }[type]; }
+  movementLabel(type: Inv.LoanMovement['type']): string { return { issued: 'Výdej', paper_migration: 'Převzato z papíru', returned: 'Vrácení', exchanged: 'Výměna', settled: 'Vypořádání ztrátou' }[type]; }
   visibleTargets(): Inv.InventoryTarget[] {
     return this.store.targets().filter((t) => {
       if (this.mode === 'people') return this.holder === `person:${t.holderPersonId}` && t.holderPersonId !== null || this.holder === `unit:${t.holderUnitId}` && t.holderUnitId !== null;

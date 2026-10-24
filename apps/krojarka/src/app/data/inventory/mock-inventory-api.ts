@@ -1,3 +1,4 @@
+import { migratePaper } from './mock-paper-migrations';
 import type { CostumeLoan, LoanCreate, LoanIssueResult, LoanReturnInput, LoanExchangeInput, LoanPatch, LoanQuery, LoanMovement, MovementQuery } from '@splk/api-contracts';
 import type * as Inv from '@splk/api-contracts';
 import { inject, Injectable } from '@angular/core';
@@ -15,6 +16,7 @@ import { MockInventories, MockInventoryState, inventoryPage } from './mock-inven
 
 interface State extends MockInventoryState {
   events: ItemEvent[];
+  paperFindings: Inv.PaperMigrationFinding[];
 }
 
 /** Session-only synthetic inventory. Serialized operations roll back together, like server transactions. */
@@ -22,10 +24,15 @@ interface State extends MockInventoryState {
 export class MockInventoryApi extends InventoryApi {
   private readonly catalog = inject(CatalogApi);
   private readonly organization = inject(OrganizationApi, { optional: true });
-  private state: State = { items: [], stocks: [], kits: [], events: [], orders: [], loans: [], inventories: [], targets: [], checks: [], slots: [], visits: [] };
+  private state: State = { paperFindings: [], items: [], stocks: [], kits: [], events: [], orders: [], loans: [], inventories: [], targets: [], checks: [], slots: [], visits: [] };
   private nextId = 1;
   private queue: Promise<unknown> = Promise.resolve();
 
+  paperFindings(unit: number, person: number, query: PageQuery = {}) { return this.run(() => page(this.state.paperFindings.filter((f) => f.unitId === unit && f.personId === person).slice().reverse(), query)); }
+  migratePaper(unit: number, person: number, input: Inv.PaperMigrationRequest) { return this.run(async () => {
+    if (!this.organization || !(await firstValueFrom(this.organization.persons())).some((p) => p.id === person)) throw new ApiError(404, 'not_found');
+    return migratePaper(this.state, () => this.nextId++, this.event.bind(this), await firstValueFrom(this.catalog.series(unit)), unit, person, input);
+  }); }
   inventories(unit: number, query: PageQuery = {}) { return this.run(() => inventoryPage(this.state.inventories.filter((i) => i.unitId === unit).sort((a, b) => Date.parse(b.startedAt) - Date.parse(a.startedAt) || b.id - a.id), query)); }
   inventory(id: number) { return this.run(() => this.inventoryEngine().detail(id)); }
   inventoryPreview(unit: number, scope: Inv.InventoryScope) { return this.run(async () => (await this.inventoryScopeEngine(unit)).preview(unit, scope)); }
@@ -276,7 +283,7 @@ export class MockInventoryApi extends InventoryApi {
       const overdue = open && loan.dueAt !== null && Date.parse(loan.dueAt) < Date.now();
       return loan.unitId === unit && (query.open === undefined || query.open === open) && (query.overdue === undefined || query.overdue === overdue)
         && (!query.kit || loan.kitId === query.kit) && (!query.person || 'personId' in loan.holder && loan.holder.personId === query.person) && (!query.holderType || 'personId' in loan.holder);
-    }).sort((a, b) => b.issuedAt.localeCompare(a.issuedAt) || b.id - a.id), query));
+    }).sort((a, b) => (b.issuedAt ?? b.migratedAt ?? '').localeCompare(a.issuedAt ?? a.migratedAt ?? '') || b.id - a.id), query));
   }
   loan(id: number) { return this.run(() => this.find(this.state.loans, id)); }
   issue(unit: number, input: LoanCreate) { return this.run(async () => {
