@@ -362,6 +362,14 @@ Krojařka používá výchozí test runner Angularu 22 – **Vitest** (jsdom). D
 
 **Zdroj:** uživatel 2026-10-24 (Q-19: „Počet v kompletu zachovat; výpůjčku celého kompletu nezapočítávat podruhé. Doplnit pravidlo proti dvojímu odečtu.“). Poslední bod navazuje na neměnnost obsahu předání v `current/06` kap. 5.1b.
 
+### D-62 Jiné vypořádání výpůjčky znamená ztrátu
+
+- `close_type=settled` znamená ztrátu nevrácené části, nikoli fyzické převzetí. Nevrácený číslovaný kus se vyřadí, u nečíslované zásoby se celkový počet sníží o ztracené množství.
+- Skutečně vrácený počet zůstává v `returned_qty`; zbytek je ztráta. Operace vyžaduje důvod a proběhne atomicky s historií a auditem.
+- U početního doplňku kompletu se sníží i jeho evidované přidělení, aby ztracený počet nezůstával rezervovaný. Požadované množství a původní snímek předání se zachovají; ztráta není fyzickým ověřením zbývajícího složení. Přidělení v jiných kompletech se tiše neopravují, nekonzistentní úbytek se odmítne.
+
+**Zdroj:** uživatel 2026-10-24 (Q-20: „Vypořádání znamená ztrátu: vyřadit kus a snížit zásobu“). Technické počty a integrita navazují na D-61 a požadovaný důvod vyřazení v API kap. 4.4.
+
 ## API v1 (2026-10-23, `current/api-v1-a-schema.md` kap. 7)
 
 ### D-48 Správa organizace v Krojařce

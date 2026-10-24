@@ -252,6 +252,15 @@ První účet se správou organizace vytvoří seed z `.env` při první migraci
 | `POST /v1/loans/{id}/return` | vrácení po řádcích: `lines[{lineId, returnedQty, closeType, note, condition, issuable, location}]` |
 | `POST /v1/loans/{id}/exchange` | výměna kusu za jiný dostupný kus v jedné transakci |
 | `PATCH /v1/loans/{id}` | termín vrácení, poznámka |
+| `GET /v1/loans/{id}` | detail snímku výdeje a historie jednotlivých vrácení v oprávněném fondu |
+
+Implementační upřesnění kroku 6, část API:
+
+- Držitel ve vstupu i odpovědi je právě `{personId}` nebo `{unitId}`. Samotný výdej nezakládá členství, účet ani profil papírové karty. Seznam výpůjček podporuje také filtr `person`.
+- Výdej kompletu vrací `omittedItemIds`; nevydatelné, vyřazené nebo již půjčené kusy nepředává. Při vynechání kusu nebo známé neúplnosti vyžaduje poznámku (D-38). Určené složení ani stav fyzického ověření se nemění.
+- Vracení přijímá skutečně převzaté množství a `closeType=returned`, nebo vypořádání ztrátou `settled` podle D-62 s povinným důvodem. `exchanged` vzniká pouze atomickou výměnou (`lineId`, nový `itemId`, nepovinně poznámka a stav převzatého kusu). Při ztrátě se vyřadí nevrácený kus nebo sníží zásoba i přidělení v původním kompletu; snímek a požadované složení zůstávají. Historie vrácení i pohyby vracejí také `lostQty`.
+- Přehled zásob přidává `quantityReserved` a `quantityAvailable`; rezervované množství zahrnuje přidělení i výpůjčky bez dvojího odečtu (D-61). Historie pohybů obsahuje i každé částečné vrácení. Řazení je od nejnovějších, stránkování používá `limit` a `offset` podle kap. 2.
+- Stabilní chyby: `item_unavailable`, `kit_unavailable`, `loan_line_closed`, `insufficient_stock`. Všechny zápisy včetně vlastních událostí a auditu jsou atomické. Aktuální držitelé a filtry kusů, napojení krojových karet a frontend výpůjček ještě nejsou dokončené.
 
 ### 4.6 Inventury
 

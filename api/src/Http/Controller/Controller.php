@@ -48,6 +48,9 @@ abstract class Controller
                 return $result;
             });
         } catch (\PDOException $e) {
+            if ($e->getCode() === '23514' && str_contains($e->getMessage(), 'Allocations and outstanding handovers exceed total stock')) {
+                throw new HttpException(422, 'insufficient_stock', 'Allocations and outstanding handovers exceed total stock.');
+            }
             if (Transaction::isUniqueViolation($e)) {
                 throw new HttpException(422, $duplicateCode, 'An active entry with the same key already exists.');
             }

@@ -10,6 +10,17 @@ Co ještě musíme rozhodnout (úroveň **B**). Každá otázka uvádí, odkud p
 
 ## Blokuje Krojařku
 
+### Q-20 Dopad jiného vypořádání nevrácených věcí – *rozhodnuto → D-62*
+
+Rozhodnuto uživatelem 2026-10-24 → D-62: vypořádání znamená ztrátu, vyřadit kus a snížit zásobu. Následuje původní podklad otázky. `current/06` kap. 5.2 umožňuje oficiální vypořádání nevrácených částí a API kap. 3.4 uvádí `close_type=settled`. Není určen dopad na majetek: uzavřením výpůjčky by se podle vzorce dostupnosti nevrácený kus nebo počet zásoby znovu uvolnil.
+
+Je potřeba rozhodnout:
+
+1. Vypořádání zatím nezpřístupnit; dokončit výdej, skutečné vrácení a výměnu. Hodnota ve schématu zůstane připravená, ale API ji odmítne.
+2. Vypořádání znamená ztrátu: současně vyřadit nevrácený kus a snížit zásobu. Je pak třeba určit vztah k přidělení doplňků v kompletu (D-61) a požadované důvody.
+
+Bez rozhodnutí se `settled` nezapisuje ani se nevrácené věci neuvolňují. Běžné vrácení a výměna používají skutečně převzaté množství; výměna probíhá atomicky samostatným endpointem.
+
 ### Q-19 Počítání nečíslovaných zásob při výpůjčce celého kompletu – *rozhodnuto → D-61*
 
 Rozhodnuto uživatelem 2026-10-24 → D-61: počet v kompletu zachovat, výpůjčku celého kompletu nezapočítávat podruhé. Následuje původní podklad otázky.

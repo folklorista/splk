@@ -37,6 +37,9 @@ export type ApiErrorCode =
   | 'possible_duplicate'
   | 'duplicate_stock'
   | 'insufficient_stock'
+  | 'item_unavailable'
+  | 'kit_unavailable'
+  | 'loan_line_closed'
   | 'item_retired'
   | 'composition_conflict'
   | 'internal_error';

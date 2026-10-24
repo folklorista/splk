@@ -63,7 +63,7 @@ final class BulkStockController extends Controller
             $values = ['variant' => $input->has('variant') ? $input->optionalString('variant', 100) : $current['variant'],
                 'quantityTotal' => $input->has('quantityTotal') ? InventoryInput::quantity($request->json(), 'quantityTotal') : $current['quantityTotal'],
                 'note' => $input->has('note') ? $input->optionalString('note', 5000) : $current['note']];
-            if ($values['quantityTotal'] < $current['quantityInKits']) {
+            if ($values['quantityTotal'] < $current['quantityReserved']) {
                 throw new HttpException(422, 'insufficient_stock', 'Total quantity is below the recorded kit allocations.');
             }
             $this->stocks()->update($current['id'], $values);

@@ -123,3 +123,12 @@ Demo vzniklo před rozhodnutími z 22. 10. 2026 a dál se nerozvíjí ani nekonz
 - Sdílené TypeScript kontrakty výdeje, vrácení, výměny, seznamů a pohybů. API a obrazovky kroku 6 zatím nejsou dokončené.
 - PHPUnit: **144 testů / 1104 assertions**, TypeScript kontrakty a `git diff --check` prošly. První běh odhalil chybu nového triggeru, opraveno a celá sada zopakována úspěšně. Migrace ověřena pouze v lokální testovací DB včetně down/up a zachování dosavadní evidence.
 - Ručně zatím není co ovládat v UI; před případným nasazením bude potřeba ověřit výdej a částečné vrácení v HTTP režimu. Produkce, deploy a push neprovedeny.
+
+
+### Krok 6, etapa 2a – API předání a vypořádání
+
+- Výdej osobě i jiné složce, přesný snímek kompletu s vynechanými kusy a poznámkou při známé neúplnosti, stránkované seznamy a pohyby, detail, změna termínu a poznámky, částečná vrácení a atomická výměna existujících kusů. Pověření, fondové vazby, validace, vlastní události a audit na serveru.
+- Q-20 rozhodnuta → D-62: vypořádání znamená ztrátu; kus se vyřadí, počet zásoby i evidované přidělení v původním kompletu se sníží, požadované množství a snímek zůstanou. Povinný důvod, žádné smyšlené převzetí nebo fyzické ověření.
+- Kapacitní ochrana D-61 platí i pro nové výpůjčky, snížení zásoby a změnu složení; selhání vrací `insufficient_stock` a operace se vrátí zpět.
+- PHPUnit: **161 testů / 1298 assertions**, Vitest: **75 testů / 20 souborů**, TypeScript aplikace, testů a kontraktů a kontrola diffu prošly. Produkční build: **492,46 kB**. Během doplnění ztrát opraven SQL řetězec a celá API sada zopakována úspěšně.
+- Krok 6 není dokončen: následuje odvození dostupnosti a držitelů, napojení karet, HTTP/mock adaptéry a UI. Ruční ověření celých uživatelských toků bude možné po dokončení obrazovek. Produkce, deploy a push neprovedeny.

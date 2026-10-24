@@ -49,8 +49,12 @@ final class BulkStockRepository
     {
         $statement = $this->db->prepare('SELECT coalesce(sum(present_qty), 0) FROM costume_kit_bulk_lines WHERE bulk_stock_id = :id');
         $statement->execute(['id' => $row['id']]);
+        $inKits = (int) $statement->fetchColumn();
+        $reserved = $this->db->prepare('SELECT costume_bulk_reserved(:id)');
+        $reserved->execute(['id' => $row['id']]);
+        $quantityReserved = (int) $reserved->fetchColumn();
         return ['id' => (int) $row['id'], 'unitId' => (int) $row['unit_id'], 'partTypeId' => (int) $row['part_type_id'],
             'variant' => $row['variant'], 'quantityTotal' => (int) $row['quantity_total'], 'note' => $row['note'],
-            'quantityInKits' => (int) $statement->fetchColumn()];
+            'quantityInKits' => $inKits, 'quantityReserved' => $quantityReserved, 'quantityAvailable' => (int) $row['quantity_total'] - $quantityReserved];
     }
 }

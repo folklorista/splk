@@ -1,4 +1,4 @@
-import type { ItemCondition, ItemLocation, PageQuery } from './inventory';
+import type { BulkStock, ItemCondition, ItemLocation, PageQuery } from './inventory';
 
 /** Handovers are facts, independently of intended kit membership (API v1 chap. 4.5). */
 export type LoanHolder = { personId: number; unitId?: never } | { unitId: number; personId?: never };
@@ -15,6 +15,7 @@ export interface LoanLine {
   closeNote: string | null;
 }
 export interface LoanReturn {
+  lostQty: number;
   id: number;
   lineId: number;
   qty: number;
@@ -51,7 +52,7 @@ export interface LoanIssueResult extends CostumeLoan {
 export interface LoanReturnInput {
   lines: {
     lineId: number;
-    /** Quantity physically handed back now, not a cumulative counter. */
+    /** Quantity physically handed back now. settled writes off the remaining loss and requires a note. */
     returnedQty: number;
     closeType: LoanCloseType;
     note?: string | null;
@@ -83,6 +84,7 @@ export interface MovementQuery extends PageQuery {
   to?: string;
 }
 export interface LoanMovement {
+  lostQty: number;
   id: number;
   loanId: number;
   lineId: number;
@@ -95,4 +97,10 @@ export interface LoanMovement {
   holder: LoanHolder;
   kitId: number | null;
   note: string | null;
+}
+
+/** Stock response enriched with actual handovers; overlap is counted once (D-61). */
+export interface LoanAwareBulkStock extends BulkStock {
+  quantityReserved: number;
+  quantityAvailable: number;
 }
