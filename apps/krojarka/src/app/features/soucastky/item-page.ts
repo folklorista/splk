@@ -1,3 +1,4 @@
+import { AttachmentGallery } from '../dokumenty/attachment-gallery';
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,7 +11,7 @@ import { InventoryOperationNotice } from '../inventury/inventory-operation-notic
 import { CHECK_RESULTS } from '../inventury/inventory-feedback';
 import { CONDITIONS, EVENT_LABELS, FIELD_LABELS, LOCATIONS, ORDER_STATES, ORDER_TYPES } from './inventory-labels';
 
-@Component({ selector: 'app-item-page', imports: [ReactiveFormsModule, RouterLink, DatePipe, InventoryOperationNotice], templateUrl: './item-page.html' })
+@Component({ selector: 'app-item-page', imports: [AttachmentGallery, ReactiveFormsModule, RouterLink, DatePipe, InventoryOperationNotice], templateUrl: './item-page.html' })
 export class ItemPage {
   protected readonly store = inject(InventoryStore);
   private readonly route = inject(ActivatedRoute);

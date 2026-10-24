@@ -30,11 +30,12 @@ function fakeStore() {
 }
 describe('Inventory page behavior', () => {
   let store: ReturnType<typeof fakeStore>, navigate: ReturnType<typeof vi.fn>;
-  beforeEach(() => {
+  beforeEach(async () => {
     store = fakeStore(); navigate = vi.fn(async () => true); store.invalidatePreview.mockImplementation(() => store.preview.set(null));
     TestBed.configureTestingModule({ providers: [{ provide: InventoriesStore, useValue: store }, { provide: Router, useValue: { navigate } },
       { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '7' })), snapshot: { queryParamMap: convertToParamMap({}) } } }] });
     for (const component of [InventoriesPage, InventoryDetailPage, InventoryCheckForm]) TestBed.overrideComponent(component, { set: { template: '' } });
+    await TestBed.compileComponents();
   });
   it('requires a current scope preview before starting and invalidates it after a filter change', async () => {
     const fixture = TestBed.createComponent(InventoriesPage); fixture.detectChanges(); const page = fixture.componentInstance;

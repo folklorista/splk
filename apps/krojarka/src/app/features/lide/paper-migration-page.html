@@ -1,0 +1,34 @@
+<a routerLink="..">← Karta osoby</a>
+<h2>Převod papírové karty</h2>
+@if (store.error()) { <p role="alert" class="notice notice-danger">{{ store.error() }} <button type="button" (click)="store.load()">Obnovit</button></p> }
+@if (store.notice()) { <p role="status">{{ store.notice() }}</p> }
+@if (store.loading()) { <p>Načítám kartu a dosavadní držení…</p> }
+@if (store.card(); as card) {
+  <h3>{{ card.person.firstName }} {{ card.person.lastName }}</h3>
+  <p>Stav: {{ card.profile?.paperState === 'digital' ? 'Digitální evidence' : card.profile?.paperState === 'migrating' ? 'Převod rozpracován' : 'Papír je autoritativní' }}. Převod nepotvrzuje fyzickou přítomnost, úplnost ani stav kroje.</p>
+  <section class="card"><h3>1. Podklady</h3><p>Sken může být zastaralý. Poslední porovnání s originálem: {{ (card.profile?.paperCheckedAt | date:'d. M. y H:mm') || 'nezaznamenáno' }}.</p>
+    <app-attachment-gallery ownerType="person" [ownerId]="card.person.id" title="Papírové podklady osoby" />
+    @if (store.canManage()) { <label><input type="checkbox" [(ngModel)]="originalChecked"> Právě jsem porovnal/a aktuální papírový originál (nejde o fyzickou kontrolu kroje).</label>
+    <label class="field">Fondová poznámka a nejasnosti včetně důvodu nedostupnosti originálu<textarea [(ngModel)]="note" maxlength="5000"></textarea></label>
+    <button type="button" [disabled]="store.busy()" (click)="store.start(originalChecked, note)">Uložit rozpracovaný převod</button> }
+  </section>
+  <section class="card"><h3>2. Převzít současné držení z papíru</h3><p>Zapisujte jen položky uvedené jako aktuálně svěřené. Nevzniká nový výdej. Neznámé historické datum nechte prázdné. Složení kompletu ani fyzické ověření se z papíru nepřebírá.</p>
+    @if (store.canManage()) { <form (ngSubmit)="migrate()"><fieldset class="form-row inventory-fieldset" [disabled]="store.busy()">
+      <label class="field">Evidenční řada<select name="series" [(ngModel)]="seriesId"><option [ngValue]="0">— vyberte —</option>@for (s of store.series(); track s.id) { <option [ngValue]="s.id">{{ s.name }}{{ s.archived ? ' · archivní' : '' }}</option> }</select></label>
+      <label class="field">Čísla kusů<input name="numbers" [(ngModel)]="numbers" placeholder="1, 03, 7-9" maxlength="4000"></label>
+      <label class="field">Doložené původní datum výdeje (nepovinné)<input type="date" name="issued" [(ngModel)]="originalIssuedOn"></label>
+      <label class="field">Poznámka k této dávce převodu<textarea name="importNote" [(ngModel)]="importNote" maxlength="2000"></textarea></label>
+      <button class="button" [disabled]="!seriesId || !numbers.trim()">Převzít doložené držení</button>
+    </fieldset></form> }
+    <ul>@for (r of store.results(); track $index) { <li>{{ r.label }} · {{ labels[r.status] }} @if (r.loanId) { <a [routerLink]="['/vypujcky', r.loanId]">Detail držení</a> }</li> }</ul>
+    <a routerLink="/soucastky" [queryParams]="{ person: card.person.id }">Dohledat nebo založit chybějící součástku</a> · <a routerLink="/inventury">Samostatně provést fyzickou inventurní kontrolu</a>
+  </section>
+  <section class="card"><h3>3. Nesrovnalosti zachycené při převodu</h3><p>Historické záznamy zůstávají zachované i po pozdějším vyjasnění. Nejasnosti o nečíslovaných věcech nebo nečitelných zápisech uveďte také ve fondové poznámce.</p><ul>@for (f of store.findings(); track f.id) { <li>{{ f.at | date:'d. M. y H:mm' }} · {{ f.label }} · {{ labels[f.code] }} · {{ f.note }}</li> } @empty { <li>Žádné zaznamenané nesrovnalosti převodu.</li> }</ul></section>
+  <section class="card"><h3>4. Rekapitulace současné evidence</h3><ul>@for (loan of store.loans(); track loan.id) { <li><a [routerLink]="['/vypujcky', loan.id]">{{ loan.origin === 'paper_migration' ? 'Převzato z papíru' : 'Skutečný digitální výdej' }}</a><ul>@for (line of loan.lines; track line.id) { @if (!line.closedAt) { <li>{{ line.label }} · {{ line.qty - line.returnedQty }} ks</li> } }</ul></li> } @empty { <li>Žádné digitálně evidované držení. Obsah papíru se automaticky nepovažuje za přepsaný.</li> }</ul>
+    <p>Datum digitalizace: {{ (card.profile?.migratedAt | date:'d. M. y H:mm') || 'dosud nepotvrzeno' }}{{ card.profile?.migratedBy ? ' · účet ' + card.profile?.migratedBy : '' }}.</p>
+  </section>
+  @if (store.canManage()) { <section class="card"><h3>5. Převzít evidenci</h3><p>Nevyřešené nesrovnalosti zůstávají v evidenci. Převedení karty není fyzické ověření majetku. Původní skeny označte jako archivní v galerii; obsah odstraňte až po uložení a ověření ZIP v digiarchivu.</p>
+    <label><input type="checkbox" [(ngModel)]="confirmed"> Od této chvíle se změny u této osoby zapisují elektronicky. Podklady a zbývající nejasnosti jsem zkontroloval/a.</label>
+    <button type="button" [disabled]="store.busy() || !confirmed" (click)="store.finish(confirmed, originalChecked, note)">Potvrdit digitální evidenci</button>
+  </section> }
+}

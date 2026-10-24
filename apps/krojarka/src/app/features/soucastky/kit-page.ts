@@ -1,3 +1,4 @@
+import { AttachmentGallery } from '../dokumenty/attachment-gallery';
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -8,7 +9,7 @@ import { errorMessage } from '../../core/auth/error-messages';
 import { InventoryStore } from './inventory.store';
 import { COMPOSITION_STATES, LOCATIONS } from './inventory-labels';
 
-@Component({ selector: 'app-kit-page', imports: [RouterLink, ReactiveFormsModule, DatePipe], templateUrl: './kit-page.html' })
+@Component({ selector: 'app-kit-page', imports: [AttachmentGallery, RouterLink, ReactiveFormsModule, DatePipe], templateUrl: './kit-page.html' })
 export class KitPage {
   protected readonly store = inject(InventoryStore);
   private readonly route = inject(ActivatedRoute);

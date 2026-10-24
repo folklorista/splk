@@ -1,3 +1,4 @@
+import { AttachmentGallery } from '../dokumenty/attachment-gallery';
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, ElementRef, inject, untracked, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +13,7 @@ import { CHECK_RESULTS, ISSUE_LABELS, checkFeedback } from './inventory-feedback
 import { COMPOSITION_STATES, CONDITIONS, LOCATIONS, ORDER_STATES } from '../soucastky/inventory-labels';
 import { errorMessage } from '../../core/auth/error-messages';
 
-@Component({ selector: 'app-inventory-detail-page', imports: [FormsModule, RouterLink, DatePipe, InventoryProgressPanel, InventoryCheckForm], templateUrl: './inventory-detail-page.html', styles: [`
+@Component({ selector: 'app-inventory-detail-page', imports: [AttachmentGallery, FormsModule, RouterLink, DatePipe, InventoryProgressPanel, InventoryCheckForm], templateUrl: './inventory-detail-page.html', styles: [`
   .toolbar,.mode-buttons,.actions {display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}.number-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(8rem,1fr));gap:.5rem;margin:1rem 0}
   :host {display:block;min-width:0;overflow-wrap:anywhere}.number-grid button {text-align:left;white-space:normal;overflow-wrap:anywhere;padding:.65rem;min-height:4rem}.number-grid small {display:block}.verified {border-left:5px solid #297d4d}.unresolved {border-left:5px solid #a45c24}
   .entry-list {display:grid;gap:.8rem;padding-left:1.3rem}.entry-list li {overflow-wrap:anywhere} label {display:grid;gap:.3rem;max-width:35rem} label:has(input[type=checkbox]) {display:block}

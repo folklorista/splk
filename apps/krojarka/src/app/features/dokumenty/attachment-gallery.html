@@ -1,0 +1,61 @@
+<section class="card documents">
+  <h2>{{ title() }}</h2>
+  @if (mock) { <p class="notice">Ukázkový režim: soubory jsou pouze v paměti této relace a po obnovení stránky zmizí.</p> }
+  <p class="muted">Sken zachycuje papírový podklad, nikoli potvrzení současného držení nebo fyzického ověření. Dokud se na papír zapisuje, fotografie může zastarat.</p>
+  @if (store.error()) { <p class="notice notice-error" role="alert">{{ store.error() }}</p> }
+  @if (store.notice()) { <p class="notice" role="status">{{ store.notice() }}</p> }
+  <div class="form-row"><button type="button" (click)="store.load()" [disabled]="store.busy()">Obnovit přehled</button>
+    <label><input type="checkbox" [checked]="store.history()" (change)="store.showHistory($any($event.target).checked)" [disabled]="store.busy()"> Včetně archivovaných a odstraněných</label></div>
+  @if (store.loading()) { <p role="status">Načítám přílohy…</p> }
+  <div class="document-grid">
+    @for (row of store.visible(); track row.id) {
+      <article class="document-card">
+        @if (store.canManage() && !row.purgedAt) { <label><input type="checkbox" [checked]="store.selected().has(row.id)" (change)="store.select(row.id, $any($event.target).checked)" [disabled]="store.busy()"> Vybrat k exportu</label> }
+        @if (store.thumbnails().get(row.id); as url) { <button type="button" class="document-preview" (click)="store.open(row.id)"><img [src]="url" [alt]="row.caption || labels[row.kind]" loading="lazy"></button> }
+        <h3>{{ labels[row.kind] }} · strana {{ row.page }}</h3>
+        <p>{{ row.caption || 'Bez popisku' }}</p><p class="muted">Nahráno {{ row.uploadedAt | date:'d. M. yyyy H:mm' }} · účet {{ row.uploadedBy }} · {{ row.size / 1024 | number:'1.0-0' }} kB</p>
+        @if (row.originalDate) { <p>Datum původního zápisu: {{ row.originalDate | date:'d. M. yyyy' }}</p> }
+        @if (row.purgedAt) { <p>Obsah odstraněn po exportu {{ row.purgedAt | date:'d. M. yyyy' }}. Metadata zůstávají zachovaná.</p> }
+        @else {
+          @if (row.archivedAt) { <p>Archivní podklad</p> }
+          <div class="form-row"><button type="button" (click)="store.open(row.id)">{{ row.mime === 'application/pdf' ? 'Stáhnout PDF' : 'Otevřít a zvětšit' }}</button>
+          @if (store.canManage()) { <button type="button" (click)="edit(row)" [disabled]="store.busy()">Upravit popisek a pořadí</button>
+            @if (!row.archivedAt) { <button type="button" (click)="store.archive(row.id, row.version)" [disabled]="store.busy()">Označit jako archivní</button> }
+          }</div>
+        }
+      </article>
+    } @empty { @if (!store.loading()) { <p>Zatím nejsou žádné přílohy v tomto přehledu.</p> } }
+  </div>
+  @if (store.rows().length > 20) { <div class="form-row"><button type="button" [disabled]="store.page() === 0" (click)="store.page.set(store.page() - 1)">Předchozí</button><span>Strana {{ store.page() + 1 }}</span><button type="button" [disabled]="(store.page() + 1) * 20 >= store.rows().length" (click)="store.page.set(store.page() + 1)">Další</button></div> }
+  @if (editing(); as row) { <form [formGroup]="editForm" (ngSubmit)="save()"><h3>Úprava metadat</h3><p>Soubor zůstane zachovaný. Obnovení přehledu nepřepíše rozepsané změny.</p>
+    <fieldset class="form-row inventory-fieldset" [disabled]="store.busy()"><label class="field">Popisek<textarea formControlName="caption" maxlength="2000"></textarea></label><label class="field">Pořadí strany<input type="number" formControlName="page" min="1"></label><label class="field">Datum původního zápisu<input type="date" formControlName="originalDate"></label>
+    <button class="button button-primary" [disabled]="editForm.invalid">Uložit metadata</button><button type="button" (click)="editing.set(null)">Zrušit rozepsané změny</button></fieldset></form> }
+  @if (store.canManage()) {
+    <details><summary>Přidat sken nebo fotografii</summary><form [formGroup]="form" (ngSubmit)="upload()"><fieldset class="form-row inventory-fieldset" [disabled]="store.busy()">
+      @if (!fixed()) { <label class="field">Přiřadit k<select formControlName="ownerType" (change)="typeChanged()">@for (type of ownerTypes; track type) { <option [ngValue]="type">{{ ownerLabels[type] }}</option> }</select></label>
+        <label class="field">Osoba nebo podklad<select formControlName="ownerId"><option [ngValue]="0">— vyberte —</option>@for (owner of owners.options(); track owner.id) { <option [ngValue]="owner.id">{{ owner.label }}</option> }</select></label>
+        @if (owners.loading()) { <p>Načítám možnosti…</p> } @if (owners.error()) { <p role="alert">{{ owners.error() }}</p> }
+      }
+      <label class="field">Druh podkladu<select formControlName="kind">@for (kind of kinds(); track kind) { <option [ngValue]="kind">{{ labels[kind] }}</option> }</select></label>
+      <label class="field">JPEG, PNG nebo PDF<input #fileInput type="file" accept="image/jpeg,image/png,application/pdf" [multiple]="form.controls.ownerType.value !== 'person'" (change)="chooseFiles($event)"></label>
+      <label class="field">Popisek<textarea formControlName="caption" maxlength="2000"></textarea></label><label class="field">První pořadí strany<input type="number" formControlName="page" min="1"></label><label class="field">Datum původního zápisu<input type="date" formControlName="originalDate"></label>
+      <p>Vybráno {{ files().length }} souborů. Polohová metadata fotografií se při uložení odstraní, obraz a orientace zůstanou zachované. Nový sken starší soubor nepřepisuje.</p>
+      @if (uploadError()) { <p role="alert">{{ uploadError() }}</p> }<button class="button button-primary" [disabled]="form.invalid || !files().length">Nahrát vybrané soubory</button>
+    </fieldset></form></details>
+    <section><h3>Export do digiarchivu</h3><p>Po digitalizaci uložte ZIP mimo aplikaci a zkontrolujte jeho obsah. Teprve potom odstraňte obsah příloh z aplikace.</p>
+      <button type="button" (click)="store.exportSelected(); confirmed.set(false)" [disabled]="store.busy() || !store.selected().size">Stáhnout ZIP vybraných příloh ({{ store.selected().size }})</button>
+      @if (store.receipt(); as receipt) { <p>Poslední export obsahuje {{ receipt.attachments.length }} příloh. Odstranění se vztahuje na tento export, nikoli na pozdější výběr.</p>
+        <label><input type="checkbox" [checked]="confirmed()" (change)="confirmed.set($any($event.target).checked)"> ZIP jsem uložil/a do digiarchivu mimo aplikaci a ověřil/a jeho obsah.</label>
+        <button type="button" class="button" (click)="purge()" [disabled]="!confirmed() || store.busy()">Odstranit obsah exportovaných příloh</button>
+      }
+    </section>
+  }
+  @if (store.viewerLoading()) { <p role="status">Načítám originál…</p> }
+  @if (store.viewer(); as viewer) {
+    <section #dialog class="document-viewer" (keydown)="trapFocus($event)" role="dialog" aria-modal="true" aria-label="Prohlížeč skenu" (keydown.escape)="store.closeViewer()">
+      <div class="viewer-tools"><strong>{{ viewer.row.caption || labels[viewer.row.kind] }} · strana {{ viewer.row.page }}</strong><button type="button" (click)="store.closeViewer()">Zavřít</button><button type="button" (click)="store.step(-1)">Předchozí snímek</button><button type="button" (click)="store.step(1)">Další snímek</button><button type="button" (click)="store.rotate()">Otočit zobrazení</button><button type="button" (click)="store.zoom(-0.25)">−</button><span>{{ viewer.zoom * 100 | number:'1.0-0' }} %</span><button type="button" (click)="store.zoom(0.25)">+</button></div>
+      <p>Otočení upravuje pouze zobrazení. Pro posun použijte posuvníky nebo dotyk.</p>
+      <div class="viewer-viewport" #viewport><div class="viewer-image-box" [style.width.px]="imageBox().width" [style.height.px]="imageBox().height"><img [src]="viewer.url" [alt]="viewer.row.caption || labels[viewer.row.kind]" (load)="imageLoaded($event)" [style.width.px]="imageBox().imageWidth" [style.height.px]="imageBox().imageHeight" [style.transform]="'translate(-50%, -50%) rotate(' + viewer.rotation + 'deg)'"></div></div>
+    </section>
+  }
+</section>

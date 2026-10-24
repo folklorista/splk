@@ -64,3 +64,5 @@
     </li>
   } @empty { <li class="muted">Žádná změna složení.</li> }</ol></section>
 }
+
+@if (store.kit(); as kit) { @defer (on interaction) { <app-attachment-gallery ownerType="kit" [ownerId]="kit.id" title="Karta a lístek kompletu" /> } @placeholder { <button type="button">Otevřít kartu a lístek kompletu</button> } }

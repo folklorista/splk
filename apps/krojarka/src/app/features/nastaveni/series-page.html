@@ -85,6 +85,7 @@
       </thead>
       <tbody>
         @for (series of visible(); track series.id) {
+          @defer (on interaction) { <app-attachment-gallery ownerType="series" [ownerId]="series.id" title="Papírová karta řady" /> } @placeholder { <button type="button">Papírová karta řady {{ series.name }}</button> }
           <tr [class.archived]="series.archived">
             <td>
               {{ series.name }}

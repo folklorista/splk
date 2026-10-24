@@ -106,6 +106,8 @@
   </div>
   <details class="card"><summary>Historie kontrol v aktuálním výběru</summary><ol class="entry-list">@for (c of checkHistory(); track c.id) {
     <li>{{ targetName(c.targetId) }} · {{ c.at | date:'d. M. y H:mm' }} · {{ resultLabels[c.result] }}{{ c.condition ? ' · ' + conditions[c.condition] : '' }}{{ c.checkedQty !== null ? ' · počet ' + c.checkedQty : '' }}{{ c.cancelledAt ? ' · zrušeno' : '' }} · účet {{ c.by }}<p>{{ c.note }}</p>
+    @defer (on interaction) { <app-attachment-gallery ownerType="inventory_check" [ownerId]="c.id" title="Fotografie z kontroly" /> } @placeholder { <button type="button">Fotografie této kontroly</button> }
+
       @if (!c.cancelledAt && inventory.status === 'open' && store.canManage()) { <button type="button" class="button" [disabled]="store.busy()" (click)="cancel(c.id)">Zrušit chybnou kontrolu</button> }
     </li>
   } @empty { <li>Dosud bez kontroly.</li> }</ol></details>

@@ -35,6 +35,8 @@
       <li><a [routerLink]="['/vypujcky', entry.loan.id]">{{ entry.line.label }}</a> · {{ entry.line.qty - entry.line.returnedQty }} ks · termín {{ entry.loan.dueAt ? (entry.loan.dueAt | date:'d. M. yyyy') : 'dlouhodobě' }}</li>
     }</ul> } @empty { <p>Žádná otevřená digitálně evidovaná výpůjčka.</p> }
     @if (card.openLoans.total > card.openLoans.items.length) { <p>Karta ukazuje prvních 50 předání. Zbytek je v odkazu na všechny výpůjčky držitele.</p> }
-    <h3>Poslední pohyby</h3><ul>@for (m of card.movements.items; track m.type + ':' + m.id) { <li><a [routerLink]="['/vypujcky', m.loanId]">{{ m.at | date:'d. M. yyyy HH:mm' }} · {{ m.type === 'issued' ? 'výdej' : m.type === 'returned' ? 'vrácení' : m.type === 'exchanged' ? 'výměna' : 'ztráta' }}</a> · {{ m.qty }} ks@if (m.lostQty) { · ztraceno {{ m.lostQty }} } · {{ m.note }}</li> }</ul>
+    <h3>Poslední pohyby</h3><ul>@for (m of card.movements.items; track m.type + ':' + m.id) { <li><a [routerLink]="['/vypujcky', m.loanId]">{{ m.at | date:'d. M. yyyy HH:mm' }} · {{ m.type === 'paper_migration' ? 'převzato z papíru' : m.type === 'issued' ? 'výdej' : m.type === 'returned' ? 'vrácení' : m.type === 'exchanged' ? 'výměna' : 'ztráta' }}</a> · {{ m.qty }} ks@if (m.lostQty) { · ztraceno {{ m.lostQty }} } · {{ m.note }}</li> }</ul>
   </section>
 }
+
+@if (store.card(); as card) { <p><a [routerLink]="['/lide', card.person.id, 'prevod']">Papírová karta a průvodce převodem</a></p> @defer (on interaction) { <app-attachment-gallery ownerType="person" [ownerId]="card.person.id" title="Skeny osobní krojové karty" /> } @placeholder { <button type="button">Otevřít skeny osobní krojové karty</button> } }

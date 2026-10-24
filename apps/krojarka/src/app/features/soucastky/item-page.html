@@ -78,3 +78,5 @@
     } @empty { <li class="muted">Žádná zaznamenaná událost.</li> }</ol>
   </section>
 }
+
+@if (store.item(); as item) { @defer (on interaction) { <app-attachment-gallery ownerType="item" [ownerId]="item.id" title="Fotografie a podklady součástky" /> } @placeholder { <button type="button">Otevřít fotografie a podklady součástky</button> } }

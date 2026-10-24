@@ -1,3 +1,4 @@
+import { ATTACHMENT_KINDS } from './attachment-kinds';
 import { inject, Injectable } from '@angular/core';
 import { defer, firstValueFrom, from, Observable } from 'rxjs';
 import { Attachment, AttachmentExport, AttachmentKind, AttachmentListQuery, AttachmentOwnerType, ExportAttachmentsRequest, PurgeAttachmentsRequest, UpdateAttachmentRequest, UploadAttachmentRequest } from '@splk/api-contracts';
@@ -8,11 +9,6 @@ import { InventoryApi } from '../inventory/inventory-api';
 import { OrganizationApi } from '../organization/organization-api';
 import { AttachmentsApi } from './attachments-api';
 import { sanitizeMockFile, storedZip } from './attachment-binary';
-
-export const ATTACHMENT_KINDS: Record<AttachmentOwnerType, readonly AttachmentKind[]> = {
-  person: ['person_card', 'loose_slip'], kit: ['kit_card', 'kit_label', 'loose_slip'], series: ['series_card', 'loose_slip'],
-  item: ['item_photo', 'loose_slip'], inventory_check: ['check_photo'], archive: ['loan_book', 'loose_slip'],
-};
 
 /** Synthetic session-only files. Existing mock identities/physical entities remain the source of owners. */
 @Injectable()

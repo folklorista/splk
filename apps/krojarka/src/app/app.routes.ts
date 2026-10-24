@@ -10,10 +10,8 @@ import { fundGuard, organizationAdminGuard, settingsHomeGuard } from './core/aut
 import { CatalogPage } from './features/nastaveni/catalog-page';
 import { SeriesPage } from './features/nastaveni/series-page';
 import { SettingsLayout, SettingsNoAccess } from './features/nastaveni/settings-layout';
-import { UsersPage } from './features/nastaveni/users-page';
-import { AccountPage } from './features/ucet/account-page';
 
-const IMPLEMENTED = ['ucet', 'nastaveni', 'soucastky', 'lide', 'krojove-karty', 'vypujcky', 'inventury'];
+const IMPLEMENTED = ['ucet', 'nastaveni', 'soucastky', 'lide', 'krojove-karty', 'vypujcky', 'inventury', 'dokumenty'];
 
 const placeholders: Routes = MENU.filter((item) => !IMPLEMENTED.includes(item.path)).map((item) => ({
   path: item.path,
@@ -45,6 +43,7 @@ export const routes: Routes = [
       ] },
       { path: 'lide', loadComponent: () => import('./features/lide/people-layout').then((m) => m.PeopleLayout), canActivate: [fundGuard], children: [
         { path: '', pathMatch: 'full', loadComponent: () => import('./features/lide/people-page').then((m) => m.PeoplePage), title: 'Lidé · Krojařka' },
+        { path: ':id/prevod', loadComponent: () => import('./features/lide/paper-migration-page').then((m) => m.PaperMigrationPage), title: 'Převod karty · Krojařka' },
         { path: ':id', loadComponent: () => import('./features/lide/person-card-page').then((m) => m.PersonCardPage), title: 'Krojová karta osoby · Krojařka' },
       ] },
       { path: 'krojove-karty', loadComponent: () => import('./features/lide/cards-page').then((m) => m.CardsPage), canActivate: [fundGuard], title: 'Krojové karty · Krojařka' },
@@ -54,7 +53,8 @@ export const routes: Routes = [
         { path: 'kusy/:id', loadComponent: () => import('./features/soucastky/item-page').then((m) => m.ItemPage), title: 'Součástka · Krojařka' },
         { path: 'komplety/:id', loadComponent: () => import('./features/soucastky/kit-page').then((m) => m.KitPage), title: 'Komplet · Krojařka' },
       ] },
-      { path: 'ucet', component: AccountPage, title: 'Můj účet · Krojařka' },
+      { path: 'ucet', loadComponent: () => import('./features/ucet/account-page').then((m) => m.AccountPage), title: 'Můj účet · Krojařka' },
+      { path: 'dokumenty', loadComponent: () => import('./features/dokumenty/documents-page').then((m) => m.DocumentsPage), canActivate: [fundGuard], title: 'Dokumenty · Krojařka' },
       {
         path: 'nastaveni',
         component: SettingsLayout,
@@ -62,7 +62,7 @@ export const routes: Routes = [
           { path: '', pathMatch: 'full', component: SettingsNoAccess, canActivate: [settingsHomeGuard], title: 'Nastavení · Krojařka' },
           { path: 'katalog', component: CatalogPage, canActivate: [fundGuard], title: 'Katalog · Nastavení · Krojařka' },
           { path: 'rady', component: SeriesPage, canActivate: [fundGuard], title: 'Evidenční řady · Nastavení · Krojařka' },
-          { path: 'uzivatele', component: UsersPage, canActivate: [organizationAdminGuard], title: 'Uživatelé a pověření · Krojařka' },
+          { path: 'uzivatele', loadComponent: () => import('./features/nastaveni/users-page').then((m) => m.UsersPage), canActivate: [organizationAdminGuard], title: 'Uživatelé a pověření · Krojařka' },
         ],
       },
     ],

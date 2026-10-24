@@ -1,3 +1,4 @@
+import { AttachmentGallery } from '../dokumenty/attachment-gallery';
 import { DatePipe } from '@angular/common';
 import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -8,7 +9,7 @@ import { errorMessage } from '../../core/auth/error-messages';
 import { PeopleStore } from './people.store';
 import { PAPER_LABELS } from './people-page';
 
-@Component({ selector: 'app-person-card-page', imports: [ReactiveFormsModule, RouterLink, DatePipe], templateUrl: './person-card-page.html' })
+@Component({ selector: 'app-person-card-page', imports: [AttachmentGallery, ReactiveFormsModule, RouterLink, DatePipe], templateUrl: './person-card-page.html' })
 export class PersonCardPage {
   protected readonly store = inject(PeopleStore);
   private readonly params = toSignal(inject(ActivatedRoute).paramMap);

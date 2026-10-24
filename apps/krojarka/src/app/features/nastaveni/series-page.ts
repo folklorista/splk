@@ -1,3 +1,4 @@
+import { AttachmentGallery } from '../dokumenty/attachment-gallery';
 import { Component, computed, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Gender, Series, SeriesKind } from '@splk/api-contracts';
@@ -12,7 +13,7 @@ import { FundHeader } from './fund-header';
  */
 @Component({
   selector: 'app-series-page',
-  imports: [ReactiveFormsModule, FundHeader],
+  imports: [AttachmentGallery, ReactiveFormsModule, FundHeader],
   providers: [CatalogStore],
   templateUrl: './series-page.html',
 })
