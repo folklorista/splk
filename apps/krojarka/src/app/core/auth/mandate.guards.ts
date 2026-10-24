@@ -20,6 +20,7 @@ export const fundGuard: CanActivateFn = async () => {
   const funds = inject(FundContext);
   const router = inject(Router);
   await auth.init();
+  await funds.init();
   return funds.current() !== null || router.createUrlTree(['/nastaveni']);
 };
 
@@ -29,6 +30,7 @@ export const settingsHomeGuard: CanActivateFn = async () => {
   const funds = inject(FundContext);
   const router = inject(Router);
   await auth.init();
+  await funds.init();
   if (funds.current()) {
     return router.createUrlTree(['/nastaveni/katalog']);
   }

@@ -18,7 +18,7 @@ describe('mandate guards', () => {
       providers: [
         provideRouter([]),
         { provide: AuthService, useValue: { init: () => session, hasMandate: (kind: string) => kind === 'organization.admin' && admin } },
-        { provide: FundContext, useValue: { current: () => fund } },
+        { provide: FundContext, useValue: { current: () => fund, init: vi.fn(async () => undefined) } },
       ],
     });
   });
@@ -58,4 +58,13 @@ describe('mandate guards', () => {
   it('shows the no-access page to everybody else', async () => {
     expect(await run(settingsHomeGuard, () => undefined)).toBe(true);
   });
+  it('waits for the organization-wide viewer fund list before deciding', async () => {
+    let resolveFunds!: () => void;
+    vi.spyOn(TestBed.inject(FundContext), 'init').mockImplementation(() => new Promise<void>((resolve) => { resolveFunds = resolve; }));
+    const result = TestBed.runInInjectionContext(() => fundGuard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot)) as Promise<boolean | UrlTree>;
+    resolveSession();
+    await vi.waitFor(() => expect(resolveFunds).toBeDefined());
+    fund = { unitId: 1 }; resolveFunds(); expect(await result).toBe(true);
+  });
+
 });

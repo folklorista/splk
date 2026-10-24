@@ -23,6 +23,9 @@ export class FundContext {
   private readonly auth = inject(AuthService);
   private readonly organization = inject(OrganizationApi);
   private readonly allUnits = signal<Unit[]>([]);
+  private loadedFor: object | null = null;
+  private loadingFor: object | null = null;
+  private unitLoad: Promise<void> | null = null;
   private readonly selectedId = signal<number | null>(readStoredFund());
 
   readonly funds = computed<Fund[]>(() => {
@@ -51,13 +54,25 @@ export class FundContext {
   });
 
   constructor() {
-    // an organization-wide read-only mandate covers every fund, which only the unit list knows
-    effect(() => {
-      const user = this.auth.user();
-      if (user?.mandates.some((m) => m.kind === 'costumes.view' && m.scopeType === 'organization')) {
-        void firstValueFrom(this.organization.units()).then((units) => this.allUnits.set(units));
-      }
-    });
+    effect(() => { this.auth.user(); void this.init(); });
+  }
+
+  /** Guards await the unit list for organization-wide viewers, including direct deep links. */
+  init(): Promise<void> {
+    const user = this.auth.user();
+    if (!user?.mandates.some((m) => m.kind === 'costumes.view' && m.scopeType === 'organization')) {
+      this.loadingFor = null; this.loadedFor = null; this.unitLoad = null; this.allUnits.set([]);
+      return Promise.resolve();
+    }
+    if (this.loadedFor === user) return Promise.resolve();
+    if (this.loadingFor === user && this.unitLoad) return this.unitLoad;
+    this.loadingFor = user; this.allUnits.set([]);
+    this.unitLoad = firstValueFrom(this.organization.units()).then((units) => {
+      if (this.auth.user() === user) { this.allUnits.set(units); this.loadedFor = user; }
+    }).catch(() => {
+      if (this.auth.user() === user) this.allUnits.set([]);
+    }).finally(() => { if (this.loadingFor === user) { this.loadingFor = null; this.unitLoad = null; } });
+    return this.unitLoad;
   }
 
   select(unitId: number): void {

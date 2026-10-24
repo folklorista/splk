@@ -152,3 +152,9 @@ Demo vzniklo před rozhodnutími z 22. 10. 2026 a dál se nerozvíjí ani nekonz
 
 - `LoansStore` vede metadata, seznamy, pohyby, detail a náhled kompletu; stránkuje přes API a kontroluje pověření před zápisem. Změna fondu vyčistí data a pozdní odpovědi předchozího fondu se zahodí.
 - Vitest: **89 testů / 23 souborů**, včetně stránkování, změny kontextu, zamítnutí zápisu čtenáři a souběžných zápisů. Obrazovky kroku 6 se dále připravují.
+
+
+### Krok 6 – oprava načítání kontextu pro čtenáře
+
+- Při kontrole přímého vstupu do fondových tras nalezeno, že `costumes.view` pro celou organizaci může být přesměrováno před dokončením seznamu fondů. Guard nyní na seznam počká, souběžné čtení používá jeden požadavek a pozdní odpověď po odhlášení se zahodí.
+- Vitest: **98 testů / 24 souborů**. Oprava zachovává pověření a stávající kontextovou službu; nepřidává závislosti ani nový způsob přístupu.

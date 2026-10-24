@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
-import { Mandate } from '@splk/api-contracts';
+import { Observable, of, Subject } from 'rxjs';
+import { Mandate, Unit } from '@splk/api-contracts';
 import { OrganizationApi } from '../../data/organization/organization-api';
 import { AuthService, CurrentUser } from '../auth/auth.service';
 import { FundContext } from './fund-context';
@@ -16,7 +16,7 @@ const mandate = (kind: Mandate['kind'], scopeId: number | null, scopeName: strin
 
 describe('FundContext', () => {
   const user = signal<CurrentUser | null>(null);
-  const units = vi.fn(() =>
+  const units = vi.fn((): Observable<Unit[]> =>
     of([
       { id: 1, name: 'Vonica', shortName: null, hasCostumeFund: true, archived: false },
       { id: 2, name: 'Malá Vonica', shortName: null, hasCostumeFund: true, archived: false },
@@ -76,4 +76,16 @@ describe('FundContext', () => {
 
     expect(TestBed.inject(FundContext).current()).toBeNull();
   });
+  it('shares pending loads and discards a late unit list after sign-out', async () => {
+    setMandates([mandate('costumes.view', null)]);
+    const response = new Subject<import('@splk/api-contracts').Unit[]>();
+    units.mockReturnValueOnce(response);
+    const context = TestBed.inject(FundContext);
+    const first = context.init(), second = context.init();
+    expect(units).toHaveBeenCalledTimes(1);
+    user.set(null); await context.init();
+    response.next([{ id: 1, name: 'Old', shortName: null, hasCostumeFund: true, archived: false }]); response.complete();
+    await Promise.all([first, second]); expect(context.current()).toBeNull();
+  });
+
 });
