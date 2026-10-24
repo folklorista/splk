@@ -189,3 +189,9 @@ Uživatel rozhodl Q-21 → D-63: fyzické ověření plní pokrytí, pozdější
 - Historie kontrol zůstává zachovaná včetně zrušených kontrol. Úplné pokrytí neodstraní nesrovnalosti ani otevřené pracovní úkoly. Uzavření s nesrovnalostmi vyžaduje důvod; uložený výsledek pozdější změny evidence nepřepočítají.
 - API endpointy a obrazovky ještě nejsou dokončené. Krok 7 zůstává rozpracovaný, kroky 8–10 nezačaly.
 - PHPUnit: **190 testů / 1439 assertions**; `git diff --check` prošel. Ruční ověření zatím vyžaduje dokončení API a UI. Použita pouze lokální testovací databáze.
+
+### Krok 7, etapa 2b – základní inventurní endpointy
+
+- Náhled bez zápisu, založení se zmrazením rozsahu, seznam/detail a stránkované kolekce. Výslovné rozšíření vyžaduje poznámku; duplicity se odmítají atomicky. Rušení kontrol uchová historii.
+- Zápisy mají fondové pověření, zámek a kontrolu verze, audit ve stejné transakci. Čisté uzavření odmítne neověřené cíle nebo nesrovnalosti; výslovné uzavření vyžaduje důvod. Čtení uzavřené inventury vrací uložený výsledek včetně kolekcí.
+- PHPUnit: **196 testů / 1516 assertions**, TypeScript kontraktů a `git diff --check` prošly. Ověřeny i zamítnuté operace čtenáře, cizí fond, neplatné verze, duplicity a zápisy po uzavření. Zápisy kontrol, termíny/návštěvy a frontend ještě následují; žádné nasazení.

@@ -283,6 +283,8 @@ Implementační upřesnění kroku 6, část API:
 | `DELETE /v1/inventory-checks/{id}` | zrušení omylem zapsané kontroly |
 | `GET /v1/inventories/{id}/issues`, `POST /v1/inventories/{id}/close` | nesrovnalosti; uzavření (s nesrovnalostmi jen s důvodem) |
 
+Implementováno v kroku 7, etapa 2b: fondový náhled/založení/seznam, detail s `progress`, stránkované čtení `targets`, `checks`, `issues`, `slots`, `visits`, výslovné přidání cíle, zrušení kontroly a uzavření. Zápisy vyžadují `costumes.manage`, zámek hlavičky a aktuální `version`; zrušení kontroly předává verzi v query. Čtenář `costumes.view` může výsledky číst, cizí fond dostává 404. Náhled nezapisuje. Uzavřené kolekce i ukazatele se čtou z uloženého výsledku. Zápisy kontrol a správa termínů/návštěv následují v další části etapy.
+
 ### 4.7 Přílohy, náklady, přehledy, hledání
 
 | Metoda a cesta | Účel |

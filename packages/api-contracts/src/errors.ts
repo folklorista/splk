@@ -42,6 +42,9 @@ export type ApiErrorCode =
   | 'loan_line_closed'
   | 'item_retired'
   | 'composition_conflict'
+  | 'inventory_closed'
+  | 'inventory_has_issues'
+  | 'inventory_target_exists'
   | 'internal_error';
 
 /** `details.reason` of `validation_failed`. */

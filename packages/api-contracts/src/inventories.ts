@@ -83,3 +83,34 @@ export type InventoryTargetAdd = { version: number; note: string } & (
 export type InventorySlotInput = Pick<InventorySlot, 'startsAt' | 'endsAt' | 'capacity'> & { version: number };
 export type InventoryVisitInput = Pick<InventoryVisit, 'personId'> & Partial<Pick<InventoryVisit, 'slotId' | 'status'>> & { version: number };
 export type InventoryTargetPage = Page<InventoryTarget>;
+
+export interface InventoryIssue {
+  targetId: number;
+  kind: 'unverified' | 'not_presented' | 'not_found' | 'quantity_mismatch' | 'bulk_not_counted' | 'damaged' | 'needs_adjustment' | 'open_work_order';
+  checkId?: number;
+  workOrderId?: number;
+  expectedQty?: number;
+  verifiedQty?: number;
+  checkedQty?: number | null;
+  note?: string | null;
+}
+export interface InventoryProgress {
+  allTargetCount: number;
+  /** Numbered items and kit containers; bulk stocks are reported separately (D-64). */
+  targetCount: number;
+  verifiedTargetCount: number;
+  /** Numbered physical components only; the kit container never doubles its contents. */
+  expectedQuantity: number;
+  verifiedQuantity: number;
+  kitCount: number;
+  verifiedKitCount: number;
+  bulkTargetCount: number;
+  comparedBulkTargetCount: number;
+  peopleCount: number;
+  visitedPeopleCount: number;
+  openIssueCount: number;
+  canCloseCleanly: boolean;
+  issues: InventoryIssue[];
+}
+export interface InventoryDetail extends CostumeInventory { progress: InventoryProgress }
+export interface InventoryPreview { scope: InventoryScope; progress: InventoryProgress; unloanedItemCount: number }
