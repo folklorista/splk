@@ -345,7 +345,7 @@ Krok 7 je dokončen lokálně včetně frontendové etapy 3d: fondový náhled/z
 - Historie konkrétního kusu a výpůjčky rozlišují skutečný výdej, převzetí z papíru, digitalizaci a doložené původní datum (D-67). Inventurní soupis rozlišuje zmrazené cíle, skutečné kontroly včetně zrušených a nesrovnalosti; uzavřená inventura používá uložený výsledný snímek. Zásoby zůstávají mimo procento ověřených kusů (D-64).
 - `GET /v1/search?q=&fund=&limit=&offset=`: společná jména/přezdívky osob a označení kusů/kompletů jen ve fondech s `costumes.view/manage`. Bez `fund` se prohledají všechny přístupné fondy. Prázdný dotaz se odmítá, maximum je 200 znaků; všechna slova se hledají bez ohledu na velikost a diakritiku. `%`/`_` jsou doslovné znaky. Výsledky mají `kind`, `id`, `unitId` (u společné osoby null), `label`, `retired`; stránkování a stabilní řazení. Nezpřístupňuje kontakty ani neoprávněná krojová data.
 - Krojařka má samostatné lazy trasy `/prehledy` a `/hledat`, fondová oprávnění, feature služby a zaměnitelné HTTP/mock adaptéry. Volby sestav jsou čitelné názvy, filtry se potvrzují sestavením. Tisk A4 skrývá navigaci a zachovává hlavičky tabulek; CSV používá filtry poslední skutečně sestavené sestavy. Výsledky ani export opožděného požadavku se nepřenesou do jiného fondu. Hledání dovolí přejít do jiného přístupného fondu s příslušným výsledkem.
-- Krok 10 zůstává před zahájením na Q-24 (měna a dobropisy); žádná finanční pravidla nebyla domyšlena.
+- Q-24 je rozhodnutá → D-68: vlastní měna každého nákladu, záporné dobropisy/vratky a oddělené měnové souhrny. Krok 10 je rozpracovaný.
 
 ## 5. Rozdělení odpovědnosti frontend × API [R D-15, monorepo kap. 2]
 

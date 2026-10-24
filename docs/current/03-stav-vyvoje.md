@@ -4,7 +4,7 @@
 
 ## Aktuální stav
 
-**Poslední dokončený krok: 9 – Přehledy a hledání, etapa 2 (obrazovky a závěrečné ověření).** Kroky 1–9 jsou dokončené lokálně a automaticky otestované. Ruční provozní ověření zůstává před nasazením. **Krok 10 nezačal: čeká na rozhodnutí Q-24 o měně a záporných částkách nákladů.** Q-14 a převzetí držení z papíru jsou rozhodnuté (D-65 až D-67).
+**Poslední dokončený krok: 9 – Přehledy a hledání, etapa 2 (obrazovky a závěrečné ověření).** Kroky 1–9 jsou dokončené lokálně a automaticky otestované. Ruční provozní ověření zůstává před nasazením. **Krok 10 je rozpracovaný: databáze a kontrakty prošly, API a obrazovky následují.** Q-24 je rozhodnutá (D-68). Q-14 a převzetí držení z papíru jsou rozhodnuté (D-65 až D-67).
 
 | Oblast | Současný stav |
 |---|---|
@@ -15,7 +15,7 @@
 | Krok 7 – Inventury | Zmrazený rozsah, tři režimy kontrol, termíny a návštěvy, rozšíření rozsahu, historie, nesrovnalosti, běžné operace s kontextem, neměnné uzavření a skupiny (D-48/D-51, D-63/D-64). Dokončeno lokálně, nenasazeno. |
 | Krok 8 – Přílohy | Dokončeno lokálně: databáze, API, kontrakty, HTTP/mock adaptéry, galerie a průvodce převodem s původem držení `paper_migration`. GPS údaje se odstraňují se zachováním obrazu/orientace (D-65); osobní skeny čtou i fondoví čtenáři (D-66). Lokální doplnění `gd` a `zip` uživatel schválil. |
 | Krok 9 – Přehledy a hledání | Kompletní fondové soupisy, JSON/CSV, tisk A4, hledání společných jmen a krojových objektů jen v povolených fondech. Dokončeno lokálně, nenasazeno. |
-| Krok 10 – Náklady | Před zahájením, čeká na Q-24 (měna a dobropisy). Pověření pokladníka určuje D-49. |
+| Krok 10 – Náklady | Etapa 1 hotová: schéma a kontrakty. Vlastní měna každého nákladu a záporné dobropisy/vratky podle D-68; přístup pokladníka podle D-49. |
 | Krojařka a API | Standalone Angular, feature služby, zaměnitelné HTTP/mock adaptéry; PHP API, PostgreSQL, sdílené TS kontrakty a čistá doménová logika. Bez nových npm/Composer knihoven a změny architektury; lokální PHP `gd`/`zip` a systémové knihovny výslovně schválil uživatel. |
 | Demo a moje | Demo zůstává historickým prototypem; kód se z něj nepřebírá. Vývoj členské aplikace `moje.vonica.cz` je odložen. |
 
@@ -106,6 +106,12 @@ Commity: `db4eb0e` API/kontrakty, `5e49bbc` filtry pracovních úkolů a validac
 
 Ruční ověření zatím neproběhlo: tisk reálných dlouhých sestav A4, import CSV v používaném tabulkovém programu (diakritika, úvodní nuly, víceřádkové texty), mobilní tabulky, srovnání filtrů s evidencí, výsledek jiné přístupné složky a zamítnutí neoprávněných vstupů. Automatické testy zahrnují i sestavu přes 200 řádků, ochranu vzorců, původ z papíru a neměnnost uzavřené inventury po změně kusu.
 
+## Rozpracovaný krok 10 – průběžné ověření
+
+Etapa 1: migrace `20261024234000_create_costume_costs`, sdílené DTO nákladů a navázaných fyzických objektů. Přesná částka `numeric(18,4)` a třípísmenný kód měny, metadata dokladu/dodavatele/účelu, fondové vazby na kus/zásobu/komplet, množství a optimistická verze. Jednotlivý kus či komplet má množství 1; nečíslovaná zásoba kladné množství. Vazby nemění fyzické počty, data pořízení ani držení. Náklad se při souhrnu nezdvojuje počtem vazeb.
+
+**Průběžné testy: PHPUnit 295 testů / 2445 assertions – prošlo**, pouze lokální testovací databáze; tři nové testy schématu včetně neplatných dat, fondů, zachování přesných záporných částek, down/up a odmítnutí rollbacku se vzniklou evidencí. Kontrakty prošly TypeScriptem. Nejde ještě o závěrečné ověření celého kroku 10.
+
 ## Ruční ověření před případným nasazením
 
 Po místním použití migrací ověřit v HTTP i mock režimu, na počítači i mobilu:
@@ -122,7 +128,7 @@ Před souhrnným nasazením kroků 4–9 ověřit také založení a úpravy kus
 
 ## Další postup a omezení
 
-- **Poslední kompletně dokončený krok: 9 – Přehledy a hledání, etapa 2.** Krok 10 nezačal kvůli Q-24; dvě otázky byly předloženy uživateli a odpověď se nepředpokládá.
+- **Poslední kompletně dokončený krok: 9 – Přehledy a hledání, etapa 2.** Krok 10 pokračuje po rozhodnutí Q-24 → D-68. Databáze a kontrakty jsou hotové; další etapy nejsou ještě prohlášeny za dokončené.
 - **Q-14 je vyřešená:** odstraňovat polohová EXIF data při zachování obrazu a orientace (D-65), osobní skeny i pro fondové čtenáře (D-66). Retence D-40 zůstává beze změny. Závěrečné výsledky jednotlivých kroků jsou oddělené výše; historický deník je odkazovaný níže.
 - Stav je připravený k místnímu a případnému testovacímu ověření. Produkční připravenost vyžaduje výše uvedené ruční ověření a výslovné schválení produkčních migrací a nasazení. V této části práce nebyla použita produkční DB, produkční migrace, deploy ani `git push`.
 

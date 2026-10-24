@@ -9,3 +9,4 @@ export * from './inventories';
 export * from './attachments';
 export * from './paper-migrations';
 export * from './reports';
+export * from './costs';

@@ -74,7 +74,7 @@ Viz [`context/README.md`](context/README.md). Podrobné popisy `vonica.md` a `vo
 
 ## Otevřené otázky, které teď blokují Krojařku
 
-Aktuálně **Q-24 – měna a záporné částky nákladů** blokuje krok 10. Kroky 1–9 jsou dokončené lokálně. Starší rozhodnuté otázky (včetně Q-14 a převodu držení Q-23) jsou v [registru otevřených otázek](open-questions.md) výslovně označené jako vyřešené; jejich původní znění není současná blokace.
+**Q-24 je rozhodnutá (D-68): vlastní měna nákladu a záporné dobropisy/vratky. Krok 10 je rozpracovaný.** Kroky 1–9 jsou dokončené lokálně. Starší rozhodnuté otázky (včetně Q-14 a převodu držení Q-23) jsou v [registru otevřených otázek](open-questions.md) výslovně označené jako vyřešené; jejich původní znění není současná blokace.
 
 ## Závazná pravidla pro vývojáře a AI asistenty
 

@@ -412,6 +412,15 @@ Krojařka používá výchozí test runner Angularu 22 – **Vitest** (jsdom). D
 
 **Zdroj:** uživatel 2026-10-24: výchozí varianta převzetí aktuálního držení, varianta nesrovnalosti pro nejednoznačné a konfliktní záznamy. Výslovně požadoval nejprve navrhnout minimální rozšíření modelu výpůjček; návrh před implementací odděluje původ, digitalizaci a volitelné historické datum od skutečného výdeje.
 
+### D-68 Náklady uchovávají vlastní měnu a dovolují dobropisy i vratky
+
+- Každý náklad má vlastní měnu; evidence není omezena na Kč.
+- Záporné částky jsou povolené pro dobropisy a vratky.
+- Souhrny se uvádějí odděleně po měnách; bez schválených kurzů se různá měna nesčítá ani nepřepočítává. Nezavádí se účetnictví, pokladna ani kurzový systém (rozsah D-23).
+- Přístup pokladníka k nákladům a navázaným součástkám nadále určuje D-49, zápis krojařky zůstává fondový.
+
+**Zdroj:** uživatel 2026-10-24, odpovědi na Q-24: „Evidovat měnu u každého nákladu“ a „Také záporné částky pro dobropisy a vratky“. Oddělené souhrny jsou technické zachování měnových jednotek, nikoli domyšlená konverze.
+
 ## API v1 (2026-10-23, `current/api-v1-a-schema.md` kap. 7)
 
 ### D-48 Správa organizace v Krojařce

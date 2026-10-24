@@ -10,16 +10,11 @@ Co ještě musíme rozhodnout (úroveň **B**). Každá otázka uvádí, odkud p
 
 ## Blokuje Krojařku
 
-### Q-24 Měna a znaménko částky nákladů – čeká na rozhodnutí pro krok 10
+### Q-24 Měna a znaménko částky nákladů – *rozhodnuto → D-68*
 
-D-23 a schválené API kap. 3.7 stanoví náklady, datum, částku, dodavatele, odkaz na doklad, popis/účel a volitelné vazby na součástky. D-49 řeší přístup pokladníka. Podklady však neurčují měnu a zda jsou dovoleny opravné záporné částky. Bez toho nelze dokončit integritu částek, formuláře ani souhrny; **blokuje krok 10, nikoli dokončené kroky 8–9**.
+Uživatel 2026-10-24 rozhodl evidovat měnu u každého nákladu a povolit záporné částky pro dobropisy a vratky. Různé měny se bez kurzového systému nesčítají; souhrny zůstávají po měnách. Otázka již neblokuje krok 10.
 
-Uživateli byly 2026-10-24 položeny dvě otázky:
-
-1. Pouze Kč bez přepočtů, nebo měna u každého nákladu?
-2. Pouze kladné výdaje, nebo také záporné částky pro dobropisy a vratky?
-
-Odpověď zatím nepřišla. Nebyla nahrazena předpokladem; krok 10 ani jeho migrace nezačaly.
+Původní otázky: pouze Kč, nebo měna u každého nákladu; pouze kladné výdaje, nebo i záporné dobropisy a vratky. Podkladem jsou D-23, D-49 a API kap. 3.7.
 
 ### Q-23 Převzetí současného držení z papíru – *rozhodnuto → D-67*
 
