@@ -5,13 +5,15 @@ import { LoanCreate } from '@splk/api-contracts';
 import { errorMessage } from '../../core/auth/error-messages';
 import { FundHeader } from '../nastaveni/fund-header';
 import { LoansStore } from './loans.store';
+import { InventoryOperationNotice } from '../inventury/inventory-operation-notice';
 
-@Component({ selector: 'app-issue-page', imports: [FormsModule, RouterLink, FundHeader], template: `
+@Component({ selector: 'app-issue-page', imports: [FormsModule, RouterLink, FundHeader, InventoryOperationNotice], template: `
   <h1>Výdej součástek</h1><app-fund-header /><p><a routerLink="/vypujcky">Zpět na výpůjčky</a></p>
+  <app-inventory-operation-notice />
   @if (store.error() || error) { <p class="error" role="alert">{{ error || store.error() }}</p> }
   @if (!store.canManage()) { <p>Pro výdej potřebujete pověření ke správě vybraného fondu.</p> }
   <form (ngSubmit)="review()">
-    <fieldset [disabled]="!store.canManage() || store.loading() || store.busy()">
+    <fieldset [disabled]="!store.canManage() || store.loading() || store.busy() || store.operation?.blocked()">
       <legend>Skutečný držitel a obsah předání</legend>
       <label>Držitel <select name="holderType" [(ngModel)]="holderType" (ngModelChange)="holderId = 0; reviewed = false"><option value="person">Osoba</option><option value="unit">Jiná složka</option></select></label>
       <label>{{ holderType === 'person' ? 'Osoba' : 'Složka' }}
@@ -50,7 +52,7 @@ import { LoansStore } from './loans.store';
   @if (reviewed) { <section class="card" aria-label="Kontrola předání"><h2>Potvrzení skutečného předání</h2>
     <p>{{ store.holderLabel(holderType === 'person' ? { personId: holderId } : { unitId: holderId }) }}</p>
     <ul>@for (id of selected; track id) { <li>{{ store.itemLabel(id) }}</li> }@for (line of bulkSelection(); track line.stockId) { <li>{{ store.stockLabel(line.stockId) }} · {{ line.qty }} ks</li> }</ul>
-    <p>{{ note }}</p><button type="button" [disabled]="store.busy() || !store.canManage()" (click)="submit()">Potvrdit skutečné předání</button>
+    <p>{{ note }}</p><button type="button" [disabled]="store.busy() || !store.canManage() || store.operation?.blocked()" (click)="submit()">Potvrdit skutečné předání</button>
   </section> }
 `, styles: [`.choices {display:grid;gap:.6rem;margin:1rem 0} fieldset {display:grid;gap:.8rem;min-width:0} label {display:grid;gap:.3rem} .choices label {display:block} select,input,textarea {max-width:100%}`] })
 export class IssuePage {
@@ -82,7 +84,7 @@ export class IssuePage {
     const base = { holder, dueAt: this.due ? new Date(this.due).toISOString() : null, note: this.note.trim() || null };
     const preview = this.store.preview();
     const input: LoanCreate = this.mode === 'kit' && preview ? { ...base, kitId: preview.id, kitVersion: preview.version, omitItemIds: preview.items.filter((i) => !this.selected.has(i.id)).map((i) => i.id), kitBulk: preview.bulkLines.filter((l) => l.presentQty > 0).map((l) => ({ stockId: l.bulkStockId, qty: this.bulk[l.bulkStockId] ?? 0 })) } : { ...base, items: [...this.selected], bulk: this.bulkSelection() };
-    try { const loan = await this.store.issue(input); await this.router.navigate(['/vypujcky', loan.id]); }
+    try { const loan = await this.store.issue(input); await this.router.navigate(['/vypujcky', loan.id], { queryParamsHandling: 'preserve' }); }
     catch (error) { this.error = errorMessage(error); }
   }
 }

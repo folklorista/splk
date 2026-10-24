@@ -1,5 +1,5 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
-import { firstValueFrom, Observable } from 'rxjs';
+import { firstValueFrom, Observable, tap } from 'rxjs';
 import {
   BulkStock, BulkStockInput, BulkStockPatch, CompositionInput, CostumeItem, CostumeKit, ItemEvent, ItemInput, ItemPatch,
   KitDetail, KitInput, KitPatch, Page, PartType, PersonInFund, Region, Series, Unit, LoanHolder, WorkOrder, WorkOrderInput, WorkOrderPatch,
@@ -11,10 +11,12 @@ import { CatalogApi } from '../../data/catalog/catalog-api';
 import { PeopleApi } from '../../data/people/people-api';
 import { OrganizationApi } from '../../data/organization/organization-api';
 import { InventoryApi } from '../../data/inventory/inventory-api';
+import { InventoryOperationStore } from '../inventury/inventory-operation.store';
 
 /** One route-scoped fund view. Every async result is checked against the current fund generation. */
 @Injectable()
 export class InventoryStore {
+  readonly operation = inject(InventoryOperationStore, { optional: true });
   private readonly api = inject(InventoryApi);
   private readonly catalog = inject(CatalogApi);
   private readonly peopleApi = inject(PeopleApi);
@@ -125,7 +127,7 @@ export class InventoryStore {
   createKit(input: KitInput) { return this.write((unit) => this.api.createKit(unit, input)); }
   updateKit(id: number, input: KitPatch) { return this.write(() => this.api.updateKit(id, input)); }
   composition(id: number, input: CompositionInput) { return this.write(() => this.api.composition(id, input)); }
-  createOrder(id: number, input: WorkOrderInput) { return this.write(() => this.api.createWorkOrder(id, input)); }
+  createOrder(id: number, input: WorkOrderInput) { return this.write(() => { const context = this.operation?.values() ?? {}; return this.api.createWorkOrder(id, { ...input, ...context }).pipe(tap(() => this.operation?.committed(context))); }); }
   updateOrder(id: number, input: WorkOrderPatch) { return this.write(() => this.api.updateWorkOrder(id, input)); }
 
   seriesName(id: number): string {

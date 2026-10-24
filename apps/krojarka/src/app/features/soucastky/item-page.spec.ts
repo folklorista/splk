@@ -6,6 +6,7 @@ import { CostumeItem } from '@splk/api-contracts';
 import { ApiError } from '../../data/api-error';
 import { InventoryStore } from './inventory.store';
 import { ItemPage } from './item-page';
+import { InventoryOperationStore } from '../inventury/inventory-operation.store';
 
 const piece: CostumeItem = { available: true, holder: null, loanId: null, loanKitId: null, id: 1, unitId: 1, seriesId: 1, number: '17', variant: null, size: null, description: null, note: 'Stored note',
   condition: 'ok', issuable: true, location: 'unknown', locationNote: null, acquiredOn: null, kitId: null, retiredAt: null, retiredBy: null, retireReason: null, version: 1 };
@@ -18,6 +19,7 @@ describe('ItemPage form behavior', () => {
       updateItem: vi.fn(async () => { throw new ApiError(409, 'version_conflict'); }), retireItem: vi.fn(async () => piece),
       itemName: () => 'Košile · 17', seriesName: () => 'Košile' };
     TestBed.configureTestingModule({ imports: [ItemPage], providers: [provideRouter([]), { provide: InventoryStore, useValue: store },
+      { provide: InventoryOperationStore, useValue: { requested: signal(false) } },
       { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '1' })), snapshot: { queryParamMap: convertToParamMap({}) } } }] });
     const fixture = TestBed.createComponent(ItemPage); fixture.detectChanges(); await fixture.whenStable(); fixture.detectChanges();
     return { fixture, store, element: fixture.nativeElement as HTMLElement };

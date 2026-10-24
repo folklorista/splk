@@ -235,3 +235,10 @@ Uživatel rozhodl Q-21 → D-63: fyzické ověření plní pokrytí, pozdější
 - Mock podporuje D-63/D-64, samostatné početní kontexty D-61, konflikty skladu, zrušení kontroly, skupinový průnik a neměnné uzavřené výsledky. Syntetický registr zatím nemá příslušnosti osob ke složkám; filtr příslušnosti proto v mock datech vrací prázdný rozsah, žádná členství se nedomýšlejí. Skupiny se berou ze společného mock registru správy organizace.
 - Kontext inventury je zapojen i do běžného mock výdeje, vrácení, výměny a pracovního úkolu; pohyby lze filtrovat podle inventury. Komponenty dále používají feature služby, nikoli HTTP.
 - Vitest: **120 testů / 29 souborů**; TypeScript aplikace, testů a kontraktů a `git diff --check` prošly. Inventurní feature služba a obrazovky ještě nejsou hotové.
+
+### Krok 7, etapa 3c – feature služba a kontext běžných operací
+
+- `InventoriesStore` načítá stránky, metadata, náhled a všechny kolekce detailu. Ověřuje fond před čtením kolekcí, zahazuje pozdní odpovědi a při změně verze během čtení detail jednou znovu načte. Pověření a souběžné zápisy kontroluje před voláním adaptéru.
+- Stávající formuláře výdeje/vrácení/výměny a nového pracovního úkolu podporují výslovný URL kontext inventury. Kontext se načte s pověřením a verzí; neplatný, cizí, právě načítaný či uzavřený kontext se nikdy tiše nevynechá. Po úspěšném navázaném zápisu se jeho verze posune. Přechod po výdeji/výměně kontext zachová; opuštění kontextu je výslovné.
+- Vitest: **132 testů / 31 souborů**, TypeScript aplikace/testů, produkční build **475,24 kB** a `git diff --check` prošly. Testy zahrnují čtenáře, změnu fondu, souběh, nestabilní verzi při čtení a odmítnutí chybného kontextu. Původní komponentové fixture doplněny o novou závislost; navigační test nyní výslovně kontroluje zachování query kontextu.
+- Inventurní hlavní obrazovky ještě následují; krok 7 není uzavřený. Žádné nasazení ani produkční data.

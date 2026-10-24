@@ -8,16 +8,20 @@ import { CatalogApi } from '../../data/catalog/catalog-api';
 import { PeopleApi } from '../../data/people/people-api';
 import { OrganizationApi } from '../../data/organization/organization-api';
 import { LoansStore } from './loans.store';
+import { InventoryOperationStore } from '../inventury/inventory-operation.store';
+import { ApiError } from '../../data/api-error';
 
 const loan = (unitId = 1): CostumeLoan => ({ id: 3, unitId, holder: { personId: 7 }, kitId: null, issuedAt: '2026-10-24T12:00:00Z', issuedBy: 1, dueAt: null, note: null, replacesLoanId: null, lines: [], returns: [] });
 describe('LoansStore', () => {
   let current: ReturnType<typeof signal<Fund | null>>, store: LoansStore;
   let api: Record<string, ReturnType<typeof vi.fn>>;
+  let operation: { values: ReturnType<typeof vi.fn>; committed: ReturnType<typeof vi.fn> };
   beforeEach(() => {
     current = signal<Fund | null>({ unitId: 1, name: 'Vonica', canManage: true });
     const empty = () => of({ items: [], total: 0 });
+    operation = { values: vi.fn(() => ({})), committed: vi.fn() };
     api = { loans: vi.fn(empty), movements: vi.fn(empty), items: vi.fn(empty), stocks: vi.fn(empty), kits: vi.fn(empty), loan: vi.fn(() => of(loan())), issue: vi.fn(() => of({ ...loan(), omittedItemIds: [] })) };
-    TestBed.configureTestingModule({ providers: [LoansStore, { provide: FundContext, useValue: { current } }, { provide: InventoryApi, useValue: api },
+    TestBed.configureTestingModule({ providers: [LoansStore, { provide: InventoryOperationStore, useValue: operation }, { provide: FundContext, useValue: { current } }, { provide: InventoryApi, useValue: api },
       { provide: CatalogApi, useValue: { series: () => of([]), partTypes: () => of([]) } }, { provide: PeopleApi, useValue: { people: empty } }, { provide: OrganizationApi, useValue: { units: () => of([]) } }] });
     store = TestBed.inject(LoansStore); TestBed.tick();
   });
@@ -58,5 +62,13 @@ describe('LoansStore', () => {
     response.next({ ...loan(), omittedItemIds: [] }); response.complete();
     await expect(pending).rejects.toMatchObject({ code: 'not_found' });
     expect(store.loans()).toEqual([]);
+  });
+  it('preserves inventory context on ordinary handover and never drops a failed context', async () => {
+    const context = { inventoryId: 7, inventoryVersion: 3 }; operation.values.mockReturnValue(context);
+    const input = { holder: { personId: 7 }, items: [4] }; await store.issue(input);
+    expect(api['issue']).toHaveBeenCalledWith(1, { ...input, ...context }); expect(operation.committed).toHaveBeenCalledWith(context);
+    api['issue'].mockClear(); operation.committed.mockClear(); operation.values.mockImplementation(() => { throw new ApiError(409, 'inventory_closed'); });
+    await expect(store.issue(input)).rejects.toMatchObject({ code: 'inventory_closed' });
+    expect(api['issue']).not.toHaveBeenCalled(); expect(operation.committed).not.toHaveBeenCalled(); expect(store.busy()).toBe(false);
   });
 });

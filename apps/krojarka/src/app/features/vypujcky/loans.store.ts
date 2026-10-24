@@ -1,5 +1,5 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
-import { firstValueFrom, Observable } from 'rxjs';
+import { firstValueFrom, Observable, tap } from 'rxjs';
 import { BulkStock, CostumeItem, CostumeKit, CostumeLoan, KitDetail, LoanCreate, LoanExchangeInput, LoanMovement, LoanPatch, LoanQuery, LoanReturnInput, MovementQuery, Page, PartType, PersonCard, PersonInFund, Series, Unit } from '@splk/api-contracts';
 import { FundContext } from '../../core/fund/fund-context';
 import { errorMessage } from '../../core/auth/error-messages';
@@ -8,9 +8,11 @@ import { InventoryApi } from '../../data/inventory/inventory-api';
 import { CatalogApi } from '../../data/catalog/catalog-api';
 import { PeopleApi } from '../../data/people/people-api';
 import { OrganizationApi } from '../../data/organization/organization-api';
+import { InventoryOperationStore } from '../inventury/inventory-operation.store';
 
 @Injectable()
 export class LoansStore {
+  readonly operation = inject(InventoryOperationStore, { optional: true });
   private readonly api = inject(InventoryApi);
   private readonly catalog = inject(CatalogApi);
   private readonly peopleApi = inject(PeopleApi);
@@ -102,9 +104,9 @@ export class LoansStore {
     try { const card = await firstValueFrom(this.peopleApi.card(unit, id)); if (this.current(unit, generation) && request === this.personRequest) this.holderCard.set(card); }
     catch (error) { if (this.current(unit, generation) && request === this.personRequest) this.error.set(errorMessage(error)); }
   }
-  issue(input: LoanCreate) { return this.write((unit) => this.api.issue(unit, input)); }
-  returnLoan(id: number, input: LoanReturnInput) { return this.write(() => this.api.returnLoan(id, input)); }
-  exchange(id: number, input: LoanExchangeInput) { return this.write(() => this.api.exchange(id, input)); }
+  issue(input: LoanCreate) { return this.write((unit) => { const context = this.operation?.values() ?? {}; return this.api.issue(unit, { ...input, ...context }).pipe(tap(() => this.operation?.committed(context))); }); }
+  returnLoan(id: number, input: LoanReturnInput) { return this.write(() => { const context = this.operation?.values() ?? {}; return this.api.returnLoan(id, { ...input, ...context }).pipe(tap(() => this.operation?.committed(context))); }); }
+  exchange(id: number, input: LoanExchangeInput) { return this.write(() => { const context = this.operation?.values() ?? {}; return this.api.exchange(id, { ...input, ...context }).pipe(tap(() => this.operation?.committed(context))); }); }
   update(id: number, input: LoanPatch) { return this.write(() => this.api.updateLoan(id, input)); }
   itemLabel(id: number | null): string { const i = this.items().find((i) => i.id === id); return i ? `${this.series().find((s) => s.id === i.seriesId)?.name ?? 'Součástka'} ${i.number ?? '(bez čísla)'}${i.size ? ' · ' + i.size : ''}` : `Součástka #${id}`; }
   kitLabel(id: number | null): string { const k = this.kits().find((k) => k.id === id); return k ? `${this.series().find((s) => s.id === k.seriesId)?.name ?? 'Komplet'} ${k.number ?? '(bez čísla)'}` : `Komplet #${id}`; }

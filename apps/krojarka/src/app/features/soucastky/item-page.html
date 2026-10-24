@@ -1,4 +1,5 @@
 <a routerLink="/soucastky">← Součástky</a>
+<app-inventory-operation-notice />
 @if (notice()) { <p class="notice" role="status">{{ notice() }}</p> }
 @if (store.detailLoading()) { <p role="status">Načítám součástku…</p> }
 @if (!id() || store.item()) {
@@ -54,7 +55,7 @@
         <label class="field"><span>Popis práce</span><textarea formControlName="description" maxlength="2000" required></textarea></label>
         <label class="field"><span>Kdo vyřizuje</span><input formControlName="assignee" maxlength="200" /></label>
         <label class="field"><span>Termín</span><input type="date" formControlName="dueOn" /></label>
-        <button class="button button-primary" [disabled]="store.busy() || orderForm.invalid">{{ editingOrder() ? 'Uložit úkol' : 'Přidat pracovní úkol' }}</button>@if (editingOrder()) { <button type="button" class="button" (click)="cancelOrder()">Zrušit úpravu</button> }
+        <button class="button button-primary" [disabled]="store.busy() || orderForm.invalid || (!editingOrder() && store.operation?.blocked())">{{ editingOrder() ? 'Uložit úkol' : 'Přidat pracovní úkol' }}</button>@if (editingOrder()) { <button type="button" class="button" (click)="cancelOrder()">Zrušit úpravu</button> }
       </form>
     }
   </section>

@@ -7,9 +7,11 @@ import { ItemCondition, ItemLocation, LoanLine, LoanReturnInput } from '@splk/ap
 import { errorMessage } from '../../core/auth/error-messages';
 import { FundHeader } from '../nastaveni/fund-header';
 import { LoansStore } from './loans.store';
+import { InventoryOperationNotice } from '../inventury/inventory-operation-notice';
 
 interface ReturnDraft { selected: boolean; qty: number; type: 'returned' | 'settled'; note: string; condition: ItemCondition | ''; issuable: '' | 'yes' | 'no'; location: ItemLocation | '' }
-@Component({ selector: 'app-loan-page', imports: [DatePipe, FormsModule, RouterLink, FundHeader], template: `
+@Component({ selector: 'app-loan-page', imports: [DatePipe, FormsModule, RouterLink, FundHeader, InventoryOperationNotice], template: `
+  <app-inventory-operation-notice />
   <h1>Předání #{{ store.detail()?.id }}</h1><app-fund-header /><p><a routerLink="/vypujcky">Zpět na výpůjčky a pohyby</a></p>
   @if (error || store.error()) { <p class="error" role="alert">{{ error || store.error() }}</p> }
   @if (store.detailLoading()) { <p role="status">Načítám předání…</p> }
@@ -24,7 +26,7 @@ interface ReturnDraft { selected: boolean; qty: number; type: 'returned' | 'sett
       </fieldset></form>
     </section>
     <section class="card"><h2>Skutečně předaný obsah</h2><p>Jde o snímek při výdeji. Pozdější změny složení kompletu tento obsah nemění.</p>
-      <form (ngSubmit)="reviewReturn()"><fieldset [disabled]="!store.canManage() || store.busy()"><legend>Vrácení po jednotlivých řádcích</legend>
+      <form (ngSubmit)="reviewReturn()"><fieldset [disabled]="!store.canManage() || store.busy() || store.operation?.blocked()"><legend>Vrácení po jednotlivých řádcích</legend>
         <button type="button" (click)="selectAll()">Označit všechny otevřené řádky k převzetí</button>
         @for (line of loan.lines; track line.id) {
           <article class="line"><h3>{{ line.itemId ? store.itemLabel(line.itemId) : store.stockLabel(line.bulkStockId) }}</h3>
@@ -51,11 +53,11 @@ interface ReturnDraft { selected: boolean; qty: number; type: 'returned' | 'sett
       </fieldset></form>
       @if (reviewed) { <section aria-label="Kontrola vrácení"><h3>Potvrzení převzetí a ztrát</h3>
         <ul>@for (line of returnInput().lines; track line.lineId) { <li>{{ lineLabel(line.lineId) }} · převzato {{ line.returnedQty }}@if (line.closeType === 'settled') { · zbytek ztracen } · {{ line.note }}</li> }</ul>
-        <button type="button" [disabled]="store.busy() || !store.canManage()" (click)="confirmReturn()">Potvrdit uvedené skutečné převzetí a ztráty</button>
+        <button type="button" [disabled]="store.busy() || !store.canManage() || store.operation?.blocked()" (click)="confirmReturn()">Potvrdit uvedené skutečné převzetí a ztráty</button>
       </section> }
     </section>
     @if (exchangeLine) { <section class="card"><h2>Výměna předloženého kusu</h2><p>{{ lineLabel(exchangeLine) }}</p>
-      <form (ngSubmit)="exchange()"><fieldset [disabled]="!store.canManage() || store.busy()"><legend>Převzetí původního a předání náhradního kusu</legend>
+      <form (ngSubmit)="exchange()"><fieldset [disabled]="!store.canManage() || store.busy() || store.operation?.blocked()"><legend>Převzetí původního a předání náhradního kusu</legend>
         <label><input type="checkbox" name="presented" [(ngModel)]="presented" required /> Původní kus byl skutečně předložen a přebírám jej</label>
         <label><input type="checkbox" name="opposite" [(ngModel)]="opposite" /> Nabízet i součástky pro opačný kroj</label>
         <label>Náhradní dostupný kus <select name="replacement" [(ngModel)]="replacement" required><option [ngValue]="0">Vyberte…</option>@for (i of replacements(); track i.id) { <option [ngValue]="i.id">{{ store.itemLabel(i.id) }}</option> }</select></label>
@@ -91,7 +93,7 @@ export class LoanPage {
   reviewReturn() { this.error = ''; if (!this.returnInput().lines.length) { this.error = 'Označte alespoň jeden skutečně přebíraný nebo ztracený řádek.'; return; } this.reviewed = true; }
   async confirmReturn() { const loan = this.store.detail(); if (!loan || !this.reviewed) return; try { await this.store.returnLoan(loan.id, this.returnInput()); await this.store.openLoan(loan.id); } catch (error) { this.error = errorMessage(error); } }
   async save() { const loan = this.store.detail(); if (!loan) return; try { await this.store.update(loan.id, { dueAt: this.due ? new Date(this.due).toISOString() : null, note: this.note.trim() || null }); await this.store.openLoan(loan.id); } catch (error) { this.error = errorMessage(error); } }
-  async exchange() { const loan = this.store.detail(); if (!loan || !this.presented || !this.replacement) return; try { const next = await this.store.exchange(loan.id, { lineId: this.exchangeLine, itemId: this.replacement, note: this.exchangeNote.trim() || null }); await this.router.navigate(['/vypujcky', next.id]); } catch (error) { this.error = errorMessage(error); } }
+  async exchange() { const loan = this.store.detail(); if (!loan || !this.presented || !this.replacement) return; try { const next = await this.store.exchange(loan.id, { lineId: this.exchangeLine, itemId: this.replacement, note: this.exchangeNote.trim() || null }); await this.router.navigate(['/vypujcky', next.id], { queryParamsHandling: 'preserve' }); } catch (error) { this.error = errorMessage(error); } }
   replacements() { const preference = this.store.holderCard()?.person.defaultCostume; return this.store.items().filter((i) => { const series = this.store.series().find((s) => s.id === i.seriesId), gender = series?.gender ?? this.store.partTypes().find((t) => t.id === series?.partTypeId)?.gender; return i.available && (this.opposite || !preference || preference === 'unspecified' || !gender || gender === preference); }); }
   reload() { const id = this.store.detail()?.id; if (id) void this.store.openLoan(id); }
 }

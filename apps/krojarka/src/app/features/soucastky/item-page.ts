@@ -6,9 +6,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ItemCondition, ItemInput, ItemLocation, WorkOrder, WorkOrderStatus, WorkOrderType } from '@splk/api-contracts';
 import { errorMessage } from '../../core/auth/error-messages';
 import { InventoryStore } from './inventory.store';
+import { InventoryOperationNotice } from '../inventury/inventory-operation-notice';
 import { CONDITIONS, EVENT_LABELS, FIELD_LABELS, LOCATIONS, ORDER_STATES, ORDER_TYPES } from './inventory-labels';
 
-@Component({ selector: 'app-item-page', imports: [ReactiveFormsModule, RouterLink, DatePipe], templateUrl: './item-page.html' })
+@Component({ selector: 'app-item-page', imports: [ReactiveFormsModule, RouterLink, DatePipe, InventoryOperationNotice], templateUrl: './item-page.html' })
 export class ItemPage {
   protected readonly store = inject(InventoryStore);
   private readonly route = inject(ActivatedRoute);

@@ -58,7 +58,7 @@ describe('Loan page logic', () => {
     const fixture = TestBed.createComponent(LoanPage); fixture.detectChanges(); const page = fixture.componentInstance;
     page.exchangeLine = 9; page.replacement = 2; await page.exchange(); expect(store.exchange).not.toHaveBeenCalled();
     page.presented = true; await page.exchange(); expect(store.exchange).toHaveBeenCalledWith(3, expect.objectContaining({ lineId: 9, itemId: 2 }));
-    expect(navigate).toHaveBeenCalledWith(['/vypujcky', 4]);
+    expect(navigate).toHaveBeenCalledWith(['/vypujcky', 4], { queryParamsHandling: 'preserve' });
   });
   it('restores actual outstanding quantities when selecting all after drafting a loss', () => {
     const fixture = TestBed.createComponent(LoanPage); fixture.detectChanges(); const page = fixture.componentInstance;
