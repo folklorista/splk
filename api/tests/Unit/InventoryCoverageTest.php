@@ -60,6 +60,17 @@ final class InventoryCoverageTest extends TestCase
             self::assertSame(1, $result['verifiedQuantity']); self::assertSame([$kind], array_column($result['issues'], 'kind')); self::assertFalse($result['canCloseCleanly']);
         }
     }
+    public function testOmittingAConditionPreservesItsLastFindingAndAnOldOkDoesNotHideCurrentDamage(): void
+    {
+        $damage = array_replace($this->check(1, 'found'), ['condition' => 'damaged']);
+        $result = InventoryCoverage::evaluate([array_replace($this->target(), ['currentCondition' => 'ok'])], [$damage, $this->check(2, 'found')]);
+        self::assertSame(['damaged'], array_column($result['issues'], 'kind'));
+        $ok = array_replace($this->check(2, 'found'), ['condition' => 'ok']);
+        self::assertSame([], InventoryCoverage::evaluate([array_replace($this->target(), ['currentCondition' => 'ok'])], [$damage, $ok])['issues']);
+        $result = InventoryCoverage::evaluate([array_replace($this->target(), ['currentCondition' => 'damaged'])], [$ok]);
+        self::assertSame(['damaged'], array_column($result['issues'], 'kind')); self::assertSame(1, $result['verifiedQuantity']);
+        self::assertArrayNotHasKey('checkId', $result['issues'][0]);
+    }
 
     public function testVisitsAndKitContainersDoNotDoubleCountPhysicalComponents(): void
     {

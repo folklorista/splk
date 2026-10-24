@@ -25,10 +25,12 @@ export function inventoryProgress(targets: InventoryTarget[], checks: InventoryC
     if (latest && !physical(latest)) add(latest.result as 'not_found' | 'not_presented', { checkId: latest.id, note: latest.note });
     const compared = latest?.context.expectedQty ?? target.expectedQty;
     if (latest && physical(latest) && bulk && latest.checkedQty !== compared) add('quantity_mismatch', { checkId: latest.id, expectedQty: compared, checkedQty: latest.checkedQty });
-    const lastPhysical = positive.at(-1), condition = lastPhysical?.condition ?? target.currentCondition ?? target.snapshot['condition'];
+    const lastPhysical = positive.at(-1), conditionCheck = positive.filter((c) => c.condition !== null).at(-1);
     if (lastPhysical?.context.confirmedCompositionConflict) add('composition_mismatch', { checkId: lastPhysical.id });
     if (lastPhysical?.context.confirmedLocationConflict) add('location_mismatch', { checkId: lastPhysical.id });
-    if (lastPhysical && (condition === 'damaged' || condition === 'needs_adjustment')) add(condition, { checkId: lastPhysical.id });
+    for (const condition of new Set([conditionCheck?.condition, target.currentCondition ?? target.snapshot['condition']])) {
+      if (lastPhysical && (condition === 'damaged' || condition === 'needs_adjustment')) add(condition, conditionCheck?.condition === condition ? { checkId: conditionCheck.id } : {});
+    }
     for (const order of orders) if (target.itemId !== null && order.itemId === target.itemId && ['open', 'in_progress'].includes(order.status)) add('open_work_order', { workOrderId: order.id });
   }
   progress.peopleCount = holders.size;

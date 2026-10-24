@@ -42,4 +42,11 @@ describe('Inventory UI progress mirrors PHP D-63/D-64 cases', () => {
       expect(progress.verifiedQuantity).toBe(1); expect(progress.issues.map((i) => i.kind)).toEqual([kind]); expect(progress.canCloseCleanly).toBe(false);
     }
   });
+  it('preserves the last explicit condition and never hides current evidence of damage', () => {
+    const damage: InventoryCheck = { ...check(1, 'found'), condition: 'damaged' }, ok: InventoryCheck = { ...check(2, 'found'), condition: 'ok' };
+    expect(inventoryProgress([{ ...target, currentCondition: 'ok' }], [damage, check(2, 'found')]).issues.map((i) => i.kind)).toEqual(['damaged']);
+    expect(inventoryProgress([{ ...target, currentCondition: 'ok' }], [damage, ok]).issues).toEqual([]);
+    expect(inventoryProgress([{ ...target, currentCondition: 'damaged' }], [ok]).issues.map((i) => i.kind)).toEqual(['damaged']);
+    expect(inventoryProgress([{ ...target, currentCondition: 'damaged' }], [ok]).issues[0]).not.toHaveProperty('checkId');
+  });
 });

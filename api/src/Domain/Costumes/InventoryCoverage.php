@@ -47,9 +47,11 @@ final class InventoryCoverage
             $physicalContext = (array) ($lastPhysical['context'] ?? []);
             if ($lastPhysical !== null && ($physicalContext['confirmedCompositionConflict'] ?? false)) $add('composition_mismatch', ['checkId' => $lastPhysical['id']]);
             if ($lastPhysical !== null && ($physicalContext['confirmedLocationConflict'] ?? false)) $add('location_mismatch', ['checkId' => $lastPhysical['id']]);
-            $condition = $lastPhysical['condition'] ?? $target['currentCondition'] ?? $target['snapshot']['condition'] ?? null;
-            if ($lastPhysical !== null && in_array($condition, ['damaged', 'needs_adjustment'], true)) {
-                $add($condition, ['checkId' => $lastPhysical['id']]);
+            $conditionEvidence = array_values(array_filter($positive, static fn (array $c): bool => $c['condition'] !== null));
+            $conditionCheck = $conditionEvidence === [] ? null : $conditionEvidence[array_key_last($conditionEvidence)];
+            $conditions = array_unique([$conditionCheck['condition'] ?? null, $target['currentCondition'] ?? $target['snapshot']['condition'] ?? null]);
+            foreach ($conditions as $condition) if ($lastPhysical !== null && in_array($condition, ['damaged', 'needs_adjustment'], true)) {
+                $add($condition, $conditionCheck !== null && $conditionCheck['condition'] === $condition ? ['checkId' => $conditionCheck['id']] : []);
             }
             foreach ($workOrders as $order) {
                 if ($target['itemId'] !== null && $order['itemId'] === $target['itemId'] && in_array($order['status'], ['open', 'in_progress'], true)) {
