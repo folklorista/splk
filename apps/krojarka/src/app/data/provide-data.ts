@@ -15,6 +15,9 @@ import { MockCatalogApi } from './catalog/mock-catalog-api';
 import { HttpOrganizationApi } from './organization/http-organization-api';
 import { MockOrganizationApi } from './organization/mock-organization-api';
 import { OrganizationApi } from './organization/organization-api';
+import { AttachmentsApi } from './attachments/attachments-api';
+import { HttpAttachmentsApi } from './attachments/http-attachments-api';
+import { MockAttachmentsApi } from './attachments/mock-attachments-api';
 
 /** Chooses HTTP or mock adapters; both implement the same abstract APIs, components do not change. */
 export function provideData(options: { dataSource: 'http' | 'mock'; apiBaseUrl: string }): EnvironmentProviders {
@@ -27,5 +30,6 @@ export function provideData(options: { dataSource: 'http' | 'mock'; apiBaseUrl: 
     { provide: InventoryApi, useClass: mock ? MockInventoryApi : HttpInventoryApi },
     { provide: CatalogApi, useClass: mock ? MockCatalogApi : HttpCatalogApi },
     { provide: OrganizationApi, useClass: mock ? MockOrganizationApi : HttpOrganizationApi },
+    { provide: AttachmentsApi, useClass: mock ? MockAttachmentsApi : HttpAttachmentsApi },
   ]);
 }

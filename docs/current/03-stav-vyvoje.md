@@ -62,9 +62,11 @@ Lokální commit doplněných testů: `532cec1` (`test: cover inventory start co
 
 ## Rozpracovaný krok 8 – průběžné ověření
 
-Databáze a kontrakty jsou v `a59044b`, zpracování fotografií v `700f932`, základní souborové API v `d8d3251`. Dokončené backendové části: upload, metadata, autorizované originály/miniatury, archivace, ZIP export a potvrzené odstranění po digitalizaci. Adaptéry a obrazovky ještě nejsou dokončené.
+Databáze a kontrakty jsou v `a59044b`, zpracování fotografií v `700f932`, základní souborové API v `d8d3251`, ZIP export a potvrzené odstranění v `2ea0a29`. HTTP/mock adaptéry jsou dokončené, obrazovky a převod karet jsou rozpracované.
 
 Průběžné kontroly: **PHPUnit 272 testů / 2250 assertions**, TypeScript kontraktů a kontrola diffu prošly. Patří sem šest databázových testů příloh, obrazové testy včetně všech osmi orientací, jedenáct integračních scénářů základních endpointů, jedenáct scénářů exportu/odstranění a ochrany soukromého úložiště/multipartu. Záměrně vyvolaná selhání auditu, porušení kontrolního součtu a chyba úklidu vracejí očekávanou chybu; příslušné testy ověřují zachování souborů či bezpečné opakování. Toto nejsou závěrečné výsledky dokončeného kroku 8; výsledky kroku 7 zůstávají oddělené výše.
+
+Etapa 3a – datové adaptéry: **Vitest 164 testů / 35 souborů**, TypeScript aplikace a testů prošly. HTTP používá skutečný multipart a binární odpovědi; JSON chyby v Blob se rozbalují i před opakováním CSRF. Mock používá společné identity a fyzickou evidenci, sanitizuje obrazová metadata a poskytuje skutečný ZIP. Jeho ZIP byl navíc otevřen a obsahově ověřen lokálním PHP `ZipArchive`. Mock miniatury vytváří nativní prohlížeč; bez dostupného obrazového dekodéru poctivě vrací `hasThumbnail=false`.
 
 Produkční migrace, data ani nasazení se nemění. Ruční testy uploadu, čitelnosti reálných A4 karet a mobilního ovládání proběhnou až po doplnění UI; limity souborů jsou konfigurovatelné.
 
