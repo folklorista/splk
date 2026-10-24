@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs';
 import {
+  GroupInput, GroupPatch, GroupMemberInput, ManagedGroup, GroupOption,
   CreateAccountResponse,
   GrantMandateRequest,
   ManagedMandate,
@@ -10,6 +11,12 @@ import {
 
 /** Nastavení → Uživatelé a pověření (organization.admin) and the unit list. HttpOrganizationApi / MockOrganizationApi. */
 export abstract class OrganizationApi {
+  abstract groups(): Observable<ManagedGroup[]>;
+  abstract groupOptions(unitId: number): Observable<GroupOption[]>;
+  abstract createGroup(input: GroupInput): Observable<ManagedGroup>;
+  abstract updateGroup(id: number, input: GroupPatch): Observable<ManagedGroup>;
+  abstract addGroupMember(id: number, input: GroupMemberInput): Observable<ManagedGroup>;
+  abstract revokeGroupMember(id: number, membershipId: number): Observable<ManagedGroup>;
   /** every signed-in user */
   abstract units(): Observable<Unit[]>;
   abstract persons(): Observable<ManagedPerson[]>;

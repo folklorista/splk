@@ -49,6 +49,7 @@ export type ApiErrorCode =
   | 'inventory_visit_exists'
   | 'inventory_visit_closed'
   | 'inventory_busy'
+  | 'group_membership_exists'
   | 'internal_error';
 
 /** `details.reason` of `validation_failed`. */

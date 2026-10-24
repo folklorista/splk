@@ -121,7 +121,7 @@ final class InventoryScope
         if (!isset($scope['groupId']) && !isset($scope['affiliationUnitId'])) return null;
         $where = []; $params = [];
         if (isset($scope['groupId'])) {
-            $where[] = 'EXISTS (SELECT 1 FROM group_memberships g WHERE g.person_id = p.id AND g.group_id = :group AND g.valid_from <= current_date AND (g.valid_to IS NULL OR g.valid_to >= current_date))';
+            $where[] = 'EXISTS (SELECT 1 FROM group_memberships g WHERE g.person_id = p.id AND g.group_id = :group AND g.revoked_at IS NULL AND g.valid_from <= current_date AND (g.valid_to IS NULL OR g.valid_to >= current_date))';
             $params['group'] = $scope['groupId'];
         }
         if (isset($scope['affiliationUnitId'])) {

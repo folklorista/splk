@@ -50,3 +50,17 @@ export interface GrantMandateRequest {
   /** null = whole organization */
   unitId: number | null;
 }
+export interface GroupOption { id: number; unitId: number | null; name: string }
+export interface GroupMembership {
+  id: number;
+  personId: number;
+  validFrom: string;
+  validTo: string | null;
+  revokedAt: string | null;
+  revokedBy: number | null;
+  active: boolean;
+}
+export interface ManagedGroup extends GroupOption { archived: boolean; memberships: GroupMembership[] }
+export interface GroupInput { name: string; unitId?: number | null }
+export type GroupPatch = Partial<GroupInput> & { archived?: boolean };
+export interface GroupMemberInput { personId: number; validFrom?: string; validTo?: string | null }

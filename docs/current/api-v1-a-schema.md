@@ -201,6 +201,8 @@ V Krojařce obrazovka **Nastavení → Uživatelé a pověření**.
 
 První účet se správou organizace vytvoří seed z `.env` při první migraci.
 
+Doplněno v kroku 7 pro D-51: `GET/POST /v1/groups`, `PATCH /v1/groups/{id}`, `POST /v1/groups/{id}/members` a `DELETE /v1/groups/{id}/members/{membershipId}`. Správa vrací historii členství s `validFrom`, `validTo`, `revokedAt/by` a aktuálním `active`. Odebrání členství se projeví ihned, zachová řádek i původní data platnosti; nová dopředná migrace přidává technické sloupce odvolání. Překryv neodvolaných období téže osoby se odmítá pod zámkem skupiny. Skupiny lze archivovat a obnovit. Tyto operace patří výhradně `organization.admin`, stejně jako panel skupin ve stávajícím Nastavení → Uživatelé a pověření. Fondově chráněný `GET /v1/funds/{unitId}/inventories/groups` poskytuje pouze ID/název/složku aktivních skupin pro volbu rozsahu inventury, bez seznamu členů nebo jiných osobních údajů. Odvolání členství nemění už zmrazenou inventuru.
+
 ### 4.3 Osoby pro krojařky
 
 | Metoda a cesta | Účel |

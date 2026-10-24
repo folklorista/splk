@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import {
+  GroupInput, GroupPatch, GroupMemberInput, ManagedGroup, GroupOption,
   CreateAccountRequest,
   CreateAccountResponse,
   GrantMandateRequest,
@@ -19,6 +20,13 @@ import { OrganizationApi } from './organization-api';
 export class HttpOrganizationApi extends OrganizationApi {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = inject(API_BASE_URL);
+
+  groups() { return this.wrap(this.http.get<ListResponse<ManagedGroup>>(`${this.baseUrl}/groups`)).pipe(map((r) => r.items)); }
+  groupOptions(unit: number) { return this.wrap(this.http.get<ListResponse<GroupOption>>(`${this.baseUrl}/funds/${unit}/inventories/groups`)).pipe(map((r) => r.items)); }
+  createGroup(input: GroupInput) { return this.wrap(this.http.post<ManagedGroup>(`${this.baseUrl}/groups`, input)); }
+  updateGroup(id: number, input: GroupPatch) { return this.wrap(this.http.patch<ManagedGroup>(`${this.baseUrl}/groups/${id}`, input)); }
+  addGroupMember(id: number, input: GroupMemberInput) { return this.wrap(this.http.post<ManagedGroup>(`${this.baseUrl}/groups/${id}/members`, input)); }
+  revokeGroupMember(id: number, membership: number) { return this.wrap(this.http.delete<ManagedGroup>(`${this.baseUrl}/groups/${id}/members/${membership}`)); }
 
   units(): Observable<Unit[]> {
     return this.wrap(this.http.get<ListResponse<Unit>>(`${this.baseUrl}/units`)).pipe(map((r) => r.items));

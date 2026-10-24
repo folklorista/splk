@@ -4,13 +4,14 @@ import { ManagedMandate, ManagedPerson, MandateKind } from '@splk/api-contracts'
 import { errorMessage } from '../../core/auth/error-messages';
 import { MANDATE_KIND_LABELS, mandateLabel } from '../../core/labels';
 import { OrganizationStore } from './organization.store';
+import { GroupsPanel } from './groups-panel';
 
 const ACCOUNT_STATUS: Record<string, string> = { invited: 'pozván', active: 'aktivní', disabled: 'zablokován' };
 
 /** Nastavení → Uživatelé a pověření (D-48): persons, account invitations and mandates. Only organization.admin. */
 @Component({
   selector: 'app-users-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, GroupsPanel],
   providers: [OrganizationStore],
   templateUrl: './users-page.html',
 })

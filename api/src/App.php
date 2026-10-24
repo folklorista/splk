@@ -20,6 +20,7 @@ use Splk\Api\Http\Controller\WorkOrderController;
 use Splk\Api\Http\Controller\PeopleController;
 use Splk\Api\Http\Controller\LoanController;
 use Splk\Api\Http\Controller\InventoryController;
+use Splk\Api\Http\Controller\GroupController;
 use Splk\Api\Http\Controller\OrganizationController;
 use Splk\Api\Http\HttpException;
 use Splk\Api\Http\Request;
@@ -150,6 +151,7 @@ final class App
         (new PeopleController($this->db->pdo(...)))->register($this->router);
         (new LoanController($this->db->pdo(...)))->register($this->router);
         (new InventoryController($this->db->pdo(...)))->register($this->router);
+        (new GroupController($this->db->pdo(...)))->register($this->router);
         (new OrganizationController($this->db->pdo(...), $passwordLinks, $this->sessions(...)))->register($this->router);
     }
 

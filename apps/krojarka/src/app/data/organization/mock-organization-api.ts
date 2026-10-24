@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
+  GroupInput, GroupPatch, GroupMemberInput, ManagedGroup,
   CreateAccountResponse,
   GrantMandateRequest,
   ManagedMandate,
@@ -22,6 +23,8 @@ const UNITS: Unit[] = [
 @Injectable()
 export class MockOrganizationApi extends OrganizationApi {
   private nextId = 100;
+  private readonly groupRows: ManagedGroup[] = [{ id: 1, name: 'Muzikanti', unitId: 4, archived: false,
+    memberships: [{ id: 1, personId: 3, validFrom: '2026-10-24', validTo: null, revokedAt: null, revokedBy: null, active: true }] }];
   private readonly people: ManagedPerson[] = [
     this.person(1, 'Marie', 'Ukázková', { id: 1, loginEmail: 'krojarka@example.test', status: 'active', lastLoginAt: '2026-10-24T08:00:00+02:00' }, [
       this.mandate(1, 'costumes.manage', 1),
@@ -34,6 +37,41 @@ export class MockOrganizationApi extends OrganizationApi {
 
   units(): Observable<Unit[]> {
     return mockOk(UNITS);
+  }
+
+  groups() {
+    const today = new Date().toISOString().slice(0, 10);
+    for (const g of this.groupRows) for (const m of g.memberships) m.active = !m.revokedAt && m.validFrom <= today && (!m.validTo || m.validTo >= today);
+    return mockOk(this.groupRows);
+  }
+  groupOptions(_unit: number) { return mockOk(this.groupRows.filter((g) => !g.archived).map(({ id, name, unitId }) => ({ id, name, unitId }))); }
+  createGroup(input: GroupInput) {
+    if (!input.name.trim() || input.name.length > 200 || input.unitId && !UNITS.some((u) => u.id === input.unitId && !u.archived)) return mockFail(422, 'validation_failed');
+    const row: ManagedGroup = { id: this.nextId++, name: input.name.trim(), unitId: input.unitId ?? null, archived: false, memberships: [] };
+    this.groupRows.push(row); return mockOk(row);
+  }
+  updateGroup(id: number, input: GroupPatch) {
+    const row = this.groupRows.find((g) => g.id === id);
+    if (!row) return mockFail(404, 'not_found');
+    if (input.name !== undefined && (!input.name.trim() || input.name.length > 200) || input.unitId && !UNITS.some((u) => u.id === input.unitId && !u.archived)) return mockFail(422, 'validation_failed');
+    Object.assign(row, input, input.name !== undefined ? { name: input.name.trim() } : {}); return mockOk(row);
+  }
+  addGroupMember(id: number, input: GroupMemberInput) {
+    const row = this.groupRows.find((g) => g.id === id);
+    if (!row) return mockFail(404, 'not_found');
+    const from = input.validFrom ?? new Date().toISOString().slice(0, 10), to = input.validTo ?? null;
+    const date = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && Number.isFinite(Date.parse(v)) && new Date(v).toISOString().slice(0, 10) === v;
+    if (row.archived || !this.people.some((p) => p.id === input.personId) || !date(from) || to !== null && (!date(to) || to < from)) return mockFail(422, 'validation_failed');
+    if (row.memberships.some((m) => m.personId === input.personId && !m.revokedAt && (!to || m.validFrom <= to) && (!m.validTo || from <= m.validTo))) return mockFail(422, 'group_membership_exists');
+    const today = new Date().toISOString().slice(0, 10);
+    row.memberships.push({ id: this.nextId++, personId: input.personId, validFrom: from, validTo: to, revokedAt: null, revokedBy: null, active: from <= today && (!to || to >= today) });
+    return mockOk(row);
+  }
+  revokeGroupMember(id: number, membership: number) {
+    const row = this.groupRows.find((g) => g.id === id), member = row?.memberships.find((m) => m.id === membership);
+    if (!row || !member) return mockFail(404, 'not_found');
+    if (!member.revokedAt) Object.assign(member, { revokedAt: new Date().toISOString(), revokedBy: 1, active: false });
+    return mockOk(row);
   }
 
   persons(): Observable<ManagedPerson[]> {

@@ -27,6 +27,14 @@ const MESSAGES: Record<string, string> = {
   item_retired: 'Součástka je vyřazená a nelze ji takto měnit.',
   composition_conflict: 'Složení se změnilo nebo součástka patří do jiného kompletu. Obnovte záznam.',
   last_admin: 'Poslední správu organizace nelze odebrat.',
+  group_membership_exists: 'Členství v tomto období už existuje.',
+  inventory_closed: 'Inventura je uzavřená. Její výsledek už nelze měnit.',
+  inventory_has_issues: 'Zbývají neověřené součástky nebo nesrovnalosti. Uzavření s nesrovnalostmi vyžaduje důvod.',
+  inventory_target_exists: 'Tento cíl už je v rozsahu inventury.',
+  inventory_slot_full: 'Termín nemá dostatečnou volnou kapacitu.',
+  inventory_visit_exists: 'Osoba už má v této inventuře aktivní návštěvu.',
+  inventory_visit_closed: 'Návštěva je dokončená nebo zrušená. Pro další kontrolu založte novou návštěvu.',
+  inventory_busy: 'Evidence se právě mění. Zkuste operaci znovu.',
 };
 
 const REASONS: Record<string, string> = {
