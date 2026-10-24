@@ -4,20 +4,20 @@
 
 ## Aktuální stav
 
-**Poslední dokončený krok: 7 – Inventury, etapa 3d včetně doplněných testů souběhu.** Kroky 1–7 jsou dokončené lokálně. Krok 8 je rozpracovaný od databáze a kontraktů; kroky 9–10 nejsou implementované. Q-14 je rozhodnutá (D-65/D-66).
+**Poslední dokončený krok: 8 – Přílohy a převod papírových karet, etapa 3b (obrazovky a převod).** Kroky 1–8 jsou dokončené lokálně a automaticky otestované. Ruční provozní ověření zůstává před nasazením. Kroky 9–10 následují ve schváleném pořadí. Q-14 a převzetí držení z papíru jsou rozhodnuté (D-65 až D-67).
 
 | Oblast | Současný stav |
 |---|---|
 | Kroky 1–3 | Monorepo, API, přihlášení, sessions, CSRF, katalog, evidenční řady, organizační správa, pověření a audit. Poslední zde zaznamenané nasazení API a Krojařky: `908001d` z 2026-10-24 (krok 3). |
 | Krok 4 – Součástky | Kusy, nečíslované zásoby, fyzické komplety, určené složení, historie a pracovní úkoly. Jedna hlavní položka Součástky, přehled podle řad. Dokončeno lokálně, nenasazeno. |
 | Krok 5 – Lidé a krojové karty | Společná identita a kontakty všem krojařkám, fondové profily a oddělené poznámky (D-60). Dokončeno lokálně, nenasazeno. |
-| Krok 6 – Výpůjčky | Výdej, částečné vrácení, výměny, ztráty, pohyby a fondové karty. Dostupnost a držitelé ze skutečných výpůjček; ochrana proti dvojímu odečtu doplňků celého kompletu (D-61), ztráta s vyřazením kusu či snížením zásoby (D-62). Dokončeno lokálně, nenasazeno. |
+| Krok 6 – Výpůjčky | Výdej, částečné vrácení, výměny, ztráty, pohyby a fondové karty. Dostupnost a držitelé ze skutečných výpůjček a výslovně převzatého aktuálního držení z papíru (D-67); ochrana proti dvojímu odečtu doplňků celého kompletu (D-61), ztráta s vyřazením kusu či snížením zásoby (D-62). Dokončeno lokálně, nenasazeno. |
 | Krok 7 – Inventury | Zmrazený rozsah, tři režimy kontrol, termíny a návštěvy, rozšíření rozsahu, historie, nesrovnalosti, běžné operace s kontextem, neměnné uzavření a skupiny (D-48/D-51, D-63/D-64). Dokončeno lokálně, nenasazeno. |
-| Krok 8 – Přílohy | Rozpracováno: databáze, kontrakty a zpracování fotografií. GPS údaje se odstraňují se zachováním obrazu/orientace (D-65); osobní skeny čtou i fondoví čtenáři (D-66). Lokální doplnění `gd` a `zip` uživatel schválil. |
-| Krojařka a API | Standalone Angular, feature služby, zaměnitelné HTTP/mock adaptéry; PHP API, PostgreSQL, sdílené TS kontrakty a čistá doménová logika. Bez nových závislostí a změny architektury. |
+| Krok 8 – Přílohy | Dokončeno lokálně: databáze, API, kontrakty, HTTP/mock adaptéry, galerie a průvodce převodem s původem držení `paper_migration`. GPS údaje se odstraňují se zachováním obrazu/orientace (D-65); osobní skeny čtou i fondoví čtenáři (D-66). Lokální doplnění `gd` a `zip` uživatel schválil. |
+| Krojařka a API | Standalone Angular, feature služby, zaměnitelné HTTP/mock adaptéry; PHP API, PostgreSQL, sdílené TS kontrakty a čistá doménová logika. Bez nových npm/Composer knihoven a změny architektury; lokální PHP `gd`/`zip` a systémové knihovny výslovně schválil uživatel. |
 | Demo a moje | Demo zůstává historickým prototypem; kód se z něj nepřebírá. Vývoj členské aplikace `moje.vonica.cz` je odložen. |
 
-Produkční databáze, migrace ani nasazení se při lokálním vývoji kroků 4–7 neměnily. Nebyl proveden push ani merge.
+V této relaci se nepřistupovalo k produkční databázi, neprováděly se produkční migrace, nasazení, push ani merge.
 
 ## Dokončený krok 7
 
@@ -60,15 +60,27 @@ Lokální commit doplněných testů: `532cec1` (`test: cover inventory start co
 - Krojařka: `data/inventory/` a organizační adaptéry; nové `features/inventury/`; skupiny v `features/nastaveni/groups*` a `users-page`; kontext v trasách výpůjček/součástek, historie v `soucastky/item-page`, překlady a `app.routes.ts`. Doplněné Vitest testy adaptérů, stores, parseru a chování formulářů.
 - Dokumentace: tento stav, `api-v1-a-schema.md`, `monorepo-struktura.md`, `decisions.md` (D-63/D-64) a `open-questions.md` (Q-21/Q-22 vyřešeny; později vyřešena i Q-14).
 
-## Rozpracovaný krok 8 – průběžné ověření
+## Dokončený krok 8
 
-Databáze a kontrakty jsou v `a59044b`, zpracování fotografií v `700f932`, základní souborové API v `d8d3251`, ZIP export a potvrzené odstranění v `2ea0a29`. HTTP/mock adaptéry jsou dokončené, obrazovky a převod karet jsou rozpracované.
+- Soukromé přílohy JPEG/PNG/PDF, sanitizace polohových metadat při zachování obrazu/orientace, autorizované miniatury a originály, verzovaná metadata, archivace, skutečný ZIP s manifestem a potvrzené odstranění obsahu se zachováním metadat/auditu (D-40, D-65/D-66).
+- Obrazovka Dokumenty a galerie na kartách osoby, kusu, kompletu, řady a inventurní kontroly. Výběr vlastníka podle názvu, řazení stran, zvětšení/posun/otočení/přepínání, načítání pouze viditelných miniatur, uvolňování Blob URL, zachování rozepsané editace při konfliktu verze a nenahraných souborů při částečném selhání. PDF se stahuje; HEIC se nepřijímá. Mock data jsou pouze v paměti relace, bez dekodéru poctivě chybí miniatura.
+- Průvodce `/lide/:id/prevod` odděluje podklady, porovnání papírového originálu, převzetí doloženého současného držení, historické nesrovnalosti a výslovné převzetí digitální evidence. Fyzické kontroly zůstávají samostatnou inventurní operací; nic se automaticky nepotvrzuje. Původní skeny se archivují samostatně a odstraňují až po ověřeném exportu.
+- D-67: převod má `origin=paper_migration`, skutečné `issued_at/by` zůstávají null, datum/autor digitalizace jsou samostatné a doložené historické datum je volitelné. Běžné vrácení původ zachová. Chybějící, nejednoznačný, vyřazený či již jinak držený kus zůstane nesrovnalostí; jiná držení se nepřepisují. Opakování ani dva identifikátory téhož kusu nevytvářejí duplicitní otevřené držení. Kolize zámků je bezpečně opakovatelná 409.
+- Nová dopředná migrace `20261024233000_add_paper_migration_provenance` zachovává existující výpůjčky a data výdejů; její rollback odmítne smazat vzniklé převody či nesrovnalosti. Automatické testy ověřují prázdný down/up i odmítnutí ztráty dat.
 
-Průběžné kontroly: **PHPUnit 272 testů / 2250 assertions**, TypeScript kontraktů a kontrola diffu prošly. Patří sem šest databázových testů příloh, obrazové testy včetně všech osmi orientací, jedenáct integračních scénářů základních endpointů, jedenáct scénářů exportu/odstranění a ochrany soukromého úložiště/multipartu. Záměrně vyvolaná selhání auditu, porušení kontrolního součtu a chyba úklidu vracejí očekávanou chybu; příslušné testy ověřují zachování souborů či bezpečné opakování. Toto nejsou závěrečné výsledky dokončeného kroku 8; výsledky kroku 7 zůstávají oddělené výše.
+| Závěrečná kontrola kroku 8 | Výsledek |
+|---|---|
+| `npm run api:test` | **283 testů / 2349 assertions – prošlo**, lokální `_test` DB, včetně souběhu kroku 7, migrací, oprávnění, auditu, integrity, exportu, bezpečného opakování a převodu |
+| `npm run krojarka:test` (Node 24) | **185 testů / 40 souborů – prošlo** |
+| TypeScript aplikace / testů / kontraktů | **Všechny tři kontroly prošly** |
+| `npm run krojarka:build` | **Prošlo, úvodní balíček 489,02 kB**, bez zvýšení rozpočtu; účet a uživatelská správa se načítají při vstupu do trasy |
+| `git diff --check` | **Prošlo** |
 
-Etapa 3a – datové adaptéry: **Vitest 164 testů / 35 souborů**, TypeScript aplikace a testů prošly. HTTP používá skutečný multipart a binární odpovědi; JSON chyby v Blob se rozbalují i před opakováním CSRF. Mock používá společné identity a fyzickou evidenci, sanitizuje obrazová metadata a poskytuje skutečný ZIP. Jeho ZIP byl navíc otevřen a obsahově ověřen lokálním PHP `ZipArchive`. Mock miniatury vytváří nativní prohlížeč; bez dostupného obrazového dekodéru poctivě vrací `hasThumbnail=false`.
+Commity kroku 8: `a59044b` databáze/kontrakty, `700f932` fotografie, `d8d3251` souborové API, `2ea0a29` export/odstranění, `37f85a0` binární CSRF, `3dd9e06` adaptéry, `d485f45` model/API převodu, `02540f9` porovnání originálu, `706f13e` adaptéry převodu a původ, `6f8309e` obrazovky příloh a převodu.
 
-Produkční migrace, data ani nasazení se nemění. Ruční testy uploadu, čitelnosti reálných A4 karet a mobilního ovládání proběhnou až po doplnění UI; limity souborů jsou konfigurovatelné.
+Změněné oblasti: `api/db/migrations`, `api/src/Domain/Costumes/LoanRepository.php`, `Domain/Identity/PeopleRepository.php`, přílohové a převodové controllery, soukromé úložiště a obrazové zpracování, HTTP request/policy, `api/tests`; `packages/api-contracts/src/{attachments,paper-migrations,loans,people,errors}.ts`; Krojařka `data/attachments`, `data/people`, `data/inventory`, `features/dokumenty`, průvodce v `features/lide`, galerie ve stávajících detailech, popisky historie a trasy. Stávající testy zůstaly zachované; testovací příprava odložených Angular komponent nyní výslovně čeká na `compileComponents()`.
+
+Před nasazením ručně ověřit obě datové varianty, reálnou čitelnost A4 a mobilní zoom/otočení/posun, JPEG s GPS a orientací i PDF, archivaci a ZIP uložený mimo aplikaci, přerušení dávky a opakování úklidu; dále převod s neznámým/známým datem, konflikt držitele, opakování, dokončení s nejasnostmi a skutečné vrácení. Galerie podporuje klávesnici a vrací fokus po zavření. Ruční průchod v prohlížeči zatím neproběhl. Produkční připravenost není tímto potvrzena.
 
 ## Ruční ověření před případným nasazením
 
@@ -86,8 +98,8 @@ Před souhrnným nasazením kroků 4–7 ověřit také založení a úpravy kus
 
 ## Další postup a omezení
 
-- **Poslední kompletně dokončený krok: 7 – Inventury, etapa 3d včetně doplněných testů souběhu.** Kroky 4–6 jsou rovněž dokončené lokálně. Pokračuje krok 8 v původním schváleném pořadí; kroky 9–10 nezačaly.
-- **Q-14 je vyřešená:** odstraňovat polohová EXIF data při zachování obrazu a orientace (D-65), osobní skeny i pro fondové čtenáře (D-66). Retence D-40 zůstává beze změny. Průběžné kontroly kroku 8 se evidují samostatně od závěrečných výsledků kroku 7 výše.
+- **Poslední kompletně dokončený krok: 8 – Přílohy a převod papírových karet, etapa 3b.** Následují přehledy/hledání (9), potom náklady (10).
+- **Q-14 je vyřešená:** odstraňovat polohová EXIF data při zachování obrazu a orientace (D-65), osobní skeny i pro fondové čtenáře (D-66). Retence D-40 zůstává beze změny. Závěrečné výsledky jednotlivých kroků jsou oddělené výše; historický deník je odkazovaný níže.
 - Stav je připravený k místnímu a případnému testovacímu ověření. Produkční připravenost vyžaduje výše uvedené ruční ověření a výslovné schválení produkčních migrací a nasazení. V této části práce nebyla použita produkční DB, produkční migrace, deploy ani `git push`.
 
 ## Historické průběžné zápisy
