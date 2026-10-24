@@ -4,7 +4,7 @@
 
 ## Aktuální stav
 
-**Poslední dokončený krok: 7 – Inventury, etapa 3d včetně doplněných testů souběhu.** Kroky 1–7 jsou dokončené lokálně. Kroky 8–10 nejsou implementované; před krokem 8 čeká rozhodnutí Q-14 o polohových EXIF datech fotografií.
+**Poslední dokončený krok: 7 – Inventury, etapa 3d včetně doplněných testů souběhu.** Kroky 1–7 jsou dokončené lokálně. Krok 8 je rozpracovaný od databáze a kontraktů; kroky 9–10 nejsou implementované. Q-14 je rozhodnutá (D-65/D-66).
 
 | Oblast | Současný stav |
 |---|---|
@@ -13,6 +13,7 @@
 | Krok 5 – Lidé a krojové karty | Společná identita a kontakty všem krojařkám, fondové profily a oddělené poznámky (D-60). Dokončeno lokálně, nenasazeno. |
 | Krok 6 – Výpůjčky | Výdej, částečné vrácení, výměny, ztráty, pohyby a fondové karty. Dostupnost a držitelé ze skutečných výpůjček; ochrana proti dvojímu odečtu doplňků celého kompletu (D-61), ztráta s vyřazením kusu či snížením zásoby (D-62). Dokončeno lokálně, nenasazeno. |
 | Krok 7 – Inventury | Zmrazený rozsah, tři režimy kontrol, termíny a návštěvy, rozšíření rozsahu, historie, nesrovnalosti, běžné operace s kontextem, neměnné uzavření a skupiny (D-48/D-51, D-63/D-64). Dokončeno lokálně, nenasazeno. |
+| Krok 8 – Přílohy | Rozpracováno: databáze, kontrakty a zpracování fotografií. GPS údaje se odstraňují se zachováním obrazu/orientace (D-65); osobní skeny čtou i fondoví čtenáři (D-66). Lokální doplnění `gd` a `zip` uživatel schválil. |
 | Krojařka a API | Standalone Angular, feature služby, zaměnitelné HTTP/mock adaptéry; PHP API, PostgreSQL, sdílené TS kontrakty a čistá doménová logika. Bez nových závislostí a změny architektury. |
 | Demo a moje | Demo zůstává historickým prototypem; kód se z něj nepřebírá. Vývoj členské aplikace `moje.vonica.cz` je odložen. |
 
@@ -57,7 +58,7 @@ Lokální commit doplněných testů: `532cec1` (`test: cover inventory start co
 - Migrace: inventury z etapy 1 `20261024200000`; nové dopředné/vratné migrace `20261024210000_add_inventory_observation_context` a `20261024220000_add_group_membership_revocation`. Původní fyzická evidence a výpůjčky se nepřepisují ani nedoplňují smyšlenou historií.
 - Kontrakty a čistá TS logika: `packages/api-contracts/src/inventories.ts`, `inventory.ts`, `loans.ts`, `organization.ts`, `errors.ts`; `packages/domain/src/inventory-numbers.ts`, `inventory-progress.ts`, `index.ts` a TS alias v `apps/krojarka/tsconfig.json`.
 - Krojařka: `data/inventory/` a organizační adaptéry; nové `features/inventury/`; skupiny v `features/nastaveni/groups*` a `users-page`; kontext v trasách výpůjček/součástek, historie v `soucastky/item-page`, překlady a `app.routes.ts`. Doplněné Vitest testy adaptérů, stores, parseru a chování formulářů.
-- Dokumentace: tento stav, `api-v1-a-schema.md`, `monorepo-struktura.md`, `decisions.md` (D-63/D-64) a `open-questions.md` (Q-21/Q-22 vyřešeny, Q-14 čeká).
+- Dokumentace: tento stav, `api-v1-a-schema.md`, `monorepo-struktura.md`, `decisions.md` (D-63/D-64) a `open-questions.md` (Q-21/Q-22 vyřešeny; později vyřešena i Q-14).
 
 ## Ruční ověření před případným nasazením
 
@@ -75,8 +76,8 @@ Před souhrnným nasazením kroků 4–7 ověřit také založení a úpravy kus
 
 ## Další postup a omezení
 
-- **Poslední kompletně dokončený krok: 7 – Inventury, etapa 3d včetně doplněných testů souběhu.** Kroky 4–6 jsou rovněž dokončené lokálně. Pro přílohy a skeny v kontrole kompletů navazuje krok 8 v původním schváleném pořadí; kroky 8–10 nezačaly.
-- **Před krokem 8 čeká produktové rozhodnutí Q-14:** odstraňovat polohová EXIF data z nahraných fotografií, nebo je zachovat. Otázka byla odeslána uživateli; bez odpovědi se nezavádí vlastní politika práce se skeny. D-40 o retenci je již rozhodnuté a zůstává beze změny.
+- **Poslední kompletně dokončený krok: 7 – Inventury, etapa 3d včetně doplněných testů souběhu.** Kroky 4–6 jsou rovněž dokončené lokálně. Pokračuje krok 8 v původním schváleném pořadí; kroky 9–10 nezačaly.
+- **Q-14 je vyřešená:** odstraňovat polohová EXIF data při zachování obrazu a orientace (D-65), osobní skeny i pro fondové čtenáře (D-66). Retence D-40 zůstává beze změny. Průběžné kontroly kroku 8 se evidují samostatně od závěrečných výsledků kroku 7 výše.
 - Stav je připravený k místnímu a případnému testovacímu ověření. Produkční připravenost vyžaduje výše uvedené ruční ověření a výslovné schválení produkčních migrací a nasazení. V této části práce nebyla použita produkční DB, produkční migrace, deploy ani `git push`.
 
 ## Historické průběžné zápisy

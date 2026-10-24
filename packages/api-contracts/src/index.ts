@@ -6,3 +6,4 @@ export * from './inventory';
 export * from './people';
 export * from './loans';
 export * from './inventories';
+export * from './attachments';

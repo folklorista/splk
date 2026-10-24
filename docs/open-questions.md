@@ -175,11 +175,11 @@ Přehled problémů dema, kterým se má API vyhnout (oprávnění jen ve fronte
 - ~~místo pro přístupové údaje k DB na `api`~~ – `config/` mimo webroot (D-54).
 - Zbývá: test zápisu do DB, HSTS, práva souborů, SPA fallback, Safari/iOS, jeden DB účet pro migrace i aplikaci.
 
-### Q-14 Přihlašování do Krojařky a citlivé skeny – *účty jen pro čtení rozhodnuty → D-36*
+### Q-14 Přihlašování do Krojařky a citlivé skeny – *rozhodnuto → D-36, D-40, D-65, D-66*
 
-Retence skenů je rozhodnutá (D-40: po digitalizaci do digiarchivu a z aplikace pryč). Zbývá odstraňování polohových EXIF dat. Původní znění:
+Retence skenů je rozhodnutá (D-40: po digitalizaci do digiarchivu a z aplikace pryč). Uživatel 2026-10-24 rozhodl odstraňovat polohová EXIF data při zachování obrazu a orientace (D-65). Skeny osobních karet smějí v příslušném fondu číst i čtenáři `costumes.view` (D-66).
 
-**Stav 2026-10-24:** krok 7 je dokončen lokálně. Před krokem 8 byla otázka znovu předložena uživateli: odstraňovat polohová EXIF data, nebo je zachovat? Obraz a jeho orientace mají zůstat zachované. Do rozhodnutí se krok 8 neimplementuje; volba se nesmí nahradit předpokladem. Retence D-40 ani pověření se tím znovu neotevírají.
+**Stav 2026-10-24:** Q-14 již neblokuje krok 8. Uživatel schválil i doplnění lokálního Docker obrazu o PHP rozšíření `gd` a `zip` včetně jejich systémových knihoven; hosting je již má podle ověřené dokumentace. Produkční migrace ani nasazení tím schválené nejsou. Následuje původní znění otázky:
 
 - Kdo dostane účet: jen krojařky, nebo i další role pro čtení (např. Náhled do evidence pro výbor)?
 - Retence a přístup k naskenovaným osobním kartám (GDPR).

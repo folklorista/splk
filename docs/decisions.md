@@ -386,6 +386,22 @@ Krojařka používá výchozí test runner Angularu 22 – **Vitest** (jsdom). D
 
 **Zdroj:** uživatel 2026-10-24 (dotaz k opakovanému započítání přesunutých mašlí: „Zásoby vykazovat samostatně, mimo procento ověřených kusů“). Oddělení obalů a součástí zabraňuje dvojímu započtení podle `current/06` kap. 7.
 
+### D-65 Fotografie se ukládají bez polohových EXIF dat
+
+- Při nahrání fotografie se odstraňují polohová EXIF data. Obraz a jeho orientace zůstávají zachované.
+- Toto pravidlo platí pro uložený obsah i jeho náhledy; původní soubor s polohovými údaji se neuchovává jako skrytá kopie.
+- Retence skenů podle D-40 se nemění.
+
+**Zdroj:** uživatel 2026-10-24, odpověď na Q-14: „Odstraňovat polohová EXIF data“; v otázce výslovně požadováno zachování obrazu a orientace.
+
+### D-66 Skeny osobních karet čtou i fondoví čtenáři
+
+- Sken osobní krojové karty v příslušném fondu může číst `costumes.manage` i `costumes.view`, včetně případných kontaktů zachycených na snímku.
+- Tím se nemění D-60 pro strukturovaná pole osoby: samotný kontakt zůstává čtenářům skrytý. Přílohy cizího fondu ani samotná organizační správa nezískávají přístup.
+- Zápisy příloh zůstávají omezené na `costumes.manage` příslušného fondu.
+
+**Zdroj:** uživatel 2026-10-24, odpověď na otázku přístupu ke skenům obsahujícím kontakty: „Také čtenáři s costumes.view“.
+
 ## API v1 (2026-10-23, `current/api-v1-a-schema.md` kap. 7)
 
 ### D-48 Správa organizace v Krojařce

@@ -311,7 +311,7 @@ Toto je **návrh API pro budoucí implementaci**, nikoliv schválené endpointy.
 
 **Úložiště:** na PHP hostingu lze pro první verzi ukládat fyzické soubory v soukromém adresáři **mimo veřejný webroot**, metadata a vazby do MariaDB. Originál ani náhled nepublikovat na veřejně odhadnutelné URL. Stahování přes PHP s kontrolou oprávnění. Pokud hosting neumožní bezpečné privátní úložiště, navrhnout odpovídající zabezpečenou variantu před spuštěním, neukládat osobní karty do veřejné složky.
 
-**Bezpečnost a provoz:** kontrola MIME podle skutečného obsahu (nejen přípony), omezení velikosti a počtu souborů, bezpečné názvy, limity PHP uploadu, ochrana před škodlivými soubory, oddělené oprávnění ke čtení osobních karet, audit nahrání a odebrání. EXIF polohová metadata u fotografií z mobilu pokud možno odstraňovat. U skenů řešit osobní údaje, retenci a zálohování **databáze i souborů společně**; obnova musí obnovit také vazby příloh.
+**Bezpečnost a provoz:** kontrola MIME podle skutečného obsahu (nejen přípony), omezení velikosti a počtu souborů, bezpečné názvy, limity PHP uploadu, ochrana před škodlivými soubory, fondové oprávnění ke čtení osobních karet i pro `costumes.view` (D-66), audit nahrání a odebrání. Polohová EXIF metadata fotografií se při nahrání odstraňují, obraz a orientace zůstávají zachované (D-65). U skenů řešit osobní údaje, retenci a zálohování **databáze i souborů společně**; obnova musí obnovit také vazby příloh.
 
 **Optimalizace:** prohlížeč zobrazuje menší náhled, originál načte při otevření. Pro originály zachovat čitelnost ručně psaných údajů; nastavit praktický limit až po reálném otestování na vzorku karet. Nepotřebujeme OCR, veřejné CDN ani pokročilý DAM systém.
 

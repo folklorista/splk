@@ -3,9 +3,10 @@
 FROM php:8.5-apache
 
 RUN a2enmod rewrite headers \
- && apt-get update && apt-get install -y --no-install-recommends libpq-dev unzip postgresql-client \
+ && apt-get update && apt-get install -y --no-install-recommends libpq-dev libzip-dev libpng-dev libjpeg62-turbo-dev unzip postgresql-client \
  && rm -rf /var/lib/apt/lists/* \
- && docker-php-ext-install pdo_pgsql \
+ && docker-php-ext-configure gd --with-jpeg \
+ && docker-php-ext-install pdo_pgsql gd zip \
  && sed -ri 's!/var/www/html!/app/public!g' /etc/apache2/sites-available/000-default.conf \
  && printf '<Directory /app/public>\n    AllowOverride All\n    Require all granted\n</Directory>\n' > /etc/apache2/conf-enabled/splk-api.conf
 

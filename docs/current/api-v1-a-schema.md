@@ -179,6 +179,10 @@ Rozsah inventury ve v1: klasifikace (region, pohlaví, druh, varianta, řada) a 
 | `costume_cost_links` | `cost_id`, `item_id` / `bulk_stock_id` / `kit_id`, `qty` | volitelná vazba nákladu na pořízené kusy (soupis „pořízeno mezi daty“ [R D-39]) |
 | `audit_log` | `at`, `actor_account_id`, `action`, `entity_type`, `entity_id`, `unit_id`, `data jsonb` | všechny zápisy API; čtení jen pro `organization.admin` a `costumes.view` v rozsahu [N] |
 
+**Krok 8, etapa 1 (2026-10-24):** přidána vratná migrace `20261024230000_create_attachments` a sdílené kontrakty příloh. Příloha má vedle veřejného UUID interní bigint ID pro stávající audit. `storage_key` odpovídá UUID a není součástí DTO. Metadata obsahují `version` a dostupnost miniatury; zůstávají zachovaná po odstranění souboru. Vlastník `archive` označuje archiv daného fondu (`owner_id = unit_id`); nevzniká nová doménová entita archivu. Vazby jsou kontrolované vůči existujícím vlastníkům a jejich fondům, včetně ochrany před odstraněním vlastníka.
+
+Fotografie se ukládají bez polohových EXIF dat se zachováním obrazu a orientace (D-65). Skeny osobních karet čte i `costumes.view` v daném fondu (D-66); kontakt ve strukturovaném DTO osoby se tím nezpřístupňuje. Příprava formátů serveru pokrývá JPEG/PNG a PDF. `attachment_exports` uchovává manifest verze a kontrolního součtu exportovaných příloh pro následné výslovně potvrzené odstranění po uložení ZIP mimo aplikaci (D-40). API a obrazovky jsou rozpracované.
+
 ## 4. Endpointy v1
 
 ### 4.1 Přihlášení a účet
