@@ -346,6 +346,14 @@ Krojařka používá výchozí test runner Angularu 22 – **Vitest** (jsdom). D
 
 **Zdroj:** uživatel 2026-10-24 (dvě volby před krokem 3); technické body [N] podle `current/api-v1-a-schema.md` kap. 2.1.
 
+### D-60 Kontakty osob jsou společné krojařkám, krojové poznámky zůstávají po fondech
+
+- Kontakty osob jsou společné všem krojařkám, tedy osobám s platným `costumes.manage` pro některý krojový fond; vztahuje se i na externisty bez příslušnosti ke složce.
+- Krojové poznámky a stav papírové karty zůstávají po fondech v `costume_holder_profiles`; sdílení kontaktu nezpřístupňuje cizí výpůjčky, fondové poznámky ani náklady.
+- Tím se výslovně doplňuje seznam sdílených údajů z D-21 o kontakt. Pověření jen pro čtení tím nezískává nový přístup ke společným kontaktům; správa organizace má nadále vlastní rozhraní pro osobní údaje (D-48).
+
+**Zdroj:** uživatel 2026-10-24 (odpověď na Q-18: „Kontakty sdílet všem krojařkám; poznámky ke krojům zůstávají po fondech.“). Vymezení technických pověření navazuje na D-18, D-21 a D-36.
+
 ## API v1 (2026-10-23, `current/api-v1-a-schema.md` kap. 7)
 
 ### D-48 Správa organizace v Krojařce

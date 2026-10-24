@@ -10,9 +10,9 @@ Co ještě musíme rozhodnout (úroveň **B**). Každá otázka uvádí, odkud p
 
 ## Blokuje Krojařku
 
-### Q-18 Přístup krojařek ke kontaktům osob – blokuje dokončení kroku 5
+### Q-18 Přístup krojařek ke kontaktům osob – *rozhodnuto → D-60*
 
-Zjištěno při přípravě kroku 5 dne 2026-10-24; **čeká na rozhodnutí uživatele**.
+Rozhodnuto uživatelem 2026-10-24: kontakty sdílet všem krojařkám, krojové poznámky po fondech (D-60). Následuje původní podklad otázky.
 
 - D-21 a `current/api-v1-a-schema.md` kap. 2.3 mezi složkami sdílejí jen jméno, přezdívku a příslušnost; krojové údaje jsou po fondech.
 - Schéma kap. 3.1 má `persons.contact` a `persons.note` společné u osoby, zatímco kap. 3.5 má fondovou poznámku `costume_holder_profiles.note`.
@@ -25,7 +25,7 @@ Je potřeba vybrat pravidlo:
 2. Kontakty osob společné všem krojařkám; krojové poznámky nadále po fondech (vyžaduje výslovné upřesnění D-21).
 3. Kontakty zatím pouze pro `organization.admin`; krojařky pracují jen se základní identitou a poznámkou svého fondu (je třeba potvrdit omezení K04 / kontaktu externisty).
 
-Krok 4 je dokončený. Implementace kroku 5 zatím nezačala; nejde o přidělení nové role ani o hotové rozhodnutí.
+Krok 4 je dokončený; po rozhodnutí pokračuje krok 5.
 
 ### Q-01 Vonička: jeden společný krojový fond, nebo fondy po složkách? – *rozhodnuto → D-29*
 
