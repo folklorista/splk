@@ -45,6 +45,9 @@ export type ApiErrorCode =
   | 'inventory_closed'
   | 'inventory_has_issues'
   | 'inventory_target_exists'
+  | 'inventory_slot_full'
+  | 'inventory_visit_exists'
+  | 'inventory_visit_closed'
   | 'internal_error';
 
 /** `details.reason` of `validation_failed`. */

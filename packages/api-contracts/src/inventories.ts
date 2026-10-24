@@ -91,7 +91,11 @@ export type InventoryTargetAdd = { version: number; note: string } & (
   | { bulkStockId: number; itemId?: never; kitId?: never }
 );
 export type InventorySlotInput = Pick<InventorySlot, 'startsAt' | 'endsAt' | 'capacity'> & { version: number };
+export type InventorySlotPatch = Partial<Pick<InventorySlot, 'startsAt' | 'endsAt' | 'capacity'>> & { version: number };
 export type InventoryVisitInput = Pick<InventoryVisit, 'personId'> & Partial<Pick<InventoryVisit, 'slotId' | 'status'>> & { version: number };
+export type InventoryVisitPatch = Partial<Pick<InventoryVisit, 'slotId' | 'status'>> & { version: number };
+export interface InventorySlotResponse { id: number; inventory: InventoryDetail; slot: InventorySlot }
+export interface InventoryVisitResponse { id: number; inventory: InventoryDetail; visit: InventoryVisit }
 export type InventoryTargetPage = Page<InventoryTarget>;
 
 export interface InventoryIssue {

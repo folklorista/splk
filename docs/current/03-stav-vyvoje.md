@@ -202,3 +202,9 @@ Uživatel rozhodl Q-21 → D-63: fyzické ověření plní pokrytí, pozdější
 - Zapůjčení a umístění mimo sklad se vracejí jako konflikty. Výslovné fyzické zjištění s poznámkou může překonat rozpor v evidovaném umístění, nikdy však skrytě nevrátí výpůjčku. Stav, přidělené množství, složení ani vyřazení se kontrolou automaticky nemění.
 - Nová dopředná/vratná migrace uchová dobový kontext kontroly. Zásoby se samostatně porovnávají s aktuálně evidovaným množstvím příslušného kontextu; žádné pozorování nezvyšuje procento ověřených kusů.
 - PHPUnit: **203 testů / 1576 assertions**, TypeScript kontraktů a `git diff --check` prošly. Testován i atomický rollback dávky, přečíslovaný kus, pozdější nepřítomnost, zapůjčená součást kompletu a nezměněné početní přidělení. Zbývají termíny/návštěvy, vazby běžných pohybů a frontend; krok 7 není dokončen.
+
+### Krok 7, etapa 2d – termíny a návštěvy
+
+- Fondově chráněné zakládání a částečné změny termínů/návštěv, kontrola časových pásem, kapacity a příslušnosti termínu do téže inventury. Kapacitu hlídá společný zámek inventury; zrušení rezervaci uvolní.
+- Návštěvy jen pro držitele ze zmrazeného rozsahu. Dokončená nebo zrušená návštěva zůstává v historii, další návštěva je samostatná. Dokončení nezapisuje fyzické kontroly a opakované návštěvy nezvyšují počet odbavených osob.
+- PHPUnit: **208 testů / 1631 assertions**, TypeScript kontraktů a `git diff --check` prošly. Ověřena i obsazená kapacita, neplatné časy, cizí termín, souběžná aktivní návštěva a neměnnost dokončené historie. Navazují vazby běžných pohybů a frontend.

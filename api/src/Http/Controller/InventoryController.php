@@ -7,6 +7,7 @@ namespace Splk\Api\Http\Controller;
 use Splk\Api\Authorization\FundAccess;
 use Splk\Api\Domain\Costumes\InventoryCoverage;
 use Splk\Api\Domain\Costumes\InventoryChecks;
+use Splk\Api\Domain\Costumes\InventoryAppointments;
 use Splk\Api\Domain\Costumes\ItemRepository;
 use Splk\Api\Domain\Costumes\InventoryRepository;
 use Splk\Api\Domain\Costumes\InventoryScope;
@@ -31,6 +32,11 @@ final class InventoryController extends Controller
         foreach (['targets', 'checks', 'issues', 'slots', 'visits'] as $collection) {
             $router->add('GET', '/v1/inventories/{id}/' . $collection,
                 fn (Request $r, RequestContext $c): Response => $this->collection($r, $c, $collection));
+        }
+        foreach (['slots' => 'slot', 'visits' => 'visit'] as $collection => $method) {
+            $handler = fn (Request $r, RequestContext $c): Response => $this->appointment($r, $c, $method);
+            $router->add('POST', '/v1/inventories/{id}/' . $collection, $handler);
+            $router->add('PATCH', '/v1/inventories/{id}/' . $collection . '/{entryId}', $handler);
         }
         $router->add('POST', '/v1/inventories/{id}/targets', $this->addTarget(...));
         $router->add('POST', '/v1/inventories/{id}/checks', $this->checks(...));
@@ -130,6 +136,18 @@ final class InventoryController extends Controller
         return Response::json($this->audited($context, 'inventory.check', $initial['unitId'], function () use ($initial, $version, $writer, $batch, $context): array {
             return $writer->record($this->open($initial['id'], $version), $batch, self::actor($context));
         }));
+    }
+
+    private function appointment(Request $request, RequestContext $context, string $kind): Response
+    {
+        $initial = $this->accessible($context, true); $body = $request->json(); $version = (new Input($body))->id('version');
+        $id = isset($context->params['entryId']) ? self::routeId($context, 'entryId') : null;
+        return Response::json($this->audited($context, 'inventory.' . $kind . ($id === null ? '_create' : '_update'), $initial['unitId'], function () use ($initial, $version, $kind, $id, $body): array {
+            $inventory = $this->open($initial['id'], $version);
+            $entry = (new InventoryAppointments($this->db()))->{$kind}($inventory, $id, $body);
+            $this->repository()->touch($inventory['id']);
+            return ['id' => $inventory['id'], 'inventory' => $this->withProgress($this->repository()->find($inventory['id'])), $kind => $entry];
+        }, 'inventory_visit_exists'), $id === null ? 201 : 200);
     }
 
     private function cancel(Request $request, RequestContext $context): Response
