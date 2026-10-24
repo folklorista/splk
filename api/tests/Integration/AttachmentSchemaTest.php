@@ -80,10 +80,11 @@ final class AttachmentSchemaTest extends DatabaseTestCase
         require_once dirname(__DIR__, 2) . '/db/migrations/20261024230000_create_attachments.php';
         $migration = new \CreateAttachments('testing', 20261024230000);
         $migration->setAdapter(new \Phinx\Db\Adapter\PostgresAdapter(['connection' => $this->db]));
+        $later = $this->rollbackLaterMigrations(20261024230000);
         $this->attachment(); $migration->down();
         self::assertSame($this->item, $this->db->query("SELECT id FROM costume_items WHERE id = {$this->item}")->fetchColumn());
         self::assertSame($this->person, $this->db->query("SELECT id FROM persons WHERE id = {$this->person}")->fetchColumn());
-        $migration->up(); $this->attachment();
+        $migration->up(); foreach ($later as $dependent) $dependent->up(); $this->attachment();
         self::assertSame(1, $this->db->query('SELECT count(*) FROM attachments')->fetchColumn());
         $this->reject(fn () => $this->db->exec("DELETE FROM costume_items WHERE id = {$this->item}"), '23503');
     }

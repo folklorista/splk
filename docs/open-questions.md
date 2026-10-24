@@ -10,6 +10,10 @@ Co ještě musíme rozhodnout (úroveň **B**). Každá otázka uvádí, odkud p
 
 ## Blokuje Krojařku
 
+### Q-23 Převzetí současného držení z papíru – *rozhodnuto → D-67*
+
+Uživatel 2026-10-24 schválil převzetí jednoznačného současného držení s původem `paper_migration`, samostatným datem/autorem digitalizace a bez vymyšleného původního data výdeje. Nejednoznačnosti a konflikty mají zůstat jako nesrovnalosti; dokončení převodu dovoluje D-40 i s nimi. Běžný výdej nesmí sloužit jako náhradní způsob importu ani přepisovat existující držení. Otázka již neblokuje krok 8.
+
 ### Q-22 Nečíslované zásoby přesunuté během inventury – *rozhodnuto → D-64*
 
 Rozhodnuto uživatelem 2026-10-24 → D-64: zásoby vykazovat samostatně, mimo procento ověřených kusů.

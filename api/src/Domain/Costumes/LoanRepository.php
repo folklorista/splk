@@ -30,7 +30,8 @@ final class LoanRepository
         $returns = $this->db->prepare("SELECT r.*, CASE WHEN r.close_type = 'settled' THEN l.qty - l.returned_qty ELSE 0 END AS lost_qty FROM costume_loan_returns r JOIN costume_loan_lines l ON l.id = r.line_id WHERE l.loan_id = :id ORDER BY r.at, r.id");
         $returns->execute(['id' => $id]);
         return ['id' => (int) $row['id'], 'unitId' => (int) $row['unit_id'], 'holder' => self::holder($row),
-            'kitId' => self::nullableInt($row['kit_id']), 'issuedAt' => $row['issued_at'], 'issuedBy' => (int) $row['issued_by'],
+            'kitId' => self::nullableInt($row['kit_id']), 'issuedAt' => $row['issued_at'], 'issuedBy' => self::nullableInt($row['issued_by']),
+            'origin' => $row['origin'], 'migratedAt' => $row['migrated_at'], 'migratedBy' => self::nullableInt($row['migrated_by']), 'originalIssuedOn' => $row['original_issued_on'],
             'dueAt' => $row['due_at'], 'note' => $row['note'], 'replacesLoanId' => self::nullableInt($row['replaces_loan_id']),
             'lines' => array_map(static fn (array $line): array => [
                 'id' => (int) $line['id'], 'label' => $line['label'], 'region' => $line['region'], 'gender' => $line['gender'], 'itemId' => self::nullableInt($line['item_id']), 'bulkStockId' => self::nullableInt($line['bulk_stock_id']),
@@ -117,7 +118,7 @@ final class LoanRepository
         $sql = 'FROM costume_loans l WHERE ' . implode(' AND ', $where);
         $count = $this->db->prepare('SELECT count(*) ' . $sql);
         $count->execute($params);
-        $query = $this->db->prepare("SELECT l.id $sql ORDER BY l.issued_at DESC, l.id DESC LIMIT $limit OFFSET $offset");
+        $query = $this->db->prepare("SELECT l.id $sql ORDER BY coalesce(l.issued_at, l.migrated_at) DESC, l.id DESC LIMIT $limit OFFSET $offset");
         $query->execute($params);
         return ['items' => array_map(fn ($id): array => $this->find((int) $id), $query->fetchAll(PDO::FETCH_COLUMN)), 'total' => (int) $count->fetchColumn()];
     }
@@ -133,7 +134,8 @@ final class LoanRepository
             }
         }
         $sql = "FROM (
-            SELECT ll.id, ll.id AS line_id, 'issued'::text AS type, l.issued_at AS at, l.issued_by AS by, ll.qty, l.note, ll.inventory_id
+            SELECT ll.id, ll.id AS line_id, CASE WHEN l.origin = 'paper_migration' THEN 'paper_migration' ELSE 'issued' END::text AS type,
+                coalesce(l.issued_at, l.migrated_at) AS at, coalesce(l.issued_by, l.migrated_by) AS by, ll.qty, l.note, ll.inventory_id
                 FROM costume_loan_lines ll JOIN costume_loans l ON l.id = ll.loan_id
             UNION ALL
             SELECT r.id, r.line_id, r.close_type, r.at, r.by, r.qty, r.note, r.inventory_id FROM costume_loan_returns r

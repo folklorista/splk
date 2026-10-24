@@ -402,6 +402,16 @@ Krojařka používá výchozí test runner Angularu 22 – **Vitest** (jsdom). D
 
 **Zdroj:** uživatel 2026-10-24, odpověď na otázku přístupu ke skenům obsahujícím kontakty: „Také čtenáři s costumes.view“.
 
+### D-67 Převod papírové karty eviduje současné držení se samostatným původem
+
+- Jednoznačně identifikované současné držení lze převzít z papíru s původem `paper_migration`. Není to nový fyzický výdej a převod nepotvrzuje přítomnost, úplnost ani stav kroje.
+- Datum a autor digitalizace jsou samostatné údaje. Neznámé původní datum výdeje se nevymýšlí; datum digitalizace se nevkládá do `issued_at`. Existující skutečné výdeje zůstávají kompatibilní.
+- Převzatý kus není volný k dalšímu výdeji. Následné skutečné vrácení používá běžný proces a zachová původ evidence. Výpůjčky i historie výslovně rozlišují převzetí z papíru.
+- Nejednoznačná čísla, chybějící kusy a konflikty s digitálním držením se zachovají jako výslovné nesrovnalosti převodu. Existující držení se nepřepisuje. Opakování nesmí vytvořit duplicitní otevřené držení.
+- Převod karty lze podle D-40 dokončit i s nesrovnalostmi. Platí fondová pověření, audit a transakční integrita.
+
+**Zdroj:** uživatel 2026-10-24: výchozí varianta převzetí aktuálního držení, varianta nesrovnalosti pro nejednoznačné a konfliktní záznamy. Výslovně požadoval nejprve navrhnout minimální rozšíření modelu výpůjček; návrh před implementací odděluje původ, digitalizaci a volitelné historické datum od skutečného výdeje.
+
 ## API v1 (2026-10-23, `current/api-v1-a-schema.md` kap. 7)
 
 ### D-48 Správa organizace v Krojařce
