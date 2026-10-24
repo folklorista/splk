@@ -6,7 +6,7 @@ import { ResetPasswordPage } from './core/auth/reset-password-page';
 import { MENU } from './core/layout/menu';
 import { PlaceholderPage } from './core/layout/placeholder-page';
 import { Shell } from './core/layout/shell';
-import { fundGuard, organizationAdminGuard, settingsHomeGuard } from './core/auth/mandate.guards';
+import { fundGuard, costsGuard, reportsHomeGuard, organizationAdminGuard, settingsHomeGuard } from './core/auth/mandate.guards';
 import { SettingsLayout, SettingsNoAccess } from './features/nastaveni/settings-layout';
 
 const IMPLEMENTED = ['ucet', 'nastaveni', 'soucastky', 'lide', 'krojove-karty', 'vypujcky', 'inventury', 'dokumenty', 'prehledy', 'hledat'];
@@ -51,7 +51,8 @@ export const routes: Routes = [
         { path: 'kusy/:id', loadComponent: () => import('./features/soucastky/item-page').then((m) => m.ItemPage), title: 'Součástka · Krojařka' },
         { path: 'komplety/:id', loadComponent: () => import('./features/soucastky/kit-page').then((m) => m.KitPage), title: 'Komplet · Krojařka' },
       ] },
-      { path: 'prehledy', canActivate: [fundGuard], loadComponent: () => import('./features/prehledy/reports-page').then((m) => m.ReportsPage), title: 'Přehledy · Krojařka' },
+      { path: 'prehledy/naklady', canActivate: [costsGuard], loadComponent: () => import('./features/naklady/costs-page').then((m) => m.CostsPage), title: 'Náklady na kroje · Krojařka' },
+      { path: 'prehledy', canActivate: [reportsHomeGuard], loadComponent: () => import('./features/prehledy/reports-page').then((m) => m.ReportsPage), title: 'Přehledy · Krojařka' },
       { path: 'hledat', canActivate: [fundGuard], loadComponent: () => import('./features/prehledy/search-page').then((m) => m.SearchPage), title: 'Hledat · Krojařka' },
       { path: 'ucet', loadComponent: () => import('./features/ucet/account-page').then((m) => m.AccountPage), title: 'Můj účet · Krojařka' },
       { path: 'dokumenty', loadComponent: () => import('./features/dokumenty/documents-page').then((m) => m.DocumentsPage), canActivate: [fundGuard], title: 'Dokumenty · Krojařka' },

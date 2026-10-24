@@ -1,4 +1,4 @@
-<h1>Přehledy</h1><app-fund-header />
+<h1>Přehledy</h1><p><a routerLink="/prehledy/naklady">Náklady na kroje a dobropisy</a></p><app-fund-header />
 <form class="report-controls card" (ngSubmit)="load()"><label class="field">Sestava<select name="kind" [ngModel]="store.kind()" (ngModelChange)="store.kind.set($event)">@for (kind of kinds; track kind) { <option [ngValue]="kind">{{ labels[kind] }}</option> }</select></label>
 @if (['series','person','item','kit','inventory'].includes(store.kind())) { <label class="field">Vyberte podklad<select name="id" [(ngModel)]="selected"><option [ngValue]="0">— vyberte —</option>@for (choice of store.choices(); track choice.id) { <option [ngValue]="choice.id">{{ choice.label }}</option> }</select></label> }
 @if (pieceFilters()) {

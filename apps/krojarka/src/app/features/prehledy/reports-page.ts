@@ -1,10 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { Component, effect, inject, untracked } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import type { ReportKind, ReportQuery } from '@splk/api-contracts';
 import { FundHeader } from '../nastaveni/fund-header';
 import { ReportsStore } from './reports.store';
-@Component({ selector: 'app-reports-page', imports: [FormsModule, DatePipe, FundHeader], providers: [ReportsStore], templateUrl: './reports-page.html', styles: [`
+@Component({ selector: 'app-reports-page', imports: [FormsModule, DatePipe, FundHeader, RouterLink], providers: [ReportsStore], templateUrl: './reports-page.html', styles: [`
   .report-scroll{overflow:auto}table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{border:1px solid #aaa;padding:.4rem;text-align:left;vertical-align:top;overflow-wrap:anywhere} .report-controls{display:flex;flex-wrap:wrap;gap:.8rem;align-items:end}
   @media print { .report-controls,.report-error,app-fund-header{display:none}.card{border:0;box-shadow:none;padding:0}.report-scroll{overflow:visible}thead{display:table-header-group}tr{break-inside:avoid}th,td{font-size:9pt} }
 ` ] })

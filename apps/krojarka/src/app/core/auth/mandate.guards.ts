@@ -36,3 +36,15 @@ export const settingsHomeGuard: CanActivateFn = async () => {
   }
   return auth.hasMandate('organization.admin') ? router.createUrlTree(['/nastaveni/uzivatele']) : true;
 };
+
+/** Cost evidence has its own read scope; costs.view never opens the general costume fund. */
+export const costsGuard: CanActivateFn = async () => {
+  const auth = inject(AuthService), router = inject(Router); await auth.init();
+  const canRead = auth.user()?.mandates.some((m) => m.kind === 'costs.view' && m.scopeType === 'organization' || ['costumes.manage', 'costumes.view'].includes(m.kind));
+  return canRead || router.createUrlTree(['/nastaveni']);
+};
+export const reportsHomeGuard: CanActivateFn = async () => {
+  const auth = inject(AuthService), funds = inject(FundContext), router = inject(Router); await auth.init(); await funds.init();
+  if (funds.current()) return true;
+  return auth.user()?.mandates.some((m) => m.kind === 'costs.view' && m.scopeType === 'organization') ? router.createUrlTree(['/prehledy/naklady']) : router.createUrlTree(['/nastaveni']);
+};
